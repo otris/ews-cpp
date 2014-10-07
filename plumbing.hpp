@@ -113,7 +113,7 @@ namespace ews
                 };
             }
 
-            // Perform the HTTP request
+            // Perform the HTTP request.
             //
             // request: The complete request string; you must make sure that the
             // data is encoded the way you want the server to receive it.
@@ -203,45 +203,40 @@ namespace ews
             ntlm_credentials creds{username, password, domain};
             request.set_credentials(creds);
 
-            std::stringstream sstr;
-            sstr << R"(
-                <?xml version="1.0" encoding="utf-8"?>
-                <soap:Envelope
-                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                    xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
-                    xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"
-                    xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"
-                    >
-                )";
+            std::stringstream request_stream;
+            request_stream << R"(
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"
+    xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"
+    >
+)";
 
             // Add SOAP headers if present
             if (!soap_headers.empty())
             {
-                sstr << "<soap:Header>\n";
+                request_stream << "<soap:Header>\n";
                 for (const auto& header : soap_headers)
                 {
-                    sstr << header;
+                    request_stream << header;
                 }
-                sstr << "</soap:Header>\n";
+                request_stream << "</soap:Header>\n";
             }
 
-            sstr << "<soap:Body>\n";
+            request_stream << "<soap:Body>\n";
             // Add the passed request
-            sstr << soap_body;
-            sstr << "</soap:Body>\n";
-            sstr << "</soap:Envelope>\n";
-
-            // 1. Grab the request as a byte array
-            // 2. Write our request bytes to the web request
-            // (CURLOPT_POSTFIELDS,
-            // CURLOPT_POSTFIELDSIZE)
-            // 3. Try to get the response
-            // 4. Read the response stream
+            request_stream << soap_body;
+            request_stream << "</soap:Body>\n";
+            request_stream << "</soap:Envelope>\n";
 
             xml_document doc;
-            request.send(sstr.str(), [&doc](const std::string& response)
+            request.send(request_stream.str(),
+                         [&doc](const std::string& response)
             {
+                // TODO: load XML from response into doc
                 (void)response;
             });
 
