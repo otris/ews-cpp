@@ -1,0 +1,40 @@
+---
+AccessModifierOffset: -4
+ConstructorInitializerIndentWidth: 4
+AlignEscapedNewlinesLeft: false
+AlignTrailingComments: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakTemplateDeclarations: false
+AlwaysBreakBeforeMultilineStrings: false
+BreakBeforeBinaryOperators: false
+BreakConstructorInitializersBeforeComma: false
+BinPackParameters: true
+ColumnLimit:     80
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+DerivePointerBinding: false
+ExperimentalAutoDetectBinPacking: false
+IndentCaseLabels: false
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: All
+ObjCSpaceBeforeProtocolList: true
+PenaltyBreakComment: 60
+PenaltyBreakString: 1000
+PenaltyBreakFirstLessLess: 120
+PenaltyExcessCharacter: 1000000
+PenaltyReturnTypeOnItsOwnLine: 60
+PointerBindsToType: true
+SpacesBeforeTrailingComments: 1
+Cpp11BracedListStyle: true
+Standard:        C++11
+IndentWidth:     4
+UseTab:          false
+BreakBeforeBraces: Allman
+IndentFunctionDeclarationAfterType: false
+SpacesInParentheses: false
+SpaceInEmptyParentheses: false
+SpacesInCStyleCastParentheses: false
+SpaceAfterControlStatementKeyword: true
+...
+
