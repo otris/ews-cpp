@@ -157,8 +157,8 @@ namespace ews
 
                     wrapper* w = reinterpret_cast<wrapper*>(userdata);
                     const auto count = size * nmemb;
-                    const std::string response{ptr, count};
-                    w->callable(response);
+                    std::string response{ptr, count};
+                    w->callable(std::move(response));
                     return count;
                 };
 
@@ -233,10 +233,10 @@ namespace ews
             request_stream << "</soap:Envelope>\n";
 
             xml_document doc;
-            request.send(request_stream.str(),
-                         [&doc](const std::string& response)
+            request.send(request_stream.str(), [&doc](std::string response)
             {
                 // TODO: load XML from response into doc
+                // Note: response is a copy and can therefore be moved
                 (void)response;
             });
 
