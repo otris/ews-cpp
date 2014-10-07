@@ -1,12 +1,29 @@
 #include "plumbing.hpp"
 #include "porcelain.hpp"
 
+#include <string>
+
 int main()
 {
     ews::set_up();
 
-    auto doc = ews::plumbing::make_raw_soap_request("", "", "", "", "",
-                                                    std::vector<std::string>{});
+    std::string request{
+        R"(
+        <GetFolder>
+            <FolderShape>
+                <t:BaseShape>AllProperties</t:BaseShape>
+            </FolderShape>
+            <FolderIds>
+                <t:DistinguishedFolderId Id="inbox" />
+            </FolderIds>
+        </GetFolder>
+        )"};
+
+    auto soap_headers = std::vector<std::string>{};
+
+    auto doc = ews::plumbing::make_raw_soap_request(
+        "https://yourserver/ews/Exchange.asmx", "username", "yourPassword",
+        "yourDomain", request, soap_headers);
     (void)doc;
 
     // hack hack ...

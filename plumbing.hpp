@@ -4,6 +4,8 @@
 #include <vector>
 #include <sstream>
 #include <utility>
+#include <memory>
+#include <cstddef>
 #include <cassert> // TODO: wrap assert with another macro so that we can make
                    // assertions a configuration option
 
@@ -59,7 +61,7 @@ namespace ews
                 set_option(curl::CURLOPT_URL, url.c_str());
             }
 
-            // Set the HTTP method. Only POST supported
+            // Set the HTTP method (only POST supported).
             void set_method(method)
             {
                 // Method can only be a regular POST in our use case
@@ -91,40 +93,107 @@ namespace ews
             void set_option(curl::CURLoption option, Args... args)
             {
                 auto retcode = curl::curl_easy_setopt(
-                    curl_.get(), option, std::forward<Args>(args)...);
+                    handle_.get(), option, std::forward<Args>(args)...);
                 switch (retcode)
                 {
                 case curl::CURLE_OK:
                     return;
 
                 case curl::CURLE_FAILED_INIT:
-                    throw curl::curl_error{
-                        "curl_easy_setopt: unsupported option"};
+                {
+                    throw curl::make_error(
+                        "curl_easy_setopt: unsupported option", retcode);
+                }
 
                 default:
-                    throw curl::curl_error{
-                        "curl_easy_setopt: failed setting option"};
+                {
+                    throw curl::make_error(
+                        "curl_easy_setopt: failed setting option", retcode);
+                }
                 };
             }
 
+            // Perform the HTTP request
+            //
+            // request: The complete request string; you must make sure that the
+            // data is encoded the way you want the server to receive it.
+            // response_handler: A callable function or function pointer that
+            // takes a std::string (the response) object as only argument. The
+            // function is invoked as soon as a response is received.
+            //
+            // Throws curl_error if operation could not be completed.
+            template <typename Function>
+            void send(const std::string& request, Function response_handler)
+            {
+                // Set complete request string for HTTP POST method; note: no
+                // encoding here
+
+                set_option(curl::CURLOPT_POSTFIELDS, request.c_str());
+                set_option(curl::CURLOPT_POSTFIELDSIZE, request.length());
+
+                // Set response handler; wrap passed handler function in
+                // something that we can cast to a void* (we cannot cast
+                // function pointers to void*) to make sure this works with
+                // lambdas, std::function instances, function pointers, and
+                // functors
+
+                struct wrapper
+                {
+                    Function callable;
+
+                    explicit wrapper(Function function) : callable{function} {}
+                };
+
+                wrapper wrp{response_handler};
+
+                auto callback =
+                    [](char* ptr, std::size_t size, std::size_t nmemb,
+                       void* userdata) -> std::size_t
+                {
+                    // Call user supplied response handler with a std::string
+                    // (contains the complete response). Always indicate
+                    // success; user has no chance of indicating an error to the
+                    // cURL library.
+
+                    wrapper* w = reinterpret_cast<wrapper*>(userdata);
+                    const auto count = size * nmemb;
+                    const std::string response{ptr, count};
+                    w->callable(response);
+                    return count;
+                };
+
+                set_option(
+                    curl::CURLOPT_WRITEFUNCTION,
+                    static_cast<std::size_t (*)(char*, std::size_t, std::size_t,
+                                                void*)>(callback));
+                set_option(curl::CURLOPT_WRITEDATA, std::addressof(wrp));
+
+                auto retcode = curl::curl_easy_perform(handle_.get());
+                if (retcode != 0)
+                {
+                    throw curl::make_error("curl_easy_perform", retcode);
+                }
+            }
+
         private:
-            curl::curl_ptr curl_;
+            curl::curl_ptr handle_;
         };
 
         // Makes a raw SOAP request.
         //
-        // url: the URL of the server to talk to
-        // username: username of user
-        // password: the user's secret password, plain-text
-        // domain: the user's domain
-        // ews_request: the contents of the SOAP body (minus the body element)
-        // soap_headers: any SOAP headers to add
+        // url: The URL of the server to talk to.
+        // username: The username of user.
+        // password: The user's secret password, plain-text.
+        // domain: The user's Windows domain.
+        // soap_body: The contents of the SOAP body (minus the body element);
+        // this is the actual EWS request.
+        // soap_headers: Any SOAP headers to add.
         //
-        // Returns a DOM wrapper around the response
+        // Returns a DOM wrapper around the response.
         inline xml_document make_raw_soap_request(
             const std::string& url, const std::string& username,
             const std::string& password, const std::string& domain,
-            const std::string& ews_request,
+            const std::string& soap_body,
             const std::vector<std::string>& soap_headers)
         {
             http_web_request request{url};
@@ -159,11 +228,24 @@ namespace ews
 
             sstr << "<soap:Body>\n";
             // Add the passed request
-            sstr << ews_request;
+            sstr << soap_body;
             sstr << "</soap:Body>\n";
             sstr << "</soap:Envelope>\n";
 
-            return xml_document{};
+            // 1. Grab the request as a byte array
+            // 2. Write our request bytes to the web request
+            // (CURLOPT_POSTFIELDS,
+            // CURLOPT_POSTFIELDSIZE)
+            // 3. Try to get the response
+            // 4. Read the response stream
+
+            xml_document doc;
+            request.send(sstr.str(), [&doc](const std::string& response)
+            {
+                (void)response;
+            });
+
+            return doc;
         }
 
         // Implementations
