@@ -6,10 +6,9 @@
 #include <utility>
 #include <memory>
 #include <cstddef>
-#include <cassert> // TODO: wrap assert with another macro so that we can make
-                   // assertions a configuration option
 
 #include "curl.hpp"
+#include "assert.hpp"
 
 namespace ews
 {
@@ -247,7 +246,7 @@ namespace ews
 
         void ntlm_credentials::certify(http_web_request* request) const
         {
-            assert(request != nullptr);
+            EWS_ASSERT(request != nullptr);
 
             // CURLOPT_USERPWD: domain\username:password
             std::string login = domain_ + "\\" + username_ + "" + password_;
