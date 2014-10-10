@@ -31,19 +31,20 @@ namespace ews
         class ntlm_credentials : public credentials
         {
         public:
-            ntlm_credentials(const std::string& username,
-                             const std::string& password,
-                             const std::string& domain)
-                : username_{username}, password_{password}, domain_{domain}
+            ntlm_credentials(std::string username, std::string password,
+                             std::string domain)
+                : username_{std::move(username)},
+                  password_{std::move(password)},
+                  domain_{std::move(domain)}
             {
             }
 
         private:
+            void certify(http_web_request*) const override; // implemented below
+
             std::string username_;
             std::string password_;
             std::string domain_;
-
-            void certify(http_web_request*) const override; // implemented below
         };
 
         class http_web_request final
@@ -70,11 +71,9 @@ namespace ews
             // Set this HTTP request's content type.
             void set_content_type(const std::string& content_type)
             {
-                curl::curl_slist* chunk = nullptr;
-                chunk = curl::curl_slist_append(chunk, content_type.c_str());
-                // FIXME: this is not exception-safe, set_option can throw
-                set_option(curl::CURLOPT_HTTPHEADER, chunk);
-                curl::curl_slist_free_all(chunk);
+                curl::curl_string_list chunk;
+                chunk.append(content_type.c_str());
+                set_option(curl::CURLOPT_HTTPHEADER, chunk.get());
             }
 
             // Set credentials for authentication.
