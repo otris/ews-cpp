@@ -12,5 +12,5 @@ namespace ews
     // Function is not thread-safe; you should call this function only when no
     // other thread is running (see libcurl(3) man-page or
     // http://curl.haxx.se/libcurl/c/libcurl.html)
-    inline void tear_down() { curl::curl_global_cleanup(); }
+    inline void tear_down() EWS_NOEXCEPT { curl::curl_global_cleanup(); }
 }

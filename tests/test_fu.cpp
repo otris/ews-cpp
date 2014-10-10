@@ -2,6 +2,8 @@
 #include <ews/porcelain.hpp>
 
 #include <string>
+#include <iostream>
+#include <ostream>
 
 int main()
 {
@@ -21,12 +23,20 @@ int main()
 
     auto soap_headers = std::vector<std::string>{};
 
-    auto doc = ews::plumbing::make_raw_soap_request(
-        "https://yourserver/ews/Exchange.asmx", "username", "yourPassword",
-        "yourDomain", request, soap_headers);
-    (void)doc;
+    try
+    {
+        auto doc = ews::plumbing::make_raw_soap_request(
+            "https://yourserver/ews/Exchange.asmx", "username", "yourPassword",
+            "yourDomain", request, soap_headers);
+        (void)doc;
 
-    // hack hack ...
+        // hack hack ...
+
+    }
+    catch (ews::curl::curl_error& e)
+    {
+        std::cout << e.what() << std::endl;
+    }
 
     ews::tear_down();
     return 0;
