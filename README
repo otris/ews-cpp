@@ -1,9 +1,16 @@
-README
-======
+                                     README
+                                     ======
 
-Supported Compilers
+Supported Compilers:
+
 * Clang 3.5 with libc++
 * GCC 4.8.2 with libstdc++
 
 We will target Visual Studio 2012 and/or Visual Studio 2013 as C++11 feature
 set.
+
+Dependencies:
+
+* libcurl, at least version 7.22
+
+# vim:et sw=4 ts=4
