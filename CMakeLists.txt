@@ -62,13 +62,13 @@ if(ENABLE_ASSERTS)
     add_definitions(-DEWS_ENABLE_ASSERTS)
 endif()
 
-add_executable(test
+add_executable(tests
     ${ews_SOURCES}
     tests/test_fu.cpp)
 
-target_link_libraries(test ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
+target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
 
-set_target_properties(test PROPERTIES
+set_target_properties(tests PROPERTIES
     LINKER_LANGUAGE CXX
     COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZE_CXXFLAGS}"
     LINK_FLAGS "${SANITIZE_LDFLAGS}")
