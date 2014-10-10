@@ -7,6 +7,14 @@
 #include <stdexcept>
 #include <string>
 
+
+// Visual Studio 12 does not support noexcept specifier.
+#ifndef _MSC_VER
+# define NOEXCEPT noexcept
+#else
+# define EWS_NOEXCEPT 
+#endif
+
 namespace ews
 {
     namespace curl
@@ -53,7 +61,7 @@ namespace ews
             curl_ptr(const curl_ptr&) = delete;
             curl_ptr& operator=(const curl_ptr&) = delete;
 
-            CURL* get() const noexcept { return handle_; }
+            CURL* get() const EWS_NOEXCEPT { return handle_; }
 
         private:
             CURL* handle_;
@@ -63,16 +71,16 @@ namespace ews
         class curl_string_list
         {
         public:
-            curl_string_list() noexcept : slist_{nullptr} {}
+            curl_string_list() EWS_NOEXCEPT : slist_{ nullptr }{}
 
             ~curl_string_list() { curl_slist_free_all(slist_); }
 
-            void append(const char* str) noexcept
+            void append(const char* str) EWS_NOEXCEPT
             {
                 slist_ = curl_slist_append(slist_, str);
             }
 
-            curl_slist* get() const noexcept { return slist_; }
+            curl_slist* get() const EWS_NOEXCEPT { return slist_; }
 
         private:
             curl_slist* slist_;
