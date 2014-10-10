@@ -1,7 +1,7 @@
                                      README
                                      ======
 
-Supported Compilers:
+                              Supported Compilers
 
 * Clang 3.5 with libc++
 * GCC 4.8.2 with libstdc++
@@ -9,8 +9,21 @@ Supported Compilers:
 We will target Visual Studio 2012 and/or Visual Studio 2013 as C++11 feature
 set.
 
-Dependencies:
+
+                                  Dependencies
 
 * libcurl, at least version 7.22
+
+
+                               Note Windows Users
+
+You can obtain an up-to-date and easy-to-use binary distribution of libcurl
+from here:
+
+    http://www.confusedbycode.com/curl/
+
+Additionally, you probably need to tell CMake where to find it. Just set
+CMAKE_PREFIX_PATH to the path where you installed libcurl (e.g.
+C:\Program Files\cURL) and re-configure.
 
 # vim:et sw=4 ts=4
