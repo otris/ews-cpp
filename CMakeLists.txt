@@ -46,8 +46,7 @@ endif()
 set(ews_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(ews_SOURCES
     ${ews_INCLUDE_DIR}/ews/plumbing.hpp
-    ${ews_INCLUDE_DIR}/ews/porcelain.hpp
-    ${ews_INCLUDE_DIR}/ews/curl.hpp)
+    ${ews_INCLUDE_DIR}/ews/porcelain.hpp)
 
 # libcurl 7.22 is packed for Ubuntu 12.04 LTS
 find_package(CURL 7.22 REQUIRED)
