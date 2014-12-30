@@ -125,9 +125,9 @@ namespace ews
         public:
             ntlm_credentials(std::string username, std::string password,
                              std::string domain)
-                : username_{std::move(username)},
-                  password_{std::move(password)},
-                  domain_{std::move(domain)}
+                : username_(std::move(username)),
+                  password_(std::move(password)),
+                  domain_(std::move(domain))
             {
             }
 
