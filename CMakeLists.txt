@@ -30,7 +30,9 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # Use colorized output on terminal if supported (GCC 4.9 onwards)
     CHECK_CXX_COMPILER_FLAG("-fdiagnostics-color=auto" GCC_HAS_COLOR)
     if("${GCC_HAS_COLOR}")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color=auto")
+        set(CMAKE_CXX_FLAGS
+            "${CMAKE_CXX_FLAGS} -fpermissive -fdiagnostics-color=auto")
+        # FIXME: remove -fpermissive use above, fix rapidxml_print.hpp instead
     endif()
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
     message(WARNING "Intel C++ not configured.")

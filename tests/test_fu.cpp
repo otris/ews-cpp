@@ -1,5 +1,6 @@
 #include <ews/plumbing.hpp>
 #include <ews/porcelain.hpp>
+#include <ews/rapidxml/rapidxml_print.hpp>
 
 #include <string>
 #include <iostream>
@@ -12,26 +13,26 @@ int main()
     int res = EXIT_SUCCESS;
     ews::set_up();
 
-    std::string request{
-        R"(
-        <GetFolder>
-            <FolderShape>
-                <t:BaseShape>AllProperties</t:BaseShape>
-            </FolderShape>
-            <FolderIds>
-                <t:DistinguishedFolderId Id="inbox" />
-            </FolderIds>
-        </GetFolder>
-        )"};
+    std::string request{R"(
+<GetFolder>
+    <FolderShape>
+        <t:BaseShape>AllProperties</t:BaseShape>
+    </FolderShape>
+    <FolderIds>
+        <t:DistinguishedFolderId Id="inbox" />
+    </FolderIds>
+</GetFolder>)"};
 
     auto soap_headers = std::vector<std::string>{};
 
     try
     {
-        ews::plumbing::make_raw_soap_request(
+        auto response = ews::plumbing::make_raw_soap_request(
             "https://192.168.56.2/ews/Exchange.asmx", "mini", "12345aA!",
             "TEST", request, soap_headers);
-        //(void)doc;
+        const auto& doc = response.payload();
+
+        std::cout << doc << std::endl;
 
         // hack hack ...
 
