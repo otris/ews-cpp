@@ -282,7 +282,7 @@ namespace ews
 
         private:
             curl::curl_ptr handle_;
-	    curl::curl_string_list headers_;
+            curl::curl_string_list headers_;
         };
 
         // Makes a raw SOAP request.
@@ -304,22 +304,21 @@ namespace ews
         {
             http_web_request request{url};
             request.set_method(http_web_request::method::POST);
-            request.set_content_type("text/xml; charset=UTF-8");
+            request.set_content_type("text/xml; charset=utf-8");
 
             ntlm_credentials creds{username, password, domain};
             request.set_credentials(creds);
 
             std::stringstream request_stream;
-            request_stream << R"(
-<?xml version="1.0" encoding="utf-8"?>
+            request_stream <<
+R"(<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"
     xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"
-    >
-)";
+    >)";
 
             // Add SOAP headers if present
             if (!soap_headers.empty())
