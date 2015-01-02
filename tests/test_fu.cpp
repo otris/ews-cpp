@@ -4,9 +4,12 @@
 #include <string>
 #include <iostream>
 #include <ostream>
+#include <exception>
+#include <cstdlib>
 
 int main()
 {
+    int res = EXIT_SUCCESS;
     ews::set_up();
 
     std::string request{
@@ -25,19 +28,20 @@ int main()
 
     try
     {
-        auto doc = ews::plumbing::make_raw_soap_request(
-            "https://yourserver/ews/Exchange.asmx", "username", "yourPassword",
-            "yourDomain", request, soap_headers);
-        (void)doc;
+        ews::plumbing::make_raw_soap_request(
+            "https://192.168.56.2/ews/Exchange.asmx", "mini", "12345aA!",
+            "TEST", request, soap_headers);
+        //(void)doc;
 
         // hack hack ...
 
     }
-    catch (ews::curl::curl_error& e)
+    catch (std::exception& exc)
     {
-        std::cout << e.what() << std::endl;
+        std::cout << exc.what() << std::endl;
+        res = EXIT_FAILURE;
     }
 
     ews::tear_down();
-    return 0;
+    return res;
 }

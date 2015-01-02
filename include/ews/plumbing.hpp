@@ -164,9 +164,7 @@ namespace ews
             void set_content_type(const std::string& content_type)
             {
                 const std::string str = "Content-Type: " + content_type;
-                curl::curl_string_list chunk;
-                chunk.append(str.c_str());
-                set_option(curl::CURLOPT_HTTPHEADER, chunk.get());
+                headers_.append(str.c_str());
             }
 
             // Set credentials for authentication.
@@ -220,6 +218,7 @@ namespace ews
                 // Print HTTP headers to stderr
                 set_option(curl::CURLOPT_VERBOSE, 1L);
 #endif
+
                 // Some servers don't like requests that are made without a
                 // user-agent field, so we provide one
                 set_option(curl::CURLOPT_USERAGENT, "libcurl-agent/1.0");
@@ -229,6 +228,8 @@ namespace ews
 
                 set_option(curl::CURLOPT_POSTFIELDS, request.c_str());
                 set_option(curl::CURLOPT_POSTFIELDSIZE, request.length());
+
+                set_option(curl::CURLOPT_HTTPHEADER, headers_.get());
 
                 // Set response handler; wrap passed handler function in
                 // something that we can cast to a void* (we cannot cast
@@ -281,6 +282,7 @@ namespace ews
 
         private:
             curl::curl_ptr handle_;
+	    curl::curl_string_list headers_;
         };
 
         // Makes a raw SOAP request.
