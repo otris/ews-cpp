@@ -11,6 +11,7 @@
     #include <cstdlib>      // For std::size_t
     #include <cassert>      // For assert
     #include <new>          // For placement new
+    #include <type_traits>  // For compile-time reference/value sematic tests
 #endif
 
 // On MSVC, disable "conditional expression is constant" warning (level 4). 
@@ -1312,15 +1313,46 @@ namespace rapidxml
                 attribute->m_parent = 0;
             m_first_attribute = 0;
         }
-        
-    private:
+
+        xml_node(xml_node&& other)
+            : m_type(other.m_type),
+              m_first_node(other.m_first_node),
+              m_last_node(other.m_last_node),
+              m_first_attribute(other.m_first_attribute),
+              m_last_attribute(other.m_last_attribute),
+              m_prev_sibling(other.m_prev_sibling),
+              m_next_sibling(other.m_next_sibling)
+        {
+            other.m_first_node = nullptr;
+            other.m_last_node = nullptr;
+            other.m_first_attribute = nullptr;
+            other.m_last_attribute = nullptr;
+            other.m_prev_sibling = nullptr;
+            other.m_next_sibling = nullptr;
+        }
+
+        void operator=(xml_node&& rhs)
+        {
+            if (&rhs != this)
+            {
+                m_first_node = rhs.m_first_node;
+                m_last_node = rhs.m_last_node;
+                m_first_attribute = rhs.m_first_attribute;
+                m_last_attribute = rhs.m_last_attribute;
+                m_prev_sibling = rhs.m_prev_sibling;
+                m_next_sibling = rhs.m_next_sibling;
+            }
+            return *this;
+        }
 
         ///////////////////////////////////////////////////////////////////////////
         // Restrictions
 
         // No copying
-        xml_node(const xml_node &);
-        void operator =(const xml_node &);
+        xml_node(const xml_node&) = delete;
+        void operator=(const xml_node&) = delete;
+
+    private:
     
         ///////////////////////////////////////////////////////////////////////////
         // Data members
@@ -1343,6 +1375,12 @@ namespace rapidxml
         xml_node<Ch> *m_next_sibling;           // Pointer to next sibling of node, or 0 if none; this value is only valid if m_parent is non-zero
 
     };
+
+    // Test value/reference semantics
+    static_assert(!std::is_copy_constructible<xml_node<>>::value, "");
+    static_assert(!std::is_copy_assignable<xml_node<>>::value, "");
+    static_assert(std::is_move_constructible<xml_node<>>::value, "");
+    static_assert(std::is_move_assignable<xml_node<>>::value, "");
 
     ///////////////////////////////////////////////////////////////////////////
     // XML document
@@ -2298,6 +2336,12 @@ namespace rapidxml
         }
 
     };
+
+    // Test value/reference semantics
+    static_assert(!std::is_copy_constructible<xml_document<>>::value, "");
+    static_assert(!std::is_copy_assignable<xml_document<>>::value, "");
+    static_assert(std::is_move_constructible<xml_document<>>::value, "");
+    static_assert(std::is_move_assignable<xml_document<>>::value, "");
 
     //! \cond internal
     namespace internal
