@@ -4,9 +4,12 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <algorithm>
 #include <utility>
 #include <memory>
 #include <cstddef>
+
+#include "rapidxml/rapidxml.hpp"
 
 // Macro for verifying expressions at run-time. Calls assert() with 'expr'.
 // Allows turning assertions off, even if -DNDEBUG wasn't given at
@@ -25,7 +28,7 @@
 #ifndef _MSC_VER
 # define EWS_NOEXCEPT noexcept
 #else
-# define EWS_NOEXCEPT
+# define EWS_NOEXCEPT 
 #endif
 
 namespace ews
@@ -106,18 +109,82 @@ namespace ews
 
     namespace plumbing
     {
-        class http_web_request;
+        // Raised when a response from a server could not be parsed.
+        class parse_error final : public std::runtime_error
+        {
+        public:
+            explicit parse_error(const std::string& what)
+                : std::runtime_error(what)
+            {
+            }
+            explicit parse_error(const char* what) : std::runtime_error(what) {}
+        };
+
+        class http_request;
 
         // This ought to be a DOM wrapper; usually around a web response
-        class xml_document final
+        //
+        // This class basically wraps rapidxml::xml_document because the parsed
+        // data must persist for the lifetime of the rapidxml::xml_document.
+        //
+        //FIXME
+        // temporary buffer because we are using RapidXml in destructive mode
+        // (the parser modifies source text during the parsing process)
+        class http_response final
         {
+        public:
+            http_response(const http_response&) = delete;
+            http_response& operator=(const http_response&) = delete;
+
+            // Here we handle the server's response. We load the SOAP
+            // payload from response into the xml_document.
+            http_response(long response_code, std::vector<char>&& response_data)
+                : data_(std::move(response_data)), doc_(), rescode_(response_code)
+            {
+                EWS_ASSERT(!data_.empty());
+
+                // For now we expect data to be a single and valid XML document.
+                // This might actually not be the case depending on the response
+                // that is returned from libcurl (HTTP response header still in
+                // there? multiple XML documents? how does a SOAP payload
+                // actually look?)
+
+                //const auto xml_start_index = data_.find_first_of("<");
+                //EWS_ASSERT(xml_start_index != std::string::npos);
+
+                try
+                {
+                    static const int flags = 0;
+                    doc_.parse<flags>(&data_[0]);
+                }
+                catch (rapidxml::parse_error& e)
+                {
+                    // Swallow and erase type
+                    throw parse_error(e.what());
+                }
+            }
+
+            const rapidxml::xml_document<char>& payload() const EWS_NOEXCEPT
+            {
+                return doc_;
+            }
+
+            long response_code() const EWS_NOEXCEPT
+            {
+                return rescode_;
+            }
+
+        private:
+            std::vector<char> data_;
+            rapidxml::xml_document<char> doc_;
+            long rescode_;
         };
 
         class credentials
         {
         public:
             virtual ~credentials() = default;
-            virtual void certify(http_web_request*) const = 0;
+            virtual void certify(http_request*) const = 0;
         };
 
         class ntlm_credentials : public credentials
@@ -132,14 +199,14 @@ namespace ews
             }
 
         private:
-            void certify(http_web_request*) const override; // implemented below
+            void certify(http_request*) const override; // implemented below
 
             std::string username_;
             std::string password_;
             std::string domain_;
         };
 
-        class http_web_request final
+        class http_request final
         {
         public:
             enum class method
@@ -148,7 +215,7 @@ namespace ews
             };
 
             // Create a new HTTP request to the given URL.
-            explicit http_web_request(const std::string& url)
+            explicit http_request(const std::string& url)
             {
                 set_option(curl::CURLOPT_URL, url.c_str());
             }
@@ -202,17 +269,13 @@ namespace ews
                 };
             }
 
-            // Perform the HTTP request.
+            // Perform the HTTP request and returns the response. This function
+            // blocks until the complete response is received or a timeout is
+            // reached. Throws curl_error if operation could not be completed.
             //
-            // request: The complete request string; you must make sure that the
-            // data is encoded the way you want the server to receive it.
-            // response_handler: A callable function or function pointer that
-            // takes a std::string (the response) object as only argument. The
-            // function is invoked as soon as a response is received.
-            //
-            // Throws curl_error if operation could not be completed.
-            template <typename Function>
-            void send(const std::string& request, Function response_handler)
+            // request: The complete request string; you must make sure that
+            // the data is encoded the way you want the server to receive it.
+            http_response send(const std::string& request)
             {
 #ifndef NDEBUG
                 // Print HTTP headers to stderr
@@ -231,42 +294,32 @@ namespace ews
 
                 set_option(curl::CURLOPT_HTTPHEADER, headers_.get());
 
-                // Set response handler; wrap passed handler function in
-                // something that we can cast to a void* (we cannot cast
-                // function pointers to void*) to make sure this works with
-                // lambdas, std::function instances, function pointers, and
-                // functors
-
-                struct wrapper
-                {
-                    Function callable;
-
-                    explicit wrapper(Function function) : callable(function) {}
-                };
-
-                wrapper wrp{response_handler};
+                std::vector<char> response_data;
 
                 auto callback =
                     [](char* ptr, std::size_t size, std::size_t nmemb,
                        void* userdata) -> std::size_t
                 {
-                    // Call user supplied response handler with a std::string
-                    // (contains the complete response). Always indicate
-                    // success; user has no chance of indicating an error to the
-                    // cURL library.
-
-                    wrapper* w = reinterpret_cast<wrapper*>(userdata);
-                    const auto count = size * nmemb;
-                    std::string response{ptr, count};
-                    w->callable(std::move(response));
-                    return count;
+                    std::vector<char>* buf = reinterpret_cast<std::vector<char>*>(userdata);
+                    const auto realsize = size * nmemb;
+                    try
+                    {
+                        buf->reserve(realsize);
+                    }
+                    catch (std::bad_alloc&)
+                    {
+                        // Out of memory
+                        return 0U;
+                    }
+                    std::copy(ptr, ptr + realsize, std::back_inserter(*buf));
+                    return realsize;
                 };
 
                 set_option(
                     curl::CURLOPT_WRITEFUNCTION,
                     static_cast<std::size_t (*)(char*, std::size_t, std::size_t,
                                                 void*)>(callback));
-                set_option(curl::CURLOPT_WRITEDATA, std::addressof(wrp));
+                set_option(curl::CURLOPT_WRITEDATA, std::addressof(response_data));
 
 #ifndef NDEBUG
                 // Turn-off verification of the server's authenticity
@@ -278,6 +331,10 @@ namespace ews
                 {
                     throw curl::make_error("curl_easy_perform", retcode);
                 }
+                long response_code{0U};
+                curl::curl_easy_getinfo(handle_.get(),
+                    curl::CURLINFO_RESPONSE_CODE, &response_code);
+                return http_response(response_code, std::move(response_data));
             }
 
         private:
@@ -295,15 +352,15 @@ namespace ews
         // this is the actual EWS request.
         // soap_headers: Any SOAP headers to add.
         //
-        // Returns a DOM wrapper around the response.
-        inline xml_document make_raw_soap_request(
+        // Returns the response.
+        inline http_response make_raw_soap_request(
             const std::string& url, const std::string& username,
             const std::string& password, const std::string& domain,
             const std::string& soap_body,
             const std::vector<std::string>& soap_headers)
         {
-            http_web_request request{url};
-            request.set_method(http_web_request::method::POST);
+            http_request request{url};
+            request.set_method(http_request::method::POST);
             request.set_content_type("text/xml; charset=utf-8");
 
             ntlm_credentials creds{username, password, domain};
@@ -337,20 +394,12 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             request_stream << "</soap:Body>\n";
             request_stream << "</soap:Envelope>\n";
 
-            xml_document doc;
-            request.send(request_stream.str(), [&doc](std::string response)
-            {
-                // TODO: load XML from response into doc
-                // Note: response is a copy and can therefore be moved
-                (void)response;
-            });
-
-            return doc;
+            return request.send(request_stream.str());
         }
 
         // Implementations
 
-        void ntlm_credentials::certify(http_web_request* request) const
+        void ntlm_credentials::certify(http_request* request) const
         {
             EWS_ASSERT(request != nullptr);
 
