@@ -133,13 +133,10 @@ namespace ews
         class http_response final
         {
         public:
-            http_response(const http_response&) = delete;
-            http_response& operator=(const http_response&) = delete;
-
             // Here we handle the server's response. We load the SOAP
             // payload from response into the xml_document.
-            http_response(long response_code, std::vector<char>&& response_data)
-                : data_(std::move(response_data)), doc_(), rescode_(response_code)
+            http_response(long code, std::vector<char>&& data)
+                : data_(std::move(data)), doc_(), code_(code)
             {
                 EWS_ASSERT(!data_.empty());
 
@@ -164,20 +161,45 @@ namespace ews
                 }
             }
 
+            http_response(const http_response&) = delete;
+            http_response& operator=(const http_response&) = delete;
+
+            http_response(http_response&& other)
+                : data_(std::move(other.data_)),
+                  doc_(std::move(other.doc_)),
+                  code_(other.code_)
+            {
+                other.code_ = 0U;
+            }
+
+            http_response& operator=(http_response&& rhs)
+            {
+                if (&rhs != this)
+                {
+                    data_ = std::move(rhs.data_);
+                    doc_ = std::move(rhs.doc_);
+                    code_ = std::move(rhs.code_);
+                }
+                return *this;
+            }
+
+            // Returns the SOAP payload in this response.
+            inline
             const rapidxml::xml_document<char>& payload() const EWS_NOEXCEPT
             {
                 return doc_;
             }
 
-            long response_code() const EWS_NOEXCEPT
+            // Returns the response code of the HTTP request.
+            inline long code() const EWS_NOEXCEPT
             {
-                return rescode_;
+                return code_;
             }
 
         private:
             std::vector<char> data_;
             rapidxml::xml_document<char> doc_;
-            long rescode_;
+            long code_;
         };
 
         class credentials
@@ -300,7 +322,8 @@ namespace ews
                     [](char* ptr, std::size_t size, std::size_t nmemb,
                        void* userdata) -> std::size_t
                 {
-                    std::vector<char>* buf = reinterpret_cast<std::vector<char>*>(userdata);
+                    std::vector<char>* buf
+                        = reinterpret_cast<std::vector<char>*>(userdata);
                     const auto realsize = size * nmemb;
                     try
                     {
@@ -319,7 +342,8 @@ namespace ews
                     curl::CURLOPT_WRITEFUNCTION,
                     static_cast<std::size_t (*)(char*, std::size_t, std::size_t,
                                                 void*)>(callback));
-                set_option(curl::CURLOPT_WRITEDATA, std::addressof(response_data));
+                set_option(curl::CURLOPT_WRITEDATA,
+                        std::addressof(response_data));
 
 #ifndef NDEBUG
                 // Turn-off verification of the server's authenticity
@@ -331,7 +355,7 @@ namespace ews
                 {
                     throw curl::make_error("curl_easy_perform", retcode);
                 }
-                long response_code{0U};
+                long response_code = 0U;
                 curl::curl_easy_getinfo(handle_.get(),
                     curl::CURLINFO_RESPONSE_CODE, &response_code);
                 return http_response(response_code, std::move(response_data));

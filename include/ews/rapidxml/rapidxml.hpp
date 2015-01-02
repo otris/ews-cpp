@@ -1528,7 +1528,7 @@ namespace rapidxml
             other.m_next_sibling = nullptr;
         }
 
-        void operator=(xml_node&& rhs)
+        xml_node& operator=(xml_node&& rhs)
         {
             if (&rhs != this)
             {
