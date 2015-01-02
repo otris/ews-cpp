@@ -56,7 +56,7 @@ namespace ews
         inline curl_error make_error(const std::string& msg, CURLcode rescode)
         {
             std::string reason{curl_easy_strerror(rescode)};
-            return curl_error{msg + ": \'" + reason + "\'"};
+            return curl_error(msg + ": \'" + reason + "\'");
         }
 
         // RAII helper class for CURL* handles.
@@ -163,8 +163,9 @@ namespace ews
             // Set this HTTP request's content type.
             void set_content_type(const std::string& content_type)
             {
+                const std::string str = "Content-Type: " + content_type;
                 curl::curl_string_list chunk;
-                chunk.append(content_type.c_str());
+                chunk.append(str.c_str());
                 set_option(curl::CURLOPT_HTTPHEADER, chunk.get());
             }
 
@@ -215,6 +216,14 @@ namespace ews
             template <typename Function>
             void send(const std::string& request, Function response_handler)
             {
+#ifndef NDEBUG
+                // Print HTTP headers to stderr
+                set_option(curl::CURLOPT_VERBOSE, 1L);
+#endif
+                // Some servers don't like requests that are made without a
+                // user-agent field, so we provide one
+                set_option(curl::CURLOPT_USERAGENT, "libcurl-agent/1.0");
+
                 // Set complete request string for HTTP POST method; note: no
                 // encoding here
 
@@ -258,6 +267,11 @@ namespace ews
                                                 void*)>(callback));
                 set_option(curl::CURLOPT_WRITEDATA, std::addressof(wrp));
 
+#ifndef NDEBUG
+                // Turn-off verification of the server's authenticity
+                set_option(curl::CURLOPT_SSL_VERIFYPEER, 0);
+#endif
+
                 auto retcode = curl::curl_easy_perform(handle_.get());
                 if (retcode != 0)
                 {
@@ -288,7 +302,7 @@ namespace ews
         {
             http_web_request request{url};
             request.set_method(http_web_request::method::POST);
-            request.set_content_type("text/xml;utf-8");
+            request.set_content_type("text/xml; charset=UTF-8");
 
             ntlm_credentials creds{username, password, domain};
             request.set_credentials(creds);
@@ -340,8 +354,9 @@ namespace ews
             EWS_ASSERT(request != nullptr);
 
             // CURLOPT_USERPWD: domain\username:password
-            std::string login = domain_ + "\\" + username_ + "" + password_;
+            std::string login = domain_ + "\\" + username_ + ":" + password_;
             request->set_option(curl::CURLOPT_USERPWD, login.c_str());
+            request->set_option(curl::CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
         }
     }
 }
