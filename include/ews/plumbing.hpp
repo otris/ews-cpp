@@ -30,15 +30,15 @@
 
 namespace ews
 {
-    // Wrapper around curl.h header file. Wraps everything in that header file with
-    // C++ namespace ews::curl; also defines exception for cURL related runtime
-    // errors and some RAII classes.
+    // Wrapper around curl.h header file. Wraps everything in that header file
+    // with C++ namespace ews::curl; also defines exception for cURL related
+    // runtime errors and some RAII classes.
     namespace curl
     {
 
 #include <curl/curl.h>
 
-        class curl_error : public std::runtime_error
+        class curl_error final : public std::runtime_error
         {
         public:
             explicit curl_error(const std::string& what)
@@ -60,7 +60,7 @@ namespace ews
         }
 
         // RAII helper class for CURL* handles.
-        class curl_ptr
+        class curl_ptr final
         {
         public:
             curl_ptr() : handle_{curl_easy_init()}
@@ -84,7 +84,7 @@ namespace ews
         };
 
         // RAII wrapper class around cURLs slist construct.
-        class curl_string_list
+        class curl_string_list final
         {
         public:
             curl_string_list() EWS_NOEXCEPT : slist_{nullptr} {}
@@ -240,7 +240,7 @@ namespace ews
                 {
                     Function callable;
 
-                    explicit wrapper(Function function) : callable{function} {}
+                    explicit wrapper(Function function) : callable(function) {}
                 };
 
                 wrapper wrp{response_handler};
