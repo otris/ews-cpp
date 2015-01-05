@@ -47,6 +47,10 @@ endif()
 
 set(ews_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(ews_SOURCES
+    ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml.hpp
+    ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml_iterators.hpp
+    ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml_print.hpp
+    ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml_utils.hpp
     ${ews_INCLUDE_DIR}/ews/plumbing.hpp
     ${ews_INCLUDE_DIR}/ews/porcelain.hpp)
 
