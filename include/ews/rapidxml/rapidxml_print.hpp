@@ -204,6 +204,8 @@ namespace rapidxml
         inline OutIt print_attributes(OutIt out, const xml_node<Ch>* node,
                                       int flags)
         {
+            (void)flags;
+
             for (xml_attribute<Ch>* attribute = node->first_attribute();
                  attribute; attribute = attribute->next_attribute())
             {
