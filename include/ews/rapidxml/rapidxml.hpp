@@ -12,7 +12,9 @@
 #include <cstdlib>     // For std::size_t
 #include <cassert>     // For assert
 #include <new>         // For placement new
-#include <type_traits> // For compile-time reference/value sematic tests
+#ifndef _MSC_VER
+#include <type_traits> // For compile-time tests
+#endif
 #endif
 
 // On MSVC, disable "conditional expression is constant" warning (level 4).
@@ -1588,11 +1590,14 @@ namespace rapidxml
                                       // m_parent is non-zero
     };
 
-    // Test value/reference semantics
+#ifndef _MSC_VER
+    // Test reference semantics; don't execute following tests with
+    // Visual Studio 2013, see other comment in this file below
     static_assert(!std::is_copy_constructible<xml_node<>>::value, "");
     static_assert(!std::is_copy_assignable<xml_node<>>::value, "");
     static_assert(std::is_move_constructible<xml_node<>>::value, "");
     static_assert(std::is_move_assignable<xml_node<>>::value, "");
+#endif
 
     ///////////////////////////////////////////////////////////////////////////
     // XML document
@@ -2609,11 +2614,15 @@ namespace rapidxml
         }
     };
 
-    // Test value/reference semantics
+#ifndef _MSC_VER
+    // Test reference semantics; <type_traits> is fundamentally broken with
+    // Visual Studio 2013, see
+    // https://connect.microsoft.com/VisualStudio/feedback/details/800328/std-is-copy-constructible-is-broken
     static_assert(!std::is_copy_constructible<xml_document<>>::value, "");
     static_assert(!std::is_copy_assignable<xml_document<>>::value, "");
     static_assert(std::is_move_constructible<xml_document<>>::value, "");
     static_assert(std::is_move_assignable<xml_document<>>::value, "");
+#endif
 
     //! \cond internal
     namespace internal
