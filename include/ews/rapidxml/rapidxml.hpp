@@ -70,13 +70,13 @@ namespace rapidxml
     //! This exception is thrown by the parser when an error occurs.
     //! Use what() function to get human-readable error message.
     //! Use where() function to get a pointer to position within source text
-    //where error was detected.
+    //! where error was detected.
     //! <br><br>
     //! If throwing exceptions by the parser is undesirable,
     //! it can be disabled by defining RAPIDXML_NO_EXCEPTIONS macro before
-    //rapidxml.hpp is included.
+    //! rapidxml.hpp is included.
     //! This will cause the parser to call rapidxml::parse_error_handler()
-    //function instead of throwing an exception.
+    //! function instead of throwing an exception.
     //! This function must be defined by the user.
     //! <br><br>
     //! This class derives from <code>std::exception</code> class.
@@ -95,10 +95,10 @@ namespace rapidxml
         virtual const char* what() const throw() { return m_what; }
 
         //! Gets pointer to character data where error happened.
-        //! Ch should be the same as char type of xml_document that produced the
-        //error.
+        //! Ch should be the same as char type of xml_document that produced
+        //! the error.
         //! \return Pointer to location within the parsed string where error
-        //occured.
+        //! occured.
         template <class Ch> Ch* where() const
         {
             return reinterpret_cast<Ch*>(m_where);
@@ -155,20 +155,14 @@ namespace rapidxml
     //! Use xml_node::type() function to query node type.
     enum node_type
     {
-        node_document, //!< A document node. Name and value are empty.
-        node_element,  //!< An element node. Name contains element name. Value
-                       //contains text of first data node.
-        node_data,  //!< A data node. Name is empty. Value contains data text.
-        node_cdata, //!< A CDATA node. Name is empty. Value contains data text.
-        node_comment, //!< A comment node. Name is empty. Value contains comment
-                      //text.
-        node_declaration, //!< A declaration node. Name and value are empty.
-                          //Declaration parameters (version, encoding and
-                          //standalone) are in node attributes.
-        node_doctype, //!< A DOCTYPE node. Name is empty. Value contains DOCTYPE
-                      //text.
-        node_pi       //!< A PI node. Name contains target. Value contains
-                      //instructions.
+        node_document,    //!< A document node. Name and value are empty.
+        node_element,     //!< An element node. Name contains element name. Value contains text of first data node.
+        node_data,        //!< A data node. Name is empty. Value contains data text.
+        node_cdata,       //!< A CDATA node. Name is empty. Value contains data text.
+        node_comment,     //!< A comment node. Name is empty. Value contains comment text.
+        node_declaration, //!< A declaration node. Name and value are empty. Declaration parameters (version, encoding, and standalone) are in node attributes.
+        node_doctype,     //!< A DOCTYPE node. Name is empty. Value contains DOCTYPE text.
+        node_pi           //!< A PI node. Name contains target. Value contains instructions.
     };
 
     ///////////////////////////////////////////////////////////////////////
@@ -176,27 +170,27 @@ namespace rapidxml
 
     //! Parse flag instructing the parser to not create data nodes.
     //! Text of first data node will still be placed in value of parent element,
-    //unless rapidxml::parse_no_element_values flag is also specified.
+    //! unless rapidxml::parse_no_element_values flag is also specified.
     //! Can be combined with other flags by use of | operator.
     //! <br><br>
     //! See xml_document::parse() function.
     const int parse_no_data_nodes = 0x1;
 
     //! Parse flag instructing the parser to not use text of first data node as
-    //a value of parent element.
+    //! a value of parent element.
     //! Can be combined with other flags by use of | operator.
     //! Note that child data nodes of element node take precendence over its
-    //value when printing.
+    //! value when printing.
     //! That is, if element has one or more child data nodes <em>and</em> a
-    //value, the value will be ignored.
+    //! value, the value will be ignored.
     //! Use rapidxml::parse_no_data_nodes flag to prevent creation of data nodes
-    //if you want to manipulate data using values of elements.
+    //! if you want to manipulate data using values of elements.
     //! <br><br>
     //! See xml_document::parse() function.
     const int parse_no_element_values = 0x2;
 
     //! Parse flag instructing the parser to not place zero terminators after
-    //strings in the source text.
+    //! strings in the source text.
     //! By default zero terminators are placed, modifying source text.
     //! Can be combined with other flags by use of | operator.
     //! <br><br>
@@ -204,7 +198,7 @@ namespace rapidxml
     const int parse_no_string_terminators = 0x4;
 
     //! Parse flag instructing the parser to not translate entities in the
-    //source text.
+    //! source text.
     //! By default entities are translated, modifying source text.
     //! Can be combined with other flags by use of | operator.
     //! <br><br>
@@ -212,7 +206,7 @@ namespace rapidxml
     const int parse_no_entity_translation = 0x8;
 
     //! Parse flag instructing the parser to disable UTF-8 handling and assume
-    //plain 8 bit characters.
+    //! plain 8 bit characters.
     //! By default, UTF-8 handling is enabled.
     //! Can be combined with other flags by use of | operator.
     //! <br><br>
@@ -236,7 +230,7 @@ namespace rapidxml
     //! Parse flag instructing the parser to create DOCTYPE node.
     //! By default, doctype node is not created.
     //! Although W3C specification allows at most one DOCTYPE node, RapidXml
-    //will silently accept documents with more than one.
+    //! will silently accept documents with more than one.
     //! Can be combined with other flags by use of | operator.
     //! <br><br>
     //! See xml_document::parse() function.
@@ -258,7 +252,7 @@ namespace rapidxml
     const int parse_validate_closing_tags = 0x200;
 
     //! Parse flag instructing the parser to trim all leading and trailing
-    //whitespace of data nodes.
+    //! whitespace of data nodes.
     //! By default, whitespace is not trimmed.
     //! This flag does not cause the parser to modify source text.
     //! Can be combined with other flags by use of | operator.
@@ -267,9 +261,9 @@ namespace rapidxml
     const int parse_trim_whitespace = 0x400;
 
     //! Parse flag instructing the parser to condense all whitespace runs of
-    //data nodes to a single space character.
+    //! data nodes to a single space character.
     //! Trimming of leading and trailing whitespace of data is controlled by
-    //rapidxml::parse_trim_whitespace flag.
+    //! rapidxml::parse_trim_whitespace flag.
     //! By default, whitespace is not normalized.
     //! If this flag is specified, source text will be modified.
     //! Can be combined with other flags by use of | operator.
@@ -293,26 +287,26 @@ namespace rapidxml
 
     //! Parse flags which represent default behaviour of the parser.
     //! This is always equal to 0, so that all other flags can be simply ored
-    //together.
+    //! together.
     //! Normally there is no need to inconveniently disable flags by anding with
-    //their negated (~) values.
+    //! their negated (~) values.
     //! This also means that meaning of each flag is a <i>negation</i> of the
-    //default setting.
+    //! default setting.
     //! For example, if flag name is rapidxml::parse_no_utf8, it means that
-    //utf-8 is <i>enabled</i> by default,
+    //! utf-8 is <i>enabled</i> by default,
     //! and using the flag will disable it.
     //! <br><br>
     //! See xml_document::parse() function.
     const int parse_default = 0;
 
     //! A combination of parse flags that forbids any modifications of the
-    //source text.
+    //! source text.
     //! This also results in faster parsing. However, note that the following
-    //will occur:
+    //! will occur:
     //! <ul>
     //! <li>names and values of nodes will not be zero terminated, you have to
-    //use xml_base::name_size() and xml_base::value_size() functions to
-    //determine where name and value ends</li>
+    //! use xml_base::name_size() and xml_base::value_size() functions to
+    //! determine where name and value ends</li>
     //! <li>entities will not be translated</li>
     //! <li>whitespace will not be normalized</li>
     //! </ul>
@@ -321,13 +315,13 @@ namespace rapidxml
         parse_no_string_terminators | parse_no_entity_translation;
 
     //! A combination of parse flags resulting in fastest possible parsing,
-    //without sacrificing important data.
+    //! without sacrificing important data.
     //! <br><br>
     //! See xml_document::parse() function.
     const int parse_fastest = parse_non_destructive | parse_no_data_nodes;
 
     //! A combination of parse flags resulting in largest amount of data being
-    //extracted.
+    //! extracted.
     //! This usually results in slowest parsing.
     //! <br><br>
     //! See xml_document::parse() function.
@@ -416,51 +410,51 @@ namespace rapidxml
     // Memory pool
 
     //! This class is used by the parser to create new nodes and attributes,
-    //without overheads of dynamic memory allocation.
+    //! without overheads of dynamic memory allocation.
     //! In most cases, you will not need to use this class directly.
     //! However, if you need to create nodes manually or modify names/values of
-    //nodes,
+    //! nodes,
     //! you are encouraged to use memory_pool of relevant xml_document to
-    //allocate the memory.
+    //! allocate the memory.
     //! Not only is this faster than allocating them by using <code>new</code>
-    //operator,
+    //! operator,
     //! but also their lifetime will be tied to the lifetime of document,
     //! possibly simplyfing memory management.
     //! <br><br>
     //! Call allocate_node() or allocate_attribute() functions to obtain new
-    //nodes or attributes from the pool.
+    //! nodes or attributes from the pool.
     //! You can also call allocate_string() function to allocate strings.
     //! Such strings can then be used as names or values of nodes without
-    //worrying about their lifetime.
+    //! worrying about their lifetime.
     //! Note that there is no <code>free()</code> function -- all allocations
-    //are freed at once when clear() function is called,
+    //! are freed at once when clear() function is called,
     //! or when the pool is destroyed.
     //! <br><br>
     //! It is also possible to create a standalone memory_pool, and use it
     //! to allocate nodes, whose lifetime will not be tied to any document.
     //! <br><br>
     //! Pool maintains <code>RAPIDXML_STATIC_POOL_SIZE</code> bytes of
-    //statically allocated memory.
+    //! statically allocated memory.
     //! Until static memory is exhausted, no dynamic memory allocations are
-    //done.
+    //! done.
     //! When static memory is exhausted, pool allocates additional blocks of
-    //memory of size <code>RAPIDXML_DYNAMIC_POOL_SIZE</code> each,
+    //! memory of size <code>RAPIDXML_DYNAMIC_POOL_SIZE</code> each,
     //! by using global <code>new[]</code> and <code>delete[]</code> operators.
     //! This behaviour can be changed by setting custom allocation routines.
     //! Use set_allocator() function to set them.
     //! <br><br>
     //! Allocations for nodes, attributes and strings are aligned at
-    //<code>RAPIDXML_ALIGNMENT</code> bytes.
+    //! <code>RAPIDXML_ALIGNMENT</code> bytes.
     //! This value defaults to the size of pointer on target architecture.
     //! <br><br>
     //! To obtain absolutely top performance from the parser,
     //! it is important that all nodes are allocated from a single, contiguous
-    //block of memory.
+    //! block of memory.
     //! Otherwise, cache misses when jumping between two (or more) disjoint
-    //blocks of memory can slow down parsing quite considerably.
+    //! blocks of memory can slow down parsing quite considerably.
     //! If required, you can tweak <code>RAPIDXML_STATIC_POOL_SIZE</code>,
-    //<code>RAPIDXML_DYNAMIC_POOL_SIZE</code> and
-    //<code>RAPIDXML_ALIGNMENT</code>
+    //! <code>RAPIDXML_DYNAMIC_POOL_SIZE</code> and
+    //! <code>RAPIDXML_ALIGNMENT</code>
     //! to obtain best wasted memory to performance compromise.
     //! To do it, define their values before rapidxml.hpp file is included.
     //! \param Ch Character type of created nodes.
@@ -480,24 +474,24 @@ namespace rapidxml
 
         //! Destroys pool and frees all the memory.
         //! This causes memory occupied by nodes allocated by the pool to be
-        //freed.
+        //! freed.
         //! Nodes allocated from the pool are no longer valid.
         ~memory_pool() { clear(); }
 
         //! Allocates a new node from the pool, and optionally assigns name and
-        //value to it.
+        //! value to it.
         //! If the allocation request cannot be accomodated, this function will
-        //throw <code>std::bad_alloc</code>.
+        //! throw <code>std::bad_alloc</code>.
         //! If exceptions are disabled by defining RAPIDXML_NO_EXCEPTIONS, this
-        //function
+        //! function
         //! will call rapidxml::parse_error_handler() function.
         //! \param type Type of node to create.
         //! \param name Name to assign to the node, or 0 to assign no name.
         //! \param value Value to assign to the node, or 0 to assign no value.
         //! \param name_size Size of name to assign, or 0 to automatically
-        //calculate size from name string.
+        //! calculate size from name string.
         //! \param value_size Size of value to assign, or 0 to automatically
-        //calculate size from value string.
+        //! calculate size from value string.
         //! \return Pointer to allocated node. This pointer will never be NULL.
         xml_node<Ch>* allocate_node(node_type type, const Ch* name = 0,
                                     const Ch* value = 0,
@@ -524,21 +518,21 @@ namespace rapidxml
         }
 
         //! Allocates a new attribute from the pool, and optionally assigns name
-        //and value to it.
+        //! and value to it.
         //! If the allocation request cannot be accomodated, this function will
-        //throw <code>std::bad_alloc</code>.
+        //! throw <code>std::bad_alloc</code>.
         //! If exceptions are disabled by defining RAPIDXML_NO_EXCEPTIONS, this
-        //function
+        //! function
         //! will call rapidxml::parse_error_handler() function.
         //! \param name Name to assign to the attribute, or 0 to assign no name.
         //! \param value Value to assign to the attribute, or 0 to assign no
-        //value.
+        //! value.
         //! \param name_size Size of name to assign, or 0 to automatically
-        //calculate size from name string.
+        //! calculate size from name string.
         //! \param value_size Size of value to assign, or 0 to automatically
-        //calculate size from value string.
+        //! calculate size from value string.
         //! \return Pointer to allocated attribute. This pointer will never be
-        //NULL.
+        //! NULL.
         xml_attribute<Ch>* allocate_attribute(const Ch* name = 0,
                                               const Ch* value = 0,
                                               std::size_t name_size = 0,
@@ -564,19 +558,19 @@ namespace rapidxml
         }
 
         //! Allocates a char array of given size from the pool, and optionally
-        //copies a given string to it.
+        //! copies a given string to it.
         //! If the allocation request cannot be accomodated, this function will
-        //throw <code>std::bad_alloc</code>.
+        //! throw <code>std::bad_alloc</code>.
         //! If exceptions are disabled by defining RAPIDXML_NO_EXCEPTIONS, this
-        //function
+        //! function
         //! will call rapidxml::parse_error_handler() function.
         //! \param source String to initialize the allocated memory with, or 0
-        //to not initialize it.
+        //! to not initialize it.
         //! \param size Number of characters to allocate, or zero to calculate
-        //it automatically from source string length; if size is 0, source
-        //string must be specified and null terminated.
+        //! it automatically from source string length; if size is 0, source
+        //! string must be specified and null terminated.
         //! \return Pointer to allocated char array. This pointer will never be
-        //NULL.
+        //! NULL.
         Ch* allocate_string(const Ch* source = 0, std::size_t size = 0)
         {
             assert(source ||
@@ -593,13 +587,13 @@ namespace rapidxml
         //! Clones an xml_node and its hierarchy of child nodes and attributes.
         //! Nodes and attributes are allocated from this memory pool.
         //! Names and values are not cloned, they are shared between the clone
-        //and the source.
+        //! and the source.
         //! Result node can be optionally specified as a second parameter,
         //! in which case its contents will be replaced with cloned source node.
         //! This is useful when you want to clone entire document.
         //! \param source Node to clone.
         //! \param result Node to put results in, or 0 to automatically allocate
-        //result node
+        //! result node
         //! \return Pointer to cloned node. This pointer will never be NULL.
         xml_node<Ch>* clone_node(const xml_node<Ch>* source,
                                  xml_node<Ch>* result = 0)
@@ -633,9 +627,9 @@ namespace rapidxml
 
         //! Clears the pool.
         //! This causes memory occupied by nodes allocated by the pool to be
-        //freed.
+        //! freed.
         //! Any nodes or strings allocated from the pool will no longer be
-        //valid.
+        //! valid.
         void clear()
         {
             while (m_begin != m_static_memory)
@@ -652,13 +646,13 @@ namespace rapidxml
         }
 
         //! Sets or resets the user-defined memory allocation functions for the
-        //pool.
+        //! pool.
         //! This can only be called when no memory is allocated from the pool
-        //yet, otherwise results are undefined.
+        //! yet, otherwise results are undefined.
         //! Allocation function must not return invalid pointer on failure. It
-        //should either throw,
+        //! should either throw,
         //! stop the program, or use <code>longjmp()</code> function to pass
-        //control to other place of program.
+        //! control to other place of program.
         //! If it returns invalid pointer, results are undefined.
         //! <br><br>
         //! User defined allocation functions must have the following forms:
@@ -793,8 +787,8 @@ namespace rapidxml
         //! Gets name of the node.
         //! Interpretation of name depends on type of node.
         //! Note that name will not be zero-terminated if
-        //rapidxml::parse_no_string_terminators option was selected during
-        //parse.
+        //! rapidxml::parse_no_string_terminators option was selected during
+        //! parse.
         //! <br><br>
         //! Use name_size() function to determine length of the name.
         //! \return Name of node, or empty string if node has no name.
@@ -802,15 +796,15 @@ namespace rapidxml
 
         //! Gets size of node name, not including terminator character.
         //! This function works correctly irrespective of whether name is or is
-        //not zero terminated.
+        //! not zero terminated.
         //! \return Size of node name, in characters.
         std::size_t name_size() const { return m_name ? m_name_size : 0; }
 
         //! Gets value of node.
         //! Interpretation of value depends on type of node.
         //! Note that value will not be zero-terminated if
-        //rapidxml::parse_no_string_terminators option was selected during
-        //parse.
+        //! rapidxml::parse_no_string_terminators option was selected during
+        //! parse.
         //! <br><br>
         //! Use value_size() function to determine length of the value.
         //! \return Value of node, or empty string if node has no value.
@@ -818,7 +812,7 @@ namespace rapidxml
 
         //! Gets size of node value, not including terminator character.
         //! This function works correctly irrespective of whether value is or is
-        //not zero terminated.
+        //! not zero terminated.
         //! \return Size of node value, in characters.
         std::size_t value_size() const { return m_value ? m_value_size : 0; }
 
@@ -829,23 +823,23 @@ namespace rapidxml
         //! See \ref ownership_of_strings.
         //! <br><br>
         //! Note that node does not own its name or value, it only stores a
-        //pointer to it.
+        //! pointer to it.
         //! It will not delete or otherwise free the pointer on destruction.
         //! It is reponsibility of the user to properly manage lifetime of the
-        //string.
+        //! string.
         //! The easiest way to achieve it is to use memory_pool of the document
-        //to allocate the string -
+        //! to allocate the string -
         //! on destruction of the document the string will be automatically
-        //freed.
+        //! freed.
         //! <br><br>
         //! Size of name must be specified separately, because name does not
-        //have to be zero terminated.
+        //! have to be zero terminated.
         //! Use name(const Ch *) function to have the length automatically
-        //calculated (string must be zero terminated).
+        //! calculated (string must be zero terminated).
         //! \param name Name of node to set. Does not have to be zero
-        //terminated.
+        //! terminated.
         //! \param size Size of name, in characters. This does not include zero
-        //terminator, if one is present.
+        //! terminator, if one is present.
         void name(const Ch* name, std::size_t size)
         {
             m_name = const_cast<Ch*>(name);
@@ -854,7 +848,7 @@ namespace rapidxml
 
         //! Sets name of node to a zero-terminated string.
         //! See also \ref ownership_of_strings and xml_node::name(const Ch *,
-        //std::size_t).
+        //! std::size_t).
         //! \param name Name of node to set. Must be zero terminated.
         void name(const Ch* name) { this->name(name, internal::measure(name)); }
 
@@ -862,29 +856,29 @@ namespace rapidxml
         //! See \ref ownership_of_strings.
         //! <br><br>
         //! Note that node does not own its name or value, it only stores a
-        //pointer to it.
+        //! pointer to it.
         //! It will not delete or otherwise free the pointer on destruction.
         //! It is reponsibility of the user to properly manage lifetime of the
-        //string.
+        //! string.
         //! The easiest way to achieve it is to use memory_pool of the document
-        //to allocate the string -
+        //! to allocate the string -
         //! on destruction of the document the string will be automatically
-        //freed.
+        //! freed.
         //! <br><br>
         //! Size of value must be specified separately, because it does not have
-        //to be zero terminated.
+        //! to be zero terminated.
         //! Use value(const Ch *) function to have the length automatically
-        //calculated (string must be zero terminated).
+        //! calculated (string must be zero terminated).
         //! <br><br>
         //! If an element has a child node of type node_data, it will take
-        //precedence over element value when printing.
+        //! precedence over element value when printing.
         //! If you want to manipulate data of elements using values, use parser
-        //flag rapidxml::parse_no_data_nodes to prevent creation of data nodes
-        //by the parser.
+        //! flag rapidxml::parse_no_data_nodes to prevent creation of data nodes
+        //! by the parser.
         //! \param value value of node to set. Does not have to be zero
-        //terminated.
+        //! terminated.
         //! \param size Size of value, in characters. This does not include zero
-        //terminator, if one is present.
+        //! terminator, if one is present.
         void value(const Ch* value, std::size_t size)
         {
             m_value = const_cast<Ch*>(value);
@@ -893,7 +887,7 @@ namespace rapidxml
 
         //! Sets value of node to a zero-terminated string.
         //! See also \ref ownership_of_strings and xml_node::value(const Ch *,
-        //std::size_t).
+        //! std::size_t).
         //! \param value Vame of node to set. Must be zero terminated.
         void value(const Ch* value)
         {
@@ -925,9 +919,9 @@ namespace rapidxml
 
     //! Class representing attribute node of XML document.
     //! Each attribute has name and value strings, which are available through
-    //name() and value() functions (inherited from xml_base).
+    //! name() and value() functions (inherited from xml_base).
     //! Note that after parse, both name and value of attribute will point to
-    //interior of source text used for parsing.
+    //! interior of source text used for parsing.
     //! Thus, this text must persist in memory for the lifetime of attribute.
     //! \param Ch Character type to use.
     template <class Ch = char> class xml_attribute : public xml_base<Ch>
@@ -941,7 +935,7 @@ namespace rapidxml
 
         //! Constructs an empty attribute with the specified type.
         //! Consider using memory_pool of appropriate xml_document if allocating
-        //attributes manually.
+        //! attributes manually.
         xml_attribute() {}
 
         ///////////////////////////////////////////////////////////////////////////
@@ -949,7 +943,7 @@ namespace rapidxml
 
         //! Gets document of which attribute is a child.
         //! \return Pointer to document that contains this attribute, or 0 if
-        //there is no parent document.
+        //! there is no parent document.
         xml_document<Ch>* document() const
         {
             if (xml_node<Ch>* node = this->parent())
@@ -966,12 +960,12 @@ namespace rapidxml
 
         //! Gets previous attribute, optionally matching attribute name.
         //! \param name Name of attribute to find, or 0 to return previous
-        //attribute regardless of its name; this string doesn't have to be
-        //zero-terminated if name_size is non-zero
+        //! attribute regardless of its name; this string doesn't have to be
+        //! zero-terminated if name_size is non-zero
         //! \param name_size Size of name, in characters, or 0 to have size
-        //calculated automatically from string
+        //! calculated automatically from string
         //! \param case_sensitive Should name comparison be case-sensitive; non
-        //case-sensitive comparison works properly only for ASCII characters
+        //! case-sensitive comparison works properly only for ASCII characters
         //! \return Pointer to found attribute, or 0 if not found.
         xml_attribute<Ch>* previous_attribute(const Ch* name = 0,
                                               std::size_t name_size = 0,
@@ -995,12 +989,12 @@ namespace rapidxml
 
         //! Gets next attribute, optionally matching attribute name.
         //! \param name Name of attribute to find, or 0 to return next attribute
-        //regardless of its name; this string doesn't have to be zero-terminated
-        //if name_size is non-zero
+        //! regardless of its name; this string doesn't have to be zero-terminated
+        //! if name_size is non-zero
         //! \param name_size Size of name, in characters, or 0 to have size
-        //calculated automatically from string
+        //! calculated automatically from string
         //! \param case_sensitive Should name comparison be case-sensitive; non
-        //case-sensitive comparison works properly only for ASCII characters
+        //! case-sensitive comparison works properly only for ASCII characters
         //! \return Pointer to found attribute, or 0 if not found.
         xml_attribute<Ch>* next_attribute(const Ch* name = 0,
                                           std::size_t name_size = 0,
@@ -1036,12 +1030,12 @@ namespace rapidxml
 
     //! Class representing a node of XML document.
     //! Each node may have associated name and value strings, which are
-    //available through name() and value() functions.
+    //! available through name() and value() functions.
     //! Interpretation of name and value depends on type of the node.
     //! Type of node can be determined by using type() function.
     //! <br><br>
     //! Note that after parse, both name and value of node, if any, will point
-    //interior of source text used for parsing.
+    //! interior of source text used for parsing.
     //! Thus, this text must persist in the memory for the lifetime of node.
     //! \param Ch Character type to use.
     template <class Ch = char> class xml_node : public xml_base<Ch>
@@ -1053,7 +1047,7 @@ namespace rapidxml
 
         //! Constructs an empty node with the specified type.
         //! Consider using memory_pool of appropriate document to allocate nodes
-        //manually.
+        //! manually.
         //! \param type Type of node to construct.
         xml_node(node_type type)
             : m_type(type), m_first_node(0), m_first_attribute(0)
@@ -1072,7 +1066,7 @@ namespace rapidxml
 
         //! Gets document of which node is a child.
         //! \return Pointer to document that contains this node, or 0 if there
-        //is no parent document.
+        //! is no parent document.
         xml_document<Ch>* document() const
         {
             xml_node<Ch>* node = const_cast<xml_node<Ch>*>(this);
@@ -1085,12 +1079,12 @@ namespace rapidxml
 
         //! Gets first child node, optionally matching node name.
         //! \param name Name of child to find, or 0 to return first child
-        //regardless of its name; this string doesn't have to be zero-terminated
-        //if name_size is non-zero
+        //! regardless of its name; this string doesn't have to be zero-terminated
+        //! if name_size is non-zero
         //! \param name_size Size of name, in characters, or 0 to have size
-        //calculated automatically from string
+        //! calculated automatically from string
         //! \param case_sensitive Should name comparison be case-sensitive; non
-        //case-sensitive comparison works properly only for ASCII characters
+        //! case-sensitive comparison works properly only for ASCII characters
         //! \return Pointer to found child, or 0 if not found.
         xml_node<Ch>* first_node(const Ch* name = 0, std::size_t name_size = 0,
                                  bool case_sensitive = true) const
@@ -1114,12 +1108,12 @@ namespace rapidxml
         //! Behaviour is undefined if node has no children.
         //! Use first_node() to test if node has children.
         //! \param name Name of child to find, or 0 to return last child
-        //regardless of its name; this string doesn't have to be zero-terminated
-        //if name_size is non-zero
+        //! regardless of its name; this string doesn't have to be
+        //! zero-terminated if name_size is non-zero
         //! \param name_size Size of name, in characters, or 0 to have size
-        //calculated automatically from string
+        //! calculated automatically from string
         //! \param case_sensitive Should name comparison be case-sensitive; non
-        //case-sensitive comparison works properly only for ASCII characters
+        //! case-sensitive comparison works properly only for ASCII characters
         //! \return Pointer to found child, or 0 if not found.
         xml_node<Ch>* last_node(const Ch* name = 0, std::size_t name_size = 0,
                                 bool case_sensitive = true) const
@@ -1145,12 +1139,12 @@ namespace rapidxml
         //! Behaviour is undefined if node has no parent.
         //! Use parent() to test if node has a parent.
         //! \param name Name of sibling to find, or 0 to return previous sibling
-        //regardless of its name; this string doesn't have to be zero-terminated
-        //if name_size is non-zero
+        //! regardless of its name; this string doesn't have to be
+        //! zero-terminated if name_size is non-zero
         //! \param name_size Size of name, in characters, or 0 to have size
-        //calculated automatically from string
+        //! calculated automatically from string
         //! \param case_sensitive Should name comparison be case-sensitive; non
-        //case-sensitive comparison works properly only for ASCII characters
+        //! case-sensitive comparison works properly only for ASCII characters
         //! \return Pointer to found sibling, or 0 if not found.
         xml_node<Ch>* previous_sibling(const Ch* name = 0,
                                        std::size_t name_size = 0,
@@ -1177,12 +1171,12 @@ namespace rapidxml
         //! Behaviour is undefined if node has no parent.
         //! Use parent() to test if node has a parent.
         //! \param name Name of sibling to find, or 0 to return next sibling
-        //regardless of its name; this string doesn't have to be zero-terminated
-        //if name_size is non-zero
+        //! regardless of its name; this string doesn't have to be
+        //! zero-terminated if name_size is non-zero
         //! \param name_size Size of name, in characters, or 0 to have size
-        //calculated automatically from string
+        //! calculated automatically from string
         //! \param case_sensitive Should name comparison be case-sensitive; non
-        //case-sensitive comparison works properly only for ASCII characters
+        //! case-sensitive comparison works properly only for ASCII characters
         //! \return Pointer to found sibling, or 0 if not found.
         xml_node<Ch>* next_sibling(const Ch* name = 0,
                                    std::size_t name_size = 0,
@@ -1207,12 +1201,12 @@ namespace rapidxml
 
         //! Gets first attribute of node, optionally matching attribute name.
         //! \param name Name of attribute to find, or 0 to return first
-        //attribute regardless of its name; this string doesn't have to be
-        //zero-terminated if name_size is non-zero
+        //! attribute regardless of its name; this string doesn't have to be
+        //! zero-terminated if name_size is non-zero
         //! \param name_size Size of name, in characters, or 0 to have size
-        //calculated automatically from string
+        //! calculated automatically from string
         //! \param case_sensitive Should name comparison be case-sensitive; non
-        //case-sensitive comparison works properly only for ASCII characters
+        //! case-sensitive comparison works properly only for ASCII characters
         //! \return Pointer to found attribute, or 0 if not found.
         xml_attribute<Ch>* first_attribute(const Ch* name = 0,
                                            std::size_t name_size = 0,
@@ -1236,12 +1230,12 @@ namespace rapidxml
 
         //! Gets last attribute of node, optionally matching attribute name.
         //! \param name Name of attribute to find, or 0 to return last attribute
-        //regardless of its name; this string doesn't have to be zero-terminated
-        //if name_size is non-zero
+        //! regardless of its name; this string doesn't have to be
+        //! zero-terminated if name_size is non-zero
         //! \param name_size Size of name, in characters, or 0 to have size
-        //calculated automatically from string
+        //! calculated automatically from string
         //! \param case_sensitive Should name comparison be case-sensitive; non
-        //case-sensitive comparison works properly only for ASCII characters
+        //! case-sensitive comparison works properly only for ASCII characters
         //! \return Pointer to found attribute, or 0 if not found.
         xml_attribute<Ch>* last_attribute(const Ch* name = 0,
                                           std::size_t name_size = 0,
@@ -1275,7 +1269,7 @@ namespace rapidxml
 
         //! Prepends a new child node.
         //! The prepended child becomes the first child, and all existing
-        //children are moved one position back.
+        //! children are moved one position back.
         //! \param child Node to prepend.
         void prepend_node(xml_node<Ch>* child)
         {
@@ -1318,9 +1312,9 @@ namespace rapidxml
 
         //! Inserts a new child node at specified place inside the node.
         //! All children after and including the specified node are moved one
-        //position back.
+        //! position back.
         //! \param where Place where to insert the child, or 0 to insert at the
-        //back.
+        //! back.
         //! \param child Node to insert.
         void insert_node(xml_node<Ch>* where, xml_node<Ch>* child)
         {
@@ -1373,7 +1367,7 @@ namespace rapidxml
         }
 
         //! Removes specified child from the node
-        // \param where Pointer to child to be removed.
+        //! \param where Pointer to child to be removed.
         void remove_node(xml_node<Ch>* where)
         {
             assert(where && where->parent() == this);
@@ -1441,9 +1435,9 @@ namespace rapidxml
 
         //! Inserts a new attribute at specified place inside the node.
         //! All attributes after and including the specified attribute are moved
-        //one position back.
+        //! one position back.
         //! \param where Place where to insert the attribute, or 0 to insert at
-        //the back.
+        //! the back.
         //! \param attribute Attribute to insert.
         void insert_attribute(xml_attribute<Ch>* where,
                               xml_attribute<Ch>* attribute)
@@ -1617,12 +1611,12 @@ namespace rapidxml
     //! This class represents root of the DOM hierarchy.
     //! It is also an xml_node and a memory_pool through public inheritance.
     //! Use parse() function to build a DOM tree from a zero-terminated XML text
-    //string.
+    //! string.
     //! parse() function allocates memory for nodes and attributes by using
-    //functions of xml_document,
+    //! functions of xml_document,
     //! which are inherited from memory_pool.
     //! To access root node of the document, use the document itself, as if it
-    //was an xml_node.
+    //! was an xml_node.
     //! \param Ch Character type to use.
     template <class Ch = char>
     class xml_document : public xml_node<Ch>, public memory_pool<Ch>
@@ -1654,19 +1648,19 @@ namespace rapidxml
 
         //! Parses zero-terminated XML string according to given flags.
         //! Passed string will be modified by the parser, unless
-        //rapidxml::parse_non_destructive flag is used.
+        //! rapidxml::parse_non_destructive flag is used.
         //! The string must persist for the lifetime of the document.
         //! In case of error, rapidxml::parse_error exception will be thrown.
         //! <br><br>
         //! If you want to parse contents of a file, you must first load the
-        //file into the memory, and pass pointer to its beginning.
+        //! file into the memory, and pass pointer to its beginning.
         //! Make sure that data is zero-terminated.
         //! <br><br>
         //! Document can be parsed into multiple times.
         //! Each new call to parse removes previous nodes and attributes (if
-        //any), but does not clear memory pool.
+        //! any), but does not clear memory pool.
         //! \param text XML data to parse; pointer is non-const to denote fact
-        //that this data may be modified by the parser.
+        //! that this data may be modified by the parser.
         template <int Flags> void parse(Ch* text)
         {
             assert(text);
@@ -1699,7 +1693,7 @@ namespace rapidxml
         }
 
         //! Clears the document by deleting all nodes and clearing the memory
-        //pool.
+        //! pool.
         //! All nodes owned by document pool are destroyed.
         void clear()
         {
@@ -2700,7 +2694,7 @@ namespace rapidxml
     namespace internal
     {
         // Whitespace (space \n \r \t)
-        template<int Dummy>
+        template <int Dummy>
         const unsigned char lookup_tables<Dummy>::lookup_whitespace[256] =
         {
           // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -2723,7 +2717,7 @@ namespace rapidxml
         };
 
         // Node name (anything but space \n \r \t / > ? \0)
-        template<int Dummy>
+        template <int Dummy>
         const unsigned char lookup_tables<Dummy>::lookup_node_name[256] =
         {
           // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -2746,7 +2740,7 @@ namespace rapidxml
         };
 
         // Text (i.e. PCDATA) (anything but < \0)
-        template<int Dummy>
+        template <int Dummy>
         const unsigned char lookup_tables<Dummy>::lookup_text[256] =
         {
           // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -2770,7 +2764,7 @@ namespace rapidxml
 
         // Text (i.e. PCDATA) that does not require processing when ws normalization is disabled
         // (anything but < \0 &)
-        template<int Dummy>
+        template <int Dummy>
         const unsigned char lookup_tables<Dummy>::lookup_text_pure_no_ws[256] =
         {
           // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -2794,7 +2788,7 @@ namespace rapidxml
 
         // Text (i.e. PCDATA) that does not require processing when ws normalizationis is enabled
         // (anything but < \0 & space \n \r \t)
-        template<int Dummy>
+        template <int Dummy>
         const unsigned char lookup_tables<Dummy>::lookup_text_pure_with_ws[256] =
         {
           // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -2817,7 +2811,7 @@ namespace rapidxml
         };
 
         // Attribute name (anything but space \n \r \t / < > = ? ! \0)
-        template<int Dummy>
+        template <int Dummy>
         const unsigned char lookup_tables<Dummy>::lookup_attribute_name[256] =
         {
           // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -2840,7 +2834,7 @@ namespace rapidxml
         };
 
         // Attribute data with single quote (anything but ' \0)
-        template<int Dummy>
+        template <int Dummy>
         const unsigned char lookup_tables<Dummy>::lookup_attribute_data_1[256] =
         {
           // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -2863,7 +2857,7 @@ namespace rapidxml
         };
 
         // Attribute data with single quote that does not require processing (anything but ' \0 &)
-        template<int Dummy>
+        template <int Dummy>
         const unsigned char lookup_tables<Dummy>::lookup_attribute_data_1_pure[256] =
         {
           // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -2886,7 +2880,7 @@ namespace rapidxml
         };
 
         // Attribute data with double quote (anything but " \0)
-        template<int Dummy>
+        template <int Dummy>
         const unsigned char lookup_tables<Dummy>::lookup_attribute_data_2[256] =
         {
           // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -2909,7 +2903,7 @@ namespace rapidxml
         };
 
         // Attribute data with double quote that does not require processing (anything but " \0 &)
-        template<int Dummy>
+        template <int Dummy>
         const unsigned char lookup_tables<Dummy>::lookup_attribute_data_2_pure[256] =
         {
           // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -2932,7 +2926,7 @@ namespace rapidxml
         };
 
         // Digits (dec and hex, 255 denotes end of numeric character reference)
-        template<int Dummy>
+        template <int Dummy>
         const unsigned char lookup_tables<Dummy>::lookup_digits[256] =
         {
           // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -2955,7 +2949,7 @@ namespace rapidxml
         };
 
         // Upper case conversion
-        template<int Dummy>
+        template <int Dummy>
         const unsigned char lookup_tables<Dummy>::lookup_upcase[256] =
         {
           // 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  A   B   C   D   E   F
