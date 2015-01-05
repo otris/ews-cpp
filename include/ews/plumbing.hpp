@@ -327,7 +327,7 @@ namespace ews
                     const auto realsize = size * nmemb;
                     try
                     {
-                        buf->reserve(realsize);
+                        buf->reserve(realsize + 1);
                     }
                     catch (std::bad_alloc&)
                     {
@@ -335,6 +335,7 @@ namespace ews
                         return 0U;
                     }
                     std::copy(ptr, ptr + realsize, std::back_inserter(*buf));
+                    buf->emplace_back('\0');
                     return realsize;
                 };
 
