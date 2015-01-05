@@ -30,6 +30,29 @@ namespace rapidxml
     //! \cond internal
     namespace internal
     {
+        template <class OutIt, class Ch>
+        OutIt print_children(OutIt, const xml_node<Ch>*, int, int);
+
+        template <class OutIt, class Ch>
+        OutIt print_element_node(OutIt, const xml_node<Ch>*, int, int);
+
+        template <class OutIt, class Ch>
+        OutIt print_data_node(OutIt, const xml_node<Ch>*, int, int);
+
+        template <class OutIt, class Ch>
+        OutIt print_cdata_node(OutIt, const xml_node<Ch>*, int, int);
+
+        template <class OutIt, class Ch>
+        OutIt print_declaration_node(OutIt, const xml_node<Ch>*, int, int);
+
+        template <class OutIt, class Ch>
+        OutIt print_comment_node(OutIt, const xml_node<Ch>*, int, int);
+
+        template <class OutIt, class Ch>
+        OutIt print_doctype_node(OutIt, const xml_node<Ch>*, int, int);
+
+        template <class OutIt, class Ch>
+        OutIt print_pi_node(OutIt, const xml_node<Ch>*, int, int);
 
         ///////////////////////////////////////////////////////////////////////////
         // Internal character operations
