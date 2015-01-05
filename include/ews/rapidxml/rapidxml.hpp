@@ -279,6 +279,18 @@ namespace rapidxml
 
     // Compound flags
 
+    //! Parse flag instructing the parser to strip any XML namespace
+    //! identifiers from element names and attributes.
+    //! Turning this flag on will remove the namespace prefix and colon from
+    //! all tags and attributes.
+    //! By default, XML namespace identifiers are left as part of the names of
+    //! tags and attributes.
+    //! This flag does not cause the parser to modify source text.
+    //! Can be combined with other flags by use of | operator.
+    //! <br><br>
+    //! See xml_document::parse() function.
+    const int parse_strip_xml_namespaces = 0x1000;
+
     //! Parse flags which represent default behaviour of the parser.
     //! This is always equal to 0, so that all other flags can be simply ored
     //together.
@@ -1796,6 +1808,28 @@ namespace rapidxml
 
         // Insert coded character, using UTF8 or 8-bit ASCII
         template <int Flags>
+        // Detect element XML namespace prefix character
+        struct element_namespace_prefix_pred
+        {
+            static unsigned char test(Ch ch)
+            {
+                return ch != ':' &&
+                       internal::lookup_tables<
+                           0>::lookup_node_name[static_cast<unsigned char>(ch)];
+            }
+        };
+
+        // Detect attribute XML namespace prefix character
+        struct attribute_namespace_prefix_pred
+        {
+            static unsigned char test(Ch ch)
+            {
+                return ch != ':' &&
+                       internal::lookup_tables<0>::lookup_attribute_name
+                           [static_cast<unsigned char>(ch)];
+            }
+        };
+
         static void insert_coded_character(Ch*& text, unsigned long code)
         {
             if (Flags & parse_no_utf8)
@@ -2366,6 +2400,15 @@ namespace rapidxml
                 RAPIDXML_PARSE_ERROR("expected element name", text);
             element->name(name, text - name);
 
+            if (Flags & parse_strip_xml_namespaces)
+            {
+                Ch* saved_name = name;
+                skip<element_namespace_prefix_pred, Flags>(name);
+                if (name++ == text)
+                {
+                    name = saved_name;
+                }
+            }
             // Skip whitespace between element name and attributes or >
             skip<whitespace_pred, Flags>(text);
 
@@ -2579,6 +2622,15 @@ namespace rapidxml
                 xml_attribute<Ch>* attribute = this->allocate_attribute();
                 attribute->name(name, text - name);
                 node->append_attribute(attribute);
+                if (Flags & parse_strip_xml_namespaces)
+                {
+                    Ch* saved_name = name;
+                    skip<attribute_namespace_prefix_pred, Flags>(name);
+                    if (name++ == text)
+                    {
+                        name = saved_name;
+                    }
+                }
 
                 // Skip whitespace after attribute name
                 skip<whitespace_pred, Flags>(text);
