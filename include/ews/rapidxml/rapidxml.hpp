@@ -1620,6 +1620,26 @@ namespace rapidxml
         //! Constructs empty XML document
         xml_document() : xml_node<Ch>(node_document) {}
 
+#ifdef _MSC_VER
+        // Visual Studio 2013 seriously fucks-up copy elision in uses of
+        // xml_document. See this gist for example:
+        // https://gist.github.com/bkircher/dd401644a55651c4a878
+
+        xml_document(const xml_document&) = delete;
+        xml_document& operator=(const xml_document&) = delete;
+
+        xml_document(xml_document&& other)
+            : xml_node<Ch>(std::move(other))
+        {}
+
+        xml_document& operator=(xml_document&& rhs)
+        {
+            // Base-class operator=ensures self-assignment is benign
+            xml_node<Ch>::operator=(std::move(rhs));
+            return *this;
+        }
+#endif
+
         //! Parses zero-terminated XML string according to given flags.
         //! Passed string will be modified by the parser, unless
         //rapidxml::parse_non_destructive flag is used.
