@@ -49,8 +49,7 @@ set(ews_SOURCES
     ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml_iterators.hpp
     ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml_print.hpp
     ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml_utils.hpp
-    ${ews_INCLUDE_DIR}/ews/plumbing.hpp
-    ${ews_INCLUDE_DIR}/ews/porcelain.hpp)
+    ${ews_INCLUDE_DIR}/ews/ews.hpp)
 
 # libcurl 7.22 is packed for Ubuntu 12.04 LTS
 find_package(CURL 7.22 REQUIRED)

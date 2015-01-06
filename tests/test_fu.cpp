@@ -1,5 +1,4 @@
-#include <ews/plumbing.hpp>
-#include <ews/porcelain.hpp>
+#include <ews/ews.hpp>
 #include <ews/rapidxml/rapidxml_print.hpp>
 
 #include <string>
@@ -12,8 +11,12 @@ int main()
 {
     int res = EXIT_SUCCESS;
     ews::set_up();
+    std::string server_uri = "https://columbus.test.otris.de/ews/Exchange.asmx";
+    std::string domain = "TEST";
+    std::string password = "12345aA!";
+    std::string username = "mini";
 
-    std::string request{R"(
+    std::string request{ R"(
 <GetFolder>
     <FolderShape>
         <t:BaseShape>AllProperties</t:BaseShape>
@@ -21,21 +24,21 @@ int main()
     <FolderIds>
         <t:DistinguishedFolderId Id="inbox" />
     </FolderIds>
-</GetFolder>)"};
+</GetFolder>)" };
 
     auto soap_headers = std::vector<std::string>{};
 
     try
     {
-        auto response = ews::plumbing::make_raw_soap_request(
-            "https://192.168.56.2/ews/Exchange.asmx", "mini", "12345aA!",
-            "TEST", request, soap_headers);
+        auto response = ews::internal::make_raw_soap_request(server_uri,
+                username, password, domain, request, soap_headers);
         const auto& doc = response.payload();
 
         std::cout << doc << std::endl;
 
         // hack hack ...
 
+        ews::internal::raise_exception_if_soap_fault(response);
     }
     catch (std::exception& exc)
     {

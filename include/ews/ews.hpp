@@ -1,5 +1,6 @@
 #pragma once
 
+#include <exception>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -12,6 +13,7 @@
 #include <type_traits>
 #endif
 #include <cstddef>
+#include <cstring>
 
 #include "rapidxml/rapidxml.hpp"
 
@@ -38,7 +40,7 @@
 namespace ews
 {
     // Wrapper around curl.h header file. Wraps everything in that header file
-    // with C++ namespace ews::curl; also defines exception for cURL related
+    // within C++ namespace ews::curl; also defines exception for cURL related
     // runtime errors and some RAII classes.
     namespace curl
     {
@@ -111,7 +113,53 @@ namespace ews
 
     } // curl
 
-    namespace plumbing
+    class soap_fault : public std::runtime_error
+    {
+    public:
+        explicit soap_fault(const std::string& what)
+            : std::runtime_error(what)
+        {
+        }
+        explicit soap_fault(const char* what) : std::runtime_error(what) {}
+    };
+
+    // A SOAP fault that is raised when we sent invalid XML.
+    //
+    // This is an internal error and indicates a bug in this library, thus
+    // should never happen.
+    //
+    // Note: because this exception is due to a SOAP fault (sometimes recognized
+    // before any server-side XML parsing finished) any included failure message
+    // is likely not localized according to any MailboxCulture SOAP header.
+    class schema_validation_error final : public soap_fault
+    {
+    public:
+        schema_validation_error(unsigned long line_number,
+                                unsigned long line_position,
+                                std::string violation)
+            : soap_fault("The request failed schema validation"),
+              violation_(std::move(violation)),
+              line_pos_(line_position),
+              line_no_(line_number)
+        {
+        }
+
+        // Line number in request string where the error was found
+        unsigned long line_number() const EWS_NOEXCEPT { return line_no_; }
+
+        // Column number in request string where the error was found
+        unsigned long line_position() const EWS_NOEXCEPT { return line_pos_; }
+
+        // A more detailed explanation of what went wrong
+        const std::string& violation() const EWS_NOEXCEPT { return violation_; }
+
+    private:
+        std::string violation_;
+        unsigned long line_pos_;
+        unsigned long line_no_;
+    };
+
+    namespace internal
     {
         // Obligatory scope guard helper.
         class on_scope_exit final
@@ -147,10 +195,7 @@ namespace ews
                 }
             }
 
-            inline void release()
-            {
-                func_ = nullptr;
-            }
+            void release() { func_ = nullptr; }
 
         private:
             std::function<void(void)> func_;
@@ -165,10 +210,7 @@ namespace ews
 
         // Raised when a response from a server could not be parsed.
         //
-        // TODO: maybe remove?
-        //
-        // No need for type erasure because rapidxml::xml_document is exposed
-        // by us anyway
+        // TODO: remove parse_error, use rapidxml's
         class parse_error final : public std::runtime_error
         {
         public:
@@ -179,7 +221,48 @@ namespace ews
             explicit parse_error(const char* what) : std::runtime_error(what) {}
         };
 
+        // Forward declarations
         class http_request;
+
+        // String constants
+        // TODO: sure this can't be done easier?
+        template <typename Ch = char> struct uri
+        {
+            struct microsoft
+            {
+                enum { errors_size = 58U };
+                static const Ch* errors()
+                {
+                    static const Ch* val =
+                        "http://schemas.microsoft.com/exchange/services/2006/errors";
+                    return val;
+                }
+                enum { types_size = 57U };
+                static const Ch* types()
+                {
+                    static const Ch* const val =
+                        "http://schemas.microsoft.com/exchange/services/2006/types";
+                    return val;
+                }
+                enum { messages_size = 60U };
+                static const Ch* messages()
+                {
+                    static const Ch* const val =
+                        "http://schemas.microsoft.com/exchange/services/2006/messages";
+                    return val;
+                }
+            };
+            struct soapxml
+            {
+                enum { envelope_size = 41U };
+                static const Ch* envelope()
+                {
+                    static const Ch* const val =
+                        "http://schemas.xmlsoap.org/soap/envelope/";
+                    return val;
+                }
+            };
+        };
 
         // This ought to be a DOM wrapper; usually around a web response
         //
@@ -227,7 +310,7 @@ namespace ews
             // we are using RapidXml in destructive mode (the parser modifies
             // source text during the parsing process). Hence, we need to make
             // sure that parsing is done only once!
-            inline const rapidxml::xml_document<char>& payload()
+            const rapidxml::xml_document<char>& payload()
             {
                 if (!parsed_)
                 {
@@ -241,15 +324,32 @@ namespace ews
             }
 
             // Returns the response code of the HTTP request.
-            inline long code() const EWS_NOEXCEPT
+            long code() const EWS_NOEXCEPT
             {
                 return code_;
+            }
+
+            // Returns whether the response is a SOAP fault.
+            //
+            // This means the server responded with status code 500 and
+            // indicates that the entire request failed (not just a normal EWS
+            // error). This can happen e.g. when the request we sent was not
+            // schema compliant.
+            bool is_soap_fault() const EWS_NOEXCEPT
+            {
+                return code() == 500U;
+            }
+
+            // Returns whether the HTTP respone code is 200 (OK).
+            bool ok() const EWS_NOEXCEPT
+            {
+                return code() == 200U;
             }
 
         private:
             // Here we handle the server's response. We load the SOAP payload
             // from response into the xml_document.
-            inline void parse()
+            void parse()
             {
                 try
                 {
@@ -269,6 +369,118 @@ namespace ews
             bool parsed_;
         };
 
+        // Traverse elements, depth first, beginning with given node.
+        //
+        // Applies given function to every element during traversal, stopping as
+        // soon as that function returns true.
+        template <typename Function>
+        inline void traverse_elements(const rapidxml::xml_node<>& node,
+                                      Function func)
+        {
+            for (auto child = node.first_node(); child != nullptr;
+                 child = child->next_sibling())
+            {
+                traverse_elements(*child, func);
+                if (child->type() == rapidxml::node_element)
+                {
+                    if (func(*child))
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Select element by qualified name, nullptr if there is no such element
+        inline rapidxml::xml_node<>*
+        get_element_by_qname(const rapidxml::xml_node<>& node,
+                             const char* local_name,
+                             const char* namespace_uri)
+        {
+            EWS_ASSERT(local_name && namespace_uri);
+
+            rapidxml::xml_node<>* element = nullptr;
+            const auto local_name_len = std::strlen(local_name);
+            const auto namespace_uri_len = std::strlen(namespace_uri);
+            traverse_elements(node, [&](rapidxml::xml_node<>& elem) -> bool
+            {
+                using rapidxml::internal::compare;
+
+                if (compare(elem.namespace_uri(),
+                            elem.namespace_uri_size(),
+                            namespace_uri,
+                            namespace_uri_len)
+                    &&
+                    compare(elem.local_name(),
+                            elem.local_name_size(),
+                            local_name,
+                            local_name_len))
+                {
+                    element = std::addressof(elem);
+                    return true;
+                }
+                return false;
+            });
+            return element;
+        }
+
+        // Does nothing if given response is not a SOAP fault
+        inline void raise_exception_if_soap_fault(http_response& response)
+        {
+            if (!response.is_soap_fault())
+            {
+                return;
+            }
+            using rapidxml::internal::compare;
+            const auto& doc = response.payload();
+            auto elem = get_element_by_qname(doc,
+                                             "ResponseCode",
+                                             uri<>::microsoft::errors());
+            EWS_ASSERT(elem &&
+                "Expected SOAP faults to always have a <ResponseCode> element");
+            if (compare(elem->value(),
+                        elem->value_size(),
+                        "ErrorSchemaValidation",
+                        std::strlen("ErrorSchemaValidation")))
+            {
+                // Get some more helpful details
+                elem = get_element_by_qname(doc,
+                                            "LineNumber",
+                                            uri<>::microsoft::types());
+                EWS_ASSERT(elem &&
+                        "Expected <LineNumber> element in response");
+                const auto line_number =
+                    std::stoul(std::string(elem->value(), elem->value_size()));
+
+                elem = get_element_by_qname(doc,
+                                            "LinePosition",
+                                            uri<>::microsoft::types());
+                EWS_ASSERT(elem &&
+                        "Expected <LinePosition> element in response");
+                const auto line_position =
+                    std::stoul(std::string(elem->value(), elem->value_size()));
+
+                elem = get_element_by_qname(doc,
+                                            "Violation",
+                                            uri<>::microsoft::types());
+                EWS_ASSERT(elem &&
+                        "Expected <Violation> element in response");
+                throw schema_validation_error(
+                        line_number,
+                        line_position,
+                        std::string(elem->value(), elem->value_size()));
+            }
+            else
+            {
+                elem = get_element_by_qname(doc,
+                                            "faultstring",
+                                            uri<>::soapxml::envelope());
+                EWS_ASSERT(elem &&
+                        "Expected <faultstring> element in response");
+                throw soap_fault(elem->value());
+            }
+        }
+
         class credentials
         {
         public:
@@ -276,7 +488,7 @@ namespace ews
             virtual void certify(http_request*) const = 0;
         };
 
-        class ntlm_credentials : public credentials
+        class ntlm_credentials final : public credentials
         {
         public:
             ntlm_credentials(std::string username, std::string password,
@@ -497,5 +709,16 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             request->set_option(curl::CURLOPT_USERPWD, login.c_str());
             request->set_option(curl::CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
         }
-    }
+
+    } // internal
+
+    // Function is not thread-safe; should be set-up when application is still
+    // in single-threaded context. Calling this function more than once does no
+    // harm.
+    inline void set_up() { curl::curl_global_init(CURL_GLOBAL_DEFAULT); }
+
+    // Function is not thread-safe; you should call this function only when no
+    // other thread is running (see libcurl(3) man-page or
+    // http://curl.haxx.se/libcurl/c/libcurl.html)
+    inline void tear_down() EWS_NOEXCEPT { curl::curl_global_cleanup(); }
 }
