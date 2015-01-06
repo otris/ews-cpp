@@ -2,8 +2,8 @@
 #define RAPIDXML_HPP_INCLUDED
 
 // Copyright (C) 2006, 2009 Marcin Kalicinski
-// Version 1.13
-// Revision $DateTime: 2009/05/13 01:46:17 $
+// Copyright (C) 2014 Oleg Maximenko
+// Based on version 1.13
 //! \file rapidxml.hpp This file contains rapidxml parser and DOM implementation
 
 // If standard library is disabled, user must provide implementations of
@@ -12,6 +12,7 @@
 #include <cstdlib>     // For std::size_t
 #include <cassert>     // For assert
 #include <new>         // For placement new
+#include <vector>      // For namespace prefixes
 #ifndef _MSC_VER
 #include <type_traits> // For compile-time tests
 #endif
@@ -147,6 +148,7 @@ namespace rapidxml
 namespace rapidxml
 {
     // Forward declarations
+    template <class Ch> class xml_base;
     template <class Ch> class xml_node;
     template <class Ch> class xml_attribute;
     template <class Ch> class xml_document;
@@ -271,19 +273,17 @@ namespace rapidxml
     //! See xml_document::parse() function.
     const int parse_normalize_whitespace = 0x800;
 
-    // Compound flags
-
-    //! Parse flag instructing the parser to strip any XML namespace
-    //! identifiers from element names and attributes.
-    //! Turning this flag on will remove the namespace prefix and colon from
-    //! all tags and attributes.
-    //! By default, XML namespace identifiers are left as part of the names of
-    //! tags and attributes.
+    //! Parse flag instructing the parser to skip assigning XML namespace URI to
+    //! elements and attributes.
+    //! I.e. to behave like original RapidXML parser.
+    //! By default, namespaces are set.
     //! This flag does not cause the parser to modify source text.
     //! Can be combined with other flags by use of | operator.
     //! <br><br>
     //! See xml_document::parse() function.
-    const int parse_strip_xml_namespaces = 0x1000;
+    const int parse_no_namespace = 0x1000;
+
+    // Compound flags
 
     //! Parse flags which represent default behaviour of the parser.
     //! This is always equal to 0, so that all other flags can be simply ored
@@ -329,6 +329,56 @@ namespace rapidxml
                            parse_doctype_node | parse_pi_nodes |
                            parse_validate_closing_tags;
 
+    template <class Ch> struct xml_namespace
+    {
+        static const std::size_t prefix_size = 3;
+
+        static Ch const* prefix()
+        {
+            static const Ch value[prefix_size] = {'x', 'm', 'l'};
+            return value;
+        }
+
+        static const std::size_t uri_size = 36;
+
+        // There should be only one instance of
+        // "http://www.w3.org/XML/1998/namespace" string, so
+        // that it can be compared as pointer
+        static Ch const* uri()
+        {
+            static const Ch value[uri_size] = {
+                'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w', '.', 'w',
+                '3', '.', 'o', 'r', 'g', '/', 'X', 'M', 'L', '/', '1', '9',
+                '9', '8', '/', 'n', 'a', 'm', 'e', 's', 'p', 'a', 'c', 'e'};
+            return value;
+        }
+    };
+
+    template <class Ch> struct xmlns_namespace
+    {
+        static const std::size_t prefix_size = 5;
+
+        static Ch const* prefix()
+        {
+            static const Ch value[prefix_size] = {'x', 'm', 'l', 'n', 's'};
+            return value;
+        }
+
+        static const std::size_t uri_size = 29;
+
+        // There should be only one instance of "http://www.w3.org/2000/xmlns/"
+        // string, so
+        // that it can be compared as pointer
+        static Ch const* uri()
+        {
+            static const Ch value[uri_size] = {
+                'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
+                '.', 'w', '3', '.', 'o', 'r', 'g', '/', '2', '0',
+                '0', '0', '/', 'x', 'm', 'l', 'n', 's', '/'};
+            return value;
+        }
+    };
+
     ///////////////////////////////////////////////////////////////////////
     // Internals
 
@@ -341,33 +391,47 @@ namespace rapidxml
         // data members, which are defined in a header file).
         template <int Dummy> struct lookup_tables
         {
-            static const unsigned char lookup_whitespace[256]; // Whitespace
-                                                               // table
-            static const unsigned char lookup_node_name[256]; // Node name table
-            static const unsigned char lookup_text[256];      // Text table
-            static const unsigned char lookup_text_pure_no_ws[256];   // Text
-                                                                      // table
-            static const unsigned char lookup_text_pure_with_ws[256]; // Text
-                                                                      // table
-            static const unsigned char lookup_attribute_name[256]; // Attribute
-                                                                   // name table
-            static const unsigned char
-                lookup_attribute_data_1[256]; // Attribute data table with
-                                              // single quote
-            static const unsigned char
-                lookup_attribute_data_1_pure[256]; // Attribute data table with
-                                                   // single quote
-            static const unsigned char
-                lookup_attribute_data_2[256]; // Attribute data table with
-                                              // double quotes
-            static const unsigned char
-                lookup_attribute_data_2_pure[256]; // Attribute data table with
-                                                   // double quotes
-            static const unsigned char lookup_digits[256]; // Digits
-            static const unsigned char lookup_upcase[256]; // To uppercase
-                                                           // conversion table
-                                                           // for ASCII
-                                                           // characters
+            // Whitespace table
+            static const unsigned char lookup_whitespace[256];
+
+            // Node name table
+            static const unsigned char lookup_node_name[256];
+
+            // Node NCName table
+            static const unsigned char lookup_node_ncname[256];
+
+            // Text table
+            static const unsigned char lookup_text[256];
+
+            // Text table
+            static const unsigned char lookup_text_pure_no_ws[256];
+
+            // Text table
+            static const unsigned char lookup_text_pure_with_ws[256];
+
+            // Attribute name table
+            static const unsigned char lookup_attribute_name[256];
+
+            // Attribute NCName table
+            static const unsigned char lookup_attribute_ncname[256];
+
+            // Attribute data table with single quote
+            static const unsigned char lookup_attribute_data_1[256];
+
+            // Attribute data table with single quote
+            static const unsigned char lookup_attribute_data_1_pure[256];
+
+            // Attribute data table with double quotes
+            static const unsigned char lookup_attribute_data_2[256];
+
+            // Attribute data table with double quotes
+            static const unsigned char lookup_attribute_data_2_pure[256];
+
+            // Digits
+            static const unsigned char lookup_digits[256];
+
+            // To uppercase conversion table for ASCII characters
+            static const unsigned char lookup_upcase[256];
         };
 
         // Find length of the string
@@ -380,6 +444,20 @@ namespace rapidxml
         }
 
         // Compare strings for equality
+        template <class Ch>
+        inline bool compare(const Ch* p1, std::size_t size1, const Ch* p2,
+                            std::size_t size2)
+        {
+            if (size1 != size2)
+                return false;
+            for (const Ch* end = p1 + size1; p1 < end; ++p1, ++p2)
+                if (*p1 != *p2)
+                    return false;
+            return true;
+        }
+
+        // Compare strings for equality with option to ignore case
+        // TODO: review compare(case_sensitive), branch prediction?
         template <class Ch>
         inline bool compare(const Ch* p1, std::size_t size1, const Ch* p2,
                             std::size_t size2, bool case_sensitive)
@@ -403,6 +481,160 @@ namespace rapidxml
             }
             return true;
         }
+
+        template <class Ch, class NamespaceStorage>
+        void assign_element_namespace_uris(xml_node<Ch>* element,
+                                           NamespaceStorage& ns_storage)
+        {
+            xml_attribute<Ch>* first_prefixed_attribute = 0;
+            for (xml_attribute<Ch>* attr = element->first_attribute(); attr;
+                 attr = attr->next_attribute())
+            {
+                switch (attr->prefix_size())
+                {
+                case 0:
+                    if (compare(attr->name(), attr->name_size(),
+                                xmlns_namespace<Ch>::prefix(),
+                                xmlns_namespace<Ch>::prefix_size))
+                    {
+                        attr->namespace_uri(xmlns_namespace<Ch>::uri(),
+                                            xmlns_namespace<Ch>::uri_size);
+                        ns_storage.set_default_namespace(attr);
+                    }
+                    continue;
+                case xml_namespace<Ch>::prefix_size:
+                    if (compare(attr->prefix(), attr->prefix_size(),
+                                xml_namespace<Ch>::prefix(),
+                                xml_namespace<Ch>::prefix_size))
+                    {
+                        attr->namespace_uri(xml_namespace<Ch>::uri(),
+                                            xml_namespace<Ch>::uri_size);
+                        continue;
+                    }
+                    break;
+                case xmlns_namespace<Ch>::prefix_size:
+                    if (compare(attr->prefix(), attr->prefix_size(),
+                                xmlns_namespace<Ch>::prefix(),
+                                xmlns_namespace<Ch>::prefix_size))
+                    {
+                        attr->namespace_uri(xmlns_namespace<Ch>::uri(),
+                                            xmlns_namespace<Ch>::uri_size);
+                        ns_storage.add_namespace_prefix(attr);
+                        continue;
+                    }
+                    break;
+                } // switch
+                if (!first_prefixed_attribute)
+                    first_prefixed_attribute = attr;
+            } // for
+            if (element->prefix_size() == 0)
+                ns_storage.set_element_default_namespace_uri(element);
+            else
+                ns_storage.set_node_namespace_uri_by_prefix(element);
+
+            for (; first_prefixed_attribute;
+                 first_prefixed_attribute =
+                     first_prefixed_attribute->next_attribute())
+                if (first_prefixed_attribute->prefix_size() > 0 &&
+                    first_prefixed_attribute->namespace_uri_size() == 0)
+                    ns_storage.set_node_namespace_uri_by_prefix(
+                        first_prefixed_attribute);
+        }
+
+        template <class Ch> class xml_namespace_processor
+        {
+        public:
+            class scope
+            {
+            public:
+                explicit scope(xml_namespace_processor& processor)
+                    : m_processor(processor),
+                      m_stack_position(processor.m_namespace_prefixes.size()),
+                      m_default_namespace(0)
+                {
+                }
+
+                scope(const scope& parent_scope)
+                    : m_processor(parent_scope.m_processor),
+                      m_stack_position(m_processor.m_namespace_prefixes.size()),
+                      m_default_namespace(parent_scope.m_default_namespace)
+                {
+                }
+
+                scope& operator=(const scope&) = delete;
+
+                ~scope()
+                {
+                    m_processor.m_namespace_prefixes.resize(m_stack_position);
+                }
+
+                void process_element(xml_node<Ch>* element)
+                {
+                    assign_element_namespace_uris(element, *this);
+                }
+
+                void set_default_namespace(xml_attribute<Ch>* ns_attr)
+                {
+                    m_default_namespace = ns_attr;
+                }
+
+                void add_namespace_prefix(xml_attribute<Ch>* ns_attr)
+                {
+                    m_processor.m_namespace_prefixes.push_back(ns_attr);
+                }
+
+                void
+                set_element_default_namespace_uri(xml_node<Ch>* element) const
+                {
+                    if (m_default_namespace)
+                        element->namespace_uri(
+                            m_default_namespace->value(),
+                            m_default_namespace->value_size());
+                }
+
+                void set_node_namespace_uri_by_prefix(xml_base<Ch>* node) const
+                {
+                    Ch const* prefix = node->prefix();
+                    std::size_t prefix_size = node->prefix_size();
+                    for (typename xml_namespace_processor::xmlns_attributes_t::
+                             const_reverse_iterator it =
+                                 m_processor.m_namespace_prefixes.rbegin();
+                         it != m_processor.m_namespace_prefixes.rend(); ++it)
+                        if (compare((*it)->local_name(),
+                                    (*it)->local_name_size(), prefix,
+                                    prefix_size))
+                        {
+                            node->namespace_uri((*it)->value(),
+                                                (*it)->value_size());
+                            return;
+                        }
+                    RAPIDXML_PARSE_ERROR("No namespace definition found", 0);
+                }
+
+            private:
+                xml_namespace_processor& m_processor;
+                std::size_t const m_stack_position;
+                xml_attribute<Ch>* m_default_namespace;
+            };
+
+        private:
+            typedef std::vector<xml_attribute<Ch>*> xmlns_attributes_t;
+            xmlns_attributes_t m_namespace_prefixes;
+        };
+
+        template <class Ch> class xml_namespace_processor_stub
+        {
+        public:
+            class scope
+            {
+            public:
+                explicit scope(xml_namespace_processor_stub&) {}
+
+                scope(const scope&) = default;
+
+                void process_element(xml_node<Ch>*) const {}
+            };
+        };
     }
     //! \endcond
 
@@ -609,7 +841,8 @@ namespace rapidxml
                 result = allocate_node(source->type());
 
             // Clone name and value
-            result->name(source->name(), source->name_size());
+            result->qname(source->name(), source->name_size(),
+                          source->local_name());
             result->value(source->value(), source->value_size());
 
             // Clone child nodes and attributes
@@ -773,18 +1006,57 @@ namespace rapidxml
     //! \param Ch Character type to use
     template <class Ch = char> class xml_base
     {
-
     public:
         ///////////////////////////////////////////////////////////////////////////
         // Construction & destruction
 
         // Construct a base with empty name, value and parent
-        xml_base() : m_name(0), m_value(0), m_parent(0) {}
+        xml_base()
+            : m_local_name(nullptr),
+              m_name(nullptr),
+              m_value(nullptr),
+              m_namespace_uri(nullptr),
+              m_name_size(0U),
+              m_value_size(0U),
+              m_namespace_uri_size(0U),
+              m_parent(nullptr)
+        {
+        }
 
         ///////////////////////////////////////////////////////////////////////////
         // Node data access
 
-        //! Gets name of the node.
+        Ch* local_name() const
+        {
+            return m_local_name ? m_local_name : nullstr();
+        }
+
+        std::size_t local_name_size() const
+        {
+            return m_local_name ? (m_name_size - (m_local_name - m_name)) : 0;
+        }
+
+        //! Gets namespace prefix.
+        //! Returned string is never zero-terminated, regardless of
+        //! parse_no_string_terminators. Use prefix_size()
+        //! <br>
+        //! "Note that the prefix functions _only_ as a placeholder for a
+        //! namespace name. Applications SHOULD use the namespace name, not the
+        //! prefix, in constructing names whose scope extends beyond the
+        //! containing document." Namespaces in XML 1.0 3rd Edition,
+        //! http://www.w3.org/TR/REC-xml-names/
+        Ch* prefix() const { return m_name ? m_name : nullstr(); }
+
+        //! Gets size of namespace prefix, not including terminator character.
+        //! \return Size of namespace prefix, in characters.
+        std::size_t prefix_size() const
+        {
+            return (m_name && m_local_name > m_name)
+                       ? (m_local_name - m_name - 1)
+                       : 0;
+        }
+
+        //! Gets qualified name of the node.
         //! Interpretation of name depends on type of node.
         //! Note that name will not be zero-terminated if
         //! rapidxml::parse_no_string_terminators option was selected during
@@ -794,7 +1066,7 @@ namespace rapidxml
         //! \return Name of node, or empty string if node has no name.
         Ch* name() const { return m_name ? m_name : nullstr(); }
 
-        //! Gets size of node name, not including terminator character.
+        //! Gets size of node QName, not including terminator character.
         //! This function works correctly irrespective of whether name is or is
         //! not zero terminated.
         //! \return Size of node name, in characters.
@@ -816,10 +1088,35 @@ namespace rapidxml
         //! \return Size of node value, in characters.
         std::size_t value_size() const { return m_value ? m_value_size : 0; }
 
+        //! Gets namespace URI of the node.
+        //! Note that URI will not be zero-terminated if
+        //! rapidxml::parse_no_string_terminators option was selected during
+        //! parse.
+        //! Namespace URI is not assigned if rapidxml::parse_no_namespace option
+        //! was selected during parse.
+        //! <br><br>
+        //! Use namespace_uri_size() function to determine length of the name.
+        //! \return Namespace URI of node, or empty string if node has no
+        //! namespace assigned.
+        Ch const* namespace_uri() const
+        {
+            return m_namespace_uri ? m_namespace_uri : nullstr();
+        }
+
+        //! Gets size of namespace URI value, not including terminator
+        //! character.
+        //! This function works correctly irrespective of whether namespace URI
+        //! is or is not zero terminated.
+        //! \return Size of namespace URI, in characters.
+        std::size_t namespace_uri_size() const
+        {
+            return m_namespace_uri ? m_namespace_uri_size : 0;
+        }
+
         ///////////////////////////////////////////////////////////////////////////
         // Node modification
 
-        //! Sets name of node to a non zero-terminated string.
+        //! Sets qualified name of node to a non zero-terminated string.
         //! See \ref ownership_of_strings.
         //! <br><br>
         //! Note that node does not own its name or value, it only stores a
@@ -832,25 +1129,51 @@ namespace rapidxml
         //! on destruction of the document the string will be automatically
         //! freed.
         //! <br><br>
+        //! Note that passed string will not be automatically divided to prefix
+        //! and local_name,
+        //! it seems useless for manual node creation. qname() may be used
+        //! instead
+        //! local_name() will be set to be equal to name()
+        //! <br><br>
         //! Size of name must be specified separately, because name does not
         //! have to be zero terminated.
         //! Use name(const Ch *) function to have the length automatically
         //! calculated (string must be zero terminated).
-        //! \param name Name of node to set. Does not have to be zero
+        //! \param name QName of node to set. Does not have to be zero
         //! terminated.
         //! \param size Size of name, in characters. This does not include zero
         //! terminator, if one is present.
-        void name(const Ch* name, std::size_t size)
-        {
-            m_name = const_cast<Ch*>(name);
-            m_name_size = size;
-        }
+        void name(const Ch* name, std::size_t size) { qname(name, size); }
 
-        //! Sets name of node to a zero-terminated string.
+        //! Sets QName of node to a zero-terminated string.
         //! See also \ref ownership_of_strings and xml_node::name(const Ch *,
         //! std::size_t).
         //! \param name Name of node to set. Must be zero terminated.
         void name(const Ch* name) { this->name(name, internal::measure(name)); }
+
+        //! Sets QName as PrefixedName or UnprefixedName where local_part points
+        //! in QName string
+        void qname(const Ch* qname, std::size_t qname_size,
+                   const Ch* local_part)
+        {
+            m_name = const_cast<Ch*>(qname);
+            m_name_size = qname_size;
+            m_local_name = const_cast<Ch*>(local_part);
+        }
+
+        //! Sets QName as UnprefixedName
+        void qname(const Ch* qname, std::size_t qname_size)
+        {
+            m_name = const_cast<Ch*>(qname);
+            m_name_size = qname_size;
+            m_local_name = m_name;
+        }
+
+        void namespace_uri(const Ch* uri, std::size_t size)
+        {
+            m_namespace_uri = uri;
+            m_namespace_uri_size = size;
+        }
 
         //! Sets value of node to a non zero-terminated string.
         //! See \ref ownership_of_strings.
@@ -858,7 +1181,7 @@ namespace rapidxml
         //! Note that node does not own its name or value, it only stores a
         //! pointer to it.
         //! It will not delete or otherwise free the pointer on destruction.
-        //! It is reponsibility of the user to properly manage lifetime of the
+        //! It is responsibility of the user to properly manage lifetime of the
         //! string.
         //! The easiest way to achieve it is to use memory_pool of the document
         //! to allocate the string -
@@ -909,13 +1232,36 @@ namespace rapidxml
             return &zero;
         }
 
-        Ch* m_name;              // Name of node, or 0 if no name
-        Ch* m_value;             // Value of node, or 0 if no value
-        std::size_t m_name_size; // Length of node name, or undefined of no name
-        std::size_t m_value_size; // Length of node value, or undefined if no
-                                  // value
-        xml_node<Ch>* m_parent;   // Pointer to parent node, or 0 if none
+        // Pointer into m_name where local part begins
+        Ch* m_local_name;
+
+        // Name of node, or 0 if no name
+        Ch* m_name;
+
+        // Value of node, or 0 if no value
+        Ch* m_value;
+
+        Ch const* m_namespace_uri;
+
+        // Length of node name, or undefined of no name
+        std::size_t m_name_size;
+
+        // Length of node value, or undefined if no value
+        std::size_t m_value_size;
+
+        std::size_t m_namespace_uri_size;
+
+        // Pointer to parent node, or 0 if none
+        xml_node<Ch>* m_parent;
     };
+
+#ifndef _MSC_VER
+    static_assert(std::is_default_constructible<xml_base<>>::value, "");
+    static_assert(std::is_copy_constructible<xml_base<>>::value, "");
+    static_assert(std::is_copy_assignable<xml_base<>>::value, "");
+    static_assert(std::is_move_constructible<xml_base<>>::value, "");
+    static_assert(std::is_move_assignable<xml_base<>>::value, "");
+#endif
 
     //! Class representing attribute node of XML document.
     //! Each attribute has name and value strings, which are available through
@@ -1016,6 +1362,44 @@ namespace rapidxml
                 return this->m_parent ? m_next_attribute : 0;
         }
 
+        //! Gets next attribute, matching attribute local name and attribute
+        //! namespace URI .
+        //! \param namespace_uri Namespace URI of attribute to find; this string
+        //! have to be zero-terminated
+        //! \param local_name Local name of attribute to find; this string have
+        //! to be zero-terminated
+        //! \param local_name_case_sensitive Should local name comparison be
+        //! case-sensitive; non case-sensitive comparison works properly only for
+        //! ASCII characters
+        //! \return Pointer to found attribute, or 0 if not found.
+        xml_attribute<Ch>*
+        next_attribute_ns(const Ch* namespace_uri, const Ch* local_name,
+                          bool local_name_case_sensitive = true) const
+        {
+            return next_attribute_ns(
+                namespace_uri, internal::measure(namespace_uri), local_name,
+                internal::measure(local_name), local_name_case_sensitive);
+        }
+
+        xml_attribute<Ch>*
+        next_attribute_ns(const Ch* namespace_uri,
+                          std::size_t namespace_uri_size, const Ch* local_name,
+                          std::size_t local_name_size,
+                          bool local_name_case_sensitive = true) const
+        {
+            for (xml_attribute<Ch>* attribute = m_next_attribute; attribute;
+                 attribute = attribute->m_next_attribute)
+                if (internal::compare(attribute->local_name(),
+                                      attribute->local_name_size(), local_name,
+                                      local_name_size,
+                                      local_name_case_sensitive) &&
+                    internal::compare(attribute->namespace_uri(),
+                                      attribute->namespace_uri_size(),
+                                      namespace_uri, namespace_uri_size))
+                    return attribute;
+            return 0;
+        }
+
     private:
         xml_attribute<Ch>* m_prev_attribute; // Pointer to previous sibling of
                                              // attribute, or 0 if none; only
@@ -1040,7 +1424,6 @@ namespace rapidxml
     //! \param Ch Character type to use.
     template <class Ch = char> class xml_node : public xml_base<Ch>
     {
-
     public:
         ///////////////////////////////////////////////////////////////////////////
         // Construction & destruction
@@ -1049,10 +1432,45 @@ namespace rapidxml
         //! Consider using memory_pool of appropriate document to allocate nodes
         //! manually.
         //! \param type Type of node to construct.
-        xml_node(node_type type)
+        explicit xml_node(node_type type)
             : m_type(type), m_first_node(0), m_first_attribute(0)
         {
         }
+
+        xml_node(xml_node&& other)
+            : m_type(std::move(other.m_type)),
+              m_first_node(std::move(other.m_first_node)),
+              m_last_node(std::move(other.m_last_node)),
+              m_first_attribute(std::move(other.m_first_attribute)),
+              m_last_attribute(std::move(other.m_last_attribute)),
+              m_prev_sibling(std::move(other.m_prev_sibling)),
+              m_next_sibling(std::move(other.m_next_sibling))
+        {
+            other.m_first_node = nullptr;
+            other.m_last_node = nullptr;
+            other.m_first_attribute = nullptr;
+            other.m_last_attribute = nullptr;
+            other.m_prev_sibling = nullptr;
+            other.m_next_sibling = nullptr;
+        }
+
+        xml_node& operator=(xml_node&& rhs)
+        {
+            if (&rhs != this)
+            {
+                m_first_node = rhs.m_first_node;
+                m_last_node = rhs.m_last_node;
+                m_first_attribute = rhs.m_first_attribute;
+                m_last_attribute = rhs.m_last_attribute;
+                m_prev_sibling = rhs.m_prev_sibling;
+                m_next_sibling = rhs.m_next_sibling;
+            }
+            return *this;
+        }
+
+        // No copying
+        xml_node(const xml_node&) = delete;
+        void operator=(const xml_node&) = delete;
 
         ///////////////////////////////////////////////////////////////////////////
         // Node data access
@@ -1079,8 +1497,8 @@ namespace rapidxml
 
         //! Gets first child node, optionally matching node name.
         //! \param name Name of child to find, or 0 to return first child
-        //! regardless of its name; this string doesn't have to be zero-terminated
-        //! if name_size is non-zero
+        //! regardless of its name; this string doesn't have to be
+        //! zero-terminated if name_size is non-zero
         //! \param name_size Size of name, in characters, or 0 to have size
         //! calculated automatically from string
         //! \param case_sensitive Should name comparison be case-sensitive; non
@@ -1102,6 +1520,57 @@ namespace rapidxml
             }
             else
                 return m_first_node;
+        }
+
+        //! Gets first child node, matching node local name and namespace URI.
+        //! \param namespace_uri Namespace URI of child to find; this string
+        //! have to be zero-terminated
+        //! \param local_name Local name of child to find; this string have to
+        //! be zero-terminated
+        //! \param local_name_case_sensitive Should local name comparison be
+        //! case-sensitive; non case-sensitive comparison works properly only
+        //! for ASCII characters
+        //! \return Pointer to found child, or 0 if not found.
+        xml_node<Ch>* first_node_ns(const Ch* namespace_uri,
+                                    const Ch* local_name,
+                                    bool local_name_case_sensitive = true) const
+        {
+            return first_node_ns(
+                namespace_uri, internal::measure(namespace_uri), local_name,
+                internal::measure(local_name), local_name_case_sensitive);
+        }
+
+        xml_node<Ch>* first_node_ns(const Ch* namespace_uri,
+                                    std::size_t namespace_uri_size,
+                                    const Ch* local_name,
+                                    std::size_t local_name_size,
+                                    bool local_name_case_sensitive = true) const
+        {
+            for (xml_node<Ch>* child = m_first_node; child;
+                 child = child->next_sibling())
+                if (internal::compare(child->local_name(),
+                                      child->local_name_size(), local_name,
+                                      local_name_size,
+                                      local_name_case_sensitive) &&
+                    internal::compare(child->namespace_uri(),
+                                      child->namespace_uri_size(),
+                                      namespace_uri, namespace_uri_size))
+                    return child;
+            return 0;
+        }
+
+        xml_node<Ch>* first_node_ns(const Ch* namespace_uri,
+                                    std::size_t namespace_uri_size = 0) const
+        {
+            if (namespace_uri_size == 0)
+                namespace_uri_size = internal::measure(namespace_uri);
+            for (xml_node<Ch>* child = m_first_node; child;
+                 child = child->next_sibling())
+                if (internal::compare(child->namespace_uri(),
+                                      child->namespace_uri_size(),
+                                      namespace_uri, namespace_uri_size))
+                    return child;
+            return 0;
         }
 
         //! Gets last child node, optionally matching node name.
@@ -1199,6 +1668,47 @@ namespace rapidxml
                 return m_next_sibling;
         }
 
+        xml_node<Ch>*
+        next_sibling_ns(const Ch* namespace_uri, const Ch* local_name,
+                        bool local_name_case_sensitive = true) const
+        {
+            return next_sibling_ns(
+                namespace_uri, internal::measure(namespace_uri), local_name,
+                internal::measure(local_name), local_name_case_sensitive);
+        }
+
+        xml_node<Ch>*
+        next_sibling_ns(const Ch* namespace_uri, std::size_t namespace_uri_size,
+                        const Ch* local_name, std::size_t local_name_size,
+                        bool local_name_case_sensitive = true) const
+        {
+            for (xml_node<Ch>* sibling = m_next_sibling; sibling;
+                 sibling = sibling->m_next_sibling)
+                if (internal::compare(sibling->local_name(),
+                                      sibling->local_name_size(), local_name,
+                                      local_name_size,
+                                      local_name_case_sensitive) &&
+                    internal::compare(sibling->namespace_uri(),
+                                      sibling->namespace_uri_size(),
+                                      namespace_uri, namespace_uri_size))
+                    return sibling;
+            return 0;
+        }
+
+        xml_node<Ch>* next_sibling_ns(const Ch* namespace_uri,
+                                      std::size_t namespace_uri_size = 0) const
+        {
+            if (namespace_uri_size == 0)
+                namespace_uri_size = internal::measure(namespace_uri);
+            for (xml_node<Ch>* sibling = m_next_sibling; sibling;
+                 sibling = sibling->m_next_sibling)
+                if (internal::compare(sibling->namespace_uri(),
+                                      sibling->namespace_uri_size(),
+                                      namespace_uri, namespace_uri_size))
+                    return sibling;
+            return 0;
+        }
+
         //! Gets first attribute of node, optionally matching attribute name.
         //! \param name Name of attribute to find, or 0 to return first
         //! attribute regardless of its name; this string doesn't have to be
@@ -1226,6 +1736,44 @@ namespace rapidxml
             }
             else
                 return m_first_attribute;
+        }
+
+        //! Gets first attribute of node, matching attribute namespace URI and
+        //! local name.
+        //! \param namespace_uri Namespace URI of attribute to find; this string
+        //! have to be zero-terminated
+        //! \param local_name Local name of attribute to find; this string have
+        //! to be zero-terminated
+        //! \param local_name_case_sensitive Should local name comparison be
+        //! case-sensitive; non case-sensitive comparison works properly only for
+        //! ASCII characters
+        //! \return Pointer to found attribute, or 0 if not found.
+        xml_attribute<Ch>*
+        first_attribute_ns(const Ch* namespace_uri, const Ch* local_name,
+                           bool local_name_case_sensitive = true) const
+        {
+            return first_attribute_ns(
+                namespace_uri, internal::measure(namespace_uri), local_name,
+                internal::measure(local_name), local_name_case_sensitive);
+        }
+
+        xml_attribute<Ch>*
+        first_attribute_ns(const Ch* namespace_uri,
+                           std::size_t namespace_uri_size, const Ch* local_name,
+                           std::size_t local_name_size,
+                           bool local_name_case_sensitive = true) const
+        {
+            for (xml_attribute<Ch>* attribute = m_first_attribute; attribute;
+                 attribute = attribute->m_next_attribute)
+                if (internal::compare(attribute->local_name(),
+                                      attribute->local_name_size(), local_name,
+                                      local_name_size,
+                                      local_name_case_sensitive) &&
+                    internal::compare(attribute->namespace_uri(),
+                                      attribute->namespace_uri_size(),
+                                      namespace_uri, namespace_uri_size))
+                    return attribute;
+            return 0;
         }
 
         //! Gets last attribute of node, optionally matching attribute name.
@@ -1520,43 +2068,6 @@ namespace rapidxml
             m_first_attribute = 0;
         }
 
-        xml_node(xml_node&& other)
-            : m_type(other.m_type), m_first_node(other.m_first_node),
-              m_last_node(other.m_last_node),
-              m_first_attribute(other.m_first_attribute),
-              m_last_attribute(other.m_last_attribute),
-              m_prev_sibling(other.m_prev_sibling),
-              m_next_sibling(other.m_next_sibling)
-        {
-            other.m_first_node = nullptr;
-            other.m_last_node = nullptr;
-            other.m_first_attribute = nullptr;
-            other.m_last_attribute = nullptr;
-            other.m_prev_sibling = nullptr;
-            other.m_next_sibling = nullptr;
-        }
-
-        xml_node& operator=(xml_node&& rhs)
-        {
-            if (&rhs != this)
-            {
-                m_first_node = rhs.m_first_node;
-                m_last_node = rhs.m_last_node;
-                m_first_attribute = rhs.m_first_attribute;
-                m_last_attribute = rhs.m_last_attribute;
-                m_prev_sibling = rhs.m_prev_sibling;
-                m_next_sibling = rhs.m_next_sibling;
-            }
-            return *this;
-        }
-
-        ///////////////////////////////////////////////////////////////////////////
-        // Restrictions
-
-        // No copying
-        xml_node(const xml_node&) = delete;
-        void operator=(const xml_node&) = delete;
-
     private:
         ///////////////////////////////////////////////////////////////////////////
         // Data members
@@ -1575,30 +2086,35 @@ namespace rapidxml
         // 3. prev_sibling and next_sibling are valid only if node has a parent,
         // otherwise they contain garbage
 
-        node_type m_type;           // Type of node; always valid
-        xml_node<Ch>* m_first_node; // Pointer to first child node, or 0 if
-                                    // none; always valid
-        xml_node<Ch>* m_last_node;  // Pointer to last child node, or 0 if none;
-                                    // this value is only valid if m_first_node
-                                    // is non-zero
-        xml_attribute<Ch>* m_first_attribute; // Pointer to first attribute of
-                                              // node, or 0 if none; always
-                                              // valid
-        xml_attribute<Ch>* m_last_attribute;  // Pointer to last attribute of
-                                              // node, or 0 if none; this value
-                                              // is only valid if
-                                              // m_first_attribute is non-zero
-        xml_node<Ch>* m_prev_sibling; // Pointer to previous sibling of node, or
-                                      // 0 if none; this value is only valid if
-                                      // m_parent is non-zero
-        xml_node<Ch>* m_next_sibling; // Pointer to next sibling of node, or 0
-                                      // if none; this value is only valid if
-                                      // m_parent is non-zero
+        // Type of node; always valid
+        node_type m_type;
+
+        // Pointer to first child node, or 0 if none; always valid
+        xml_node<Ch>* m_first_node;
+
+        // Pointer to last child node, or 0 if none; this value is only valid if
+        // m_first_node is non-zero
+        xml_node<Ch>* m_last_node;
+
+        // Pointer to first attribute of node, or 0 if none; always valid
+        xml_attribute<Ch>* m_first_attribute;
+
+        // Pointer to last attribute of node, or 0 if none; this value is only
+        // valid if m_first_attribute is non-zero
+        xml_attribute<Ch>* m_last_attribute;
+
+        // Pointer to previous sibling of node, or 0 if none; this value is only
+        // valid if m_parent is non-zero
+        xml_node<Ch>* m_prev_sibling;
+
+        // Pointer to next sibling of node, or 0 if none; this value is only
+        // valid if m_parent is non-zero
+        xml_node<Ch>* m_next_sibling;
     };
 
 #ifndef _MSC_VER
-    // Test reference semantics; don't execute following tests with
-    // Visual Studio 2013, see other comment in this file below
+    // Test reference semantics; don't execute tests with Visual Studio 12, see
+    // other comment in this file below
     static_assert(!std::is_copy_constructible<xml_node<>>::value, "");
     static_assert(!std::is_copy_assignable<xml_node<>>::value, "");
     static_assert(std::is_move_constructible<xml_node<>>::value, "");
@@ -1627,7 +2143,7 @@ namespace rapidxml
         xml_document() : xml_node<Ch>(node_document) {}
 
 #ifdef _MSC_VER
-        // Visual Studio 2013 seriously fucks-up copy elision in uses of
+        // Visual Studio 12 seriously fucks-up copy elision in uses of
         // xml_document. See this gist for example:
         // https://gist.github.com/bkircher/dd401644a55651c4a878
 
@@ -1640,7 +2156,7 @@ namespace rapidxml
 
         xml_document& operator=(xml_document&& rhs)
         {
-            // Base-class operator=ensures self-assignment is benign
+            // Base-class assignment operator ensures self-assignment is benign
             xml_node<Ch>::operator=(std::move(rhs));
             return *this;
         }
@@ -1663,11 +2179,30 @@ namespace rapidxml
         //! that this data may be modified by the parser.
         template <int Flags> void parse(Ch* text)
         {
+            if (Flags & parse_no_namespace)
+                parse_ns<Flags, internal::xml_namespace_processor_stub<Ch>>(
+                    text);
+            else
+                parse_ns<Flags, internal::xml_namespace_processor<Ch>>(text);
+        }
+
+        //! Use parse() instead.
+        //! Parses zero-terminated XML string according to given flags and
+        //! NamespaceProcessor passed.
+        //! Should be called only when default xml_namespace_processor is
+        //! substituted with custom one.
+        template <int Flags, class NamespaceProcessor> void parse_ns(Ch* text)
+        {
             assert(text);
 
             // Remove current contents
             this->remove_all_nodes();
             this->remove_all_attributes();
+
+            NamespaceProcessor namespace_processor;
+            // Creating topmost namespace scope that actually won't be used
+            typename NamespaceProcessor::scope const namespace_scope(
+                namespace_processor);
 
             // Parse BOM, if any
             parse_bom<Flags>(text);
@@ -1684,7 +2219,9 @@ namespace rapidxml
                 if (*text == Ch('<'))
                 {
                     ++text; // Skip '<'
-                    if (xml_node<Ch>* node = parse_node<Flags>(text))
+                    if (xml_node<Ch>* node = parse_node<
+                            Flags, typename NamespaceProcessor::scope>(
+                            text, namespace_scope))
                         this->append_node(node);
                 }
                 else
@@ -1726,6 +2263,17 @@ namespace rapidxml
             }
         };
 
+        // Detect node name character without ':' (NCName) - namespace prefix or
+        // local name
+        struct node_ncname_pred
+        {
+            static unsigned char test(Ch ch)
+            {
+                return internal::lookup_tables<
+                    0>::lookup_node_ncname[static_cast<unsigned char>(ch)];
+            }
+        };
+
         // Detect attribute name character
         struct attribute_name_pred
         {
@@ -1733,6 +2281,17 @@ namespace rapidxml
             {
                 return internal::lookup_tables<
                     0>::lookup_attribute_name[static_cast<unsigned char>(ch)];
+            }
+        };
+
+        // Detect attribute name character without ':' (NCName) - namespace
+        // prefix or local name
+        struct attribute_ncname_pred
+        {
+            static unsigned char test(Ch ch)
+            {
+                return internal::lookup_tables<
+                    0>::lookup_attribute_ncname[static_cast<unsigned char>(ch)];
             }
         };
 
@@ -1797,28 +2356,6 @@ namespace rapidxml
                         [static_cast<unsigned char>(ch)];
                 return 0; // Should never be executed, to avoid warnings on
                           // Comeau
-            }
-        };
-
-        // Detect element XML namespace prefix character
-        struct element_namespace_prefix_pred
-        {
-            static unsigned char test(Ch ch)
-            {
-                return ch != ':' &&
-                       internal::lookup_tables<
-                           0>::lookup_node_name[static_cast<unsigned char>(ch)];
-            }
-        };
-
-        // Detect attribute XML namespace prefix character
-        struct attribute_namespace_prefix_pred
-        {
-            static unsigned char test(Ch ch)
-            {
-                return ch != ':' &&
-                       internal::lookup_tables<0>::lookup_attribute_name
-                           [static_cast<unsigned char>(ch)];
             }
         };
 
@@ -2382,38 +2919,52 @@ namespace rapidxml
         }
 
         // Parse element node
-        template <int Flags> xml_node<Ch>* parse_element(Ch*& text)
+        template <int Flags, class NamespaceScope>
+        xml_node<Ch>* parse_element(Ch*& text, NamespaceScope namespace_scope)
         {
             // Create element node
             xml_node<Ch>* element = this->allocate_node(node_element);
 
             // Extract element name
             Ch* name = text;
-            skip<node_name_pred, Flags>(text);
+            if (Flags & parse_no_namespace)
+                skip<node_name_pred, Flags>(text);
+            else
+                skip<node_ncname_pred, Flags>(text);
             if (text == name)
                 RAPIDXML_PARSE_ERROR("expected element name", text);
-            element->name(name, text - name);
-
-            if (Flags & parse_strip_xml_namespaces)
+            if ((Flags & parse_no_namespace) == 0 && *text == Ch(':'))
             {
-                Ch* saved_name = name;
-                skip<element_namespace_prefix_pred, Flags>(name);
-                if (name++ == text)
-                {
-                    name = saved_name;
-                }
+                // Namespace prefix found
+                ++text;
+                Ch* local_name = text;
+                skip<node_ncname_pred, Flags>(text);
+                if (*text == Ch(':'))
+                    RAPIDXML_PARSE_ERROR("second colon in element name", text);
+                if (text == local_name)
+                    RAPIDXML_PARSE_ERROR("expected local part of element name",
+                                         text);
+                element->qname(name, text - name, local_name);
             }
+            else
+                element->qname(name, text - name);
+
             // Skip whitespace between element name and attributes or >
             skip<whitespace_pred, Flags>(text);
 
             // Parse attributes, if any
             parse_node_attributes<Flags>(text, element);
 
+            // Setting attributes and element own namespace_uri, adding declared
+            // namespace prefixes and probably setting default namespace
+            namespace_scope.process_element(element);
+
             // Determine ending type
             if (*text == Ch('>'))
             {
                 ++text;
-                parse_node_contents<Flags>(text, element);
+                parse_node_contents<Flags, NamespaceScope>(text, element,
+                                                           namespace_scope);
             }
             else if (*text == Ch('/'))
             {
@@ -2434,7 +2985,9 @@ namespace rapidxml
         }
 
         // Determine node type, and parse it
-        template <int Flags> xml_node<Ch>* parse_node(Ch*& text)
+        template <int Flags, class NamespaceScope>
+        xml_node<Ch>* parse_node(Ch*& text,
+                                 const NamespaceScope& namespace_scope)
         {
             // Parse proper node type
             switch (text[0])
@@ -2443,7 +2996,8 @@ namespace rapidxml
             // <...
             default:
                 // Parse and append element node
-                return parse_element<Flags>(text);
+                return parse_element<Flags, NamespaceScope>(text,
+                                                            namespace_scope);
 
             // <?...
             case Ch('?'):
@@ -2521,8 +3075,9 @@ namespace rapidxml
         }
 
         // Parse contents of the node - children, data etc.
-        template <int Flags>
-        void parse_node_contents(Ch*& text, xml_node<Ch>* node)
+        template <int Flags, class NamespaceScope>
+        void parse_node_contents(Ch*& text, xml_node<Ch>* node,
+                                 const NamespaceScope& namespace_scope)
         {
             // For all children and text
             while (1)
@@ -2579,7 +3134,9 @@ namespace rapidxml
                     {
                         // Child node
                         ++text; // Skip '<'
-                        if (xml_node<Ch>* child = parse_node<Flags>(text))
+                        if (xml_node<Ch>* child =
+                                parse_node<Flags, NamespaceScope>(
+                                    text, namespace_scope))
                             node->append_node(child);
                     }
                     break;
@@ -2603,28 +3160,38 @@ namespace rapidxml
         void parse_node_attributes(Ch*& text, xml_node<Ch>* node)
         {
             // For all attributes
-            while (attribute_name_pred::test(*text))
+            while ((Flags & parse_no_namespace)
+                       ? attribute_name_pred::test(*text)
+                       : attribute_ncname_pred::test(*text))
             {
                 // Extract attribute name
                 Ch* name = text;
                 ++text; // Skip first character of attribute name
-                skip<attribute_name_pred, Flags>(text);
+                if (Flags & parse_no_namespace)
+                    skip<attribute_name_pred, Flags>(text);
+                else
+                    skip<attribute_ncname_pred, Flags>(text);
                 if (text == name)
                     RAPIDXML_PARSE_ERROR("expected attribute name", name);
 
                 // Create new attribute
                 xml_attribute<Ch>* attribute = this->allocate_attribute();
-                attribute->name(name, text - name);
-                node->append_attribute(attribute);
-                if (Flags & parse_strip_xml_namespaces)
+                if ((Flags & parse_no_namespace) == 0 && *text == Ch(':'))
                 {
-                    Ch* saved_name = name;
-                    skip<attribute_namespace_prefix_pred, Flags>(name);
-                    if (name++ == text)
-                    {
-                        name = saved_name;
-                    }
+                    // Namespace prefix found
+                    ++text;
+                    Ch* local_name = text;
+                    skip<attribute_ncname_pred, Flags>(text);
+                    if (text == local_name)
+                        RAPIDXML_PARSE_ERROR(
+                            "expected local part of attribute name",
+                            local_name);
+                    attribute->qname(name, text - name, local_name);
                 }
+                else
+                    attribute->qname(name, text - name);
+
+                node->append_attribute(attribute);
 
                 // Skip whitespace after attribute name
                 skip<whitespace_pred, Flags>(text);
@@ -2739,6 +3306,29 @@ namespace rapidxml
              1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1   // F
         };
 
+        // Node NCName (anything but space \n \r \t / > ? \0 :)
+        template <int Dummy>
+        const unsigned char lookup_tables<Dummy>::lookup_node_ncname[256] =
+        {
+          // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
+             0,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  1,  1,  0,  1,  1,  // 0
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 1
+             0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  // 2
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  1,  1,  1,  0,  0,  // 3
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 4
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 5
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 6
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 7
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 8
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 9
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // A
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // B
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // C
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // D
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // E
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1   // F
+        };
+
         // Text (i.e. PCDATA) (anything but < \0)
         template <int Dummy>
         const unsigned char lookup_tables<Dummy>::lookup_text[256] =
@@ -2762,8 +3352,8 @@ namespace rapidxml
              1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1   // F
         };
 
-        // Text (i.e. PCDATA) that does not require processing when ws normalization is disabled
-        // (anything but < \0 &)
+    // Text (i.e. PCDATA) that does not require processing when ws
+    // normalization is disabled (anything but < \0 &)
         template <int Dummy>
         const unsigned char lookup_tables<Dummy>::lookup_text_pure_no_ws[256] =
         {
@@ -2819,6 +3409,29 @@ namespace rapidxml
              1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 1
              0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  // 2
              1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  0,  0,  // 3
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 4
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 5
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 6
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 7
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 8
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 9
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // A
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // B
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // C
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // D
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // E
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1   // F
+        };
+
+        // Attribute name (anything but space \n \r \t / < > = ? ! \0 :)
+        template <int Dummy>
+        const unsigned char lookup_tables<Dummy>::lookup_attribute_ncname[256] =
+        {
+          // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
+             0,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  1,  1,  0,  1,  1,  // 0
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 1
+             0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  // 2
+             1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  1,  0,  0,  0,  0,  // 3
              1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 4
              1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 5
              1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  // 6
