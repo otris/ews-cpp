@@ -1800,8 +1800,6 @@ namespace rapidxml
             }
         };
 
-        // Insert coded character, using UTF8 or 8-bit ASCII
-        template <int Flags>
         // Detect element XML namespace prefix character
         struct element_namespace_prefix_pred
         {
@@ -1824,6 +1822,8 @@ namespace rapidxml
             }
         };
 
+        // Insert coded character, using UTF8 or 8-bit ASCII
+        template <int Flags>
         static void insert_coded_character(Ch*& text, unsigned long code)
         {
             if (Flags & parse_no_utf8)
