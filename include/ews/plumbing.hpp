@@ -5,8 +5,12 @@
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include <functional>
 #include <utility>
 #include <memory>
+#ifndef _MSC_VER
+#include <type_traits>
+#endif
 #include <cstddef>
 
 #include "rapidxml/rapidxml.hpp"
@@ -109,7 +113,62 @@ namespace ews
 
     namespace plumbing
     {
+        // Obligatory scope guard helper.
+        class on_scope_exit final
+        {
+        public:
+            template <typename Function>
+            on_scope_exit(Function destructor_function) try
+                : func_(std::move(destructor_function)) // This could throw...
+            {}
+            catch (std::exception&)
+            {
+                // ...in which case we immediately call the d'tor function
+                destructor_function();
+            }
+
+            on_scope_exit() = delete;
+            on_scope_exit(const on_scope_exit&) = delete;
+            on_scope_exit& operator=(const on_scope_exit&) = delete;
+
+            ~on_scope_exit()
+            {
+                if (func_)
+                {
+                    try
+                    {
+                        func_();
+                    }
+                    catch (std::exception&)
+                    {
+                        // Swallow, abort(3) if suitable
+                        EWS_ASSERT(false);
+                    }
+                }
+            }
+
+            inline void release()
+            {
+                func_ = nullptr;
+            }
+
+        private:
+            std::function<void(void)> func_;
+        };
+
+#ifndef _MSC_VER
+        // <type_traits> is broken in Visual Studio 12, disregard
+        static_assert(!std::is_copy_constructible<on_scope_exit>::value, "");
+        static_assert(!std::is_copy_assignable<on_scope_exit>::value, "");
+        static_assert(!std::is_default_constructible<on_scope_exit>::value, "");
+#endif
+
         // Raised when a response from a server could not be parsed.
+        //
+        // TODO: maybe remove?
+        //
+        // No need for type erasure because rapidxml::xml_document is exposed
+        // by us anyway
         class parse_error final : public std::runtime_error
         {
         public:
@@ -126,29 +185,72 @@ namespace ews
         //
         // This class basically wraps rapidxml::xml_document because the parsed
         // data must persist for the lifetime of the rapidxml::xml_document.
-        //
-        //FIXME
-        // temporary buffer because we are using RapidXml in destructive mode
-        // (the parser modifies source text during the parsing process)
         class http_response final
         {
         public:
-            // Here we handle the server's response. We load the SOAP
-            // payload from response into the xml_document.
             http_response(long code, std::vector<char>&& data)
-                : data_(std::move(data)), doc_(), code_(code)
+                : data_(std::move(data)), doc_(), code_(code), parsed_(false)
             {
                 EWS_ASSERT(!data_.empty());
+            }
 
-                // For now we expect data to be a single and valid XML document.
-                // This might actually not be the case depending on the response
-                // that is returned from libcurl (HTTP response header still in
-                // there? multiple XML documents? how does a SOAP payload
-                // actually look?)
+            http_response(const http_response&) = delete;
+            http_response& operator=(const http_response&) = delete;
 
-                //const auto xml_start_index = data_.find_first_of("<");
-                //EWS_ASSERT(xml_start_index != std::string::npos);
+            http_response(http_response&& other)
+                : data_(std::move(other.data_)),
+                  doc_(std::move(other.doc_)),
+                  code_(std::move(other.code_)),
+                  parsed_(std::move(other.parsed_))
+            {
+                other.code_ = 0U;
+            }
 
+            http_response& operator=(http_response&& rhs)
+            {
+                if (&rhs != this)
+                {
+                    data_ = std::move(rhs.data_);
+                    doc_ = std::move(rhs.doc_);
+                    code_ = std::move(rhs.code_);
+                    parsed_ = std::move(rhs.parsed_);
+                }
+                return *this;
+            }
+
+            // Returns the SOAP payload in this response.
+            //
+            // Parses the payload (if it hasn't already) and returns it as
+            // xml_document.
+            //
+            // Note: we are using a mutable temporary buffer internally because
+            // we are using RapidXml in destructive mode (the parser modifies
+            // source text during the parsing process). Hence, we need to make
+            // sure that parsing is done only once!
+            inline const rapidxml::xml_document<char>& payload()
+            {
+                if (!parsed_)
+                {
+                    auto set_parsed = on_scope_exit([&]()
+                    {
+                        parsed_ = true;
+                    });
+                    parse();
+                }
+                return doc_;
+            }
+
+            // Returns the response code of the HTTP request.
+            inline long code() const EWS_NOEXCEPT
+            {
+                return code_;
+            }
+
+        private:
+            // Here we handle the server's response. We load the SOAP payload
+            // from response into the xml_document.
+            inline void parse()
+            {
                 try
                 {
                     static const int flags = 0;
@@ -161,45 +263,10 @@ namespace ews
                 }
             }
 
-            http_response(const http_response&) = delete;
-            http_response& operator=(const http_response&) = delete;
-
-            http_response(http_response&& other)
-                : data_(std::move(other.data_)),
-                  doc_(std::move(other.doc_)),
-                  code_(other.code_)
-            {
-                other.code_ = 0U;
-            }
-
-            http_response& operator=(http_response&& rhs)
-            {
-                if (&rhs != this)
-                {
-                    data_ = std::move(rhs.data_);
-                    doc_ = std::move(rhs.doc_);
-                    code_ = std::move(rhs.code_);
-                }
-                return *this;
-            }
-
-            // Returns the SOAP payload in this response.
-            inline
-            const rapidxml::xml_document<char>& payload() const EWS_NOEXCEPT
-            {
-                return doc_;
-            }
-
-            // Returns the response code of the HTTP request.
-            inline long code() const EWS_NOEXCEPT
-            {
-                return code_;
-            }
-
-        private:
             std::vector<char> data_;
             rapidxml::xml_document<char> doc_;
             long code_;
+            bool parsed_;
         };
 
         class credentials
