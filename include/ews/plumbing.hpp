@@ -366,25 +366,6 @@ namespace ews
             // the data is encoded the way you want the server to receive it.
             http_response send(const std::string& request)
             {
-#ifndef NDEBUG
-                // Print HTTP headers to stderr
-                set_option(curl::CURLOPT_VERBOSE, 1L);
-#endif
-
-                // Some servers don't like requests that are made without a
-                // user-agent field, so we provide one
-                set_option(curl::CURLOPT_USERAGENT, "libcurl-agent/1.0");
-
-                // Set complete request string for HTTP POST method; note: no
-                // encoding here
-
-                set_option(curl::CURLOPT_POSTFIELDS, request.c_str());
-                set_option(curl::CURLOPT_POSTFIELDSIZE, request.length());
-
-                set_option(curl::CURLOPT_HTTPHEADER, headers_.get());
-
-                std::vector<char> response_data;
-
                 auto callback =
                     [](char* ptr, std::size_t size, std::size_t nmemb,
                        void* userdata) -> std::size_t
@@ -394,18 +375,33 @@ namespace ews
                     const auto realsize = size * nmemb;
                     try
                     {
-                        buf->reserve(realsize + 1);
+                        buf->reserve(realsize + 1); // plus 0-terminus
                     }
                     catch (std::bad_alloc&)
                     {
-                        // Out of memory
+                        // Out of memory, indicate error to libcurl
                         return 0U;
                     }
                     std::copy(ptr, ptr + realsize, std::back_inserter(*buf));
-                    buf->emplace_back('\0');
                     return realsize;
                 };
 
+#ifndef NDEBUG
+                // Print HTTP headers to stderr
+                set_option(curl::CURLOPT_VERBOSE, 1L);
+#endif
+
+                // Set complete request string for HTTP POST method; note: no
+                // encoding here
+                set_option(curl::CURLOPT_POSTFIELDS, request.c_str());
+                set_option(curl::CURLOPT_POSTFIELDSIZE, request.length());
+
+                // Finally, set HTTP headers. We do this as last action here
+                // because we want to overwrite implicitly set header lines due
+                // to the options set above with our own header lines
+                set_option(curl::CURLOPT_HTTPHEADER, headers_.get());
+
+                std::vector<char> response_data;
                 set_option(
                     curl::CURLOPT_WRITEFUNCTION,
                     static_cast<std::size_t (*)(char*, std::size_t, std::size_t,
@@ -426,6 +422,7 @@ namespace ews
                 long response_code = 0U;
                 curl::curl_easy_getinfo(handle_.get(),
                     curl::CURLINFO_RESPONSE_CODE, &response_code);
+                response_data.emplace_back('\0');
                 return http_response(response_code, std::move(response_data));
             }
 
@@ -467,7 +464,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
     xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"
     xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"
-    >)";
+>)";
 
             // Add SOAP headers if present
             if (!soap_headers.empty())
