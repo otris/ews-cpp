@@ -231,7 +231,7 @@ namespace ews
             {
                 if (!parsed_)
                 {
-                    auto set_parsed = on_scope_exit([&]()
+                    on_scope_exit set_parsed([&]()
                     {
                         parsed_ = true;
                     });
