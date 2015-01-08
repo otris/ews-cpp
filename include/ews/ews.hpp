@@ -41,80 +41,7 @@
 
 namespace ews
 {
-    // Defines exception for cURL related runtime errors and some RAII classes.
-    namespace curl
-    {
-        class curl_error final : public std::runtime_error
-        {
-        public:
-            explicit curl_error(const std::string& what)
-                : std::runtime_error(what)
-            {
-            }
-            explicit curl_error(const char* what) : std::runtime_error(what) {}
-        };
-
-        // Helper function; constructs an exception with a meaningful error
-        // message from the given result code for the most recent cURL API call.
-        //
-        // msg: A string that prepends the actual cURL error message.
-        // rescode: The result code of a failed cURL operation.
-        inline curl_error make_error(const std::string& msg, CURLcode rescode)
-        {
-            std::string reason{curl_easy_strerror(rescode)};
-#ifdef NDEBUG
-            (void)msg;
-            return curl_error(reason);
-#else
-            return curl_error(msg + ": \'" + reason + "\'");
-#endif
-        }
-
-        // RAII helper class for CURL* handles.
-        class curl_ptr final
-        {
-        public:
-            curl_ptr() : handle_{curl_easy_init()}
-            {
-                if (!handle_)
-                {
-                    throw curl_error{"Could not start libcurl session"};
-                }
-            }
-
-            ~curl_ptr() { curl_easy_cleanup(handle_); }
-
-            // Could use curl_easy_duphandle for copying
-            curl_ptr(const curl_ptr&) = delete;
-            curl_ptr& operator=(const curl_ptr&) = delete;
-
-            CURL* get() const EWS_NOEXCEPT { return handle_; }
-
-        private:
-            CURL* handle_;
-        };
-
-        // RAII wrapper class around cURLs slist construct.
-        class curl_string_list final
-        {
-        public:
-            curl_string_list() EWS_NOEXCEPT : slist_{nullptr} {}
-
-            ~curl_string_list() { curl_slist_free_all(slist_); }
-
-            void append(const char* str) EWS_NOEXCEPT
-            {
-                slist_ = curl_slist_append(slist_, str);
-            }
-
-            curl_slist* get() const EWS_NOEXCEPT { return slist_; }
-
-        private:
-            curl_slist* slist_;
-        };
-
-    } // curl
-
+    // A SOAP fault occurred due to a bad request
     class soap_fault : public std::runtime_error
     {
     public:
@@ -163,17 +90,86 @@ namespace ews
 
     namespace internal
     {
+        // Exception for libcurl related runtime errors
+        class curl_error final : public std::runtime_error
+        {
+        public:
+            explicit curl_error(const std::string& what)
+                : std::runtime_error(what)
+            {
+            }
+            explicit curl_error(const char* what) : std::runtime_error(what) {}
+        };
+
+        // Helper function; constructs an exception with a meaningful error
+        // message from the given result code for the most recent cURL API call.
+        //
+        // msg: A string that prepends the actual cURL error message.
+        // rescode: The result code of a failed cURL operation.
+        inline curl_error make_curl_error(const std::string& msg, CURLcode rescode)
+        {
+            std::string reason{ curl_easy_strerror(rescode) };
+#ifdef NDEBUG
+            (void)msg;
+            return curl_error(reason);
+#else
+            return curl_error(msg + ": \'" + reason + "\'");
+#endif
+        }
+
+        // RAII helper class for CURL* handles.
+        class curl_ptr final
+        {
+        public:
+            curl_ptr() : handle_{ curl_easy_init() }
+            {
+                if (!handle_)
+                {
+                    throw curl_error{ "Could not start libcurl session" };
+                }
+            }
+
+            ~curl_ptr() { curl_easy_cleanup(handle_); }
+
+            // Could use curl_easy_duphandle for copying
+            curl_ptr(const curl_ptr&) = delete;
+            curl_ptr& operator=(const curl_ptr&) = delete;
+
+            CURL* get() const EWS_NOEXCEPT { return handle_; }
+
+        private:
+            CURL* handle_;
+        };
+
+        // RAII wrapper class around cURLs slist construct.
+        class curl_string_list final
+        {
+        public:
+            curl_string_list() EWS_NOEXCEPT : slist_{ nullptr } {}
+
+            ~curl_string_list() { curl_slist_free_all(slist_); }
+
+            void append(const char* str) EWS_NOEXCEPT
+            {
+                slist_ = curl_slist_append(slist_, str);
+            }
+
+            curl_slist* get() const EWS_NOEXCEPT { return slist_; }
+
+        private:
+            curl_slist* slist_;
+        };
+
         // Obligatory scope guard helper.
         class on_scope_exit final
         {
         public:
             template <typename Function>
             on_scope_exit(Function destructor_function) try
-                : func_(std::move(destructor_function)) // This could throw...
+                : func_(std::move(destructor_function))
             {}
             catch (std::exception&)
             {
-                // ...in which case we immediately call the d'tor function
                 destructor_function();
             }
 
@@ -394,6 +390,7 @@ namespace ews
         }
 
         // Select element by qualified name, nullptr if there is no such element
+        // TODO: what if namespace_uri is empty, can we do that cheaper?
         inline rapidxml::xml_node<>*
         get_element_by_qname(const rapidxml::xml_node<>& node,
                              const char* local_name,
@@ -474,9 +471,7 @@ namespace ews
             }
             else
             {
-                elem = get_element_by_qname(doc,
-                                            "faultstring",
-                                            uri<>::soapxml::envelope());
+                elem = get_element_by_qname(doc, "faultstring", "");
                 EWS_ASSERT(elem &&
                         "Expected <faultstring> element in response");
                 throw soap_fault(elem->value());
@@ -560,13 +555,13 @@ namespace ews
 
                 case CURLE_FAILED_INIT:
                 {
-                    throw curl::make_error(
+                    throw make_curl_error(
                         "curl_easy_setopt: unsupported option", retcode);
                 }
 
                 default:
                 {
-                    throw curl::make_error(
+                    throw make_curl_error(
                         "curl_easy_setopt: failed setting option", retcode);
                 }
                 };
@@ -631,7 +626,7 @@ namespace ews
                 auto retcode = curl_easy_perform(handle_.get());
                 if (retcode != 0)
                 {
-                    throw curl::make_error("curl_easy_perform", retcode);
+                    throw make_curl_error("curl_easy_perform", retcode);
                 }
                 long response_code = 0U;
                 curl_easy_getinfo(handle_.get(),
@@ -641,8 +636,8 @@ namespace ews
             }
 
         private:
-            curl::curl_ptr handle_;
-            curl::curl_string_list headers_;
+            curl_ptr handle_;
+            curl_string_list headers_;
         };
 
         // Makes a raw SOAP request.

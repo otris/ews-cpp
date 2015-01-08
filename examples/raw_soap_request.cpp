@@ -7,26 +7,36 @@
 #include <exception>
 #include <cstdlib>
 
-int main()
+namespace
 {
-    int res = EXIT_SUCCESS;
-    ews::set_up();
     std::string server_uri = "https://columbus.test.otris.de/ews/Exchange.asmx";
     std::string domain = "TEST";
     std::string password = "12345aA!";
     std::string username = "mini";
 
     std::string request{ R"(
-<GetFolder>
-    <FolderShape>
-        <t:BaseShape>AllProperties</t:BaseShape>
-    </FolderShape>
-    <FolderIds>
-        <t:DistinguishedFolderId Id="inbox" />
-    </FolderIds>
-</GetFolder>)" };
+<m:GetFolder>
+<m:FolderShape>
+    <t:BaseShape>IdOnly</t:BaseShape>
+    <t:AdditionalProperties>
+    <t:FieldURI FieldURI="folder:DisplayName" />
+    <t:FieldURI FieldURI="folder:ChildFolderCount" />
+    </t:AdditionalProperties>
+</m:FolderShape>
+<m:FolderIds>
+    <t:DistinguishedFolderId Id="root" />
+</m:FolderIds>
+</m:GetFolder>)" };
 
-    auto soap_headers = std::vector<std::string>{};
+    auto soap_headers = std::vector < std::string > {
+        "<t:RequestServerVersion Version=\"Exchange2013_SP1\"/>"
+    };
+}
+
+int main()
+{
+    int res = EXIT_SUCCESS;
+    ews::set_up();
 
     try
     {
