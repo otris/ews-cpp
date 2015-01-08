@@ -65,7 +65,12 @@ namespace ews
         inline curl_error make_error(const std::string& msg, CURLcode rescode)
         {
             std::string reason{curl_easy_strerror(rescode)};
+#ifdef NDEBUG
+            (void)msg;
+            return curl_error(reason);
+#else
             return curl_error(msg + ": \'" + reason + "\'");
+#endif
         }
 
         // RAII helper class for CURL* handles.
