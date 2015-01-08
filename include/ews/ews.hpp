@@ -17,6 +17,8 @@
 
 #include "rapidxml/rapidxml.hpp"
 
+#include <curl/curl.h>
+
 // Macro for verifying expressions at run-time. Calls assert() with 'expr'.
 // Allows turning assertions off, even if -DNDEBUG wasn't given at
 // compile-time.  This macro does nothing unless EWS_ENABLE_ASSERTS was defined
@@ -39,14 +41,9 @@
 
 namespace ews
 {
-    // Wrapper around curl.h header file. Wraps everything in that header file
-    // within C++ namespace ews::curl; also defines exception for cURL related
-    // runtime errors and some RAII classes.
+    // Defines exception for cURL related runtime errors and some RAII classes.
     namespace curl
     {
-
-#include <curl/curl.h>
-
         class curl_error final : public std::runtime_error
         {
         public:
@@ -523,14 +520,14 @@ namespace ews
             // Create a new HTTP request to the given URL.
             explicit http_request(const std::string& url)
             {
-                set_option(curl::CURLOPT_URL, url.c_str());
+                set_option(CURLOPT_URL, url.c_str());
             }
 
             // Set the HTTP method (only POST supported).
             void set_method(method)
             {
                 // Method can only be a regular POST in our use case
-                set_option(curl::CURLOPT_POST, 1);
+                set_option(CURLOPT_POST, 1);
             }
 
             // Set this HTTP request's content type.
@@ -552,16 +549,16 @@ namespace ews
             // objects other than http_web_requests to set transfer options
             // without direct access to the internal CURL handle.
             template <typename... Args>
-            void set_option(curl::CURLoption option, Args... args)
+            void set_option(CURLoption option, Args... args)
             {
-                auto retcode = curl::curl_easy_setopt(
+                auto retcode = curl_easy_setopt(
                     handle_.get(), option, std::forward<Args>(args)...);
                 switch (retcode)
                 {
-                case curl::CURLE_OK:
+                case CURLE_OK:
                     return;
 
-                case curl::CURLE_FAILED_INIT:
+                case CURLE_FAILED_INIT:
                 {
                     throw curl::make_error(
                         "curl_easy_setopt: unsupported option", retcode);
@@ -605,40 +602,40 @@ namespace ews
 
 #ifndef NDEBUG
                 // Print HTTP headers to stderr
-                set_option(curl::CURLOPT_VERBOSE, 1L);
+                set_option(CURLOPT_VERBOSE, 1L);
 #endif
 
                 // Set complete request string for HTTP POST method; note: no
                 // encoding here
-                set_option(curl::CURLOPT_POSTFIELDS, request.c_str());
-                set_option(curl::CURLOPT_POSTFIELDSIZE, request.length());
+                set_option(CURLOPT_POSTFIELDS, request.c_str());
+                set_option(CURLOPT_POSTFIELDSIZE, request.length());
 
                 // Finally, set HTTP headers. We do this as last action here
                 // because we want to overwrite implicitly set header lines due
                 // to the options set above with our own header lines
-                set_option(curl::CURLOPT_HTTPHEADER, headers_.get());
+                set_option(CURLOPT_HTTPHEADER, headers_.get());
 
                 std::vector<char> response_data;
                 set_option(
-                    curl::CURLOPT_WRITEFUNCTION,
+                    CURLOPT_WRITEFUNCTION,
                     static_cast<std::size_t (*)(char*, std::size_t, std::size_t,
                                                 void*)>(callback));
-                set_option(curl::CURLOPT_WRITEDATA,
+                set_option(CURLOPT_WRITEDATA,
                         std::addressof(response_data));
 
 #ifndef NDEBUG
                 // Turn-off verification of the server's authenticity
-                set_option(curl::CURLOPT_SSL_VERIFYPEER, 0);
+                set_option(CURLOPT_SSL_VERIFYPEER, 0);
 #endif
 
-                auto retcode = curl::curl_easy_perform(handle_.get());
+                auto retcode = curl_easy_perform(handle_.get());
                 if (retcode != 0)
                 {
                     throw curl::make_error("curl_easy_perform", retcode);
                 }
                 long response_code = 0U;
-                curl::curl_easy_getinfo(handle_.get(),
-                    curl::CURLINFO_RESPONSE_CODE, &response_code);
+                curl_easy_getinfo(handle_.get(),
+                    CURLINFO_RESPONSE_CODE, &response_code);
                 response_data.emplace_back('\0');
                 return http_response(response_code, std::move(response_data));
             }
@@ -711,8 +708,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
             // CURLOPT_USERPWD: domain\username:password
             std::string login = domain_ + "\\" + username_ + ":" + password_;
-            request->set_option(curl::CURLOPT_USERPWD, login.c_str());
-            request->set_option(curl::CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
+            request->set_option(CURLOPT_USERPWD, login.c_str());
+            request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
         }
 
     } // internal
@@ -720,10 +717,10 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     // Function is not thread-safe; should be set-up when application is still
     // in single-threaded context. Calling this function more than once does no
     // harm.
-    inline void set_up() { curl::curl_global_init(CURL_GLOBAL_DEFAULT); }
+    inline void set_up() { curl_global_init(CURL_GLOBAL_DEFAULT); }
 
     // Function is not thread-safe; you should call this function only when no
     // other thread is running (see libcurl(3) man-page or
     // http://curl.haxx.se/libcurl/c/libcurl.html)
-    inline void tear_down() EWS_NOEXCEPT { curl::curl_global_cleanup(); }
+    inline void tear_down() EWS_NOEXCEPT { curl_global_cleanup(); }
 }
