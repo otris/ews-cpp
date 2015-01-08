@@ -67,7 +67,7 @@ endif()
 
 add_executable(tests
     ${ews_SOURCES}
-    tests/test_fu.cpp)
+    tests/test_constants.cpp)
 
 target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
 

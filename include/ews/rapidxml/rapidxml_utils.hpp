@@ -17,7 +17,6 @@
 
 namespace rapidxml
 {
-
     //! Represents data loaded from a file
     template <class Ch = char> class file
     {
