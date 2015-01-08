@@ -68,10 +68,17 @@ endif()
 add_executable(tests
     ${ews_SOURCES}
     tests/test_constants.cpp)
-
 target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
-
 set_target_properties(tests PROPERTIES
+    LINKER_LANGUAGE CXX
+    COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZE_CXXFLAGS}"
+    LINK_FLAGS "${SANITIZE_LDFLAGS}")
+
+add_executable(raw_soap_request
+    ${ews_SOURCES}
+    examples/raw_soap_request.cpp)
+target_link_libraries(raw_soap_request ${CURL_LIBRARIES})
+set_target_properties(raw_soap_request PROPERTIES
     LINKER_LANGUAGE CXX
     COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZE_CXXFLAGS}"
     LINK_FLAGS "${SANITIZE_LDFLAGS}")
