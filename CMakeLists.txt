@@ -45,11 +45,12 @@ endif()
 
 set(ews_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(ews_SOURCES
+    ${ews_INCLUDE_DIR}/ews/ews.hpp)
+set(rapidxml_SOURCES
     ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml.hpp
     ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml_iterators.hpp
     ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml_print.hpp
-    ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml_utils.hpp
-    ${ews_INCLUDE_DIR}/ews/ews.hpp)
+    ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml_utils.hpp)
 
 # libcurl 7.22 is packed for Ubuntu 12.04 LTS
 find_package(CURL 7.22 REQUIRED)
@@ -67,6 +68,7 @@ endif()
 
 add_executable(tests
     ${ews_SOURCES}
+    ${rapidxml_SOURCES}
     tests/test_constants.cpp)
 target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
 set_target_properties(tests PROPERTIES
@@ -76,11 +78,15 @@ set_target_properties(tests PROPERTIES
 
 add_executable(raw_soap_request
     ${ews_SOURCES}
+    ${rapidxml_SOURCES}
     examples/raw_soap_request.cpp)
 target_link_libraries(raw_soap_request ${CURL_LIBRARIES})
 set_target_properties(raw_soap_request PROPERTIES
     LINKER_LANGUAGE CXX
     COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZE_CXXFLAGS}"
     LINK_FLAGS "${SANITIZE_LDFLAGS}")
+
+install(FILES ${ews_SOURCES} DESTINATION include/ews)
+install(FILES ${rapidxml_SOURCES} DESTINATION include/ews/rapidxml)
 
 # vim:et sw=4 ts=4
