@@ -9,10 +9,10 @@
 
 namespace
 {
-    std::string server_uri = "https://columbus.test.otris.de/ews/Exchange.asmx";
-    std::string domain = "TEST";
-    std::string password = "12345aA!";
-    std::string username = "mini";
+    const std::string server_uri = "https://columbus.test.otris.de/ews/Exchange.asmx";
+    const std::string domain = "TEST";
+    const std::string password = "12345aA!";
+    const std::string username = "mini";
 
     std::string request{ R"(
 <m:GetFolder>
@@ -28,7 +28,7 @@ namespace
 </m:FolderIds>
 </m:GetFolder>)" };
 
-    auto soap_headers = std::vector < std::string > {
+    const auto soap_headers = std::vector<std::string> {
         "<t:RequestServerVersion Version=\"Exchange2013_SP1\"/>"
     };
 }
