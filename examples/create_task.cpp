@@ -23,8 +23,8 @@ int main()
     {
         auto service = ews::service(server_uri, domain, username, password);
 
-        auto start_time = std::string();
-        auto end_time = std::string();
+        auto start_time = ews::date_time("2015-01-16T12:00:00Z");
+        auto end_time   = ews::date_time("2015-01-16T12:30:00Z");
 
         auto task = ews::task();
         task.set_subject("Something important to do");

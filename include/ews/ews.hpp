@@ -743,8 +743,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         std::string xml() const
         {
-            return "<ItemId Id=\"" + id_ +
-                "\" ChangeKey=\"" + change_key_ + "\" />";
+            return "<ItemId Id=\"" + id() +
+                "\" ChangeKey=\"" + change_key() + "\" />";
         }
 
     private:
@@ -756,6 +756,63 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         std::string change_key_;
     };
 
+    // Note About Dates in EWS
+    //
+    // Microsoft EWS uses date and date/time string representations as described
+    // in http://www.w3.org/TR/xmlschema-2/, notably xs:dateTime (or
+    // http://www.w3.org/2001/XMLSchema:dateTime) and xs:date (also known as
+    // http://www.w3.org/2001/XMLSchema:date).
+    //
+    // For example, the lexical representation of xs:date is
+    //
+    //     '-'? yyyy '-' mm '-' dd zzzzzz?
+    //
+    // whereas the z represents the timezone. Two examples of date strings are:
+    // 2000-01-16Z and 1981-07-02 (the Z means Zulu time which is the same as
+    // UTC). xs:dateTime is formatted accordingly, just with a time component;
+    // you get the idea.
+    //
+    // This library does not interpret, parse, or in any way touch date nor
+    // date/time strings in any circumstance. This library provides two classes,
+    // date and date_type. Both classes, date and date_time, act solely as thin
+    // wrapper to make the signatures of public API functions more type-rich and
+    // easier to understand. Both types are implicitly convertible from
+    // std::string.
+    //
+    // If your date or date/time strings are not formatted properly, Microsoft
+    // EWS will likely give you a SOAP fault which this library transports to
+    // you as an exception of type ews::soap_fault.
+
+    // A date/time string wrapper class for xs:dateTime formatted strings.
+    //
+    // See Note About Dates in EWS above.
+    class date_time final
+    {
+    public:
+        date_time(std::string str) // intentionally not explicit
+            : date_time_string_(std::move(str))
+        {
+        }
+
+    private:
+        std::string date_time_string_;
+    };
+
+    // A date string wrapper class for xs:date formatted strings.
+    //
+    // See Note About Dates in EWS above.
+    class date final
+    {
+    public:
+        date(std::string str) // intentionally not explicit
+            : date_string_(std::move(str))
+        {
+        }
+
+    private:
+        std::string date_string_;
+    };
+
     // Represents the actual body content of a message.
     //
     // This can be of type Best, HTML, or plain-text. See EWS XML elements
@@ -763,7 +820,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     class body final
     {
     public:
-        body(const std::string& text) // Note: intentionally not explicit
+        body(const std::string& text) // intentionally not explicit
         {
             (void)text;
         }
@@ -790,10 +847,10 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         void set_subject(const std::string&) {}
         void set_body(const body&) {}
         void set_owner(const std::string&) {}
-        void set_start_date(const std::string&) {} // TODO: read about DateTime
-        void set_due_date(const std::string&) {}
+        void set_start_date(const ews::date_time&) {}
+        void set_due_date(const ews::date_time&) {}
         void set_reminder_enabled(bool) {}
-        void set_reminder_due_by(const std::string&) {}
+        void set_reminder_due_by(const ews::date_time&) {}
     };
 
     // The service class contains all methods that can be performed on an
