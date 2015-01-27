@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 #include <cstring>
 
-TEST(ConstantsTest, NamespaceURIs)
+TEST(InternalConstantsTest, NamespaceURIs)
 {
     using uri = ews::internal::uri<>;
 

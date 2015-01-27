@@ -69,22 +69,29 @@ endif()
 add_executable(tests
     ${ews_SOURCES}
     ${rapidxml_SOURCES}
-    tests/test_constants.cpp)
+    tests/test_constants.cpp
+    tests/test_item_id.cpp)
 target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
 set_target_properties(tests PROPERTIES
     LINKER_LANGUAGE CXX
     COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZE_CXXFLAGS}"
     LINK_FLAGS "${SANITIZE_LDFLAGS}")
 
-add_executable(raw_soap_request
-    ${ews_SOURCES}
-    ${rapidxml_SOURCES}
-    examples/raw_soap_request.cpp)
-target_link_libraries(raw_soap_request ${CURL_LIBRARIES})
-set_target_properties(raw_soap_request PROPERTIES
-    LINKER_LANGUAGE CXX
-    COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZE_CXXFLAGS}"
-    LINK_FLAGS "${SANITIZE_LDFLAGS}")
+# Helper function for all those example executables
+function(add_example EXAMPLE_NAME)
+    add_executable(${EXAMPLE_NAME}
+        ${ews_SOURCES}
+        ${rapidxml_SOURCES}
+        examples/${EXAMPLE_NAME}.cpp)
+    target_link_libraries(${EXAMPLE_NAME} ${CURL_LIBRARIES})
+    set_target_properties(${EXAMPLE_NAME} PROPERTIES
+        LINKER_LANGUAGE CXX
+        COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZE_CXXFLAGS}"
+        LINK_FLAGS "${SANITIZE_LDFLAGS}")
+endfunction()
+
+add_example(raw_soap_request)
+add_example(create_task)
 
 install(FILES ${ews_SOURCES} DESTINATION include/ews)
 install(FILES ${rapidxml_SOURCES} DESTINATION include/ews/rapidxml)

@@ -695,9 +695,9 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             return request.send(request_stream.str());
         }
 
-        // Implementations
+        // ews::internal implementations
 
-        void ntlm_credentials::certify(http_request* request) const
+        inline void ntlm_credentials::certify(http_request* request) const
         {
             EWS_ASSERT(request != nullptr);
 
@@ -718,4 +718,114 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     // other thread is running (see libcurl(3) man-page or
     // http://curl.haxx.se/libcurl/c/libcurl.html)
     inline void tear_down() EWS_NOEXCEPT { curl_global_cleanup(); }
+
+    // Contains the unique identifier and change key of an item in the Exchange
+    // store.
+    class item_id final
+    {
+    public:
+        explicit item_id(std::string id)
+            : id_(std::move(id)),
+              change_key_()
+        {}
+
+        item_id(std::string id, std::string change_key)
+            : id_(std::move(id)),
+              change_key_(std::move(change_key))
+        {}
+
+        const std::string& id() const EWS_NOEXCEPT { return id_; }
+
+        const std::string& change_key() const EWS_NOEXCEPT
+        {
+            return change_key_;
+        }
+
+        std::string xml() const
+        {
+            return "<ItemId Id=\"" + id_ +
+                "\" ChangeKey=\"" + change_key_ + "\" />";
+        }
+
+    private:
+        // case-sensitive; therefore, comparisons between IDs must be
+        // case-sensitive or binary
+        std::string id_;
+
+        // Identifies a specific version of an item.
+        std::string change_key_;
+    };
+
+    // Represents the actual body content of a message.
+    //
+    // This can be of type Best, HTML, or plain-text. See EWS XML elements
+    // documentation on MSDN.
+    class body final
+    {
+    public:
+        body(const std::string& text) // Note: intentionally not explicit
+        {
+            (void)text;
+        }
+    };
+
+    // Represents a generic item in the Exchange store.
+    //
+    // Base class of a (flat) class hierarchy. Could look like this:
+    //
+    //      item
+    //      ├── appointment
+    //      ├── contact
+    //      ├── message
+    //      └── task
+    class item
+    {};
+
+    // Represents a concrete task in the Exchange store.
+    class task final : public item
+    {
+    public:
+        task() = default;
+
+        void set_subject(const std::string&) {}
+        void set_body(const body&) {}
+        void set_owner(const std::string&) {}
+        void set_start_date(const std::string&) {} // TODO: read about DateTime
+        void set_due_date(const std::string&) {}
+        void set_reminder_enabled(bool) {}
+        void set_reminder_due_by(const std::string&) {}
+    };
+
+    // The service class contains all methods that can be performed on an
+    // Exchange server.
+    //
+    // Will get a *huge* public interface over time, e.g.,
+    //
+    // - create_item
+    // - find_conversation
+    // - find_folder
+    // - find_item
+    // - find_people
+    // - get_contact
+    // - get_task
+    //
+    // and so on and so on.
+    class service final
+    {
+    public:
+        service(std::string server_uri, std::string domain,
+                std::string username, std::string password)
+        {
+            (void)server_uri;
+            (void)domain;
+            (void)username;
+            (void)password;
+        }
+
+        // Creates local_item on the server and returns it's item_id.
+        item_id create_item(item&)
+        {
+            return item_id("AAMkAGM3OTdhOGY0LThhYzgtNDRlMy05NTRiLTE5MDFmODVmNjVmOAAuAAAAAAC4y7EaeL6ESIX5BrvsazIoAQDf1GRGe+uRQ4zRVnseDbqzAAAAAAEBAAA=");
+        }
+    };
 }
