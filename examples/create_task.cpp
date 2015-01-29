@@ -1,18 +1,11 @@
 #include <ews/ews.hpp>
+#include <ews/ews_test_support.hpp>
 
 #include <string>
 #include <iostream>
 #include <ostream>
 #include <exception>
 #include <cstdlib>
-
-namespace
-{
-    const std::string server_uri = "https://192.168.56.2/ews/Exchange.asmx";
-    const std::string domain = "TEST";
-    const std::string password = "12345aA!";
-    const std::string username = "mini";
-}
 
 int main()
 {
@@ -21,7 +14,11 @@ int main()
 
     try
     {
-        auto service = ews::service(server_uri, domain, username, password);
+        const auto env = ews::test::get_from_environment();
+        auto service = ews::service(env.server_uri,
+                                    env.domain,
+                                    env.username,
+                                    env.password);
 
         auto start_time = ews::date_time("2015-01-16T12:00:00Z");
         auto end_time   = ews::date_time("2015-01-16T12:30:00Z");

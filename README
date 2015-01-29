@@ -24,4 +24,15 @@ Additionally, you probably need to tell CMake where to find it. Just set
 CMAKE_PREFIX_PATH to the path where you installed libcurl (e.g.
 C:\Program Files\cURL) and re-configure.
 
+
+                                   Test Suite
+
+Export the following environment variables in order to run individual examples
+or the test suite.
+
+EWS_TEST_DOMAIN
+EWS_TEST_USERNAME
+EWS_TEST_PASSWORD
+EWS_TEST_URI
+
 # vim:et sw=4 ts=4

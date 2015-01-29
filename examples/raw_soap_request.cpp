@@ -1,4 +1,5 @@
 #include <ews/ews.hpp>
+#include <ews/ews_test_support.hpp>
 #include <ews/rapidxml/rapidxml_print.hpp>
 
 #include <string>
@@ -9,11 +10,6 @@
 
 namespace
 {
-    const std::string server_uri = "https://columbus.test.otris.de/ews/Exchange.asmx";
-    const std::string domain = "TEST";
-    const std::string password = "12345aA!";
-    const std::string username = "mini";
-
     std::string request{ R"(
 <m:GetFolder>
 <m:FolderShape>
@@ -40,10 +36,14 @@ int main()
 
     try
     {
-        auto response = ews::internal::make_raw_soap_request(server_uri,
-                username, password, domain, request, soap_headers);
+        const auto env = ews::test::get_from_environment();
+        auto response = ews::internal::make_raw_soap_request(env.server_uri,
+                                                             env.username,
+                                                             env.password,
+                                                             env.domain,
+                                                             request,
+                                                             soap_headers);
         const auto& doc = response.payload();
-
         std::cout << doc << std::endl;
 
         // hack hack ...

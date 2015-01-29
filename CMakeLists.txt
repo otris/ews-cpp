@@ -45,7 +45,8 @@ endif()
 
 set(ews_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(ews_SOURCES
-    ${ews_INCLUDE_DIR}/ews/ews.hpp)
+    ${ews_INCLUDE_DIR}/ews/ews.hpp
+    ${ews_INCLUDE_DIR}/ews/ews_test_support.hpp)
 set(rapidxml_SOURCES
     ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml.hpp
     ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml_iterators.hpp
