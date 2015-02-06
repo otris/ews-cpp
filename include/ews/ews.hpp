@@ -41,6 +41,13 @@
 
 namespace ews
 {
+    // Forward declarations
+    class item_id;
+
+    enum class response_class { error, success, warning };
+
+    enum class response_code { no_error }; // there are hundreds of these
+
     // A SOAP fault occurred due to a bad request
     class soap_fault : public std::runtime_error
     {
@@ -160,7 +167,7 @@ namespace ews
             curl_slist* slist_;
         };
 
-        // Obligatory scope guard helper.
+        // Scope guard helper.
         class on_scope_exit final
         {
         public:
@@ -223,7 +230,9 @@ namespace ews
         class http_request;
 
         // String constants
-        // TODO: sure this can't be done easier?
+        // TODO: sure this can't be done easier within a header file?
+        // We need better handling of static strings (URIs, XML node names,
+        // values and stuff, see usage of rapidxml::internal::compare)
         template <typename Ch = char> struct uri
         {
             struct microsoft
@@ -426,11 +435,12 @@ namespace ews
         // Does nothing if given response is not a SOAP fault
         inline void raise_exception_if_soap_fault(http_response& response)
         {
+            using rapidxml::internal::compare;
+
             if (!response.is_soap_fault())
             {
                 return;
             }
-            using rapidxml::internal::compare;
             const auto& doc = response.payload();
             auto elem = get_element_by_qname(doc,
                                              "ResponseCode",
@@ -440,7 +450,7 @@ namespace ews
             if (compare(elem->value(),
                         elem->value_size(),
                         "ErrorSchemaValidation",
-                        std::strlen("ErrorSchemaValidation")))
+                        21))
             {
                 // Get some more helpful details
                 elem = get_element_by_qname(doc,
@@ -695,17 +705,57 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             return request.send(request_stream.str());
         }
 
-        // ews::internal implementations
-
-        inline void ntlm_credentials::certify(http_request* request) const
+        // Base-class for various response messages
+        class response_message_base
         {
-            EWS_ASSERT(request != nullptr);
+        public:
+            response_message_base(response_class cls, response_code code)
+                : cls_(cls),
+                  code_(code)
+            {
+            }
 
-            // CURLOPT_USERPWD: domain\username:password
-            std::string login = domain_ + "\\" + username_ + ":" + password_;
-            request->set_option(CURLOPT_USERPWD, login.c_str());
-            request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
-        }
+            response_class get_response_class() const EWS_NOEXCEPT
+            {
+                return cls_;
+            }
+
+            bool success() const EWS_NOEXCEPT
+            {
+                return get_response_class() == response_class::success;
+            }
+
+            response_code get_response_code() const EWS_NOEXCEPT
+            {
+                return code_;
+            }
+
+        private:
+            response_class cls_;
+            response_code code_;
+        };
+
+        class create_item_response_message final : public response_message_base
+        {
+        public:
+            static create_item_response_message parse(http_response&); // implemented below
+
+            const std::vector<item_id>& items() const EWS_NOEXCEPT
+            {
+                return items_;
+            }
+
+        private:
+            create_item_response_message(response_class cls,
+                                         response_code code,
+                                         std::vector<item_id> items)
+                : response_message_base(cls, code),
+                  items_(std::move(items))
+            {
+            }
+
+            std::vector<item_id> items_;
+        };
 
     } // internal
 
@@ -745,6 +795,18 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         {
             return "<ItemId Id=\"" + id() +
                 "\" ChangeKey=\"" + change_key() + "\" />";
+        }
+
+        static item_id from_xml_element(const rapidxml::xml_node<>& node)
+        {
+            auto id_attr = node.first_attribute("Id");
+            EWS_ASSERT(id_attr && "Missing attribute Id in <ItemId>");
+            auto id = std::string(id_attr->value(), id_attr->value_size());
+            auto ckey_attr = node.first_attribute("ChangeKey");
+            EWS_ASSERT(ckey_attr && "Missing attribute ChangeKey in <ItemId>");
+            auto ckey = std::string(ckey_attr->value(),
+                    ckey_attr->value_size());
+            return item_id(std::move(id), std::move(ckey));
         }
 
     private:
@@ -828,7 +890,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
     // Represents a generic item in the Exchange store.
     //
-    // Base class of a (flat) class hierarchy. Could look like this:
+    // Basically:
     //
     //      item
     //      ├── appointment
@@ -836,7 +898,17 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     //      ├── message
     //      └── task
     class item
-    {};
+    {
+    public:
+        virtual ~item() = default;
+
+    protected:
+        // Sub-classes reimplement these functions
+        virtual std::string create_item_request_string() = 0;
+
+    private:
+        friend class service;
+    };
 
     // Represents a concrete task in the Exchange store.
     class task final : public item
@@ -844,13 +916,32 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     public:
         task() = default;
 
-        void set_subject(const std::string&) {}
+        void set_subject(const std::string& str) { subject_ = str; }
+        const std::string& subject() const EWS_NOEXCEPT { return subject_; }
+
         void set_body(const body&) {}
         void set_owner(const std::string&) {}
         void set_start_date(const ews::date_time&) {}
         void set_due_date(const ews::date_time&) {}
         void set_reminder_enabled(bool) {}
         void set_reminder_due_by(const ews::date_time&) {}
+
+    private:
+        std::string subject_;
+
+        std::string create_item_request_string() override
+        {
+            return
+                "<CreateItem " \
+                    "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
+                    "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
+                "<Items>" \
+                "<t:Task>" \
+                "<t:Subject>" + subject() + "</t:Subject>" \
+                "</t:Task>" \
+                "</Items>" \
+                "</CreateItem>";
+        }
     };
 
     // The service class contains all methods that can be performed on an
@@ -870,19 +961,141 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     class service final
     {
     public:
+        // FIXME: credentials are stored plain-text in memory
+        //
+        // That'll be bad. We wouldn't want random Joe at first-level support to
+        // see plain-text passwords and user-names just because the process
+        // crashed and some automatic mechanism sent a minidump over the wire.
+        // What are our options? Security-by-obscurity: we could hash
+        // credentials with a hash of the process-id or something.
         service(std::string server_uri, std::string domain,
                 std::string username, std::string password)
+            : server_uri_(std::move(server_uri)),
+              domain_(std::move(domain)),
+              username_(std::move(username)),
+              password_(std::move(password)),
+              server_version_("Exchange2013_SP1")
         {
-            (void)server_uri;
-            (void)domain;
-            (void)username;
-            (void)password;
         }
 
         // Creates local_item on the server and returns it's item_id.
-        item_id create_item(item&)
+        item_id create_item(item& the_item)
         {
-            return item_id("AAMkAGM3OTdhOGY0LThhYzgtNDRlMy05NTRiLTE5MDFmODVmNjVmOAAuAAAAAAC4y7EaeL6ESIX5BrvsazIoAQDf1GRGe+uRQ4zRVnseDbqzAAAAAAEBAAA=");
+            using internal::create_item_response_message;
+
+            // Build-up XML request string
+            auto request_string = the_item.create_item_request_string();
+
+            // TODO: support multiple dialects depending on server version
+            const auto soap_headers = std::vector<std::string> {
+                "<t:RequestServerVersion Version=\"Exchange2013_SP1\"/>"
+            };
+
+            // Make the request
+            auto response = internal::make_raw_soap_request(server_uri_,
+                                                            username_,
+                                                            password_,
+                                                            domain_,
+                                                            request_string,
+                                                            soap_headers);
+
+            // Check response for SOAP fault
+            internal::raise_exception_if_soap_fault(response);
+
+            const auto response_message =
+                create_item_response_message::parse(response);
+            if (!response_message.success())
+            {
+                // throw
+            }
+            EWS_ASSERT(!response_message.items().empty()
+                    && "Expected at least one item");
+            return response_message.items().front();
         }
+
+    private:
+        std::string server_uri_;
+        std::string domain_;
+        std::string username_;
+        std::string password_;
+        std::string server_version_;
     };
+
+    // Implementations
+
+    namespace internal
+    {
+        inline void ntlm_credentials::certify(http_request* request) const
+        {
+            EWS_ASSERT(request != nullptr);
+
+            // CURLOPT_USERPWD: domain\username:password
+            std::string login = domain_ + "\\" + username_ + ":" + password_;
+            request->set_option(CURLOPT_USERPWD, login.c_str());
+            request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
+        }
+
+        // FIXME: a CreateItemResponse can contain multiple ResponseMessages
+        inline create_item_response_message
+        create_item_response_message::parse(http_response& response)
+        {
+            using uri = internal::uri<>;
+            using internal::get_element_by_qname;
+            using rapidxml::internal::compare;
+
+            const auto& doc = response.payload();
+            auto elem = get_element_by_qname(doc, "CreateItemResponseMessage",
+                    uri::microsoft::messages());
+            EWS_ASSERT(elem
+                    && "Expected <CreateItemResponseMessage> element");
+
+            // ResponseClass
+            auto cls = response_class::success;
+            auto response_class_attr = elem->first_attribute("ResponseClass");
+            if (compare(response_class_attr->value(),
+                        response_class_attr->value_size(),
+                        "Error",
+                        5))
+            {
+                cls = response_class::error;
+            }
+            else if (compare(response_class_attr->value(),
+                             response_class_attr->value_size(),
+                             "Warning",
+                             7))
+            {
+                cls = response_class::warning;
+            }
+
+            // ResponseCode
+            auto code = response_code::no_error;
+            auto response_code_elem =
+                elem->first_node_ns(uri::microsoft::messages(), "ResponseCode");
+            EWS_ASSERT(response_code_elem && "Expected <ResponseCode> element");
+            if (!compare(response_code_elem->value(),
+                         response_code_elem->value_size(),
+                         "NoError",
+                         7))
+            {
+                // TODO: there are more possible response codes
+                EWS_ASSERT(false && "Unexpected <ResponseCode> value");
+            }
+
+            // Items
+            auto items = std::vector<item_id>();
+            auto items_elem =
+                elem->first_node_ns(uri::microsoft::messages(), "Items");
+            EWS_ASSERT(response_code_elem && "Expected <Items> element");
+
+            for (auto task_elem = items_elem->first_node(); task_elem;
+                 task_elem = task_elem->next_sibling())
+            {
+                auto item_id_elem = task_elem->first_node();
+                EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
+                items.emplace_back(item_id::from_xml_element(*item_id_elem));
+            }
+
+            return create_item_response_message(cls, code, std::move(items));
+        }
+    }
 }
