@@ -1,21 +1,33 @@
 #include <ews/ews.hpp>
 #include <gtest/gtest.h>
 
+using ews::item_id;
+
 namespace tests
 {
-    TEST(ItemIdTest, Construction)
+    TEST(ItemIdTest, ConstructWithIdOnly)
     {
-        using ews::item_id;
-
-        const std::string id("AAMkAGM3OTdhOGY0LThhYzgtNDRlMy05NTRiLTE5MDFmODVmNjVmOAAuAAAAAAC4y7EaeL6ESIX5BrvsazIoAQDf1GRGe+uRQ4zRVnseDbqzAAAAAAEBAAA=");
-        const std::string change_key("AQAAABYAAADf1GRGe+uRQ4zRVnseDbqzAAACf02r");
-
-        auto a = item_id(id);
-        ASSERT_STREQ(a.id().c_str(), id.c_str());
+        auto a = item_id("abcde");
+        ASSERT_STREQ(a.id().c_str(), "abcde");
         ASSERT_STREQ(a.change_key().c_str(), "");
+    }
 
-        auto b = item_id(id, change_key);
-        ASSERT_STREQ(b.id().c_str(), id.c_str());
-        ASSERT_STREQ(b.change_key().c_str(), change_key.c_str());
+    TEST(ItemIdTest, ConstructWithIdAndChangeKey)
+    {
+        auto a = item_id("abcde", "edcba");
+        ASSERT_STREQ(a.id().c_str(), "abcde");
+        ASSERT_STREQ(a.change_key().c_str(), "edcba");
+    }
+
+    TEST(ItemIdTest, FromXmlNode)
+    {
+        using rapidxml::xml_document;
+        char buf[] = "<ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>";
+        xml_document<> doc;
+        doc.parse<0>(buf);
+        auto node = doc.first_node();
+        auto a = item_id::from_xml_element(*node);
+        ASSERT_STREQ(a.id().c_str(), "abcde");
+        ASSERT_STREQ(a.change_key().c_str(), "edcba");
     }
 }

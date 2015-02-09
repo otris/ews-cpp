@@ -22,10 +22,10 @@ endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS
-        "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wall -Wextra -Wshadow")
+        "${CMAKE_CXX_FLAGS} -std=c++14 -stdlib=libc++ -Wall -Wextra -Wshadow")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS
-        "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -pedantic")
+        "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -pedantic")
 
     # Use colorized output on terminal if supported (GCC 4.9 onwards)
     CHECK_CXX_COMPILER_FLAG("-fdiagnostics-color=auto" GCC_HAS_COLOR)
@@ -33,7 +33,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color=auto")
     endif()
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-    message(WARNING "Intel C++ not configured.")
+    message(WARNING "Intel C++ not supported.")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
         string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS
@@ -71,7 +71,8 @@ add_executable(tests
     ${ews_SOURCES}
     ${rapidxml_SOURCES}
     tests/test_constants.cpp
-    tests/test_item_id.cpp)
+    tests/test_item_id.cpp
+    tests/test_tasks.cpp)
 target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
 set_target_properties(tests PROPERTIES
     LINKER_LANGUAGE CXX
