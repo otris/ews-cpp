@@ -5,6 +5,7 @@ include(CheckCXXCompilerFlag)
 
 option(ENABLE_ASSERTS "Enable run-time checks." OFF)
 option(ENABLE_ASAN "Enable address sanitizer." OFF)
+option(ENABLE_VERBOSE "Enable verbose output to stderr." OFF)
 
 set(SANITIZE_CXXFLAGS)
 set(SANITIZE_LDFLAGS)
@@ -65,6 +66,10 @@ include_directories(${GTEST_INCLUDE_DIR})
 
 if(ENABLE_ASSERTS)
     add_definitions(-DEWS_ENABLE_ASSERTS)
+endif()
+
+if(ENABLE_VERBOSE)
+    add_definitions(-DEWS_ENABLE_VERBOSE)
 endif()
 
 add_executable(tests

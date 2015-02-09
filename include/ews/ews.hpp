@@ -606,8 +606,10 @@ namespace ews
                 };
 
 #ifndef NDEBUG
+# ifdef EWS_ENABLE_VERBOSE
                 // Print HTTP headers to stderr
                 set_option(CURLOPT_VERBOSE, 1L);
+# endif
 #endif
 
                 // Set complete request string for HTTP POST method; note: no
