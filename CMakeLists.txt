@@ -21,20 +21,47 @@ if(ENABLE_ASAN)
     endif()
 endif()
 
+set(GNUCXX_MINIMUM_VERSION "4.8")
+set(CLANGCXX_MINIMUM_VERSION "3.5")
+set(CXX_STANDARD_TAG "c++14")
+
+# Clang
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS CLANGCXX_MINIMUM_VERSION)
+        message(FATAL_ERROR
+            "Minimum required clang++ version: ${CLANGCXX_MINIMUM_VERSION}")
+    endif()
     set(CMAKE_CXX_FLAGS
-        "${CMAKE_CXX_FLAGS} -std=c++14 -stdlib=libc++ -Wall -Wextra -Wshadow")
+        "${CMAKE_CXX_FLAGS} -std=${CXX_STANDARD_TAG} -stdlib=libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow")
+
+# GCC
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    set(CMAKE_CXX_FLAGS
-        "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -pedantic")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS GNUCXX_MINIMUM_VERSION)
+        message(FATAL_ERROR
+            "Minimum required g++ version: ${GNUCXX_MINIMUM_VERSION}")
+    endif()
+
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.9")
+        set(CMAKE_CXX_FLAGS
+            "${CMAKE_CXX_FLAGS} -std=c++1y")
+    else()
+        set(CMAKE_CXX_FLAGS
+            "${CMAKE_CXX_FLAGS} -std=${CXX_STANDARD_TAG}")
+    endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 
     # Use colorized output on terminal if supported (GCC 4.9 onwards)
     CHECK_CXX_COMPILER_FLAG("-fdiagnostics-color=auto" GCC_HAS_COLOR)
     if("${GCC_HAS_COLOR}")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color=auto")
     endif()
+
+# Intel
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
     message(WARNING "Intel C++ not supported.")
+
+# MSVC
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
         string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS

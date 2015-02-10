@@ -4,7 +4,7 @@
                               Supported Compilers
 
 * Clang 3.5 with libc++
-* GCC 4.8.2 with libstdc++
+* GCC 4.8 with libstdc++
 * Visual Studio 2013
 
 
