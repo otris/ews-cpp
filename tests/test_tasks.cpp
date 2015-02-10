@@ -3,6 +3,13 @@
 #include <algorithm>
 #include <memory>
 
+// Feature test macro: GNU libstdc++ prior version 4.9.0 does not have
+// std::make_unique function
+#define EWS_HAS_MAKE_UNIQUE
+#if defined(__GLIBCXX__) && __GLIBCXX__ < 20140422
+# undef EWS_HAS_MAKE_UNIQUE
+#endif
+
 namespace tests
 {
     class TaskTest : public BaseFixture
@@ -22,11 +29,18 @@ namespace tests
         {
             BaseFixture::SetUp();
             const auto& creds = Environment::credentials();
-            service_ptr_ = std::make_unique<ews::service>(
-                    ews::service(creds.server_uri,
-                                 creds.domain,
-                                 creds.username,
-                                 creds.password));
+#ifdef EWS_HAS_MAKE_UNIQUE
+            service_ptr_ = std::make_unique<ews::service>(creds.server_uri,
+                                                          creds.domain,
+                                                          creds.username,
+                                                          creds.password);
+#else
+            service_ptr_ = std::unique_ptr<ews::service>(
+                                         new ews::service(creds.server_uri,
+                                                          creds.domain,
+                                                          creds.username,
+                                                          creds.password));
+#endif
         }
 
         virtual void TearDown()
