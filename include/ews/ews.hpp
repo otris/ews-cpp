@@ -48,6 +48,20 @@ namespace ews
 
     enum class response_code { no_error }; // there are hundreds of these
 
+    enum class base_shape { id_only, default_shape, all_properties };
+
+    inline std::string base_shape_str(base_shape shape)
+    {
+        switch (shape)
+        {
+            case base_shape::id_only: return "IdOnly";
+            case base_shape::default_shape: return "Default";
+            case base_shape::all_properties: return "AllProperties";
+            // TODO: make one base exception class
+            default: throw std::runtime_error("Bad enum value");
+        }
+    }
+
     // A SOAP fault occurred due to a bad request
     class soap_fault : public std::runtime_error
     {
@@ -740,7 +754,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         class create_item_response_message final : public response_message_base
         {
         public:
-            static create_item_response_message parse(http_response&); // implemented below
+            static create_item_response_message
+            parse(http_response&); // implemented below
 
             const std::vector<item_id>& items() const EWS_NOEXCEPT
             {
@@ -757,6 +772,33 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             }
 
             std::vector<item_id> items_;
+        };
+
+        // TODO: can we eliminate code-dup here?
+        template <typename ItemType>
+        class get_item_response_message final : public response_message_base
+        {
+        public:
+            typedef ItemType item_type;
+
+            static get_item_response_message
+            parse(http_response&); // implemented below
+
+            const std::vector<item_type>& items() const EWS_NOEXCEPT
+            {
+                return items_;
+            }
+
+        private:
+            get_item_response_message(response_class cls,
+                                         response_code code,
+                                         std::vector<item_type> items)
+                : response_message_base(cls, code),
+                  items_(std::move(items))
+            {
+            }
+
+            std::vector<item_type> items_;
         };
 
     } // internal
@@ -793,18 +835,27 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             return change_key_;
         }
 
-        std::string xml() const
+        std::string to_xml(const char* xmlns=nullptr) const
         {
-            return "<ItemId Id=\"" + id() +
-                "\" ChangeKey=\"" + change_key() + "\" />";
+            if (xmlns)
+            {
+                return std::string("<") + xmlns + ":ItemId Id=\"" + id() +
+                    "\" ChangeKey=\"" + change_key() + "\"/>";
+            }
+            else
+            {
+                return "<ItemId Id=\"" + id() +
+                    "\" ChangeKey=\"" + change_key() + "\"/>";
+            }
         }
 
-        static item_id from_xml_element(const rapidxml::xml_node<>& node)
+        // Makes an item_id instance from an <ItemId> XML element
+        static item_id from_xml_element(const rapidxml::xml_node<>& elem)
         {
-            auto id_attr = node.first_attribute("Id");
+            auto id_attr = elem.first_attribute("Id");
             EWS_ASSERT(id_attr && "Missing attribute Id in <ItemId>");
             auto id = std::string(id_attr->value(), id_attr->value_size());
-            auto ckey_attr = node.first_attribute("ChangeKey");
+            auto ckey_attr = elem.first_attribute("ChangeKey");
             EWS_ASSERT(ckey_attr && "Missing attribute ChangeKey in <ItemId>");
             auto ckey = std::string(ckey_attr->value(),
                     ckey_attr->value_size());
@@ -919,14 +970,30 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         task() = default;
 
         void set_subject(const std::string& str) { subject_ = str; }
-        const std::string& subject() const EWS_NOEXCEPT { return subject_; }
+        const std::string& get_subject() const EWS_NOEXCEPT { return subject_; }
 
-        void set_body(const body&) {}
+        void set_body(const body&) {} // TODO: getter
+
         void set_owner(const std::string&) {}
         void set_start_date(const ews::date_time&) {}
         void set_due_date(const ews::date_time&) {}
         void set_reminder_enabled(bool) {}
         void set_reminder_due_by(const ews::date_time&) {}
+
+        // Makes a task instance from a <Task> XML element
+        static task from_xml_element(const rapidxml::xml_node<>& elem)
+        {
+            using uri = internal::uri<>;
+
+            auto t = task();
+            auto node = elem.first_node_ns(uri::microsoft::types(), "Subject");
+            if (node)
+            {
+                t.set_subject(std::string(node->value(), node->value_size()));
+            }
+
+            return t;
+        }
 
     private:
         std::string subject_;
@@ -934,15 +1001,15 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         std::string create_item_request_string() override
         {
             return
-                "<CreateItem " \
-                    "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
-                    "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
-                "<Items>" \
-                "<t:Task>" \
-                "<t:Subject>" + subject() + "</t:Subject>" \
-                "</t:Task>" \
-                "</Items>" \
-                "</CreateItem>";
+              "<CreateItem " \
+                  "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
+                  "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
+              "<Items>" \
+              "<t:Task>" \
+              "<t:Subject>" + get_subject() + "</t:Subject>" \
+              "</t:Task>" \
+              "</Items>" \
+              "</CreateItem>";
         }
     };
 
@@ -980,35 +1047,23 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         {
         }
 
+        // Gets a task from the Exchange store
+        task get_task(item_id id)
+        {
+            return get_task(id, base_shape::all_properties);
+        }
+
         // Creates local_item on the server and returns it's item_id.
         item_id create_item(item& the_item)
         {
             using internal::create_item_response_message;
 
-            // Build-up XML request string
-            auto request_string = the_item.create_item_request_string();
-
-            // TODO: support multiple dialects depending on server version
-            const auto soap_headers = std::vector<std::string> {
-                "<t:RequestServerVersion Version=\"Exchange2013_SP1\"/>"
-            };
-
-            // Make the request
-            auto response = internal::make_raw_soap_request(server_uri_,
-                                                            username_,
-                                                            password_,
-                                                            domain_,
-                                                            request_string,
-                                                            soap_headers);
-
-            // Check response for SOAP fault
-            internal::raise_exception_if_soap_fault(response);
-
+            auto response = request(the_item.create_item_request_string());
             const auto response_message =
                 create_item_response_message::parse(response);
             if (!response_message.success())
             {
-                // throw
+                // TODO: throw? Also: code-dup; see get_task below
             }
             EWS_ASSERT(!response_message.items().empty()
                     && "Expected at least one item");
@@ -1021,6 +1076,55 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         std::string username_;
         std::string password_;
         std::string server_version_;
+
+        // Helper for doing requests.
+        //
+        // Adds the right headers, credentials, and checks the response for
+        // faults.
+        internal::http_response request(const std::string& request_string)
+        {
+            // TODO: support multiple dialects depending on server version
+            const auto soap_headers = std::vector<std::string> {
+                "<t:RequestServerVersion Version=\"Exchange2013_SP1\"/>"
+            };
+            auto response = internal::make_raw_soap_request(server_uri_,
+                                                            username_,
+                                                            password_,
+                                                            domain_,
+                                                            request_string,
+                                                            soap_headers);
+            internal::raise_exception_if_soap_fault(response);
+            return response;
+        }
+
+        task get_task(item_id id, base_shape shape)
+        {
+            using get_item_response_message =
+                internal::get_item_response_message<task>;
+
+            const std::string request_string =
+              "<GetItem " \
+                  "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
+                  "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
+              "<ItemShape>" \
+              "<t:BaseShape>" + base_shape_str(shape) + "</t:BaseShape>" \
+              "</ItemShape>" \
+              "<ItemIds>" + id.to_xml("t") + "</ItemIds>" \
+              "</GetItem>";
+            auto response = request(request_string);
+
+           // std::cout << response.payload() << std::endl;
+
+            const auto response_message =
+                get_item_response_message::parse(response);
+            if (!response_message.success())
+            {
+                // TODO: throw?
+            }
+            EWS_ASSERT(!response_message.items().empty()
+                    && "Expected at least one item");
+            return response_message.items().front();
+        }
     };
 
     // Implementations
@@ -1089,15 +1193,80 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                 elem->first_node_ns(uri::microsoft::messages(), "Items");
             EWS_ASSERT(response_code_elem && "Expected <Items> element");
 
-            for (auto task_elem = items_elem->first_node(); task_elem;
-                 task_elem = task_elem->next_sibling())
+            for (auto item_elem = items_elem->first_node(); item_elem;
+                 item_elem = item_elem->next_sibling())
             {
-                auto item_id_elem = task_elem->first_node();
+                auto item_id_elem = item_elem->first_node();
                 EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
                 items.emplace_back(item_id::from_xml_element(*item_id_elem));
             }
 
             return create_item_response_message(cls, code, std::move(items));
+        }
+
+        template <typename ItemType>
+        inline
+        get_item_response_message<ItemType>
+        get_item_response_message<ItemType>::parse(http_response& response)
+        {
+            using uri = internal::uri<>;
+            using internal::get_element_by_qname;
+            using rapidxml::internal::compare;
+
+            const auto& doc = response.payload();
+            auto elem = get_element_by_qname(doc, "GetItemResponseMessage",
+                    uri::microsoft::messages());
+            EWS_ASSERT(elem
+                    && "Expected <GetItemResponseMessage> element");
+
+            // ResponseClass
+            auto cls = response_class::success;
+            auto response_class_attr = elem->first_attribute("ResponseClass");
+            if (compare(response_class_attr->value(),
+                        response_class_attr->value_size(),
+                        "Error",
+                        5))
+            {
+                cls = response_class::error;
+            }
+            else if (compare(response_class_attr->value(),
+                             response_class_attr->value_size(),
+                             "Warning",
+                             7))
+            {
+                cls = response_class::warning;
+            }
+
+            // ResponseCode
+            auto code = response_code::no_error;
+            auto response_code_elem =
+                elem->first_node_ns(uri::microsoft::messages(), "ResponseCode");
+            EWS_ASSERT(response_code_elem && "Expected <ResponseCode> element");
+            if (!compare(response_code_elem->value(),
+                         response_code_elem->value_size(),
+                         "NoError",
+                         7))
+            {
+                // TODO: there are more possible response codes
+                EWS_ASSERT(false && "Unexpected <ResponseCode> value");
+            }
+
+            // Items
+            auto items = std::vector<ItemType>();
+            auto items_elem =
+                elem->first_node_ns(uri::microsoft::messages(), "Items");
+            EWS_ASSERT(response_code_elem && "Expected <Items> element");
+
+            for (auto item_elem = items_elem->first_node(); item_elem;
+                 item_elem = item_elem->next_sibling())
+            {
+                EWS_ASSERT(item_elem && "Expected an item element"); // TODO: minor, you can deduce that from the type at compile time
+                items.emplace_back(ItemType::from_xml_element(*item_elem));
+            }
+
+            return get_item_response_message<ItemType>(cls,
+                                                       code,
+                                                       std::move(items));
         }
     }
 }

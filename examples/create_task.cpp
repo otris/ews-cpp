@@ -33,7 +33,7 @@ int main()
         task.set_reminder_due_by(start_time);
 
         auto item_id = service.create_item(task);
-        std::cout << item_id.xml() << std::endl;
+        std::cout << item_id.to_xml() << std::endl;
     }
     catch (std::exception& exc)
     {
