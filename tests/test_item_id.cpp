@@ -20,6 +20,14 @@ namespace tests
         ASSERT_STREQ(a.change_key().c_str(), "edcba");
     }
 
+    TEST(ItemIdTest, DefaultConstruction)
+    {
+        auto a = item_id();
+        EXPECT_FALSE(a.valid());
+        EXPECT_STREQ(a.id().c_str(), "");
+        EXPECT_STREQ(a.change_key().c_str(), "");
+    }
+
     TEST(ItemIdTest, FromXmlNode)
     {
         char buf[] = "<ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>";

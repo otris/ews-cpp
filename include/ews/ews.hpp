@@ -899,9 +899,17 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
     // Contains the unique identifier and change key of an item in the Exchange
     // store.
+    //
+    // Instances of this class are somewhat immutable. You can default construct
+    // an item_id in which case valid() will always return false. (Default
+    // construction is needed because we need item and it's sub-classes to be
+    // default constructible.) Only item_ids that come from an Exchange store
+    // are considered to be valid.
     class item_id final
     {
     public:
+        item_id() = default;
+
         explicit item_id(std::string id)
             : id_(std::move(id)),
               change_key_()
@@ -918,6 +926,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         {
             return change_key_;
         }
+
+        bool valid() const EWS_NOEXCEPT { return !id_.empty(); }
 
         std::string to_xml(const char* xmlns=nullptr) const
         {
@@ -954,6 +964,14 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // Identifies a specific version of an item.
         std::string change_key_;
     };
+
+#ifndef _MSC_VER
+    static_assert(std::is_default_constructible<item_id>::value, "");
+    static_assert(std::is_copy_constructible<item_id>::value, "");
+    static_assert(std::is_copy_assignable<item_id>::value, "");
+    static_assert(std::is_move_constructible<item_id>::value, "");
+    static_assert(std::is_move_assignable<item_id>::value, "");
+#endif
 
     // Note About Dates in EWS
     //
