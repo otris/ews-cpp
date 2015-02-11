@@ -6,6 +6,9 @@ include(CheckCXXCompilerFlag)
 option(ENABLE_ASSERTS "Enable run-time checks." OFF)
 option(ENABLE_ASAN "Enable address sanitizer." OFF)
 option(ENABLE_VERBOSE "Enable verbose output to stderr." OFF)
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    option(ENABLE_LIBCXX "Link against libc++ instead of libstdc++." ON)
+endif()
 
 set(SANITIZE_CXXFLAGS)
 set(SANITIZE_LDFLAGS)
@@ -31,8 +34,10 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         message(FATAL_ERROR
             "Minimum required clang++ version: ${CLANGCXX_MINIMUM_VERSION}")
     endif()
-    set(CMAKE_CXX_FLAGS
-        "${CMAKE_CXX_FLAGS} -std=${CXX_STANDARD_TAG} -stdlib=libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=${CXX_STANDARD_TAG}")
+    if(ENABLE_LIBCXX)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    endif()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow")
 
 # GCC
