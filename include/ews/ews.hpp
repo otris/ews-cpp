@@ -15,9 +15,9 @@
 #include <cstddef>
 #include <cstring>
 
-#include "rapidxml/rapidxml.hpp"
-
 #include <curl/curl.h>
+
+#include "rapidxml/rapidxml.hpp"
 
 // Macro for verifying expressions at run-time. Calls assert() with 'expr'.
 // Allows turning assertions off, even if -DNDEBUG wasn't given at
@@ -721,12 +721,107 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             return request.send(request_stream.str());
         }
 
+        // Helper function for parsing response messages.
+        //
+        // Code seems to be common for all response messages.
+        //
+        // Returns response class and response code and executes given function
+        // for each item in the response's <Items> array.
+        //
+        // response: The HTTP response retrieved from the server.
+        // response_message_element_name: One of GetItemResponseMessage,
+        // CreateItemResponseMessage, DeleteItemResponseMessage, or
+        // UpdateItemResponseMessage.
+        // func: A callable that is invoked for each item in the response
+        // message's <Items> array. A const rapidxml::xml_node& is passed to
+        // that callable.
+        template <typename Func>
+        inline std::pair<response_class, response_code>
+        for_each_item_in(http_response& response,
+                         const char* response_message_element_name,
+                         Func func)
+        {
+            using uri = internal::uri<>;
+            using internal::get_element_by_qname;
+            using rapidxml::internal::compare;
+
+            const auto& doc = response.payload();
+            auto elem = get_element_by_qname(doc, response_message_element_name,
+                    uri::microsoft::messages());
+            EWS_ASSERT(elem && "Expected element, got nullptr");
+
+            // ResponseClass
+            auto cls = response_class::success;
+            auto response_class_attr = elem->first_attribute("ResponseClass");
+            if (compare(response_class_attr->value(),
+                        response_class_attr->value_size(),
+                        "Error",
+                        5))
+            {
+                cls = response_class::error;
+            }
+            else if (compare(response_class_attr->value(),
+                             response_class_attr->value_size(),
+                             "Warning",
+                             7))
+            {
+                cls = response_class::warning;
+            }
+
+            // ResponseCode
+            auto code = response_code::no_error;
+            auto response_code_elem =
+                elem->first_node_ns(uri::microsoft::messages(), "ResponseCode");
+            EWS_ASSERT(response_code_elem && "Expected <ResponseCode> element");
+            if (!compare(response_code_elem->value(),
+                         response_code_elem->value_size(),
+                         "NoError",
+                         7))
+            {
+                // TODO: there are more possible response codes
+                EWS_ASSERT(false && "Unexpected <ResponseCode> value");
+            }
+
+            // Items
+            auto items_elem =
+                elem->first_node_ns(uri::microsoft::messages(), "Items");
+            EWS_ASSERT(response_code_elem && "Expected <Items> element");
+
+            for (auto item_elem = items_elem->first_node(); item_elem;
+                 item_elem = item_elem->next_sibling())
+            {
+                EWS_ASSERT(item_elem && "Expected an element, got nullptr");
+                func(*item_elem);
+            }
+
+            return std::make_pair(cls, code);
+        }
+
         // Base-class for various response messages
+        //
+        // The ItemType template parameter denotes the type of all items in the
+        // returned array. The choice for a compile-time parameter has following
+        // implications and restrictions:
+        //
+        // - Microsoft EWS allows for different types of items in the returned
+        //   array. However, this implementation forces you to only issue
+        //   requests that return only one type of item in a single response at
+        //   a time.
+        //
+        // - You need to know the type of the item returned by a request
+        //   up-front at compile time. Microsoft EWS would allow to deal with
+        //   different types of items in a single response dynamically.
+        template <typename ItemType>
         class response_message_base
         {
         public:
-            response_message_base(response_class cls, response_code code)
-                : cls_(cls),
+            typedef ItemType item_type;
+
+            response_message_base(response_class cls,
+                                  response_code code,
+                                  std::vector<item_type> items)
+                : items_(std::move(items)),
+                  cls_(cls),
                   code_(code)
             {
             }
@@ -746,59 +841,48 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                 return code_;
             }
 
-        private:
-            response_class cls_;
-            response_code code_;
-        };
-
-        class create_item_response_message final : public response_message_base
-        {
-        public:
-            static create_item_response_message
-            parse(http_response&); // implemented below
-
-            const std::vector<item_id>& items() const EWS_NOEXCEPT
-            {
-                return items_;
-            }
-
-        private:
-            create_item_response_message(response_class cls,
-                                         response_code code,
-                                         std::vector<item_id> items)
-                : response_message_base(cls, code),
-                  items_(std::move(items))
-            {
-            }
-
-            std::vector<item_id> items_;
-        };
-
-        // TODO: can we eliminate code-dup here?
-        template <typename ItemType>
-        class get_item_response_message final : public response_message_base
-        {
-        public:
-            typedef ItemType item_type;
-
-            static get_item_response_message
-            parse(http_response&); // implemented below
-
             const std::vector<item_type>& items() const EWS_NOEXCEPT
             {
                 return items_;
             }
 
         private:
-            get_item_response_message(response_class cls,
+            std::vector<item_type> items_;
+            response_class cls_;
+            response_code code_;
+        };
+
+        class create_item_response_message final
+            : public response_message_base<item_id>
+        {
+        public:
+            // implemented below
+            static create_item_response_message parse(http_response&);
+
+        private:
+            create_item_response_message(response_class cls,
                                          response_code code,
-                                         std::vector<item_type> items)
-                : response_message_base(cls, code),
-                  items_(std::move(items))
+                                         std::vector<item_id> items)
+                : response_message_base<item_id>(cls, code, std::move(items))
             {
             }
+        };
 
-            std::vector<item_type> items_;
+        template <typename ItemType>
+        class get_item_response_message final
+            : public response_message_base<ItemType>
+        {
+        public:
+            // implemented below
+            static get_item_response_message parse(http_response&);
+
+        private:
+            get_item_response_message(response_class cls,
+                                      response_code code,
+                                      std::vector<ItemType> items)
+                : response_message_base<ItemType>(cls, code, std::move(items))
+            {
+            }
         };
 
     } // internal
@@ -1145,63 +1229,20 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         inline create_item_response_message
         create_item_response_message::parse(http_response& response)
         {
-            using uri = internal::uri<>;
-            using internal::get_element_by_qname;
-            using rapidxml::internal::compare;
-
-            const auto& doc = response.payload();
-            auto elem = get_element_by_qname(doc, "CreateItemResponseMessage",
-                    uri::microsoft::messages());
-            EWS_ASSERT(elem
-                    && "Expected <CreateItemResponseMessage> element");
-
-            // ResponseClass
-            auto cls = response_class::success;
-            auto response_class_attr = elem->first_attribute("ResponseClass");
-            if (compare(response_class_attr->value(),
-                        response_class_attr->value_size(),
-                        "Error",
-                        5))
+            auto item_ids = std::vector<item_id>();
+            const auto result = for_each_item_in(
+                    response,
+                    "CreateItemResponseMessage",
+                    [&item_ids](const rapidxml::xml_node<>& item_elem)
             {
-                cls = response_class::error;
-            }
-            else if (compare(response_class_attr->value(),
-                             response_class_attr->value_size(),
-                             "Warning",
-                             7))
-            {
-                cls = response_class::warning;
-            }
-
-            // ResponseCode
-            auto code = response_code::no_error;
-            auto response_code_elem =
-                elem->first_node_ns(uri::microsoft::messages(), "ResponseCode");
-            EWS_ASSERT(response_code_elem && "Expected <ResponseCode> element");
-            if (!compare(response_code_elem->value(),
-                         response_code_elem->value_size(),
-                         "NoError",
-                         7))
-            {
-                // TODO: there are more possible response codes
-                EWS_ASSERT(false && "Unexpected <ResponseCode> value");
-            }
-
-            // Items
-            auto items = std::vector<item_id>();
-            auto items_elem =
-                elem->first_node_ns(uri::microsoft::messages(), "Items");
-            EWS_ASSERT(response_code_elem && "Expected <Items> element");
-
-            for (auto item_elem = items_elem->first_node(); item_elem;
-                 item_elem = item_elem->next_sibling())
-            {
-                auto item_id_elem = item_elem->first_node();
+                auto item_id_elem = item_elem.first_node();
                 EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
-                items.emplace_back(item_id::from_xml_element(*item_id_elem));
-            }
-
-            return create_item_response_message(cls, code, std::move(items));
+                item_ids.emplace_back(
+                        item_id::from_xml_element(*item_id_elem));
+            });
+            return create_item_response_message(result.first,
+                                                result.second,
+                                                std::move(item_ids));
         }
 
         template <typename ItemType>
@@ -1209,64 +1250,17 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         get_item_response_message<ItemType>
         get_item_response_message<ItemType>::parse(http_response& response)
         {
-            using uri = internal::uri<>;
-            using internal::get_element_by_qname;
-            using rapidxml::internal::compare;
-
-            const auto& doc = response.payload();
-            auto elem = get_element_by_qname(doc, "GetItemResponseMessage",
-                    uri::microsoft::messages());
-            EWS_ASSERT(elem
-                    && "Expected <GetItemResponseMessage> element");
-
-            // ResponseClass
-            auto cls = response_class::success;
-            auto response_class_attr = elem->first_attribute("ResponseClass");
-            if (compare(response_class_attr->value(),
-                        response_class_attr->value_size(),
-                        "Error",
-                        5))
-            {
-                cls = response_class::error;
-            }
-            else if (compare(response_class_attr->value(),
-                             response_class_attr->value_size(),
-                             "Warning",
-                             7))
-            {
-                cls = response_class::warning;
-            }
-
-            // ResponseCode
-            auto code = response_code::no_error;
-            auto response_code_elem =
-                elem->first_node_ns(uri::microsoft::messages(), "ResponseCode");
-            EWS_ASSERT(response_code_elem && "Expected <ResponseCode> element");
-            if (!compare(response_code_elem->value(),
-                         response_code_elem->value_size(),
-                         "NoError",
-                         7))
-            {
-                // TODO: there are more possible response codes
-                EWS_ASSERT(false && "Unexpected <ResponseCode> value");
-            }
-
-            // Items
             auto items = std::vector<ItemType>();
-            auto items_elem =
-                elem->first_node_ns(uri::microsoft::messages(), "Items");
-            EWS_ASSERT(response_code_elem && "Expected <Items> element");
-
-            for (auto item_elem = items_elem->first_node(); item_elem;
-                 item_elem = item_elem->next_sibling())
+            const auto result = for_each_item_in(
+                    response,
+                    "GetItemResponseMessage",
+                    [&items](const rapidxml::xml_node<>& item_elem)
             {
-                EWS_ASSERT(item_elem && "Expected an item element"); // TODO: minor, you can deduce that from the type at compile time
-                items.emplace_back(ItemType::from_xml_element(*item_elem));
-            }
-
-            return get_item_response_message<ItemType>(cls,
-                                                       code,
-                                                       std::move(items));
+                items.emplace_back(ItemType::from_xml_element(item_elem));
+            });
+            return get_item_response_message(result.first,
+                                             result.second,
+                                             std::move(items));
         }
     }
 }
