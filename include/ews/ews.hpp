@@ -1055,24 +1055,38 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     class item
     {
     public:
-        virtual ~item() = default;
+        ~item() = default;
 
-    protected:
-        // Sub-classes reimplement these functions
-        virtual std::string create_item_request_string() = 0;
+        const item_id& get_item_id() const EWS_NOEXCEPT { return item_id_; }
+
+        void set_subject(const std::string& str) { subject_ = str; }
+        const std::string& get_subject() const EWS_NOEXCEPT { return subject_; }
 
     private:
+        item_id item_id_;
+        std::string subject_;
+
         friend class service;
+        // Sub-classes reimplement functions below
+        std::string create_item_request_string() const
+        {
+            EWS_ASSERT(false && "TODO");
+        }
     };
+
+#ifndef _MSC_VER
+    static_assert(std::is_default_constructible<item>::value, "");
+    static_assert(std::is_copy_constructible<item>::value, "");
+    static_assert(std::is_copy_assignable<item>::value, "");
+    static_assert(std::is_move_constructible<item>::value, "");
+    static_assert(std::is_move_assignable<item>::value, "");
+#endif
 
     // Represents a concrete task in the Exchange store.
     class task final : public item
     {
     public:
         task() = default;
-
-        void set_subject(const std::string& str) { subject_ = str; }
-        const std::string& get_subject() const EWS_NOEXCEPT { return subject_; }
 
         void set_body(const body&) {} // TODO: getter
 
@@ -1098,9 +1112,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         }
 
     private:
-        std::string subject_;
-
-        std::string create_item_request_string() override
+        friend class service;
+        std::string create_item_request_string() const
         {
             return
               "<CreateItem " \
@@ -1114,6 +1127,14 @@ R"(<?xml version="1.0" encoding="utf-8"?>
               "</CreateItem>";
         }
     };
+
+#ifndef _MSC_VER
+    static_assert(std::is_default_constructible<task>::value, "");
+    static_assert(std::is_copy_constructible<task>::value, "");
+    static_assert(std::is_copy_assignable<task>::value, "");
+    static_assert(std::is_move_constructible<task>::value, "");
+    static_assert(std::is_move_assignable<task>::value, "");
+#endif
 
     // The service class contains all methods that can be performed on an
     // Exchange server.
@@ -1155,8 +1176,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             return get_task(id, base_shape::all_properties);
         }
 
-        // Creates local_item on the server and returns it's item_id.
-        item_id create_item(item& the_item)
+        // Creates an item on the server and returns it's item_id.
+        item_id create_item(const task& the_item)
         {
             using internal::create_item_response_message;
 
