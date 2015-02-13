@@ -114,6 +114,27 @@ namespace tests
         EXPECT_STREQ("Write poem", t.get_subject().c_str());
     }
 
+    TEST_F(TaskTest, GetTaskWithInvalidIdThrows)
+    {
+        auto invalid_id = ews::item_id();
+        EXPECT_THROW(service().get_task(invalid_id), ews::exchange_error);
+    }
+
+    TEST_F(TaskTest, GetTaskWithInvalidIdExceptionResponse)
+    {
+        auto invalid_id = ews::item_id();
+        try
+        {
+            service().get_task(invalid_id);
+            FAIL() << "Expected an exception";
+        }
+        catch (ews::exchange_error& exc)
+        {
+            EXPECT_EQ(ews::response_code::error_invalid_id_empty, exc.code());
+            EXPECT_STREQ("Request failed", exc.what());
+        }
+    }
+
     TEST_F(TaskTest, CreateTask)
     {
         auto start_time = ews::date_time("2015-01-17T12:00:00Z");
