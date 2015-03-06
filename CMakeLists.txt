@@ -28,8 +28,16 @@ set(GNUCXX_MINIMUM_VERSION "4.8")
 set(CLANGCXX_MINIMUM_VERSION "3.5")
 set(CXX_STANDARD_TAG "c++14")
 
-# Clang
+# Helper macro. Add -O0 in Debug configuration to prevent any optimization.
+# Makes gdb users much happier.
+macro(patch_cmake_cxx_debug_flags)
+    if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        set(CMAKE_CXX_FLAGS_DEBUG "-O0 ${CMAKE_CXX_FLAGS_DEBUG}")
+    endif()
+endmacro()
+
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    patch_cmake_cxx_debug_flags()
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS CLANGCXX_MINIMUM_VERSION)
         message(FATAL_ERROR
             "Minimum required clang++ version: ${CLANGCXX_MINIMUM_VERSION}")
@@ -39,9 +47,8 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     endif()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow")
-
-# GCC
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    patch_cmake_cxx_debug_flags()
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS GNUCXX_MINIMUM_VERSION)
         message(FATAL_ERROR
             "Minimum required g++ version: ${GNUCXX_MINIMUM_VERSION}")
@@ -61,12 +68,8 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if("${GCC_HAS_COLOR}")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color=auto")
     endif()
-
-# Intel
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
     message(WARNING "Intel C++ not supported.")
-
-# MSVC
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
         string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS
@@ -75,6 +78,12 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
     endif()
 endif()
+
+# Uncomment to print out compiler settings for different configuration types
+#message(STATUS "Debug: ${CMAKE_CXX_FLAGS_DEBUG}")
+#message(STATUS "Release: ${CMAKE_CXX_FLAGS_RELEASE}")
+#message(STATUS "RelWithDebInfo: ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+#message(STATUS "MinSizeRel: ${CMAKE_CXX_FLAGS_MINSIZEREL}")
 
 set(ews_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(ews_SOURCES
@@ -114,7 +123,7 @@ add_executable(tests
 target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
 set_target_properties(tests PROPERTIES
     LINKER_LANGUAGE CXX
-    COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZE_CXXFLAGS}"
+    COMPILE_FLAGS "${SANITIZE_CXXFLAGS}"
     LINK_FLAGS "${SANITIZE_LDFLAGS}")
 
 # Helper function for all those example executables
@@ -126,7 +135,7 @@ function(add_example EXAMPLE_NAME)
     target_link_libraries(${EXAMPLE_NAME} ${CURL_LIBRARIES})
     set_target_properties(${EXAMPLE_NAME} PROPERTIES
         LINKER_LANGUAGE CXX
-        COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZE_CXXFLAGS}"
+        COMPILE_FLAGS "${SANITIZE_CXXFLAGS}"
         LINK_FLAGS "${SANITIZE_LDFLAGS}")
 endfunction()
 
