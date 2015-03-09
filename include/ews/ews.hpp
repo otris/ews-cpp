@@ -1343,6 +1343,7 @@ namespace ews
         error_working_hours_xml_malformed
     };
 
+    // TODO: move to internal namespace
     inline response_code
     string_to_response_code_enum(const char* str)
     {
@@ -1629,6 +1630,7 @@ namespace ews
 
     enum class base_shape { id_only, default_shape, all_properties };
 
+    // TODO: move to internal namespace
     inline std::string base_shape_str(base_shape shape)
     {
         switch (shape)
@@ -1637,6 +1639,45 @@ namespace ews
             case base_shape::default_shape: return "Default";
             case base_shape::all_properties: return "AllProperties";
             default: throw exception("Bad enum value");
+        }
+    }
+
+    // Side note: we do not provide SoftDelete because that does not make much
+    // sense from an EWS perspective
+    enum class delete_type { hard_delete, move_to_deleted_items };
+
+    // TODO: move to internal namespace
+    inline std::string delete_type_str(delete_type d)
+    {
+        switch (d)
+        {
+            case delete_type::hard_delete:
+                return "HardDelete";
+            case delete_type::move_to_deleted_items:
+                return "MoveToDeletedItems";
+            default:
+                throw exception("Bad enum value");
+        }
+    }
+
+    enum class affected_task_occurrences
+    {
+        all_occurrences,
+        specified_occurrence_only
+    };
+
+    // TODO: move to internal namespace
+    inline std::string
+    affected_task_occurrences_str(affected_task_occurrences o)
+    {
+        switch (o)
+        {
+            case affected_task_occurrences::all_occurrences:
+                return "AllOccurrences";
+            case affected_task_occurrences::specified_occurrence_only:
+                return "SpecifiedOccurrenceOnly";
+            default:
+                throw exception("Bad enum value");
         }
     }
 
@@ -2315,38 +2356,15 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             return request.send(request_stream.str());
         }
 
-        // Helper function for parsing a single response message.
-        //
-        // Returns response class and response code and executes given function
-        // for each item in the response's <Items> array.
-        //
-        // response: The HTTP response retrieved from the server.
-        // response_message_element_name: One of GetItemResponseMessage,
-        // CreateItemResponseMessage, DeleteItemResponseMessage, or
-        // UpdateItemResponseMessage.
-        // func: A callable that is invoked for each item in the response
-        // message's <Items> array. A const rapidxml::xml_node& is passed to
-        // that callable.
-        template <typename Func>
+        // Parse response class and response code from given element.
         inline std::pair<response_class, response_code>
-        for_each_item_in(http_response& response,
-                         const char* response_message_element_name,
-                         Func func)
+        parse_response_class_and_code(const rapidxml::xml_node<>& elem)
         {
             using uri = internal::uri<>;
-            using internal::get_element_by_qname;
             using rapidxml::internal::compare;
 
-            const auto& doc = response.payload();
-            auto elem = get_element_by_qname(doc,
-                                             response_message_element_name,
-                                             uri::microsoft::messages());
-            EWS_ASSERT(elem && "Expected element, got nullptr");
-
-            // Parse ResponseClass attribute first
-
             auto cls = response_class::success;
-            auto response_class_attr = elem->first_attribute("ResponseClass");
+            auto response_class_attr = elem.first_attribute("ResponseClass");
             if (compare(response_class_attr->value(),
                         response_class_attr->value_size(),
                         "Error",
@@ -2371,7 +2389,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             if (cls != response_class::success)
             {
                 auto response_code_elem =
-                    elem->first_node_ns(uri::microsoft::messages(),
+                    elem.first_node_ns(uri::microsoft::messages(),
                                         "ResponseCode");
                 EWS_ASSERT(response_code_elem
                         && "Expected <ResponseCode> element");
@@ -2379,10 +2397,22 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                     string_to_response_code_enum(response_code_elem->value());
             }
 
-            // Finally, iterate over <Items> array
+            return std::make_pair(cls, code);
+        }
+
+        // Iterate over <Items> array and execute given function for each node.
+        //
+        // elem: a response message element, e.g., CreateItemResponseMessage
+        // func: A callable that is invoked for each item in the response
+        // message's <Items> array. A const rapidxml::xml_node& is passed to
+        // that callable.
+        template <typename Func>
+        inline void for_each_item(const rapidxml::xml_node<>& elem, Func func)
+        {
+            using uri = internal::uri<>;
 
             auto items_elem =
-                elem->first_node_ns(uri::microsoft::messages(), "Items");
+                elem.first_node_ns(uri::microsoft::messages(), "Items");
             EWS_ASSERT(items_elem && "Expected <Items> element");
 
             for (auto item_elem = items_elem->first_node(); item_elem;
@@ -2391,35 +2421,14 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                 EWS_ASSERT(item_elem && "Expected an element, got nullptr");
                 func(*item_elem);
             }
-
-            return std::make_pair(cls, code);
         }
 
-        // Base-class for various response messages
-        //
-        // The ItemType template parameter denotes the type of all items in the
-        // returned array. The choice for a compile-time parameter has following
-        // implications and restrictions:
-        //
-        // - Microsoft EWS allows for different types of items in the returned
-        //   array. However, this implementation forces you to only issue
-        //   requests that return only one type of item in a single response at
-        //   a time.
-        //
-        // - You need to know the type of the item returned by a request
-        //   up-front at compile time. Microsoft EWS would allow to deal with
-        //   different types of items in a single response dynamically.
-        template <typename ItemType>
+        // Base-class for all response messages
         class response_message_base
         {
         public:
-            typedef ItemType item_type;
-
-            response_message_base(response_class cls,
-                                  response_code code,
-                                  std::vector<item_type> items)
-                : items_(std::move(items)),
-                  cls_(cls),
+            response_message_base(response_class cls, response_code code)
+                : cls_(cls),
                   code_(code)
             {
             }
@@ -2439,6 +2448,39 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                 return code_;
             }
 
+        private:
+            response_class cls_;
+            response_code code_;
+        };
+
+        // Base-class for response messages that contain an <Items> array.
+        //
+        // The ItemType template parameter denotes the type of all items in the
+        // returned array. The choice for a compile-time parameter has following
+        // implications and restrictions:
+        //
+        // - Microsoft EWS allows for different types of items in the returned
+        //   array. However, this implementation forces you to only issue
+        //   requests that return only one type of item in a single response at
+        //   a time.
+        //
+        // - You need to know the type of the item returned by a request
+        //   up-front at compile time. Microsoft EWS would allow to deal with
+        //   different types of items in a single response dynamically.
+        template <typename ItemType>
+        class response_message_with_items : public response_message_base
+        {
+        public:
+            typedef ItemType item_type;
+
+            response_message_with_items(response_class cls,
+                                        response_code code,
+                                        std::vector<item_type> items)
+                : response_message_base(cls, code),
+                  items_(std::move(items))
+            {
+            }
+
             const std::vector<item_type>& items() const EWS_NOEXCEPT
             {
                 return items_;
@@ -2446,12 +2488,10 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         private:
             std::vector<item_type> items_;
-            response_class cls_;
-            response_code code_;
         };
 
         class create_item_response_message final
-            : public response_message_base<item_id>
+            : public response_message_with_items<item_id>
         {
         public:
             // implemented below
@@ -2461,14 +2501,16 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             create_item_response_message(response_class cls,
                                          response_code code,
                                          std::vector<item_id> items)
-                : response_message_base<item_id>(cls, code, std::move(items))
+                : response_message_with_items<item_id>(cls,
+                                                       code,
+                                                       std::move(items))
             {
             }
         };
 
         template <typename ItemType>
         class get_item_response_message final
-            : public response_message_base<ItemType>
+            : public response_message_with_items<ItemType>
         {
         public:
             // implemented below
@@ -2478,7 +2520,35 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             get_item_response_message(response_class cls,
                                       response_code code,
                                       std::vector<ItemType> items)
-                : response_message_base<ItemType>(cls, code, std::move(items))
+                : response_message_with_items<ItemType>(cls,
+                                                        code,
+                                                        std::move(items))
+            {
+            }
+        };
+
+        class delete_item_response_message final : public response_message_base
+        {
+        public:
+            static delete_item_response_message parse(http_response& response)
+            {
+                using uri = internal::uri<>;
+                using internal::get_element_by_qname;
+
+                const auto& doc = response.payload();
+                auto elem = get_element_by_qname(doc,
+                                                 "DeleteItemResponseMessage",
+                                                 uri::microsoft::messages());
+                EWS_ASSERT(elem &&
+                        "Expected <DeleteItemResponseMessage>, got nullptr");
+                const auto result = parse_response_class_and_code(*elem);
+                return delete_item_response_message(result.first,
+                                                    result.second);
+            }
+
+        private:
+            delete_item_response_message(response_class cls, response_code code)
+                : response_message_base(cls, code)
             {
             }
         };
@@ -2653,7 +2723,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     class item
     {
     public:
-        ~item() = default;
+        item() = default;
+        explicit item(item_id id) : item_id_(std::move(id)) {}
 
         const item_id& get_item_id() const EWS_NOEXCEPT { return item_id_; }
 
@@ -2686,6 +2757,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     {
     public:
         task() = default;
+        explicit task(item_id id) : item(id) {}
 
         void set_body(const body&) {} // TODO: getter
 
@@ -2700,13 +2772,14 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         {
             using uri = internal::uri<>;
 
-            auto t = task();
-            auto node = elem.first_node_ns(uri::microsoft::types(), "Subject");
+            auto node = elem.first_node_ns(uri::microsoft::types(), "ItemId");
+            EWS_ASSERT(node && "Expected <ItemId>");
+            auto t = task(item_id::from_xml_element(*node));
+            node = elem.first_node_ns(uri::microsoft::types(), "Subject");
             if (node)
             {
                 t.set_subject(std::string(node->value(), node->value_size()));
             }
-
             return t;
         }
 
@@ -2775,6 +2848,31 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             return get_task(id, base_shape::all_properties);
         }
 
+        void delete_task(task&& the_task,
+                         delete_type del_type,
+                         affected_task_occurrences affected)
+        {
+            using internal::delete_item_response_message;
+
+            const std::string request_string =
+              "<DeleteItem " \
+                  "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
+                  "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" " \
+                  "DeleteType=\"" + delete_type_str(del_type) + "\" " \
+                  "AffectedTaskOccurrences=\"" + affected_task_occurrences_str(affected) + "\">" \
+              "<ItemIds>" + the_task.get_item_id().to_xml("t") + "</ItemIds>" \
+              "</DeleteItem>";
+            auto response = request(request_string);
+            const auto response_message =
+                delete_item_response_message::parse(response);
+            if (!response_message.success())
+            {
+                throw exchange_error(response_message.get_response_code());
+            }
+            // Sink the argument
+            task t = std::move(the_task);
+        }
+
         // Creates an item on the server and returns it's item_id.
         item_id create_item(const task& the_item)
         {
@@ -2785,7 +2883,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                 create_item_response_message::parse(response);
             if (!response_message.success())
             {
-                // TODO: throw? Also: code-dup; see get_task below
+                throw exchange_error(response_message.get_response_code());
             }
             EWS_ASSERT(!response_message.items().empty()
                     && "Expected at least one item");
@@ -2864,10 +2962,18 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         inline create_item_response_message
         create_item_response_message::parse(http_response& response)
         {
+            using uri = internal::uri<>;
+            using internal::get_element_by_qname;
+
+            const auto& doc = response.payload();
+            auto elem = get_element_by_qname(doc,
+                                             "CreateItemResponseMessage",
+                                             uri::microsoft::messages());
+            EWS_ASSERT(elem &&
+                    "Expected <CreateItemResponseMessage>, got nullptr");
+            const auto result = parse_response_class_and_code(*elem);
             auto item_ids = std::vector<item_id>();
-            const auto result = for_each_item_in(
-                    response,
-                    "CreateItemResponseMessage",
+            for_each_item(*elem,
                     [&item_ids](const rapidxml::xml_node<>& item_elem)
             {
                 auto item_id_elem = item_elem.first_node();
@@ -2885,11 +2991,18 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         get_item_response_message<ItemType>
         get_item_response_message<ItemType>::parse(http_response& response)
         {
+            using uri = internal::uri<>;
+            using internal::get_element_by_qname;
+
+            const auto& doc = response.payload();
+            auto elem = get_element_by_qname(doc,
+                                             "GetItemResponseMessage",
+                                             uri::microsoft::messages());
+            EWS_ASSERT(elem &&
+                    "Expected <GetItemResponseMessage>, got nullptr");
+            const auto result = parse_response_class_and_code(*elem);
             auto items = std::vector<ItemType>();
-            const auto result = for_each_item_in(
-                    response,
-                    "GetItemResponseMessage",
-                    [&items](const rapidxml::xml_node<>& item_elem)
+            for_each_item(*elem, [&items](const rapidxml::xml_node<>& item_elem)
             {
                 items.emplace_back(ItemType::from_xml_element(item_elem));
             });

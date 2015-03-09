@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 // Feature test macro: GNU libstdc++ prior version 4.9.0 does not have
 // std::make_unique function
@@ -111,6 +112,8 @@ namespace tests
         auto node = doc.first_node();
         auto t = ews::task::from_xml_element(*node);
 
+        EXPECT_STREQ("abcde", t.get_item_id().id().c_str());
+        EXPECT_STREQ("edcba", t.get_item_id().change_key().c_str());
         EXPECT_STREQ("Write poem", t.get_subject().c_str());
     }
 
@@ -135,22 +138,34 @@ namespace tests
         }
     }
 
-    TEST_F(TaskTest, CreateTask)
+    TEST_F(TaskTest, CreateAndDeleteTask)
     {
         auto start_time = ews::date_time("2015-01-17T12:00:00Z");
         auto end_time   = ews::date_time("2015-01-17T12:30:00Z");
         auto task = ews::task();
-        task.set_subject("Something important to do");
+        task.set_subject("Something really important to do");
         task.set_body(ews::body("Some descriptive body text"));
         task.set_owner("Donald Duck");
         task.set_start_date(start_time);
         task.set_due_date(end_time);
         task.set_reminder_enabled(true);
         task.set_reminder_due_by(start_time);
-        auto item_id = service().create_item(task);
+        const auto item_id = service().create_item(task);
 
         auto created_task = service().get_task(item_id);
-        EXPECT_STREQ("Something important to do",
+        EXPECT_STREQ("Something really important to do",
                      created_task.get_subject().c_str());
+
+        ASSERT_NO_THROW(
+        {
+            service().delete_task(
+                    std::move(created_task), // Sink argument
+                    ews::delete_type::hard_delete,
+                    ews::affected_task_occurrences::all_occurrences);
+        });
+        EXPECT_STREQ("", created_task.get_subject().c_str());
+
+        // Check if it is still in store
+        EXPECT_THROW(service().get_task(item_id), ews::exchange_error);
     }
 }
