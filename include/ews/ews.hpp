@@ -2869,8 +2869,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             {
                 throw exchange_error(response_message.get_response_code());
             }
-            // Sink the argument
-            task t = std::move(the_task);
+            the_task = task();
         }
 
         // Creates an item on the server and returns it's item_id.
