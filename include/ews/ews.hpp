@@ -2808,6 +2808,65 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     static_assert(std::is_move_assignable<task>::value, "");
 #endif
 
+    // A contact item in the Exchange store.
+    class contact final : public item
+    {
+    public:
+        contact() = default;
+        explicit contact(item_id id) : item(id) {}
+
+        void set_given_name(const std::string& str) { given_name_ = str; }
+        const std::string& get_given_name() const EWS_NOEXCEPT
+        {
+            return given_name_;
+        }
+        void set_surname(const std::string& str) { surname_ = str; }
+        const std::string& get_surname() const EWS_NOEXCEPT { return surname_; }
+
+        // Makes a contact instance from a <Contact> XML element
+        static contact from_xml_element(const rapidxml::xml_node<>& elem)
+        {
+            using uri = internal::uri<>;
+
+            auto node = elem.first_node_ns(uri::microsoft::types(), "ItemId");
+            EWS_ASSERT(node && "Expected <ItemId>");
+            auto c = contact(item_id::from_xml_element(*node));
+            node = elem.first_node_ns(uri::microsoft::types(), "Subject");
+            if (node)
+            {
+                c.set_subject(std::string(node->value(), node->value_size()));
+            }
+            return c;
+        }
+
+    private:
+        std::string given_name_;
+        std::string surname_;
+
+        friend class service;
+        std::string create_item_request_string() const
+        {
+            return
+              "<CreateItem " \
+                  "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
+                  "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
+              "<Items>" \
+              "<t:Contact>" \
+              "<t:Subject>" + get_subject() + "</t:Subject>" \
+              "</t:Contact>" \
+              "</Items>" \
+              "</CreateItem>";
+        }
+    };
+
+#ifndef _MSC_VER
+    static_assert(std::is_default_constructible<contact>::value, "");
+    static_assert(std::is_copy_constructible<contact>::value, "");
+    static_assert(std::is_copy_assignable<contact>::value, "");
+    static_assert(std::is_move_constructible<contact>::value, "");
+    static_assert(std::is_move_assignable<contact>::value, "");
+#endif
+
     // The service class contains all methods that can be performed on an
     // Exchange server.
     //
@@ -2845,9 +2904,16 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // Gets a task from the Exchange store
         task get_task(item_id id)
         {
-            return get_task(id, base_shape::all_properties);
+            return get_item<task>(id, base_shape::all_properties);
         }
 
+        // Gets a contact from the Exchange store
+        contact get_contact(item_id id)
+        {
+            return get_item<contact>(id, base_shape::all_properties);
+        }
+
+        // Delete a task item from the Exchange store
         void delete_task(task&& the_task,
                          delete_type del_type,
                          affected_task_occurrences affected)
@@ -2872,21 +2938,37 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             the_task = task();
         }
 
-        // Creates an item on the server and returns it's item_id.
-        item_id create_item(const task& the_item)
+        // Delete a contact item from the Exchange store
+        void delete_contact(contact&& the_contact)
         {
-            using internal::create_item_response_message;
+            using internal::delete_item_response_message;
 
-            auto response = request(the_item.create_item_request_string());
+            const std::string request_string =
+              "<DeleteItem " \
+                  "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
+                  "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\">" \
+              "<ItemIds>" + the_contact.get_item_id().to_xml("t") + "</ItemIds>" \
+              "</DeleteItem>";
+            auto response = request(request_string);
             const auto response_message =
-                create_item_response_message::parse(response);
+                delete_item_response_message::parse(response);
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
             }
-            EWS_ASSERT(!response_message.items().empty()
-                    && "Expected at least one item");
-            return response_message.items().front();
+            the_contact = contact();
+        }
+
+        // Only purpose of this overload-set is to prevent exploding template
+        // code in errors messages in caller's code
+        item_id create_item(const task& the_item)
+        {
+            return create_item<task>(the_item);
+        }
+
+        item_id create_item(const contact& the_item)
+        {
+            return create_item<contact>(the_item);
         }
 
     private:
@@ -2896,10 +2978,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         std::string password_;
         std::string server_version_;
 
-        // Helper for doing requests.
-        //
-        // Adds the right headers, credentials, and checks the response for
-        // faults.
+        // Helper for doing requests.  Adds the right headers, credentials, and
+        // checks the response for faults.
         internal::http_response request(const std::string& request_string)
         {
             // TODO: support multiple dialects depending on server version
@@ -2916,10 +2996,12 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             return response;
         }
 
-        task get_task(item_id id, base_shape shape)
+        // Gets an item from the server.
+        template <typename ItemType>
+        ItemType get_item(item_id id, base_shape shape)
         {
             using get_item_response_message =
-                internal::get_item_response_message<task>;
+                internal::get_item_response_message<ItemType>;
 
             const std::string request_string =
               "<GetItem " \
@@ -2933,6 +3015,24 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             auto response = request(request_string);
             const auto response_message =
                 get_item_response_message::parse(response);
+            if (!response_message.success())
+            {
+                throw exchange_error(response_message.get_response_code());
+            }
+            EWS_ASSERT(!response_message.items().empty()
+                    && "Expected at least one item");
+            return response_message.items().front();
+        }
+
+        // Creates an item on the server and returns it's item_id.
+        template <typename ItemType>
+        item_id create_item(const ItemType& the_item)
+        {
+            using internal::create_item_response_message;
+
+            auto response = request(the_item.create_item_request_string());
+            const auto response_message =
+                create_item_response_message::parse(response);
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());

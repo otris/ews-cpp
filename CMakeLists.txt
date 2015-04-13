@@ -117,6 +117,7 @@ add_executable(tests
     ${ews_SOURCES}
     ${rapidxml_SOURCES}
     tests/test_constants.cpp
+    tests/test_contacts.cpp
     tests/test_item_id.cpp
     tests/test_items.cpp
     tests/test_tasks.cpp)

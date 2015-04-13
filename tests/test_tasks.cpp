@@ -1,55 +1,13 @@
 #include "fixture.hpp"
+#include <string>
 #include <vector>
 #include <algorithm>
-#include <memory>
+#include <iterator>
 #include <utility>
-
-// Feature test macro: GNU libstdc++ prior version 4.9.0 does not have
-// std::make_unique function
-#define EWS_HAS_MAKE_UNIQUE
-#if defined(__GLIBCXX__) && __GLIBCXX__ < 20140422
-# undef EWS_HAS_MAKE_UNIQUE
-#endif
 
 namespace tests
 {
-    class TaskTest : public BaseFixture
-    {
-    public:
-        virtual ~TaskTest() = default;
-
-        ews::service& service()
-        {
-            return *service_ptr_;
-        }
-
-    private:
-        std::unique_ptr<ews::service> service_ptr_;
-
-        virtual void SetUp()
-        {
-            BaseFixture::SetUp();
-            const auto& creds = Environment::credentials();
-#ifdef EWS_HAS_MAKE_UNIQUE
-            service_ptr_ = std::make_unique<ews::service>(creds.server_uri,
-                                                          creds.domain,
-                                                          creds.username,
-                                                          creds.password);
-#else
-            service_ptr_ = std::unique_ptr<ews::service>(
-                                         new ews::service(creds.server_uri,
-                                                          creds.domain,
-                                                          creds.username,
-                                                          creds.password));
-#endif
-        }
-
-        virtual void TearDown()
-        {
-            service_ptr_.reset();
-            BaseFixture::TearDown();
-        }
-    };
+    class TaskTest : public ServiceFixture {};
 
     // TODO: test does not need to be in a fixture that can talk to the server
     TEST_F(TaskTest, FromXmlElement)
