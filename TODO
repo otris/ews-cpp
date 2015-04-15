@@ -1,0 +1,11 @@
+                                      TODO
+                                      ====
+
+- SIGPIPE issue, investigate, options?
+- Set-up a new Exchange VM on some KVM host
+- raise_exception_if_soap_fault: parsing payload might throw parse_error, what
+  then?
+- Why do we start parsing XML payload when server's response code is 503?
+- Add example: assign task to multiple mailbox owners, update task, check who
+  has completed it
+- Document exception hierarchy; where?
