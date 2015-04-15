@@ -20,6 +20,15 @@
 
 #include "rapidxml/rapidxml.hpp"
 
+// Print more detailed error messages, HTTP request/response etc to stderr
+#ifndef NDEBUG
+# ifdef EWS_ENABLE_VERBOSE
+#  include <iostream>
+#  include <ostream>
+#  include "rapidxml/rapidxml_print.hpp"
+# endif
+#endif
+
 // Macro for verifying expressions at run-time. Calls assert() with 'expr'.
 // Allows turning assertions off, even if -DNDEBUG wasn't given at
 // compile-time.  This macro does nothing unless EWS_ENABLE_ASSERTS was defined
@@ -42,6 +51,74 @@
 
 namespace ews
 {
+    namespace internal
+    {
+        // Scope guard helper.
+        class on_scope_exit final
+        {
+        public:
+            template <typename Function>
+            on_scope_exit(Function destructor_function) try
+                : func_(std::move(destructor_function))
+            {}
+            catch (std::exception&)
+            {
+                destructor_function();
+            }
+
+            on_scope_exit() = delete;
+            on_scope_exit(const on_scope_exit&) = delete;
+            on_scope_exit& operator=(const on_scope_exit&) = delete;
+
+            ~on_scope_exit()
+            {
+                if (func_)
+                {
+                    try
+                    {
+                        func_();
+                    }
+                    catch (std::exception&)
+                    {
+                        // Swallow, abort(3) if suitable
+                        EWS_ASSERT(false);
+                    }
+                }
+            }
+
+            void release() { func_ = nullptr; }
+
+        private:
+            std::function<void(void)> func_;
+        };
+
+#ifndef _MSC_VER
+        // <type_traits> is broken in Visual Studio 12, disregard
+        static_assert(!std::is_copy_constructible<on_scope_exit>::value, "");
+        static_assert(!std::is_copy_assignable<on_scope_exit>::value, "");
+        static_assert(!std::is_default_constructible<on_scope_exit>::value, "");
+#endif
+
+        // Helper functor; calculate hash of 'enum class'
+        struct enum_class_hash
+        {
+            template <typename T> std::size_t operator()(T val) const
+            {
+                return static_cast<std::size_t>(val);
+            }
+        };
+
+        // Helper function returning reference to the empty string
+        inline const std::string& empty_string()
+        {
+            static const std::string the_empty_string;
+            return the_empty_string;
+        }
+
+        // Forward declarations
+        class http_request;
+    }
+
     // Forward declarations
     class item_id;
 
@@ -56,6 +133,17 @@ namespace ews
         {
         }
         explicit exception(const char* what) : std::runtime_error(what) {}
+    };
+
+    // Raised when a response from a server could not be parsed
+    class parse_error final : public exception
+    {
+    public:
+        explicit parse_error(const std::string& what)
+            : exception(what)
+        {
+        }
+        explicit parse_error(const char* what) : exception(what) {}
     };
 
     enum class response_code
@@ -1344,8 +1432,7 @@ namespace ews
     };
 
     // TODO: move to internal namespace
-    inline response_code
-    string_to_response_code_enum(const char* str)
+    inline response_code str_to_response_code(const char* str)
     {
         static const std::unordered_map<std::string, response_code> m{
             { "NoError", response_code::no_error },
@@ -1623,6 +1710,291 @@ namespace ews
         auto it = m.find(str);
         if (it == m.end())
         {
+            throw exception(std::string("Unrecognized response code: ") + str);
+        }
+        return it->second;
+    }
+
+    // TODO: move to internal namespace
+    inline const std::string& response_code_to_str(response_code code)
+    {
+        static const std::unordered_map<response_code, std::string,
+                     internal::enum_class_hash> m{
+            { response_code::no_error, "NoError" },
+            { response_code::error_access_denied, "ErrorAccessDenied" },
+            { response_code::error_account_disabled, "ErrorAccountDisabled" },
+            { response_code::error_address_space_not_found, "ErrorAddressSpaceNotFound" },
+            { response_code::error_ad_operation, "ErrorADOperation" },
+            { response_code::error_ad_session_filter, "ErrorADSessionFilter" },
+            { response_code::error_ad_unavailable, "ErrorADUnavailable" },
+            { response_code::error_auto_discover_failed, "ErrorAutoDiscoverFailed" },
+            { response_code::error_affected_task_occurrences_required, "ErrorAffectedTaskOccurrencesRequired" },
+            { response_code::error_attachment_size_limit_exceeded, "ErrorAttachmentSizeLimitExceeded" },
+            { response_code::error_availability_config_not_found, "ErrorAvailabilityConfigNotFound" },
+            { response_code::error_batch_processing_stopped, "ErrorBatchProcessingStopped" },
+            { response_code::error_calendar_cannot_move_or_copy_occurrence, "ErrorCalendarCannotMoveOrCopyOccurrence" },
+            { response_code::error_calendar_cannot_update_deleted_item, "ErrorCalendarCannotUpdateDeletedItem" },
+            { response_code::error_calendar_cannot_use_id_for_occurrence_id, "ErrorCalendarCannotUseIdForOccurrenceId" },
+            { response_code::error_calendar_cannot_use_id_for_recurring_master_id, "ErrorCalendarCannotUseIdForRecurringMasterId" },
+            { response_code::error_calendar_duration_is_too_long, "ErrorCalendarDurationIsTooLong" },
+            { response_code::error_calendar_end_date_is_earlier_than_start_date, "ErrorCalendarEndDateIsEarlierThanStartDate" },
+            { response_code::error_calendar_folder_is_invalid_for_calendar_view, "ErrorCalendarFolderIsInvalidForCalendarView" },
+            { response_code::error_calendar_invalid_attribute_value, "ErrorCalendarInvalidAttributeValue" },
+            { response_code::error_calendar_invalid_day_for_time_change_pattern, "ErrorCalendarInvalidDayForTimeChangePattern" },
+            { response_code::error_calendar_invalid_day_for_weekly_recurrence, "ErrorCalendarInvalidDayForWeeklyRecurrence" },
+            { response_code::error_calendar_invalid_property_state, "ErrorCalendarInvalidPropertyState" },
+            { response_code::error_calendar_invalid_property_value, "ErrorCalendarInvalidPropertyValue" },
+            { response_code::error_calendar_invalid_recurrence, "ErrorCalendarInvalidRecurrence" },
+            { response_code::error_calendar_invalid_time_zone, "ErrorCalendarInvalidTimeZone" },
+            { response_code::error_calendar_is_delegated_for_accept, "ErrorCalendarIsDelegatedForAccept" },
+            { response_code::error_calendar_is_delegated_for_decline, "ErrorCalendarIsDelegatedForDecline" },
+            { response_code::error_calendar_is_delegated_for_remove, "ErrorCalendarIsDelegatedForRemove" },
+            { response_code::error_calendar_is_delegated_for_tentative, "ErrorCalendarIsDelegatedForTentative" },
+            { response_code::error_calendar_is_not_organizer, "ErrorCalendarIsNotOrganizer" },
+            { response_code::error_calendar_is_organizer_for_accept, "ErrorCalendarIsOrganizerForAccept" },
+            { response_code::error_calendar_is_organizer_for_decline, "ErrorCalendarIsOrganizerForDecline" },
+            { response_code::error_calendar_is_organizer_for_remove, "ErrorCalendarIsOrganizerForRemove" },
+            { response_code::error_calendar_is_organizer_for_tentative, "ErrorCalendarIsOrganizerForTentative" },
+            { response_code::error_calendar_occurrence_index_is_out_of_recurrence_range, "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange" },
+            { response_code::error_calendar_occurrence_is_deleted_from_recurrence, "ErrorCalendarOccurrenceIsDeletedFromRecurrence" },
+            { response_code::error_calendar_out_of_range, "ErrorCalendarOutOfRange" },
+            { response_code::error_calendar_view_range_too_big, "ErrorCalendarViewRangeTooBig" },
+            { response_code::error_cannot_create_calendar_item_in_non_calendar_folder, "ErrorCannotCreateCalendarItemInNonCalendarFolder" },
+            { response_code::error_cannot_create_contact_in_non_contacts_folder, "ErrorCannotCreateContactInNonContactsFolder" },
+            { response_code::error_cannot_create_task_in_non_task_folder, "ErrorCannotCreateTaskInNonTaskFolder" },
+            { response_code::error_cannot_delete_object, "ErrorCannotDeleteObject" },
+            { response_code::error_cannot_delete_task_occurrence, "ErrorCannotDeleteTaskOccurrence" },
+            { response_code::error_cannot_open_file_attachment, "ErrorCannotOpenFileAttachment" },
+            { response_code::error_cannot_use_folder_id_for_item_id, "ErrorCannotUseFolderIdForItemId" },
+            { response_code::error_cannot_user_item_id_for_folder_id, "ErrorCannotUserItemIdForFolderId" },
+            { response_code::error_change_key_required, "ErrorChangeKeyRequired" },
+            { response_code::error_change_key_required_for_write_operations, "ErrorChangeKeyRequiredForWriteOperations" },
+            { response_code::error_connection_failed, "ErrorConnectionFailed" },
+            { response_code::error_content_conversion_failed, "ErrorContentConversionFailed" },
+            { response_code::error_corrupt_data, "ErrorCorruptData" },
+            { response_code::error_create_item_access_denied, "ErrorCreateItemAccessDenied" },
+            { response_code::error_create_managed_folder_partial_completion, "ErrorCreateManagedFolderPartialCompletion" },
+            { response_code::error_create_subfolder_access_denied, "ErrorCreateSubfolderAccessDenied" },
+            { response_code::error_cross_mailbox_move_copy, "ErrorCrossMailboxMoveCopy" },
+            { response_code::error_data_size_limit_exceeded, "ErrorDataSizeLimitExceeded" },
+            { response_code::error_data_source_operation, "ErrorDataSourceOperation" },
+            { response_code::error_delete_distinguished_folder, "ErrorDeleteDistinguishedFolder" },
+            { response_code::error_delete_items_failed, "ErrorDeleteItemsFailed" },
+            { response_code::error_duplicate_input_folder_names, "ErrorDuplicateInputFolderNames" },
+            { response_code::error_email_address_mismatch, "ErrorEmailAddressMismatch" },
+            { response_code::error_event_not_found, "ErrorEventNotFound" },
+            { response_code::error_expired_subscription, "ErrorExpiredSubscription" },
+            { response_code::error_folder_corrupt, "ErrorFolderCorrupt" },
+            { response_code::error_folder_not_found, "ErrorFolderNotFound" },
+            { response_code::error_folder_property_request_failed, "ErrorFolderPropertyRequestFailed" },
+            { response_code::error_folder_save, "ErrorFolderSave" },
+            { response_code::error_folder_save_failed, "ErrorFolderSaveFailed" },
+            { response_code::error_folder_save_property_error, "ErrorFolderSavePropertyError" },
+            { response_code::error_folder_exists, "ErrorFolderExists" },
+            { response_code::error_free_busy_generation_failed, "ErrorFreeBusyGenerationFailed" },
+            { response_code::error_get_server_security_descriptor_failed, "ErrorGetServerSecurityDescriptorFailed" },
+            { response_code::error_impersonate_user_denied, "ErrorImpersonateUserDenied" },
+            { response_code::error_impersonation_denied, "ErrorImpersonationDenied" },
+            { response_code::error_impersonation_failed, "ErrorImpersonationFailed" },
+            { response_code::error_incorrect_update_property_count, "ErrorIncorrectUpdatePropertyCount" },
+            { response_code::error_individual_mailbox_limit_reached, "ErrorIndividualMailboxLimitReached" },
+            { response_code::error_insufficient_resources, "ErrorInsufficientResources" },
+            { response_code::error_internal_server_error, "ErrorInternalServerError" },
+            { response_code::error_internal_server_transient_error, "ErrorInternalServerTransientError" },
+            { response_code::error_invalid_access_level, "ErrorInvalidAccessLevel" },
+            { response_code::error_invalid_attachment_id, "ErrorInvalidAttachmentId" },
+            { response_code::error_invalid_attachment_subfilter, "ErrorInvalidAttachmentSubfilter" },
+            { response_code::error_invalid_attachment_subfilter_text_filter, "ErrorInvalidAttachmentSubfilterTextFilter" },
+            { response_code::error_invalid_authorization_context, "ErrorInvalidAuthorizationContext" },
+            { response_code::error_invalid_change_key, "ErrorInvalidChangeKey" },
+            { response_code::error_invalid_client_security_context, "ErrorInvalidClientSecurityContext" },
+            { response_code::error_invalid_complete_date, "ErrorInvalidCompleteDate" },
+            { response_code::error_invalid_cross_forest_credentials, "ErrorInvalidCrossForestCredentials" },
+            { response_code::error_invalid_exchange_impersonation_header_data, "ErrorInvalidExchangeImpersonationHeaderData" },
+            { response_code::error_invalid_excludes_restriction, "ErrorInvalidExcludesRestriction" },
+            { response_code::error_invalid_expression_type_for_sub_filter, "ErrorInvalidExpressionTypeForSubFilter" },
+            { response_code::error_invalid_extended_property, "ErrorInvalidExtendedProperty" },
+            { response_code::error_invalid_extended_property_value, "ErrorInvalidExtendedPropertyValue" },
+            { response_code::error_invalid_folder_id, "ErrorInvalidFolderId" },
+            { response_code::error_invalid_fractional_paging_parameters, "ErrorInvalidFractionalPagingParameters" },
+            { response_code::error_invalid_free_busy_view_type, "ErrorInvalidFreeBusyViewType" },
+            { response_code::error_invalid_id, "ErrorInvalidId" },
+            { response_code::error_invalid_id_empty, "ErrorInvalidIdEmpty" },
+            { response_code::error_invalid_id_malformed, "ErrorInvalidIdMalformed" },
+            { response_code::error_invalid_id_moniker_too_long, "ErrorInvalidIdMonikerTooLong" },
+            { response_code::error_invalid_id_not_an_item_attachment_id, "ErrorInvalidIdNotAnItemAttachmentId" },
+            { response_code::error_invalid_id_returned_by_resolve_names, "ErrorInvalidIdReturnedByResolveNames" },
+            { response_code::error_invalid_id_store_object_id_too_long, "ErrorInvalidIdStoreObjectIdTooLong" },
+            { response_code::error_invalid_id_too_many_attachment_levels, "ErrorInvalidIdTooManyAttachmentLevels" },
+            { response_code::error_invalid_id_xml, "ErrorInvalidIdXml" },
+            { response_code::error_invalid_indexed_paging_parameters, "ErrorInvalidIndexedPagingParameters" },
+            { response_code::error_invalid_internet_header_child_nodes, "ErrorInvalidInternetHeaderChildNodes" },
+            { response_code::error_invalid_item_for_operation_create_item_attachment, "ErrorInvalidItemForOperationCreateItemAttachment" },
+            { response_code::error_invalid_item_for_operation_create_item, "ErrorInvalidItemForOperationCreateItem" },
+            { response_code::error_invalid_item_for_operation_accept_item, "ErrorInvalidItemForOperationAcceptItem" },
+            { response_code::error_invalid_item_for_operation_cancel_item, "ErrorInvalidItemForOperationCancelItem" },
+            { response_code::error_invalid_item_for_operation_decline_item, "ErrorInvalidItemForOperationDeclineItem" },
+            { response_code::error_invalid_item_for_operation_expand_dl, "ErrorInvalidItemForOperationExpandDL" },
+            { response_code::error_invalid_item_for_operation_remove_item, "ErrorInvalidItemForOperationRemoveItem" },
+            { response_code::error_invalid_item_for_operation_send_item, "ErrorInvalidItemForOperationSendItem" },
+            { response_code::error_invalid_item_for_operation_tentative, "ErrorInvalidItemForOperationTentative" },
+            { response_code::error_invalid_managed_folder_property, "ErrorInvalidManagedFolderProperty" },
+            { response_code::error_invalid_managed_folder_quota, "ErrorInvalidManagedFolderQuota" },
+            { response_code::error_invalid_managed_folder_size, "ErrorInvalidManagedFolderSize" },
+            { response_code::error_invalid_merged_free_busy_interval, "ErrorInvalidMergedFreeBusyInterval" },
+            { response_code::error_invalid_name_for_name_resolution, "ErrorInvalidNameForNameResolution" },
+            { response_code::error_invalid_network_service_context, "ErrorInvalidNetworkServiceContext" },
+            { response_code::error_invalid_oof_parameter, "ErrorInvalidOofParameter" },
+            { response_code::error_invalid_paging_max_rows, "ErrorInvalidPagingMaxRows" },
+            { response_code::error_invalid_parent_folder, "ErrorInvalidParentFolder" },
+            { response_code::error_invalid_percent_complete_value, "ErrorInvalidPercentCompleteValue" },
+            { response_code::error_invalid_property_append, "ErrorInvalidPropertyAppend" },
+            { response_code::error_invalid_property_delete, "ErrorInvalidPropertyDelete" },
+            { response_code::error_invalid_property_for_exists, "ErrorInvalidPropertyForExists" },
+            { response_code::error_invalid_property_for_operation, "ErrorInvalidPropertyForOperation" },
+            { response_code::error_invalid_property_request, "ErrorInvalidPropertyRequest" },
+            { response_code::error_invalid_property_set, "ErrorInvalidPropertySet" },
+            { response_code::error_invalid_property_update_sent_message, "ErrorInvalidPropertyUpdateSentMessage" },
+            { response_code::error_invalid_pull_subscription_id, "ErrorInvalidPullSubscriptionId" },
+            { response_code::error_invalid_push_subscription_url, "ErrorInvalidPushSubscriptionUrl" },
+            { response_code::error_invalid_recipients, "ErrorInvalidRecipients" },
+            { response_code::error_invalid_recipient_subfilter, "ErrorInvalidRecipientSubfilter" },
+            { response_code::error_invalid_recipient_subfilter_comparison, "ErrorInvalidRecipientSubfilterComparison" },
+            { response_code::error_invalid_recipient_subfilter_order, "ErrorInvalidRecipientSubfilterOrder" },
+            { response_code::error_invalid_recipient_subfilter_text_filter, "ErrorInvalidRecipientSubfilterTextFilter" },
+            { response_code::error_invalid_reference_item, "ErrorInvalidReferenceItem" },
+            { response_code::error_invalid_request, "ErrorInvalidRequest" },
+            { response_code::error_invalid_restriction, "ErrorInvalidRestriction" },
+            { response_code::error_invalid_routing_type, "ErrorInvalidRoutingType" },
+            { response_code::error_invalid_scheduled_oof_duration, "ErrorInvalidScheduledOofDuration" },
+            { response_code::error_invalid_security_descriptor, "ErrorInvalidSecurityDescriptor" },
+            { response_code::error_invalid_send_item_save_settings, "ErrorInvalidSendItemSaveSettings" },
+            { response_code::error_invalid_serialized_access_token, "ErrorInvalidSerializedAccessToken" },
+            { response_code::error_invalid_sid, "ErrorInvalidSid" },
+            { response_code::error_invalid_smtp_address, "ErrorInvalidSmtpAddress" },
+            { response_code::error_invalid_subfilter_type, "ErrorInvalidSubfilterType" },
+            { response_code::error_invalid_subfilter_type_not_attendee_type, "ErrorInvalidSubfilterTypeNotAttendeeType" },
+            { response_code::error_invalid_subfilter_type_not_recipient_type, "ErrorInvalidSubfilterTypeNotRecipientType" },
+            { response_code::error_invalid_subscription, "ErrorInvalidSubscription" },
+            { response_code::error_invalid_sync_state_data, "ErrorInvalidSyncStateData" },
+            { response_code::error_invalid_time_interval, "ErrorInvalidTimeInterval" },
+            { response_code::error_invalid_user_oof_settings, "ErrorInvalidUserOofSettings" },
+            { response_code::error_invalid_user_principal_name, "ErrorInvalidUserPrincipalName" },
+            { response_code::error_invalid_user_sid, "ErrorInvalidUserSid" },
+            { response_code::error_invalid_user_sid_missing_upn, "ErrorInvalidUserSidMissingUPN" },
+            { response_code::error_invalid_value_for_property, "ErrorInvalidValueForProperty" },
+            { response_code::error_invalid_watermark, "ErrorInvalidWatermark" },
+            { response_code::error_irresolvable_conflict, "ErrorIrresolvableConflict" },
+            { response_code::error_item_corrupt, "ErrorItemCorrupt" },
+            { response_code::error_item_not_found, "ErrorItemNotFound" },
+            { response_code::error_item_property_request_failed, "ErrorItemPropertyRequestFailed" },
+            { response_code::error_item_save, "ErrorItemSave" },
+            { response_code::error_item_save_property_error, "ErrorItemSavePropertyError" },
+            { response_code::error_legacy_mailbox_free_busy_view_type_not_merged, "ErrorLegacyMailboxFreeBusyViewTypeNotMerged" },
+            { response_code::error_local_server_object_not_found, "ErrorLocalServerObjectNotFound" },
+            { response_code::error_logon_as_network_service_failed, "ErrorLogonAsNetworkServiceFailed" },
+            { response_code::error_mailbox_configuration, "ErrorMailboxConfiguration" },
+            { response_code::error_mailbox_data_array_empty, "ErrorMailboxDataArrayEmpty" },
+            { response_code::error_mailbox_data_array_too_big, "ErrorMailboxDataArrayTooBig" },
+            { response_code::error_mailbox_logon_failed, "ErrorMailboxLogonFailed" },
+            { response_code::error_mailbox_move_in_progress, "ErrorMailboxMoveInProgress" },
+            { response_code::error_mailbox_store_unavailable, "ErrorMailboxStoreUnavailable" },
+            { response_code::error_mail_recipient_not_found, "ErrorMailRecipientNotFound" },
+            { response_code::error_managed_folder_already_exists, "ErrorManagedFolderAlreadyExists" },
+            { response_code::error_managed_folder_not_found, "ErrorManagedFolderNotFound" },
+            { response_code::error_managed_folders_root_failure, "ErrorManagedFoldersRootFailure" },
+            { response_code::error_meeting_suggestion_generation_failed, "ErrorMeetingSuggestionGenerationFailed" },
+            { response_code::error_message_disposition_required, "ErrorMessageDispositionRequired" },
+            { response_code::error_message_size_exceeded, "ErrorMessageSizeExceeded" },
+            { response_code::error_mime_content_conversion_failed, "ErrorMimeContentConversionFailed" },
+            { response_code::error_mime_content_invalid, "ErrorMimeContentInvalid" },
+            { response_code::error_mime_content_invalid_base64_string, "ErrorMimeContentInvalidBase64String" },
+            { response_code::error_missing_argument, "ErrorMissingArgument" },
+            { response_code::error_missing_email_address, "ErrorMissingEmailAddress" },
+            { response_code::error_missing_email_address_for_managed_folder, "ErrorMissingEmailAddressForManagedFolder" },
+            { response_code::error_missing_information_email_address, "ErrorMissingInformationEmailAddress" },
+            { response_code::error_missing_information_reference_item_id, "ErrorMissingInformationReferenceItemId" },
+            { response_code::error_missing_item_for_create_item_attachment, "ErrorMissingItemForCreateItemAttachment" },
+            { response_code::error_missing_managed_folder_id, "ErrorMissingManagedFolderId" },
+            { response_code::error_missing_recipients, "ErrorMissingRecipients" },
+            { response_code::error_move_copy_failed, "ErrorMoveCopyFailed" },
+            { response_code::error_move_distinguished_folder, "ErrorMoveDistinguishedFolder" },
+            { response_code::error_name_resolution_multiple_results, "ErrorNameResolutionMultipleResults" },
+            { response_code::error_name_resolution_no_mailbox, "ErrorNameResolutionNoMailbox" },
+            { response_code::error_name_resolution_no_results, "ErrorNameResolutionNoResults" },
+            { response_code::error_no_calendar, "ErrorNoCalendar" },
+            { response_code::error_no_folder_class_override, "ErrorNoFolderClassOverride" },
+            { response_code::error_no_free_busy_access, "ErrorNoFreeBusyAccess" },
+            { response_code::error_non_existent_mailbox, "ErrorNonExistentMailbox" },
+            { response_code::error_non_primary_smtp_address, "ErrorNonPrimarySmtpAddress" },
+            { response_code::error_no_property_tag_for_custom_properties, "ErrorNoPropertyTagForCustomProperties" },
+            { response_code::error_not_enough_memory, "ErrorNotEnoughMemory" },
+            { response_code::error_object_type_changed, "ErrorObjectTypeChanged" },
+            { response_code::error_occurrence_crossing_boundary, "ErrorOccurrenceCrossingBoundary" },
+            { response_code::error_occurrence_time_span_too_big, "ErrorOccurrenceTimeSpanTooBig" },
+            { response_code::error_parent_folder_id_required, "ErrorParentFolderIdRequired" },
+            { response_code::error_parent_folder_not_found, "ErrorParentFolderNotFound" },
+            { response_code::error_password_change_required, "ErrorPasswordChangeRequired" },
+            { response_code::error_password_expired, "ErrorPasswordExpired" },
+            { response_code::error_property_update, "ErrorPropertyUpdate" },
+            { response_code::error_property_validation_failure, "ErrorPropertyValidationFailure" },
+            { response_code::error_proxy_request_not_allowed, "ErrorProxyRequestNotAllowed" },
+            { response_code::error_public_folder_request_processing_failed, "ErrorPublicFolderRequestProcessingFailed" },
+            { response_code::error_public_folder_server_not_found, "ErrorPublicFolderServerNotFound" },
+            { response_code::error_query_filter_too_long, "ErrorQueryFilterTooLong" },
+            { response_code::error_quota_exceeded, "ErrorQuotaExceeded" },
+            { response_code::error_read_events_failed, "ErrorReadEventsFailed" },
+            { response_code::error_read_receipt_not_pending, "ErrorReadReceiptNotPending" },
+            { response_code::error_recurrence_end_date_too_big, "ErrorRecurrenceEndDateTooBig" },
+            { response_code::error_recurrence_has_no_occurrence, "ErrorRecurrenceHasNoOccurrence" },
+            { response_code::error_request_aborted, "ErrorRequestAborted" },
+            { response_code::error_request_stream_too_big, "ErrorRequestStreamTooBig" },
+            { response_code::error_required_property_missing, "ErrorRequiredPropertyMissing" },
+            { response_code::error_response_schema_validation, "ErrorResponseSchemaValidation" },
+            { response_code::error_restriction_too_long, "ErrorRestrictionTooLong" },
+            { response_code::error_restriction_too_complex, "ErrorRestrictionTooComplex" },
+            { response_code::error_result_set_too_big, "ErrorResultSetTooBig" },
+            { response_code::error_saved_item_folder_not_found, "ErrorSavedItemFolderNotFound" },
+            { response_code::error_schema_validation, "ErrorSchemaValidation" },
+            { response_code::error_search_folder_not_initialized, "ErrorSearchFolderNotInitialized" },
+            { response_code::error_send_as_denied, "ErrorSendAsDenied" },
+            { response_code::error_send_meeting_cancellations_required, "ErrorSendMeetingCancellationsRequired" },
+            { response_code::error_send_meeting_invitations_or_cancellations_required, "ErrorSendMeetingInvitationsOrCancellationsRequired" },
+            { response_code::error_send_meeting_invitations_required, "ErrorSendMeetingInvitationsRequired" },
+            { response_code::error_sent_meeting_request_update, "ErrorSentMeetingRequestUpdate" },
+            { response_code::error_sent_task_request_update, "ErrorSentTaskRequestUpdate" },
+            { response_code::error_server_busy, "ErrorServerBusy" },
+            { response_code::error_stale_object, "ErrorStaleObject" },
+            { response_code::error_subscription_access_denied, "ErrorSubscriptionAccessDenied" },
+            { response_code::error_subscription_delegate_access_not_supported, "ErrorSubscriptionDelegateAccessNotSupported" },
+            { response_code::error_subscription_not_found, "ErrorSubscriptionNotFound" },
+            { response_code::error_sync_folder_not_found, "ErrorSyncFolderNotFound" },
+            { response_code::error_time_interval_too_big, "ErrorTimeIntervalTooBig" },
+            { response_code::error_to_folder_not_found, "ErrorToFolderNotFound" },
+            { response_code::error_token_serialization_denied, "ErrorTokenSerializationDenied" },
+            { response_code::error_unable_to_get_user_oof_settings, "ErrorUnableToGetUserOofSettings" },
+            { response_code::error_unsupported_culture, "ErrorUnsupportedCulture" },
+            { response_code::error_unsupported_mapi_property_type, "ErrorUnsupportedMapiPropertyType" },
+            { response_code::error_unsupported_mime_conversion, "ErrorUnsupportedMimeConversion" },
+            { response_code::error_unsupported_path_for_query, "ErrorUnsupportedPathForQuery" },
+            { response_code::error_unsupported_path_for_sort_group, "ErrorUnsupportedPathForSortGroup" },
+            { response_code::error_unsupported_property_definition, "ErrorUnsupportedPropertyDefinition" },
+            { response_code::error_unsupported_query_filter, "ErrorUnsupportedQueryFilter" },
+            { response_code::error_unsupported_recurrence, "ErrorUnsupportedRecurrence" },
+            { response_code::error_unsupported_sub_filter, "ErrorUnsupportedSubFilter" },
+            { response_code::error_unsupported_type_for_conversion, "ErrorUnsupportedTypeForConversion" },
+            { response_code::error_update_property_mismatch, "ErrorUpdatePropertyMismatch" },
+            { response_code::error_virus_detected, "ErrorVirusDetected" },
+            { response_code::error_virus_message_deleted, "ErrorVirusMessageDeleted" },
+            { response_code::error_voice_mail_not_implemented, "ErrorVoiceMailNotImplemented" },
+            { response_code::error_web_request_in_invalid_state, "ErrorWebRequestInInvalidState" },
+            { response_code::error_win32_interop_error, "ErrorWin32InteropError" },
+            { response_code::error_working_hours_save_failed, "ErrorWorkingHoursSaveFailed" },
+            { response_code::error_working_hours_xml_malformed, "ErrorWorkingHoursXmlMalformed" }
+        };
+        auto it = m.find(code);
+        if (it == m.end())
+        {
             throw exception("Unrecognized response code");
         }
         return it->second;
@@ -1681,13 +2053,12 @@ namespace ews
         }
     }
 
-    // Exception thrown when a request to an Exchange server was not successful
+    // Exception thrown when a request was not successful
     class exchange_error final : public exception
     {
     public:
         explicit exchange_error(response_code code)
-            : exception("Request failed"),
-              code_(code)
+            : exception(response_code_to_str(code)), code_(code)
         {
         }
 
@@ -1759,7 +2130,8 @@ namespace ews
         //
         // msg: A string that prepends the actual cURL error message.
         // rescode: The result code of a failed cURL operation.
-        inline curl_error make_curl_error(const std::string& msg, CURLcode rescode)
+        inline curl_error make_curl_error(const std::string& msg,
+                                          CURLcode rescode)
         {
             std::string reason{ curl_easy_strerror(rescode) };
 #ifdef NDEBUG
@@ -1812,66 +2184,6 @@ namespace ews
         private:
             curl_slist* slist_;
         };
-
-        // Scope guard helper.
-        class on_scope_exit final
-        {
-        public:
-            template <typename Function>
-            on_scope_exit(Function destructor_function) try
-                : func_(std::move(destructor_function))
-            {}
-            catch (std::exception&)
-            {
-                destructor_function();
-            }
-
-            on_scope_exit() = delete;
-            on_scope_exit(const on_scope_exit&) = delete;
-            on_scope_exit& operator=(const on_scope_exit&) = delete;
-
-            ~on_scope_exit()
-            {
-                if (func_)
-                {
-                    try
-                    {
-                        func_();
-                    }
-                    catch (std::exception&)
-                    {
-                        // Swallow, abort(3) if suitable
-                        EWS_ASSERT(false);
-                    }
-                }
-            }
-
-            void release() { func_ = nullptr; }
-
-        private:
-            std::function<void(void)> func_;
-        };
-
-#ifndef _MSC_VER
-        // <type_traits> is broken in Visual Studio 12, disregard
-        static_assert(!std::is_copy_constructible<on_scope_exit>::value, "");
-        static_assert(!std::is_copy_assignable<on_scope_exit>::value, "");
-        static_assert(!std::is_default_constructible<on_scope_exit>::value, "");
-#endif
-
-        // Raised when a response from a server could not be parsed.
-        class parse_error final : public exception
-        {
-        public:
-            explicit parse_error(const std::string& what)
-                : exception(what)
-            {
-            }
-            explicit parse_error(const char* what) : exception(what) {}
-        };
-
-        // Forward declarations
-        class http_request;
 
         // String constants
         // TODO: sure this can't be done easier within a header file?
@@ -2393,8 +2705,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                                         "ResponseCode");
                 EWS_ASSERT(response_code_elem
                         && "Expected <ResponseCode> element");
-                code =
-                    string_to_response_code_enum(response_code_elem->value());
+                code = str_to_response_code(response_code_elem->value());
             }
 
             return std::make_pair(cls, code);
@@ -2539,6 +2850,18 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                 auto elem = get_element_by_qname(doc,
                                                  "DeleteItemResponseMessage",
                                                  uri::microsoft::messages());
+
+#ifndef NDEBUG
+# ifdef EWS_ENABLE_VERBOSE
+            if (elem)
+            {
+                std::cerr
+                    << "Parsing DeleteItemResponseMessage failed, response code: "
+                    << response.code() << ", payload:\n" << doc << std::endl;
+            }
+# endif
+#endif
+
                 EWS_ASSERT(elem &&
                         "Expected <DeleteItemResponseMessage>, got nullptr");
                 const auto result = parse_response_class_and_code(*elem);
@@ -2641,6 +2964,463 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     static_assert(std::is_move_assignable<item_id>::value, "");
 #endif
 
+    struct property_path
+    {
+        enum class contact
+        {
+            // A property that is unknown to this implementation; used for
+            // control-flow in case unrecognized or unsupported elements are
+            // found in a response
+            unknown,
+
+            // How the name should be filed for display/sorting purposes
+            file_as,
+
+            // How the various parts of a contact's information interact to form
+            // the FileAs property value
+            file_as_mapping,
+
+            // The name to display for a contact
+            display_name,
+
+            // The name by which a person is known; often referred to as a
+            // person's first name
+            given_name,
+
+            // Initials for the contact
+            initials,
+
+            // The middle name for the contact
+            middle_name,
+
+            // Another name by which the contact is known
+            nickname,
+
+            // A combination of several name fields in one convenient place
+            // (read-only)
+            complete_name,
+
+            // The company that the contact is affiliated with
+            company_name,
+
+            // A collection of e-mail addresses for the contact
+            email_addresses,
+
+            // A collection of mailing addresses for the contact
+            physical_addresses,
+
+            // A collection of phone numbers for the contact
+            phone_numbers,
+
+            // The name of the contact's assistant
+            assistant_name,
+
+            // The contact's birthday
+            birthday,
+
+            // Web page for the contact's business; typically a URL
+            business_homepage,
+
+            // A collection of children's names associated with the contact
+            children,
+
+            // A collection of companies a contact is associated with
+            companies,
+
+            // Indicates whether this is a directory or a store contact
+            // (read-only)
+            contact_source,
+
+            // The department name that the contact is in
+            department,
+
+            // Sr, Jr, I, II, III, and so on
+            generation,
+
+            // A collection of instant messaging addresses for the contact
+            im_addresses,
+
+            // The job title for the contact
+            job_title,
+
+            // The name of the contact's manager
+            manager,
+
+            // The distance that the contact resides from some reference point
+            mileage,
+
+            // Location of the contact's office
+            office_location,
+
+            // The physical addresses in the PhysicalAddresses collection that
+            // represents the mailing address for the contact
+            postal_address_index,
+
+            // Occupation or discipline of the contact
+            profession,
+
+            // Name of the contact's spouse
+            spouse_name,
+
+            // The family name of the contact; usually considered the last name
+            surname,
+
+            // Date that the contact was married
+            wedding_anniversary
+
+            // Everything below is beyond EWS 2007 subset
+
+            // mime_content,
+            // item_id,
+            // parent_folder_id,
+            // item_class,
+            // subject,
+            // sensitivity,
+            // body,
+            // attachments,
+            // date_time_received,
+            // size,
+            // categories,
+            // importance,
+            // in_reply_to,
+            // is_submitted,
+            // is_draft,
+            // is_from_me,
+            // is_resend,
+            // is_unmodified,
+            // internet_message_headers,
+            // date_time_sent,
+            // date_time_created,
+            // response_objects,
+            // reminder_due_by,
+            // reminder_is_set,
+            // reminder_minutes_before_start,
+            // display_cc,
+            // display_to,
+            // has_attachment,
+            // extended_property,
+            // culture,
+            // effective_rights,
+            // last_modified_name,
+            // last_modified_time,
+            // is_associated,
+            // web_client_read_form_query_string,
+            // web_client_edit_form_query_string,
+            // conversation_id,
+            // unique_body,
+
+            // has_picture,
+            // phonetic_full_name,
+            // phonetic_first_name,
+            // phonetic_last_name,
+            // alias,
+            // notes,
+            // photo,
+            // user_smime_certificate,
+            // msexchange_certificate,
+            // directory_id,
+            // manager_mailbox,
+            // direct_reports,
+        };
+    };
+
+    namespace internal
+    {
+        inline
+        const std::string& property_path_to_str(property_path::contact path)
+        {
+            using ename = property_path::contact;
+            static const std::unordered_map<property_path::contact, std::string,
+                         internal::enum_class_hash> hash_map{
+                { ename::file_as, "FileAs" },
+                { ename::file_as_mapping, "FileAsMapping" },
+                { ename::display_name, "DisplayName" },
+                { ename::given_name, "GivenName" },
+                { ename::initials, "Initials" },
+                { ename::middle_name, "MiddleName" },
+                { ename::nickname, "Nickname" },
+                { ename::complete_name, "CompleteName" },
+                { ename::company_name, "CompanyName" },
+                { ename::email_addresses, "EmailAddresses" },
+                { ename::physical_addresses, "PhysicalAddresses" },
+                { ename::phone_numbers, "PhoneNumbers" },
+                { ename::assistant_name, "AssistantName" },
+                { ename::birthday, "Birthday" },
+                { ename::business_homepage, "BusinessHomePage" },
+                { ename::children, "Children" },
+                { ename::companies, "Companies" },
+                { ename::contact_source, "ContactSource" },
+                { ename::department, "Department" },
+                { ename::generation, "Generation" },
+                { ename::im_addresses, "ImAddresses" },
+                { ename::job_title, "JobTitle" },
+                { ename::manager, "Manager" },
+                { ename::mileage, "Mileage" },
+                { ename::office_location, "OfficeLocation" },
+                { ename::postal_address_index, "PostalAddressIndex" },
+                { ename::profession, "Profession" },
+                { ename::spouse_name, "SpouseName" },
+                { ename::surname, "Surname" },
+                { ename::wedding_anniversary, "WeddingAnniversary" }
+
+                // { ename::mime_content, "MimeContent" },
+                // { ename::item_id, "ItemId" },
+                // { ename::parent_folder_id, "ParentFolderId" },
+                // { ename::item_class, "ItemClass" },
+                // { ename::subject, "Subject" },
+                // { ename::sensitivity, "Sensitivity" },
+                // { ename::body, "Body" },
+                // { ename::attachments, "Attachments" },
+                // { ename::date_time_received, "DateTimeReceived" },
+                // { ename::size, "Size" },
+                // { ename::categories, "Categories" },
+                // { ename::importance, "Importance" },
+                // { ename::in_reply_to, "InReplyTo" },
+                // { ename::is_submitted, "IsSubmitted" },
+                // { ename::is_draft, "IsDraft" },
+                // { ename::is_from_me, "IsFromMe" },
+                // { ename::is_resend, "IsResend" },
+                // { ename::is_unmodified, "IsUnmodified" },
+                // { ename::internet_message_headers, "InternetMessageHeaders" },
+                // { ename::date_time_sent, "DateTimeSent" },
+                // { ename::date_time_created, "DateTimeCreated" },
+                // { ename::response_objects, "ResponseObjects" },
+                // { ename::reminder_due_by, "ReminderDueBy" },
+                // { ename::reminder_is_set, "ReminderIsSet" },
+                // { ename::reminder_minutes_before_start, "ReminderMinutesBeforeStart" },
+                // { ename::display_cc, "DisplayCc" },
+                // { ename::display_to, "DisplayTo" },
+                // { ename::has_attachment, "HasAttachments" },
+                // { ename::extended_property, "ExtendedProperty" },
+                // { ename::culture, "Culture" },
+                // { ename::effective_rights, "EffectiveRights" },
+                // { ename::last_modified_name, "LastModifiedName" },
+                // { ename::last_modified_time, "LastModifiedTime" },
+                // { ename::is_associated, "IsAssociated" },
+                // { ename::web_client_read_form_query_string, "WebClientReadFormQueryString" },
+                // { ename::web_client_edit_form_query_string, "WebClientEditFormQueryString" },
+                // { ename::conversation_id, "ConversationId" },
+                // { ename::unique_body, "UniqueBody" },
+
+                // { ename::has_picture, "HasPicture" },
+                // { ename::phonetic_full_name, "PhoneticFullName" },
+                // { ename::phonetic_first_name, "PhoneticFirstName" },
+                // { ename::phonetic_last_name, "PhoneticLastName" },
+                // { ename::alias, "Alias" },
+                // { ename::notes, "Notes" },
+                // { ename::photo, "Photo" },
+                // { ename::user_smime_certificate, "UserSMIMECertificate" },
+                // { ename::msexchange_certificate, "MSExchangeCertificate" },
+                // { ename::directory_id, "DirectoryId" },
+                // { ename::manager_mailbox, "ManagerMailbox" },
+                // { ename::direct_reports, "DirectReports" }
+            };
+            auto it = hash_map.find(path);
+            if (it == hash_map.end())
+            {
+                throw exception("Unrecognized property path");
+            }
+            return it->second;
+        }
+
+        // And other direction. Should add boost as dependency and use bimap and
+        // string_ref
+        inline property_path::contact str_to_property_path(const char* str)
+        {
+            using ename = property_path::contact;
+            static const std::unordered_map<std::string,
+                         property_path::contact> hash_map{
+                { "FileAs", ename::file_as },
+                { "FileAsMapping", ename::file_as_mapping },
+                { "DisplayName", ename::display_name },
+                { "GivenName", ename::given_name },
+                { "Initials", ename::initials },
+                { "MiddleName", ename::middle_name },
+                { "Nickname", ename::nickname },
+                { "CompleteName", ename::complete_name },
+                { "CompanyName", ename::company_name },
+                { "EmailAddresses", ename::email_addresses },
+                { "PhysicalAddresses", ename::physical_addresses },
+                { "PhoneNumbers", ename::phone_numbers },
+                { "AssistantName", ename::assistant_name },
+                { "Birthday", ename::birthday },
+                { "BusinessHomePage", ename::business_homepage },
+                { "Children", ename::children },
+                { "Companies", ename::companies },
+                { "ContactSource", ename::contact_source },
+                { "Department", ename::department },
+                { "Generation", ename::generation },
+                { "ImAddresses", ename::im_addresses },
+                { "JobTitle", ename::job_title },
+                { "Manager", ename::manager },
+                { "Mileage", ename::mileage },
+                { "OfficeLocation", ename::office_location },
+                { "PostalAddressIndex", ename::postal_address_index },
+                { "Profession", ename::profession },
+                { "SpouseName", ename::spouse_name },
+                { "Surname", ename::surname },
+                { "WeddingAnniversary", ename::wedding_anniversary },
+
+                // { "MimeContent", ename::mime_content },
+                // { "ItemId", ename::item_id },
+                // { "ParentFolderId", ename::parent_folder_id },
+                // { "ItemClass", ename::item_class },
+                // { "Subject", ename::subject },
+                // { "Sensitivity", ename::sensitivity },
+                // { "Body", ename::body },
+                // { "Attachments", ename::attachments },
+                // { "DateTimeReceived", ename::date_time_received },
+                // { "Size", ename::size },
+                // { "Categories", ename::categories },
+                // { "Importance", ename::importance },
+                // { "InReplyTo", ename::in_reply_to },
+                // { "IsSubmitted", ename::is_submitted },
+                // { "IsDraft", ename::is_draft },
+                // { "IsFromMe", ename::is_from_me },
+                // { "IsResend", ename::is_resend },
+                // { "IsUnmodified", ename::is_unmodified },
+                // { "InternetMessageHeaders", ename::internet_message_headers },
+                // { "DateTimeSent", ename::date_time_sent },
+                // { "DateTimeCreated", ename::date_time_created },
+                // { "ResponseObjects", ename::response_objects },
+                // { "ReminderDueBy", ename::reminder_due_by },
+                // { "ReminderIsSet", ename::reminder_is_set },
+                // { "ReminderMinutesBeforeStart", ename::reminder_minutes_before_start },
+                // { "DisplayCc", ename::display_cc },
+                // { "DisplayTo", ename::display_to },
+                // { "HasAttachments", ename::has_attachment },
+                // { "ExtendedProperty", ename::extended_property },
+                // { "Culture", ename::culture },
+                // { "EffectiveRights", ename::effective_rights },
+                // { "LastModifiedName", ename::last_modified_name },
+                // { "LastModifiedTime", ename::last_modified_time },
+                // { "IsAssociated", ename::is_associated },
+                // { "WebClientReadFormQueryString", ename::web_client_read_form_query_string },
+                // { "WebClientEditFormQueryString", ename::web_client_edit_form_query_string },
+                // { "ConversationId", ename::conversation_id },
+                // { "UniqueBody", ename::unique_body },
+
+                // { "HasPicture", ename::has_picture },
+                // { "PhoneticFullName", ename::phonetic_full_name },
+                // { "PhoneticFirstName", ename::phonetic_first_name },
+                // { "PhoneticLastName", ename::phonetic_last_name },
+                // { "Alias", ename::alias },
+                // { "Notes", ename::notes },
+                // { "Photo", ename::photo },
+                // { "UserSMIMECertificate", ename::user_smime_certificate },
+                // { "MSExchangeCertificate", ename::msexchange_certificate },
+                // { "DirectoryId", ename::directory_id },
+                // { "ManagerMailbox", ename::manager_mailbox },
+                // { "DirectReports", ename::direct_reports }
+            };
+            auto it = hash_map.find(str);
+            if (it == hash_map.end())
+            {
+                // throw exception(std::string("Unrecognized element: ") + str);
+                return ename::unknown;
+            }
+            return it->second;
+        }
+    }
+
+    class property final
+    {
+    public:
+        property() = default; // Because of std::unordered_map requirements
+
+        explicit property(property_path::contact path)
+            : path_(path), value_()
+        {}
+
+        property(property_path::contact path, std::string value)
+            : path_(path), value_(std::move(value))
+        {}
+
+        property_path::contact path() const EWS_NOEXCEPT { return path_; }
+        const std::string& element_name() const EWS_NOEXCEPT
+        {
+            return internal::property_path_to_str(path_);
+        }
+
+        const std::string& value() const EWS_NOEXCEPT { return value_; }
+
+        std::string to_xml(const char* xmlns=nullptr) const
+        {
+            if (xmlns)
+            {
+                return std::string("<") + xmlns + ":" + element_name() + ">" +
+                    value() + "</" + xmlns + ":" + element_name() + ">";
+            }
+            else
+            {
+                return "<" + element_name() + ">" + value() + "</" +
+                    element_name() + ">";
+            }
+        }
+
+    private:
+        property_path::contact path_;
+        std::string value_;
+    };
+
+#ifndef _MSC_VER
+    static_assert(std::is_default_constructible<property>::value, "");
+    static_assert(std::is_copy_constructible<property>::value, "");
+    static_assert(std::is_copy_assignable<property>::value, "");
+    static_assert(std::is_move_constructible<property>::value, "");
+    static_assert(std::is_move_assignable<property>::value, "");
+#endif
+
+    namespace internal
+    {
+        template <typename T>
+        class property_map final
+        {
+        public:
+            typedef T property_path_type;
+
+            property_map() = default;
+
+            const std::string& get(property_path_type path) const EWS_NOEXCEPT
+            {
+                auto it = hash_map_.find(path);
+                if (it == hash_map_.end())
+                {
+                    return internal::empty_string();
+                }
+                return it->second.value();
+            }
+
+            void set_or_update(property_path_type path, std::string value)
+            {
+                hash_map_[path] = property(path, std::move(value));
+            }
+
+            std::string to_xml(const char* xmlns=nullptr) const
+            {
+                std::stringstream sstr;
+                for (const auto& prop : hash_map_)
+                {
+                    sstr << prop.second.to_xml(xmlns) << '\n';
+                }
+                return sstr.str();
+            }
+
+        private:
+            std::unordered_map<property_path_type, property,
+                internal::enum_class_hash> hash_map_;
+        };
+
+#ifndef _MSC_VER
+        static_assert(std::is_default_constructible<property_map<int>>::value, "");
+        static_assert(std::is_copy_constructible<property_map<int>>::value, "");
+        static_assert(std::is_copy_assignable<property_map<int>>::value, "");
+        static_assert(std::is_move_constructible<property_map<int>>::value, "");
+        static_assert(std::is_move_assignable<property_map<int>>::value, "");
+#endif
+
+    }
+
     // Note About Dates in EWS
     //
     // Microsoft EWS uses date and date/time string representations as described
@@ -2705,7 +3485,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     class body final
     {
     public:
-        body(const std::string& text) // intentionally not explicit
+        body(const std::string& text) // Intentionally not explicit
         {
             (void)text;
         }
@@ -2815,47 +3595,72 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         contact() = default;
         explicit contact(item_id id) : item(id) {}
 
-        void set_given_name(const std::string& str) { given_name_ = str; }
+        void set_given_name(const std::string& given_name)
+        {
+            properties_.set_or_update(property_path::contact::given_name,
+                    given_name);
+        }
+
         const std::string& get_given_name() const EWS_NOEXCEPT
         {
-            return given_name_;
+            return properties_.get(property_path::contact::given_name);
         }
-        void set_surname(const std::string& str) { surname_ = str; }
-        const std::string& get_surname() const EWS_NOEXCEPT { return surname_; }
+
+        void set_surname(const std::string& surname)
+        {
+            properties_.set_or_update(property_path::contact::surname, surname);
+        }
+
+        const std::string& get_surname() const EWS_NOEXCEPT
+        {
+            return properties_.get(property_path::contact::surname);
+        }
 
         // Makes a contact instance from a <Contact> XML element
         static contact from_xml_element(const rapidxml::xml_node<>& elem)
         {
             using uri = internal::uri<>;
 
+            // std::cout << elem << std::endl;
+
             auto node = elem.first_node_ns(uri::microsoft::types(), "ItemId");
             EWS_ASSERT(node && "Expected <ItemId>");
-            auto c = contact(item_id::from_xml_element(*node));
-            node = elem.first_node_ns(uri::microsoft::types(), "Subject");
-            if (node)
+            auto obj = contact(item_id::from_xml_element(*node));
+
+            for (node = elem.first_node(); node; node = node->next_sibling())
             {
-                c.set_subject(std::string(node->value(), node->value_size()));
+                // TODO: Item's properties need to be parsed, too
+
+                EWS_ASSERT(node && "Expected an element, got nullptr");
+                const auto prop = internal::str_to_property_path(
+                        node->local_name());
+                if (prop != property_path::contact::unknown)
+                {
+                    obj.properties_.set_or_update(prop,
+                            std::string(node->value(), node->value_size()));
+                }
             }
-            return c;
+            return obj;
         }
 
     private:
-        std::string given_name_;
-        std::string surname_;
+        internal::property_map<property_path::contact> properties_;
 
         friend class service;
         std::string create_item_request_string() const
         {
-            return
+            std::stringstream sstr;
+            sstr <<
               "<CreateItem " \
                   "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
                   "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
               "<Items>" \
-              "<t:Contact>" \
-              "<t:Subject>" + get_subject() + "</t:Subject>" \
-              "</t:Contact>" \
+              "<t:Contact>";
+            sstr << properties_.to_xml("t") << "\n";
+            sstr << "</t:Contact>" \
               "</Items>" \
               "</CreateItem>";
+            return sstr.str();
         }
     };
 
@@ -3068,6 +3873,20 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             auto elem = get_element_by_qname(doc,
                                              "CreateItemResponseMessage",
                                              uri::microsoft::messages());
+
+#ifndef NDEBUG
+# ifdef EWS_ENABLE_VERBOSE
+            // FIXME: sometimes assertion fails for reasons unknown to me,
+            // temporarily log response code and XML payload here
+            if (!elem)
+            {
+                std::cerr
+                    << "Parsing CreateItemResponseMessage failed, response code: "
+                    << response.code() << ", payload:\n" << doc << std::endl;
+            }
+# endif
+#endif
+
             EWS_ASSERT(elem &&
                     "Expected <CreateItemResponseMessage>, got nullptr");
             const auto result = parse_response_class_and_code(*elem);
@@ -3097,6 +3916,16 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             auto elem = get_element_by_qname(doc,
                                              "GetItemResponseMessage",
                                              uri::microsoft::messages());
+#ifndef NDEBUG
+# ifdef EWS_ENABLE_VERBOSE
+            if (elem)
+            {
+                std::cerr
+                    << "Parsing GetItemResponseMessage failed, response code: "
+                    << response.code() << ", payload:\n" << doc << std::endl;
+            }
+# endif
+#endif
             EWS_ASSERT(elem &&
                     "Expected <GetItemResponseMessage>, got nullptr");
             const auto result = parse_response_class_and_code(*elem);

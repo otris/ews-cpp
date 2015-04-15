@@ -22,11 +22,11 @@ namespace tests
         catch (ews::exchange_error& exc)
         {
             EXPECT_EQ(ews::response_code::error_invalid_id_empty, exc.code());
-            EXPECT_STREQ("Request failed", exc.what());
+            EXPECT_STREQ("ErrorInvalidIdEmpty", exc.what());
         }
     }
 
-    TEST_F(ContactTest, CreateAndDeleteContact)
+    TEST_F(ContactTest, CreateAndDelete)
     {
         auto contact = ews::contact();
         contact.set_given_name("Donald");

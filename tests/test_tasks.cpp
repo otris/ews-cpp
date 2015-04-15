@@ -92,11 +92,11 @@ namespace tests
         catch (ews::exchange_error& exc)
         {
             EXPECT_EQ(ews::response_code::error_invalid_id_empty, exc.code());
-            EXPECT_STREQ("Request failed", exc.what());
+            EXPECT_STREQ("ErrorInvalidIdEmpty", exc.what());
         }
     }
 
-    TEST_F(TaskTest, CreateAndDeleteTask)
+    TEST_F(TaskTest, CreateAndDelete)
     {
         auto start_time = ews::date_time("2015-01-17T12:00:00Z");
         auto end_time   = ews::date_time("2015-01-17T12:30:00Z");
