@@ -2566,6 +2566,13 @@ namespace ews
                     return realsize;
                 };
 
+                // Do not install (directly or indirectly) signal handlers nor
+                // call any functions that cause signals to be sent to the
+                // process
+                // Note: SIGCHLD is raised anyway if we use CURLAUTH_NTLM_WB and
+                // SIGPIPE is still possible, too
+                set_option(CURLOPT_NOSIGNAL, 1L);
+
 #ifndef NDEBUG
 # ifdef EWS_ENABLE_VERBOSE
                 // Print HTTP headers to stderr
