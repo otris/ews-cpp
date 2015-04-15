@@ -2853,7 +2853,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
 #ifndef NDEBUG
 # ifdef EWS_ENABLE_VERBOSE
-            if (elem)
+            if (!elem)
             {
                 std::cerr
                     << "Parsing DeleteItemResponseMessage failed, response code: "
@@ -3918,7 +3918,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                                              uri::microsoft::messages());
 #ifndef NDEBUG
 # ifdef EWS_ENABLE_VERBOSE
-            if (elem)
+            if (!elem)
             {
                 std::cerr
                     << "Parsing GetItemResponseMessage failed, response code: "
