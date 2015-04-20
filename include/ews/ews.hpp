@@ -547,7 +547,7 @@ namespace ews
 
         // An ExchangeImpersonation header was passed in but it did not contain
         // a security identifier (SID), user principal name (UPN) or primary
-        // smtp address. You must supply one of these identifiers and of course,
+        // SMTP address. You must supply one of these identifiers and of course,
         // they cannot be empty strings. Note that this response code is always
         // returned within a SOAP fault.
         error_invalid_exchange_impersonation_header_data,
@@ -2975,9 +2975,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     {
         enum class contact
         {
-            // A property that is unknown to this implementation; used for
-            // control-flow in case unrecognized or unsupported elements are
-            // found in a response
+            // A property that is unknown to this implementation. Used in case
+            // an unrecognized or unsupported element is found in a response
             unknown,
 
             // How the name should be filed for display/sorting purposes
@@ -3390,6 +3389,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
             const std::string& get(property_path_type path) const EWS_NOEXCEPT
             {
+                // FIXME: unordered_map::find can throw?
                 auto it = hash_map_.find(path);
                 if (it == hash_map_.end())
                 {
@@ -3462,13 +3462,20 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     {
     public:
         date_time(std::string str) // intentionally not explicit
-            : date_time_string_(std::move(str))
+            : val_(std::move(str))
         {
         }
+        const std::string& to_string() const EWS_NOEXCEPT { return val_; }
 
     private:
-        std::string date_time_string_;
+        friend bool operator==(const date_time&, const date_time&);
+        std::string val_;
     };
+
+    inline bool operator==(const date_time& lhs, const date_time& rhs)
+    {
+        return lhs.val_ == rhs.val_;
+    }
 
     // A date string wrapper class for xs:date formatted strings.
     //
@@ -3492,7 +3499,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     class body final
     {
     public:
-        body(const std::string& text) // Intentionally not explicit
+        body(const std::string& text) // intentionally not explicit
         {
             (void)text;
         }

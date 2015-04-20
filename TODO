@@ -2,6 +2,7 @@
                                       ====
 
 - SIGPIPE issue, investigate, options?
+- implement ews::body
 - Set-up a new Exchange VM on some KVM host
 - raise_exception_if_soap_fault: parsing payload might throw parse_error, what
   then?
