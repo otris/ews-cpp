@@ -40,8 +40,8 @@ namespace tests
 
     TEST(InternalTest, PropertyClass)
     {
-        using property = ews::property;
         using property_path = ews::property_path;
+        using property = ews::property<property_path::contact>;
 
         auto p = property(property_path::contact::surname, "Duck");
         EXPECT_EQ(property_path::contact::surname, p.path());

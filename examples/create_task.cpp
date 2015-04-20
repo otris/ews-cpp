@@ -26,7 +26,6 @@ int main()
         auto task = ews::task();
         task.set_subject("Something important to do");
         task.set_body(ews::body("Some descriptive body text"));
-        task.set_owner("Mini Mouse");
         task.set_start_date(start_time);
         task.set_due_date(end_time);
         task.set_reminder_enabled(true);

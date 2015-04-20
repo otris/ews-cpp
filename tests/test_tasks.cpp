@@ -103,7 +103,6 @@ namespace tests
         auto task = ews::task();
         task.set_subject("Something really important to do");
         task.set_body(ews::body("Some descriptive body text"));
-        task.set_owner("Donald Duck");
         task.set_start_date(start_time);
         task.set_due_date(end_time);
         task.set_reminder_enabled(true);
@@ -111,8 +110,13 @@ namespace tests
         const auto item_id = service().create_item(task);
 
         auto created_task = service().get_task(item_id);
+        // Check properties
         EXPECT_STREQ("Something really important to do",
-                     created_task.get_subject().c_str());
+                created_task.get_subject().c_str());
+        EXPECT_EQ(start_time, created_task.get_start_date());
+        EXPECT_EQ(end_time, created_task.get_due_date());
+        EXPECT_TRUE(created_task.is_reminder_enabled());
+        EXPECT_EQ(start_time, created_task.get_reminder_due_by());
 
         ASSERT_NO_THROW(
         {

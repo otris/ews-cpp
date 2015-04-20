@@ -2973,6 +2973,138 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
     struct property_path
     {
+        enum class item
+        {
+            // A property that is unknown to this implementation. Used in case
+            // an unrecognized or unsupported element is found in a response
+            unknown,
+
+            // <MimeContent/>
+            // <ItemId/>
+            // <ParentFolderId/>
+            // <ItemClass/>
+
+            // The item's subject. Limited to 255 characters.
+            subject,
+
+            // <Sensitivity/>
+            // <Body/>
+            // <Attachments/>
+            // <DateTimeReceived/>
+            // <Size/>
+            // <Categories/>
+            // <InReplyTo/>
+            // <IsSubmitted/>
+            // <IsDraft/>
+            // <IsFromMe/>
+            // <IsResend/>
+            // <IsUnmodified/>
+            // <InternetMessageHeaders/>
+            // <DateTimeSent/>
+            // <DateTimeCreated/>
+            // <ResponseObjects/>
+            reminder_due_by, // <ReminderDueBy/>
+            reminder_is_set, // <ReminderIsSet/>
+            // <ReminderMinutesBeforeStart/>
+            // <DisplayCc/>
+            // <DisplayTo/>
+            // <HasAttachments/>
+            // <ExtendedProperty/>
+            // <Culture/>
+        };
+
+        enum class task
+        {
+            // A property that is unknown to this implementation. Used in case
+            // an unrecognized or unsupported element is found in a response
+            unknown,
+
+            // Represents the actual amount of work expended on the task.
+            // Measured in minutes
+            actual_work,
+
+            // Time the task was assigned to the current owner
+            assigned_time,
+
+            // Billing information associated with this task
+            billing_information,
+
+            // How many times this task has been acted upon (sent, accepted,
+            // etc.). This is simply a way to resolve conflicts when the
+            // delegator sends multiple updates. Also known as TaskVersion
+            change_count,
+
+            // A list of company names associated with this task
+            companies,
+
+            // Time the task was completed
+            complete_date,
+
+            // Contact names associated with this task
+            contacts,
+
+            // Enumeration value indicating whether the delegated task was
+            // accepted or not
+            delegation_state,
+
+            // Display name of the user that delegated the task
+            delegator,
+
+            // The date that the task is due
+            due_date,
+
+            // TODO
+            is_assignment_editable,
+
+            // True if the task is marked as complete
+            is_complete,
+
+            // True if the task is recurring
+            is_recurring,
+
+            // True if the task is a team task
+            is_team_task,
+
+            // Mileage associated with the task, potentially used for
+            // reimbursement purposes
+            mileage,
+
+            // The name of the user who owns the task. This is a read-only
+            // property
+            owner,
+
+            // The percentage of the task that has been completed. Valid values
+            // are 0-100
+            percent_complete,
+
+            // Used for recurring tasks
+            recurrence,
+
+            // The date that work on the task should start
+            start_date,
+
+            // The status of the task
+            status,
+
+            // A localized string version of the status. Useful for display
+            // purposes
+            status_description,
+
+            // The total amount of work for this task
+            total_work,
+
+            // 2012 and/or 2013 dialect
+
+            // <EffectiveRights/>
+            // <LastModifiedName/>
+            // <LastModifiedTime/>
+            // <IsAssociated/>
+            // <WebClientReadFormQueryString/>
+            // <WebClientEditFormQueryString/>
+            // <ConversationId/>
+            // <UniqueBody/>
+        };
+
         enum class contact
         {
             // A property that is unknown to this implementation. Used in case
@@ -3132,220 +3264,351 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
     namespace internal
     {
-        inline
-        const std::string& property_path_to_str(property_path::contact path)
+        // Primary template
+        template <typename T> struct property_base {};
+
+        // Explicit specialization for T = item
+        template <> struct property_base<property_path::item>
         {
-            using ename = property_path::contact;
-            static const std::unordered_map<property_path::contact, std::string,
-                         internal::enum_class_hash> hash_map{
-                { ename::file_as, "FileAs" },
-                { ename::file_as_mapping, "FileAsMapping" },
-                { ename::display_name, "DisplayName" },
-                { ename::given_name, "GivenName" },
-                { ename::initials, "Initials" },
-                { ename::middle_name, "MiddleName" },
-                { ename::nickname, "Nickname" },
-                { ename::complete_name, "CompleteName" },
-                { ename::company_name, "CompanyName" },
-                { ename::email_addresses, "EmailAddresses" },
-                { ename::physical_addresses, "PhysicalAddresses" },
-                { ename::phone_numbers, "PhoneNumbers" },
-                { ename::assistant_name, "AssistantName" },
-                { ename::birthday, "Birthday" },
-                { ename::business_homepage, "BusinessHomePage" },
-                { ename::children, "Children" },
-                { ename::companies, "Companies" },
-                { ename::contact_source, "ContactSource" },
-                { ename::department, "Department" },
-                { ename::generation, "Generation" },
-                { ename::im_addresses, "ImAddresses" },
-                { ename::job_title, "JobTitle" },
-                { ename::manager, "Manager" },
-                { ename::mileage, "Mileage" },
-                { ename::office_location, "OfficeLocation" },
-                { ename::postal_address_index, "PostalAddressIndex" },
-                { ename::profession, "Profession" },
-                { ename::spouse_name, "SpouseName" },
-                { ename::surname, "Surname" },
-                { ename::wedding_anniversary, "WeddingAnniversary" }
-
-                // { ename::mime_content, "MimeContent" },
-                // { ename::item_id, "ItemId" },
-                // { ename::parent_folder_id, "ParentFolderId" },
-                // { ename::item_class, "ItemClass" },
-                // { ename::subject, "Subject" },
-                // { ename::sensitivity, "Sensitivity" },
-                // { ename::body, "Body" },
-                // { ename::attachments, "Attachments" },
-                // { ename::date_time_received, "DateTimeReceived" },
-                // { ename::size, "Size" },
-                // { ename::categories, "Categories" },
-                // { ename::importance, "Importance" },
-                // { ename::in_reply_to, "InReplyTo" },
-                // { ename::is_submitted, "IsSubmitted" },
-                // { ename::is_draft, "IsDraft" },
-                // { ename::is_from_me, "IsFromMe" },
-                // { ename::is_resend, "IsResend" },
-                // { ename::is_unmodified, "IsUnmodified" },
-                // { ename::internet_message_headers, "InternetMessageHeaders" },
-                // { ename::date_time_sent, "DateTimeSent" },
-                // { ename::date_time_created, "DateTimeCreated" },
-                // { ename::response_objects, "ResponseObjects" },
-                // { ename::reminder_due_by, "ReminderDueBy" },
-                // { ename::reminder_is_set, "ReminderIsSet" },
-                // { ename::reminder_minutes_before_start, "ReminderMinutesBeforeStart" },
-                // { ename::display_cc, "DisplayCc" },
-                // { ename::display_to, "DisplayTo" },
-                // { ename::has_attachment, "HasAttachments" },
-                // { ename::extended_property, "ExtendedProperty" },
-                // { ename::culture, "Culture" },
-                // { ename::effective_rights, "EffectiveRights" },
-                // { ename::last_modified_name, "LastModifiedName" },
-                // { ename::last_modified_time, "LastModifiedTime" },
-                // { ename::is_associated, "IsAssociated" },
-                // { ename::web_client_read_form_query_string, "WebClientReadFormQueryString" },
-                // { ename::web_client_edit_form_query_string, "WebClientEditFormQueryString" },
-                // { ename::conversation_id, "ConversationId" },
-                // { ename::unique_body, "UniqueBody" },
-
-                // { ename::has_picture, "HasPicture" },
-                // { ename::phonetic_full_name, "PhoneticFullName" },
-                // { ename::phonetic_first_name, "PhoneticFirstName" },
-                // { ename::phonetic_last_name, "PhoneticLastName" },
-                // { ename::alias, "Alias" },
-                // { ename::notes, "Notes" },
-                // { ename::photo, "Photo" },
-                // { ename::user_smime_certificate, "UserSMIMECertificate" },
-                // { ename::msexchange_certificate, "MSExchangeCertificate" },
-                // { ename::directory_id, "DirectoryId" },
-                // { ename::manager_mailbox, "ManagerMailbox" },
-                // { ename::direct_reports, "DirectReports" }
-            };
-            auto it = hash_map.find(path);
-            if (it == hash_map.end())
+            static
+            const std::string& property_path_to_str(property_path::item path)
             {
-                throw exception("Unrecognized property path");
+                using ename = property_path::item;
+                static const std::unordered_map<property_path::item,
+                             std::string,
+                             internal::enum_class_hash> hash_map{
+                    { ename::subject, "Subject" },
+                    { ename::reminder_due_by, "ReminderDueBy" },
+                    { ename::reminder_is_set, "ReminderIsSet" }
+                };
+                auto it = hash_map.find(path);
+                if (it == hash_map.end())
+                {
+                    throw exception("Unrecognized property path");
+                }
+                return it->second;
             }
-            return it->second;
-        }
 
-        // And other direction. Should add boost as dependency and use bimap and
-        // string_ref
-        inline property_path::contact str_to_property_path(const char* str)
+            // And other direction. Should add boost as dependency and use
+            // boost::bimap and boost::string_ref
+            static property_path::item str_to_property_path(const char* str)
+            {
+                using ename = property_path::item;
+                static const std::unordered_map<std::string,
+                             property_path::item> hash_map{
+                    { "Subject", ename::subject },
+                    { "ReminderDueBy", ename::reminder_due_by },
+                    { "ReminderIsSet", ename::reminder_is_set }
+                };
+                auto it = hash_map.find(str);
+                if (it == hash_map.end())
+                {
+                    return ename::unknown;
+                }
+                return it->second;
+            }
+        };
+
+        // Explicit specialization for T = task
+        template <> struct property_base<property_path::task>
         {
-            using ename = property_path::contact;
-            static const std::unordered_map<std::string,
-                         property_path::contact> hash_map{
-                { "FileAs", ename::file_as },
-                { "FileAsMapping", ename::file_as_mapping },
-                { "DisplayName", ename::display_name },
-                { "GivenName", ename::given_name },
-                { "Initials", ename::initials },
-                { "MiddleName", ename::middle_name },
-                { "Nickname", ename::nickname },
-                { "CompleteName", ename::complete_name },
-                { "CompanyName", ename::company_name },
-                { "EmailAddresses", ename::email_addresses },
-                { "PhysicalAddresses", ename::physical_addresses },
-                { "PhoneNumbers", ename::phone_numbers },
-                { "AssistantName", ename::assistant_name },
-                { "Birthday", ename::birthday },
-                { "BusinessHomePage", ename::business_homepage },
-                { "Children", ename::children },
-                { "Companies", ename::companies },
-                { "ContactSource", ename::contact_source },
-                { "Department", ename::department },
-                { "Generation", ename::generation },
-                { "ImAddresses", ename::im_addresses },
-                { "JobTitle", ename::job_title },
-                { "Manager", ename::manager },
-                { "Mileage", ename::mileage },
-                { "OfficeLocation", ename::office_location },
-                { "PostalAddressIndex", ename::postal_address_index },
-                { "Profession", ename::profession },
-                { "SpouseName", ename::spouse_name },
-                { "Surname", ename::surname },
-                { "WeddingAnniversary", ename::wedding_anniversary },
-
-                // { "MimeContent", ename::mime_content },
-                // { "ItemId", ename::item_id },
-                // { "ParentFolderId", ename::parent_folder_id },
-                // { "ItemClass", ename::item_class },
-                // { "Subject", ename::subject },
-                // { "Sensitivity", ename::sensitivity },
-                // { "Body", ename::body },
-                // { "Attachments", ename::attachments },
-                // { "DateTimeReceived", ename::date_time_received },
-                // { "Size", ename::size },
-                // { "Categories", ename::categories },
-                // { "Importance", ename::importance },
-                // { "InReplyTo", ename::in_reply_to },
-                // { "IsSubmitted", ename::is_submitted },
-                // { "IsDraft", ename::is_draft },
-                // { "IsFromMe", ename::is_from_me },
-                // { "IsResend", ename::is_resend },
-                // { "IsUnmodified", ename::is_unmodified },
-                // { "InternetMessageHeaders", ename::internet_message_headers },
-                // { "DateTimeSent", ename::date_time_sent },
-                // { "DateTimeCreated", ename::date_time_created },
-                // { "ResponseObjects", ename::response_objects },
-                // { "ReminderDueBy", ename::reminder_due_by },
-                // { "ReminderIsSet", ename::reminder_is_set },
-                // { "ReminderMinutesBeforeStart", ename::reminder_minutes_before_start },
-                // { "DisplayCc", ename::display_cc },
-                // { "DisplayTo", ename::display_to },
-                // { "HasAttachments", ename::has_attachment },
-                // { "ExtendedProperty", ename::extended_property },
-                // { "Culture", ename::culture },
-                // { "EffectiveRights", ename::effective_rights },
-                // { "LastModifiedName", ename::last_modified_name },
-                // { "LastModifiedTime", ename::last_modified_time },
-                // { "IsAssociated", ename::is_associated },
-                // { "WebClientReadFormQueryString", ename::web_client_read_form_query_string },
-                // { "WebClientEditFormQueryString", ename::web_client_edit_form_query_string },
-                // { "ConversationId", ename::conversation_id },
-                // { "UniqueBody", ename::unique_body },
-
-                // { "HasPicture", ename::has_picture },
-                // { "PhoneticFullName", ename::phonetic_full_name },
-                // { "PhoneticFirstName", ename::phonetic_first_name },
-                // { "PhoneticLastName", ename::phonetic_last_name },
-                // { "Alias", ename::alias },
-                // { "Notes", ename::notes },
-                // { "Photo", ename::photo },
-                // { "UserSMIMECertificate", ename::user_smime_certificate },
-                // { "MSExchangeCertificate", ename::msexchange_certificate },
-                // { "DirectoryId", ename::directory_id },
-                // { "ManagerMailbox", ename::manager_mailbox },
-                // { "DirectReports", ename::direct_reports }
-            };
-            auto it = hash_map.find(str);
-            if (it == hash_map.end())
+            static
+            const std::string& property_path_to_str(property_path::task path)
             {
-                // throw exception(std::string("Unrecognized element: ") + str);
-                return ename::unknown;
+                using ename = property_path::task;
+                static const std::unordered_map<property_path::task,
+                             std::string,
+                             internal::enum_class_hash> hash_map{
+                    { ename::actual_work, "ActualWork" },
+                    { ename::assigned_time, "AssignedTime" },
+                    { ename::billing_information, "BillingInformation" },
+                    { ename::change_count, "ChangeCount" },
+                    { ename::companies, "Companies" },
+                    { ename::complete_date, "CompleteDate" },
+                    { ename::contacts, "Contacts" },
+                    { ename::delegation_state, "DelegationState" },
+                    { ename::delegator, "Delegator" },
+                    { ename::due_date, "DueDate" },
+                    { ename::is_assignment_editable, "IsAssignmentEditable" },
+                    { ename::is_complete, "IsComplete" },
+                    { ename::is_recurring, "IsRecurring" },
+                    { ename::is_team_task, "IsTeamTask" },
+                    { ename::mileage, "mileage" },
+                    { ename::owner, "Owner" },
+                    { ename::percent_complete, "PercentComplete" },
+                    { ename::recurrence, "Recurrence" },
+                    { ename::start_date, "StartDate" },
+                    { ename::status, "Status" },
+                    { ename::status_description, "StatusDescription" },
+                    { ename::total_work, "TotalWork" }
+                };
+                auto it = hash_map.find(path);
+                if (it == hash_map.end())
+                {
+                    throw exception("Unrecognized property path");
+                }
+                return it->second;
             }
-            return it->second;
-        }
+
+            // And other direction. Should add boost as dependency and use
+            // boost::bimap and boost::string_ref
+            static property_path::task str_to_property_path(const char* str)
+            {
+                using ename = property_path::task;
+                static const std::unordered_map<std::string,
+                             property_path::task> hash_map{
+                    { "ActualWork", ename::actual_work },
+                    { "AssignedTime", ename::assigned_time },
+                    { "BillingInformation", ename::billing_information },
+                    { "ChangeCount", ename::change_count },
+                    { "Companies", ename::companies },
+                    { "CompleteDate", ename::complete_date },
+                    { "Contacts", ename::contacts },
+                    { "DelegationState", ename::delegation_state },
+                    { "Delegator", ename::delegator },
+                    { "DueDate", ename::due_date },
+                    { "IsAssignmentEditable", ename::is_assignment_editable },
+                    { "IsComplete", ename::is_complete },
+                    { "IsRecurring", ename::is_recurring },
+                    { "IsTeamTask", ename::is_team_task },
+                    { "mileage", ename::mileage },
+                    { "Owner", ename::owner },
+                    { "PercentComplete", ename::percent_complete },
+                    { "Recurrence", ename::recurrence },
+                    { "StartDate", ename::start_date },
+                    { "Status", ename::status },
+                    { "StatusDescription", ename::status_description },
+                    { "TotalWork", ename::total_work }
+                };
+                auto it = hash_map.find(str);
+                if (it == hash_map.end())
+                {
+                    return ename::unknown;
+                }
+                return it->second;
+            }
+        };
+
+        // Explicit specialization for T = contact
+        template <> struct property_base<property_path::contact>
+        {
+            static
+            const std::string& property_path_to_str(property_path::contact path)
+            {
+                using ename = property_path::contact;
+                static const std::unordered_map<property_path::contact,
+                             std::string,
+                             internal::enum_class_hash> hash_map{
+                    { ename::file_as, "FileAs" },
+                    { ename::file_as_mapping, "FileAsMapping" },
+                    { ename::display_name, "DisplayName" },
+                    { ename::given_name, "GivenName" },
+                    { ename::initials, "Initials" },
+                    { ename::middle_name, "MiddleName" },
+                    { ename::nickname, "Nickname" },
+                    { ename::complete_name, "CompleteName" },
+                    { ename::company_name, "CompanyName" },
+                    { ename::email_addresses, "EmailAddresses" },
+                    { ename::physical_addresses, "PhysicalAddresses" },
+                    { ename::phone_numbers, "PhoneNumbers" },
+                    { ename::assistant_name, "AssistantName" },
+                    { ename::birthday, "Birthday" },
+                    { ename::business_homepage, "BusinessHomePage" },
+                    { ename::children, "Children" },
+                    { ename::companies, "Companies" },
+                    { ename::contact_source, "ContactSource" },
+                    { ename::department, "Department" },
+                    { ename::generation, "Generation" },
+                    { ename::im_addresses, "ImAddresses" },
+                    { ename::job_title, "JobTitle" },
+                    { ename::manager, "Manager" },
+                    { ename::mileage, "Mileage" },
+                    { ename::office_location, "OfficeLocation" },
+                    { ename::postal_address_index, "PostalAddressIndex" },
+                    { ename::profession, "Profession" },
+                    { ename::spouse_name, "SpouseName" },
+                    { ename::surname, "Surname" },
+                    { ename::wedding_anniversary, "WeddingAnniversary" }
+
+                    // { ename::mime_content, "MimeContent" },
+                    // { ename::item_id, "ItemId" },
+                    // { ename::parent_folder_id, "ParentFolderId" },
+                    // { ename::item_class, "ItemClass" },
+                    // { ename::subject, "Subject" },
+                    // { ename::sensitivity, "Sensitivity" },
+                    // { ename::body, "Body" },
+                    // { ename::attachments, "Attachments" },
+                    // { ename::date_time_received, "DateTimeReceived" },
+                    // { ename::size, "Size" },
+                    // { ename::categories, "Categories" },
+                    // { ename::importance, "Importance" },
+                    // { ename::in_reply_to, "InReplyTo" },
+                    // { ename::is_submitted, "IsSubmitted" },
+                    // { ename::is_draft, "IsDraft" },
+                    // { ename::is_from_me, "IsFromMe" },
+                    // { ename::is_resend, "IsResend" },
+                    // { ename::is_unmodified, "IsUnmodified" },
+                    // { ename::internet_message_headers, "InternetMessageHeaders" },
+                    // { ename::date_time_sent, "DateTimeSent" },
+                    // { ename::date_time_created, "DateTimeCreated" },
+                    // { ename::response_objects, "ResponseObjects" },
+                    // { ename::reminder_due_by, "ReminderDueBy" },
+                    // { ename::reminder_is_set, "ReminderIsSet" },
+                    // { ename::reminder_minutes_before_start, "ReminderMinutesBeforeStart" },
+                    // { ename::display_cc, "DisplayCc" },
+                    // { ename::display_to, "DisplayTo" },
+                    // { ename::has_attachment, "HasAttachments" },
+                    // { ename::extended_property, "ExtendedProperty" },
+                    // { ename::culture, "Culture" },
+                    // { ename::effective_rights, "EffectiveRights" },
+                    // { ename::last_modified_name, "LastModifiedName" },
+                    // { ename::last_modified_time, "LastModifiedTime" },
+                    // { ename::is_associated, "IsAssociated" },
+                    // { ename::web_client_read_form_query_string, "WebClientReadFormQueryString" },
+                    // { ename::web_client_edit_form_query_string, "WebClientEditFormQueryString" },
+                    // { ename::conversation_id, "ConversationId" },
+                    // { ename::unique_body, "UniqueBody" },
+
+                    // { ename::has_picture, "HasPicture" },
+                    // { ename::phonetic_full_name, "PhoneticFullName" },
+                    // { ename::phonetic_first_name, "PhoneticFirstName" },
+                    // { ename::phonetic_last_name, "PhoneticLastName" },
+                    // { ename::alias, "Alias" },
+                    // { ename::notes, "Notes" },
+                    // { ename::photo, "Photo" },
+                    // { ename::user_smime_certificate, "UserSMIMECertificate" },
+                    // { ename::msexchange_certificate, "MSExchangeCertificate" },
+                    // { ename::directory_id, "DirectoryId" },
+                    // { ename::manager_mailbox, "ManagerMailbox" },
+                    // { ename::direct_reports, "DirectReports" }
+                };
+                auto it = hash_map.find(path);
+                if (it == hash_map.end())
+                {
+                    throw exception("Unrecognized property path");
+                }
+                return it->second;
+            }
+
+            static property_path::contact str_to_property_path(const char* str)
+            {
+                using ename = property_path::contact;
+                static const std::unordered_map<std::string,
+                             property_path::contact> hash_map{
+                    { "FileAs", ename::file_as },
+                    { "FileAsMapping", ename::file_as_mapping },
+                    { "DisplayName", ename::display_name },
+                    { "GivenName", ename::given_name },
+                    { "Initials", ename::initials },
+                    { "MiddleName", ename::middle_name },
+                    { "Nickname", ename::nickname },
+                    { "CompleteName", ename::complete_name },
+                    { "CompanyName", ename::company_name },
+                    { "EmailAddresses", ename::email_addresses },
+                    { "PhysicalAddresses", ename::physical_addresses },
+                    { "PhoneNumbers", ename::phone_numbers },
+                    { "AssistantName", ename::assistant_name },
+                    { "Birthday", ename::birthday },
+                    { "BusinessHomePage", ename::business_homepage },
+                    { "Children", ename::children },
+                    { "Companies", ename::companies },
+                    { "ContactSource", ename::contact_source },
+                    { "Department", ename::department },
+                    { "Generation", ename::generation },
+                    { "ImAddresses", ename::im_addresses },
+                    { "JobTitle", ename::job_title },
+                    { "Manager", ename::manager },
+                    { "Mileage", ename::mileage },
+                    { "OfficeLocation", ename::office_location },
+                    { "PostalAddressIndex", ename::postal_address_index },
+                    { "Profession", ename::profession },
+                    { "SpouseName", ename::spouse_name },
+                    { "Surname", ename::surname },
+                    { "WeddingAnniversary", ename::wedding_anniversary },
+
+                    // { "MimeContent", ename::mime_content },
+                    // { "ItemId", ename::item_id },
+                    // { "ParentFolderId", ename::parent_folder_id },
+                    // { "ItemClass", ename::item_class },
+                    // { "Subject", ename::subject },
+                    // { "Sensitivity", ename::sensitivity },
+                    // { "Body", ename::body },
+                    // { "Attachments", ename::attachments },
+                    // { "DateTimeReceived", ename::date_time_received },
+                    // { "Size", ename::size },
+                    // { "Categories", ename::categories },
+                    // { "Importance", ename::importance },
+                    // { "InReplyTo", ename::in_reply_to },
+                    // { "IsSubmitted", ename::is_submitted },
+                    // { "IsDraft", ename::is_draft },
+                    // { "IsFromMe", ename::is_from_me },
+                    // { "IsResend", ename::is_resend },
+                    // { "IsUnmodified", ename::is_unmodified },
+                    // { "InternetMessageHeaders", ename::internet_message_headers },
+                    // { "DateTimeSent", ename::date_time_sent },
+                    // { "DateTimeCreated", ename::date_time_created },
+                    // { "ResponseObjects", ename::response_objects },
+                    // { "ReminderDueBy", ename::reminder_due_by },
+                    // { "ReminderIsSet", ename::reminder_is_set },
+                    // { "ReminderMinutesBeforeStart", ename::reminder_minutes_before_start },
+                    // { "DisplayCc", ename::display_cc },
+                    // { "DisplayTo", ename::display_to },
+                    // { "HasAttachments", ename::has_attachment },
+                    // { "ExtendedProperty", ename::extended_property },
+                    // { "Culture", ename::culture },
+                    // { "EffectiveRights", ename::effective_rights },
+                    // { "LastModifiedName", ename::last_modified_name },
+                    // { "LastModifiedTime", ename::last_modified_time },
+                    // { "IsAssociated", ename::is_associated },
+                    // { "WebClientReadFormQueryString", ename::web_client_read_form_query_string },
+                    // { "WebClientEditFormQueryString", ename::web_client_edit_form_query_string },
+                    // { "ConversationId", ename::conversation_id },
+                    // { "UniqueBody", ename::unique_body },
+
+                    // { "HasPicture", ename::has_picture },
+                    // { "PhoneticFullName", ename::phonetic_full_name },
+                    // { "PhoneticFirstName", ename::phonetic_first_name },
+                    // { "PhoneticLastName", ename::phonetic_last_name },
+                    // { "Alias", ename::alias },
+                    // { "Notes", ename::notes },
+                    // { "Photo", ename::photo },
+                    // { "UserSMIMECertificate", ename::user_smime_certificate },
+                    // { "MSExchangeCertificate", ename::msexchange_certificate },
+                    // { "DirectoryId", ename::directory_id },
+                    // { "ManagerMailbox", ename::manager_mailbox },
+                    // { "DirectReports", ename::direct_reports }
+                };
+                auto it = hash_map.find(str);
+                if (it == hash_map.end())
+                {
+                    // throw exception(std::string("Unrecognized element: ") + str);
+                    return ename::unknown;
+                }
+                return it->second;
+            }
+        };
     }
 
-    class property final
+    template <typename T>
+    class property final : public internal::property_base<T>
     {
     public:
+        typedef T property_path_type;
+
         property() = default; // Because of std::unordered_map requirements
 
-        explicit property(property_path::contact path)
+        explicit property(property_path_type path)
             : path_(path), value_()
         {}
 
-        property(property_path::contact path, std::string value)
+        property(property_path_type path, std::string value)
             : path_(path), value_(std::move(value))
         {}
 
-        property_path::contact path() const EWS_NOEXCEPT { return path_; }
+        property_path_type path() const EWS_NOEXCEPT { return path_; }
         const std::string& element_name() const EWS_NOEXCEPT
         {
-            return internal::property_path_to_str(path_);
+            return property<property_path_type>::property_path_to_str(path_);
         }
 
         const std::string& value() const EWS_NOEXCEPT { return value_; }
@@ -3365,16 +3628,16 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         }
 
     private:
-        property_path::contact path_;
+        property_path_type path_;
         std::string value_;
     };
 
 #ifndef _MSC_VER
-    static_assert(std::is_default_constructible<property>::value, "");
-    static_assert(std::is_copy_constructible<property>::value, "");
-    static_assert(std::is_copy_assignable<property>::value, "");
-    static_assert(std::is_move_constructible<property>::value, "");
-    static_assert(std::is_move_assignable<property>::value, "");
+    static_assert(std::is_default_constructible<property<int>>::value, "");
+    static_assert(std::is_copy_constructible<property<int>>::value, "");
+    static_assert(std::is_copy_assignable<property<int>>::value, "");
+    static_assert(std::is_move_constructible<property<int>>::value, "");
+    static_assert(std::is_move_assignable<property<int>>::value, "");
 #endif
 
     namespace internal
@@ -3400,7 +3663,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
             void set_or_update(property_path_type path, std::string value)
             {
-                hash_map_[path] = property(path, std::move(value));
+                hash_map_[path] =
+                    property<property_path_type>(path, std::move(value));
             }
 
             std::string to_xml(const char* xmlns=nullptr) const
@@ -3414,7 +3678,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             }
 
         private:
-            std::unordered_map<property_path_type, property,
+            std::unordered_map<property_path_type, property<property_path_type>,
                 internal::enum_class_hash> hash_map_;
         };
 
@@ -3518,16 +3782,71 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     {
     public:
         item() = default;
-        explicit item(item_id id) : item_id_(std::move(id)) {}
+        explicit item(item_id id) : item_id_(std::move(id)), properties_() {}
 
         const item_id& get_item_id() const EWS_NOEXCEPT { return item_id_; }
 
-        void set_subject(const std::string& str) { subject_ = str; }
-        const std::string& get_subject() const EWS_NOEXCEPT { return subject_; }
+        void set_subject(const std::string& str)
+        {
+            properties_.set_or_update(property_path::item::subject, str);
+        }
+
+        const std::string& get_subject() const EWS_NOEXCEPT
+        {
+            return properties_.get(property_path::item::subject);
+        }
+
+        void set_reminder_enabled(bool enabled)
+        {
+            properties_.set_or_update(property_path::item::reminder_is_set,
+                    enabled ? "true" : "false");
+        }
+
+        bool is_reminder_enabled() const EWS_NOEXCEPT
+        {
+            const auto& val =
+                properties_.get(property_path::item::reminder_is_set);
+            return val == "true";
+        }
+
+        void set_reminder_due_by(const date_time& due_by)
+        {
+            properties_.set_or_update(property_path::item::reminder_due_by,
+                    due_by.to_string());
+        }
+
+        date_time get_reminder_due_by() const
+        {
+            return date_time(
+                    properties_.get(property_path::item::reminder_due_by));
+        }
+
+    protected:
+        void parse_item_properties(const rapidxml::xml_node<>& elem)
+        {
+            for (auto node = elem.first_node(); node;
+                 node = node->next_sibling())
+            {
+                const auto prop =
+                    property<property_path::item>::str_to_property_path(
+                        node->local_name());
+                if (prop != property_path::item::unknown)
+                {
+                    properties_.set_or_update(prop,
+                                              std::string(node->value(),
+                                                          node->value_size()));
+                }
+            }
+        }
+
+        std::string item_properties_to_xml(const char* xmlns) const
+        {
+            return properties_.to_xml(xmlns);
+        }
 
     private:
         item_id item_id_;
-        std::string subject_;
+        internal::property_map<property_path::item> properties_;
 
         friend class service;
         // Sub-classes reimplement functions below
@@ -3553,44 +3872,82 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         task() = default;
         explicit task(item_id id) : item(id) {}
 
-        void set_body(const body&) {} // TODO: getter
+        void set_body(const body&) {} // TODO: implement, add getter
 
-        void set_owner(const std::string&) {}
-        void set_start_date(const ews::date_time&) {}
-        void set_due_date(const ews::date_time&) {}
-        void set_reminder_enabled(bool) {}
-        void set_reminder_due_by(const ews::date_time&) {}
+        // TODO: not in AllProperties shape in EWS 2013, investigate
 
-        // Makes a task instance from a <Task> XML element
+//        const std::string& get_owner() const EWS_NOEXCEPT
+//        {
+//            return properties_.get(property_path::task::owner);
+//        }
+
+        void set_start_date(const date_time& start_date)
+        {
+            properties_.set_or_update(property_path::task::start_date,
+                    start_date.to_string());
+        }
+
+        date_time get_start_date() const
+        {
+            return date_time(
+                    properties_.get(property_path::task::start_date));
+        }
+
+        void set_due_date(const date_time& due_date)
+        {
+            properties_.set_or_update(property_path::task::due_date,
+                    due_date.to_string());
+        }
+
+        date_time get_due_date() const
+        {
+            return date_time(
+                    properties_.get(property_path::task::due_date));
+        }
+
+        // TODO: code dupe in contact class. Makes a task instance from a <Task>
+        // XML element
         static task from_xml_element(const rapidxml::xml_node<>& elem)
         {
             using uri = internal::uri<>;
 
             auto node = elem.first_node_ns(uri::microsoft::types(), "ItemId");
             EWS_ASSERT(node && "Expected <ItemId>");
-            auto t = task(item_id::from_xml_element(*node));
-            node = elem.first_node_ns(uri::microsoft::types(), "Subject");
-            if (node)
+            auto obj = task(item_id::from_xml_element(*node));
+            obj.parse_item_properties(elem);
+            for (node = elem.first_node(); node; node = node->next_sibling())
             {
-                t.set_subject(std::string(node->value(), node->value_size()));
+                const auto prop =
+                    property<property_path::task>::str_to_property_path(
+                        node->local_name());
+                if (prop != property_path::task::unknown)
+                {
+                    obj.properties_.set_or_update(prop,
+                            std::string(node->value(), node->value_size()));
+                }
             }
-            return t;
+            return obj;
         }
 
     private:
+        internal::property_map<property_path::task> properties_;
+
         friend class service;
         std::string create_item_request_string() const
         {
-            return
+            std::stringstream sstr;
+            sstr <<
               "<CreateItem " \
                   "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
                   "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
               "<Items>" \
-              "<t:Task>" \
-              "<t:Subject>" + get_subject() + "</t:Subject>" \
-              "</t:Task>" \
+              "<t:Task>";
+            sstr << item_properties_to_xml("t") << "\n";
+            sstr << properties_.to_xml("t") << "\n";
+            sstr << "</t:Task>" \
               "</Items>" \
               "</CreateItem>";
+            return sstr.str();
         }
     };
 
@@ -3631,11 +3988,10 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         }
 
         // Makes a contact instance from a <Contact> XML element
+        // TODO: code dupe with task class
         static contact from_xml_element(const rapidxml::xml_node<>& elem)
         {
             using uri = internal::uri<>;
-
-            // std::cout << elem << std::endl;
 
             auto node = elem.first_node_ns(uri::microsoft::types(), "ItemId");
             EWS_ASSERT(node && "Expected <ItemId>");
@@ -3646,7 +4002,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                 // TODO: Item's properties need to be parsed, too
 
                 EWS_ASSERT(node && "Expected an element, got nullptr");
-                const auto prop = internal::str_to_property_path(
+                const auto prop = property<property_path::contact>::str_to_property_path(
                         node->local_name());
                 if (prop != property_path::contact::unknown)
                 {
@@ -3670,6 +4026,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                   "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
               "<Items>" \
               "<t:Contact>";
+            sstr << item_properties_to_xml("t") << "\n";
             sstr << properties_.to_xml("t") << "\n";
             sstr << "</t:Contact>" \
               "</Items>" \
