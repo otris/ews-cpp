@@ -21,12 +21,10 @@
 #include "rapidxml/rapidxml.hpp"
 
 // Print more detailed error messages, HTTP request/response etc to stderr
-#ifndef NDEBUG
-# ifdef EWS_ENABLE_VERBOSE
-#  include <iostream>
-#  include <ostream>
-#  include "rapidxml/rapidxml_print.hpp"
-# endif
+#ifdef EWS_ENABLE_VERBOSE
+# include <iostream>
+# include <ostream>
+# include "rapidxml/rapidxml_print.hpp"
 #endif
 
 // Macro for verifying expressions at run-time. Calls assert() with 'expr'.
@@ -2578,12 +2576,10 @@ namespace ews
                 // SIGPIPE is still possible, too
                 set_option(CURLOPT_NOSIGNAL, 1L);
 
-#ifndef NDEBUG
-# ifdef EWS_ENABLE_VERBOSE
+#ifdef EWS_ENABLE_VERBOSE
                 // Print HTTP headers to stderr
                 set_option(CURLOPT_VERBOSE, 1L);
 # endif
-#endif
 
                 // Set complete request string for HTTP POST method; note: no
                 // encoding here
@@ -2863,15 +2859,13 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                                                  "DeleteItemResponseMessage",
                                                  uri::microsoft::messages());
 
-#ifndef NDEBUG
-# ifdef EWS_ENABLE_VERBOSE
+#ifdef EWS_ENABLE_VERBOSE
             if (!elem)
             {
                 std::cerr
                     << "Parsing DeleteItemResponseMessage failed, response code: "
                     << response.code() << ", payload:\n" << doc << std::endl;
             }
-# endif
 #endif
 
                 EWS_ASSERT(elem &&
@@ -4218,10 +4212,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
               "<ItemIds>" + id.to_xml("t") + "</ItemIds>" \
               "</GetItem>";
             auto response = request(request_string);
-#ifndef NDEBUG
-# ifdef EWS_ENABLE_VERBOSE
+#ifdef EWS_ENABLE_VERBOSE
             std::cerr << response.payload() << std::endl;
-# endif
 #endif
             const auto response_message =
                 get_item_response_message::parse(response);
@@ -4279,8 +4271,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                                              "CreateItemResponseMessage",
                                              uri::microsoft::messages());
 
-#ifndef NDEBUG
-# ifdef EWS_ENABLE_VERBOSE
+#ifdef EWS_ENABLE_VERBOSE
             // FIXME: sometimes assertion fails for reasons unknown to me,
             // temporarily log response code and XML payload here
             if (!elem)
@@ -4289,7 +4280,6 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                     << "Parsing CreateItemResponseMessage failed, response code: "
                     << response.code() << ", payload:\n" << doc << std::endl;
             }
-# endif
 #endif
 
             EWS_ASSERT(elem &&
@@ -4321,15 +4311,13 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             auto elem = get_element_by_qname(doc,
                                              "GetItemResponseMessage",
                                              uri::microsoft::messages());
-#ifndef NDEBUG
-# ifdef EWS_ENABLE_VERBOSE
+#ifdef EWS_ENABLE_VERBOSE
             if (!elem)
             {
                 std::cerr
                     << "Parsing GetItemResponseMessage failed, response code: "
                     << response.code() << ", payload:\n" << doc << std::endl;
             }
-# endif
 #endif
             EWS_ASSERT(elem &&
                     "Expected <GetItemResponseMessage>, got nullptr");

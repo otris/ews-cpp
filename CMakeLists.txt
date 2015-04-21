@@ -5,7 +5,9 @@ include(CheckCXXCompilerFlag)
 
 option(ENABLE_ASSERTS "Enable run-time checks." OFF)
 option(ENABLE_ASAN "Enable address sanitizer." OFF)
-option(ENABLE_VERBOSE "Enable verbose output to stderr." OFF)
+option(ENABLE_VERBOSE
+    "Enable verbose output to stderr (You don't want this set in production)."
+    OFF)
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     option(ENABLE_LIBCXX "Link against libc++ instead of libstdc++." ON)
 endif()
