@@ -2282,7 +2282,7 @@ namespace ews
                 // TODO: parsed_ boolean not necessary, use if (doc_) { /* ... */ }
                 if (!parsed_)
                 {
-                    on_scope_exit set_parsed([&]()
+                    on_scope_exit set_parsed([&]
                     {
                         parsed_ = true;
                     });
@@ -2984,38 +2984,112 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             // an unrecognized or unsupported element is found in a response
             unknown,
 
-            // <MimeContent/>
-            // <ItemId/>
-            // <ParentFolderId/>
-            // <ItemClass/>
+            // Base64-encoded contents of the MIME stream for an item
+            mime_content,
+
+            // Unique identifier for the folder that contains an item. This is a
+            // read-only property
+            parent_folder_id,
+
+            // PR_MESSAGE_CLASS MAPI property (the message class) for an item
+            item_class,
 
             // The item's subject. Limited to 255 characters.
             subject,
 
-            // <Sensitivity/>
-            // <Body/>
-            // <Attachments/>
-            // <DateTimeReceived/>
-            // <Size/>
-            // <Categories/>
-            // <InReplyTo/>
-            // <IsSubmitted/>
-            // <IsDraft/>
-            // <IsFromMe/>
-            // <IsResend/>
-            // <IsUnmodified/>
-            // <InternetMessageHeaders/>
-            // <DateTimeSent/>
-            // <DateTimeCreated/>
-            // <ResponseObjects/>
-            reminder_due_by, // <ReminderDueBy/>
-            reminder_is_set, // <ReminderIsSet/>
-            // <ReminderMinutesBeforeStart/>
-            // <DisplayCc/>
-            // <DisplayTo/>
-            // <HasAttachments/>
-            // <ExtendedProperty/>
-            // <Culture/>
+            // Enumeration indicating the sensitive nature of an item; valid
+            // values are Normal, Personal, Private, and Confidential
+            sensitivity,
+
+            // Body content of an item
+            body,
+
+            // Metadata about the attachments of an item
+            attachments,
+
+            // Date/time an item was received
+            date_time_received,
+
+            // Size in bytes of an item. This is a read-only property
+            size,
+
+            // Categories associated with an item
+            categories,
+
+            // Enumeration indicating the importance of an item; valid values
+            // are Low, Normal, and High
+            importance,
+
+            // Taken from PR_IN_REPLY_TO_ID MAPI property
+            in_reply_to,
+
+            // True if an item has been submitted for delivery
+            is_submitted,
+
+            // True if an item is a draft
+            is_draft,
+
+            // True if an item is from you
+            is_from_me,
+
+            // True if an item a re-send
+            is_resend,
+
+            // True if an item is unmodified
+            is_unmodified,
+
+            // Collection of Internet message headers associated with an item
+            internet_message_headers,
+
+            // Date/time an item was sent
+            date_time_sent,
+
+            // Date/time an item was created
+            date_time_created,
+
+            // Applicable actions for an item
+            // (NonEmptyArrayOfResponseObjectsType)
+            response_objects,
+
+            // Due date of an item; used for reminders
+            reminder_due_by,
+
+            // True if a reminder has been set on an item
+            reminder_is_set,
+
+            // Number of minutes before the due date that a reminder should be
+            // shown to the user
+            reminder_minutes_before_start,
+
+            // Concatenated string of the display names of the Cc recipients of
+            // an item; each recipient is separated by a semicolon
+            display_cc,
+
+            // Concatenated string of the display names of the To recipients of
+            // an item; each recipient is separated by a semicolon
+            display_to,
+
+            // True if an item has non-hidden attachments. This is a read-only
+            // property
+            has_attachments,
+
+            // List of zero or more extended properties that are requested for
+            // an item
+            extended_property,
+
+            // Culture name associated with the body of an item
+            culture,
+
+            // Beyond 2007 scope:
+
+            // <EffectiveRights/>
+            // <LastModifiedName/>
+            // <LastModifiedTime/>
+            // <IsAssociated/>
+            // <WebClientReadFormQueryString/>
+            // <WebClientEditFormQueryString/>
+            // <ConversationId/>
+            // <UniqueBody/>
         };
 
         enum class task
@@ -3099,15 +3173,6 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             total_work,
 
             // 2012 and/or 2013 dialect
-
-            // <EffectiveRights/>
-            // <LastModifiedName/>
-            // <LastModifiedTime/>
-            // <IsAssociated/>
-            // <WebClientReadFormQueryString/>
-            // <WebClientEditFormQueryString/>
-            // <ConversationId/>
-            // <UniqueBody/>
         };
 
         enum class contact
@@ -3213,45 +3278,6 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
             // Everything below is beyond EWS 2007 subset
 
-            // mime_content,
-            // item_id,
-            // parent_folder_id,
-            // item_class,
-            // subject,
-            // sensitivity,
-            // body,
-            // attachments,
-            // date_time_received,
-            // size,
-            // categories,
-            // importance,
-            // in_reply_to,
-            // is_submitted,
-            // is_draft,
-            // is_from_me,
-            // is_resend,
-            // is_unmodified,
-            // internet_message_headers,
-            // date_time_sent,
-            // date_time_created,
-            // response_objects,
-            // reminder_due_by,
-            // reminder_is_set,
-            // reminder_minutes_before_start,
-            // display_cc,
-            // display_to,
-            // has_attachment,
-            // extended_property,
-            // culture,
-            // effective_rights,
-            // last_modified_name,
-            // last_modified_time,
-            // is_associated,
-            // web_client_read_form_query_string,
-            // web_client_edit_form_query_string,
-            // conversation_id,
-            // unique_body,
-
             // has_picture,
             // phonetic_full_name,
             // phonetic_first_name,
@@ -3282,9 +3308,43 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                 static const std::unordered_map<property_path::item,
                              std::string,
                              internal::enum_class_hash> hash_map{
+                    { ename::mime_content, "MimeContent" },
+                    { ename::parent_folder_id, "ParentFolderId" },
+                    { ename::item_class, "ItemClass" },
                     { ename::subject, "Subject" },
+                    { ename::sensitivity, "Sensitivity" },
+                    { ename::body, "Body" },
+                    { ename::attachments, "Attachments" },
+                    { ename::date_time_received, "DateTimeReceived" },
+                    { ename::size, "Size" },
+                    { ename::categories, "Categories" },
+                    { ename::importance, "Importance" },
+                    { ename::in_reply_to, "InReplyTo" },
+                    { ename::is_submitted, "IsSubmitted" },
+                    { ename::is_draft, "IsDraft" },
+                    { ename::is_from_me, "IsFromMe" },
+                    { ename::is_resend, "IsResend" },
+                    { ename::is_unmodified, "IsUnmodified" },
+                    { ename::internet_message_headers, "InternetMessageHeaders" },
+                    { ename::date_time_sent, "DateTimeSent" },
+                    { ename::date_time_created, "DateTimeCreated" },
+                    { ename::response_objects, "ResponseObjects" },
                     { ename::reminder_due_by, "ReminderDueBy" },
-                    { ename::reminder_is_set, "ReminderIsSet" }
+                    { ename::reminder_is_set, "ReminderIsSet" },
+                    { ename::reminder_minutes_before_start, "ReminderMinutesBeforeStart" },
+                    { ename::display_cc, "DisplayCc" },
+                    { ename::display_to, "DisplayTo" },
+                    { ename::has_attachments, "HasAttachments" },
+                    { ename::extended_property, "ExtendedProperty" },
+                    { ename::culture, "Culture" }
+                    // { ename::effective_rights, "EffectiveRights" },
+                    // { ename::last_modified_name, "LastModifiedName" },
+                    // { ename::last_modified_time, "LastModifiedTime" },
+                    // { ename::is_associated, "IsAssociated" },
+                    // { ename::web_client_read_form_query_string, "WebClientReadFormQueryString" },
+                    // { ename::web_client_edit_form_query_string, "WebClientEditFormQueryString" },
+                    // { ename::conversation_id, "ConversationId" },
+                    // { ename::unique_body, "UniqueBody" },
                 };
                 auto it = hash_map.find(path);
                 if (it == hash_map.end())
@@ -3301,9 +3361,43 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                 using ename = property_path::item;
                 static const std::unordered_map<std::string,
                              property_path::item> hash_map{
+                    { "MimeContent", ename::mime_content },
+                    { "ParentFolderId", ename::parent_folder_id },
+                    { "ItemClass", ename::item_class },
                     { "Subject", ename::subject },
+                    { "Sensitivity", ename::sensitivity },
+                    { "Body", ename::body },
+                    { "Attachments", ename::attachments },
+                    { "DateTimeReceived", ename::date_time_received },
+                    { "Size", ename::size },
+                    { "Categories", ename::categories },
+                    { "Importance", ename::importance },
+                    { "InReplyTo", ename::in_reply_to },
+                    { "IsSubmitted", ename::is_submitted },
+                    { "IsDraft", ename::is_draft },
+                    { "IsFromMe", ename::is_from_me },
+                    { "IsResend", ename::is_resend },
+                    { "IsUnmodified", ename::is_unmodified },
+                    { "InternetMessageHeaders", ename::internet_message_headers },
+                    { "DateTimeSent", ename::date_time_sent },
+                    { "DateTimeCreated", ename::date_time_created },
+                    { "ResponseObjects", ename::response_objects },
                     { "ReminderDueBy", ename::reminder_due_by },
-                    { "ReminderIsSet", ename::reminder_is_set }
+                    { "ReminderIsSet", ename::reminder_is_set },
+                    { "ReminderMinutesBeforeStart", ename::reminder_minutes_before_start },
+                    { "DisplayCc", ename::display_cc },
+                    { "DisplayTo", ename::display_to },
+                    { "HasAttachments", ename::has_attachments },
+                    { "ExtendedProperty", ename::extended_property },
+                    { "Culture", ename::culture }
+                    //{ "EffectiveRights", ename::effective_rights },
+                    //{ "LastModifiedName", ename::last_modified_name },
+                    //{ "LastModifiedTime", ename::last_modified_time },
+                    //{ "IsAssociated", ename::is_associated },
+                    //{ "WebClientReadFormQueryString", ename::web_client_read_form_query_string },
+                    //{ "WebClientEditFormQueryString", ename::web_client_edit_form_query_string },
+                    //{ "ConversationId", ename::conversation_id },
+                    //{ "UniqueBody", ename::unique_body },
                 };
                 auto it = hash_map.find(str);
                 if (it == hash_map.end())
@@ -3435,45 +3529,6 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                     { ename::surname, "Surname" },
                     { ename::wedding_anniversary, "WeddingAnniversary" }
 
-                    // { ename::mime_content, "MimeContent" },
-                    // { ename::item_id, "ItemId" },
-                    // { ename::parent_folder_id, "ParentFolderId" },
-                    // { ename::item_class, "ItemClass" },
-                    // { ename::subject, "Subject" },
-                    // { ename::sensitivity, "Sensitivity" },
-                    // { ename::body, "Body" },
-                    // { ename::attachments, "Attachments" },
-                    // { ename::date_time_received, "DateTimeReceived" },
-                    // { ename::size, "Size" },
-                    // { ename::categories, "Categories" },
-                    // { ename::importance, "Importance" },
-                    // { ename::in_reply_to, "InReplyTo" },
-                    // { ename::is_submitted, "IsSubmitted" },
-                    // { ename::is_draft, "IsDraft" },
-                    // { ename::is_from_me, "IsFromMe" },
-                    // { ename::is_resend, "IsResend" },
-                    // { ename::is_unmodified, "IsUnmodified" },
-                    // { ename::internet_message_headers, "InternetMessageHeaders" },
-                    // { ename::date_time_sent, "DateTimeSent" },
-                    // { ename::date_time_created, "DateTimeCreated" },
-                    // { ename::response_objects, "ResponseObjects" },
-                    // { ename::reminder_due_by, "ReminderDueBy" },
-                    // { ename::reminder_is_set, "ReminderIsSet" },
-                    // { ename::reminder_minutes_before_start, "ReminderMinutesBeforeStart" },
-                    // { ename::display_cc, "DisplayCc" },
-                    // { ename::display_to, "DisplayTo" },
-                    // { ename::has_attachment, "HasAttachments" },
-                    // { ename::extended_property, "ExtendedProperty" },
-                    // { ename::culture, "Culture" },
-                    // { ename::effective_rights, "EffectiveRights" },
-                    // { ename::last_modified_name, "LastModifiedName" },
-                    // { ename::last_modified_time, "LastModifiedTime" },
-                    // { ename::is_associated, "IsAssociated" },
-                    // { ename::web_client_read_form_query_string, "WebClientReadFormQueryString" },
-                    // { ename::web_client_edit_form_query_string, "WebClientEditFormQueryString" },
-                    // { ename::conversation_id, "ConversationId" },
-                    // { ename::unique_body, "UniqueBody" },
-
                     // { ename::has_picture, "HasPicture" },
                     // { ename::phonetic_full_name, "PhoneticFullName" },
                     // { ename::phonetic_first_name, "PhoneticFirstName" },
@@ -3530,45 +3585,6 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                     { "SpouseName", ename::spouse_name },
                     { "Surname", ename::surname },
                     { "WeddingAnniversary", ename::wedding_anniversary },
-
-                    // { "MimeContent", ename::mime_content },
-                    // { "ItemId", ename::item_id },
-                    // { "ParentFolderId", ename::parent_folder_id },
-                    // { "ItemClass", ename::item_class },
-                    // { "Subject", ename::subject },
-                    // { "Sensitivity", ename::sensitivity },
-                    // { "Body", ename::body },
-                    // { "Attachments", ename::attachments },
-                    // { "DateTimeReceived", ename::date_time_received },
-                    // { "Size", ename::size },
-                    // { "Categories", ename::categories },
-                    // { "Importance", ename::importance },
-                    // { "InReplyTo", ename::in_reply_to },
-                    // { "IsSubmitted", ename::is_submitted },
-                    // { "IsDraft", ename::is_draft },
-                    // { "IsFromMe", ename::is_from_me },
-                    // { "IsResend", ename::is_resend },
-                    // { "IsUnmodified", ename::is_unmodified },
-                    // { "InternetMessageHeaders", ename::internet_message_headers },
-                    // { "DateTimeSent", ename::date_time_sent },
-                    // { "DateTimeCreated", ename::date_time_created },
-                    // { "ResponseObjects", ename::response_objects },
-                    // { "ReminderDueBy", ename::reminder_due_by },
-                    // { "ReminderIsSet", ename::reminder_is_set },
-                    // { "ReminderMinutesBeforeStart", ename::reminder_minutes_before_start },
-                    // { "DisplayCc", ename::display_cc },
-                    // { "DisplayTo", ename::display_to },
-                    // { "HasAttachments", ename::has_attachment },
-                    // { "ExtendedProperty", ename::extended_property },
-                    // { "Culture", ename::culture },
-                    // { "EffectiveRights", ename::effective_rights },
-                    // { "LastModifiedName", ename::last_modified_name },
-                    // { "LastModifiedTime", ename::last_modified_time },
-                    // { "IsAssociated", ename::is_associated },
-                    // { "WebClientReadFormQueryString", ename::web_client_read_form_query_string },
-                    // { "WebClientEditFormQueryString", ename::web_client_edit_form_query_string },
-                    // { "ConversationId", ename::conversation_id },
-                    // { "UniqueBody", ename::unique_body },
 
                     // { "HasPicture", ename::has_picture },
                     // { "PhoneticFullName", ename::phonetic_full_name },
@@ -3791,6 +3807,11 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         const item_id& get_item_id() const EWS_NOEXCEPT { return item_id_; }
 
+        const std::string& get_mime_content() const EWS_NOEXCEPT
+        {
+            return properties_.get(property_path::item::mime_content);
+        }
+
         void set_subject(const std::string& str)
         {
             properties_.set_or_update(property_path::item::subject, str);
@@ -3910,8 +3931,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                     properties_.get(property_path::task::due_date));
         }
 
-        // TODO: code dupe in contact class. Makes a task instance from a <Task>
-        // XML element
+        // TODO: 100% code dupe in contact class.
+        // Makes a task instance from a <Task> XML element
         static task from_xml_element(const rapidxml::xml_node<>& elem)
         {
             using uri = internal::uri<>;
@@ -4001,13 +4022,11 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             auto node = elem.first_node_ns(uri::microsoft::types(), "ItemId");
             EWS_ASSERT(node && "Expected <ItemId>");
             auto obj = contact(item_id::from_xml_element(*node));
-
+            obj.parse_item_properties(elem);
             for (node = elem.first_node(); node; node = node->next_sibling())
             {
-                // TODO: Item's properties need to be parsed, too
-
-                EWS_ASSERT(node && "Expected an element, got nullptr");
-                const auto prop = property<property_path::contact>::str_to_property_path(
+                const auto prop =
+                    property<property_path::contact>::str_to_property_path(
                         node->local_name());
                 if (prop != property_path::contact::unknown)
                 {
@@ -4184,16 +4203,26 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             using get_item_response_message =
                 internal::get_item_response_message<ItemType>;
 
+            // TODO: remove <AdditionalProperties> below, add parameter(s) or
+            // overload to allow users customization
             const std::string request_string =
               "<GetItem " \
                   "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
                   "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
               "<ItemShape>" \
               "<t:BaseShape>" + base_shape_str(shape) + "</t:BaseShape>" \
+              "<t:AdditionalProperties>" \
+              "<t:FieldURI FieldURI=\"item:MimeContent\"/>" \
+              "</t:AdditionalProperties>" \
               "</ItemShape>" \
               "<ItemIds>" + id.to_xml("t") + "</ItemIds>" \
               "</GetItem>";
             auto response = request(request_string);
+#ifndef NDEBUG
+# ifdef EWS_ENABLE_VERBOSE
+            std::cerr << response.payload() << std::endl;
+# endif
+#endif
             const auto response_message =
                 get_item_response_message::parse(response);
             if (!response_message.success())
