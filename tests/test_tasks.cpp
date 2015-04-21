@@ -10,6 +10,7 @@ namespace tests
     class TaskTest : public ServiceFixture {};
 
     // TODO: test does not need to be in a fixture that can talk to the server
+#pragma warning(suppress: 6262)
     TEST_F(TaskTest, FromXmlElement)
     {
         using xml_document = rapidxml::xml_document<>;

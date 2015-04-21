@@ -28,6 +28,7 @@ namespace tests
         EXPECT_STREQ(a.change_key().c_str(), "");
     }
 
+#pragma warning(suppress: 6262)
     TEST(ItemIdTest, FromXmlNode)
     {
         char buf[] = "<ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>";
@@ -46,6 +47,7 @@ namespace tests
         EXPECT_STREQ(expected, a.to_xml("t").c_str());
     }
 
+#pragma warning(suppress: 6262)
     TEST(ItemIdTest, FromAndToXMLRoundTrip)
     {
 #define TESTS_ITEM_ID_XML "<ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>"
