@@ -2235,7 +2235,10 @@ namespace ews
         {
         public:
             http_response(long code, std::vector<char>&& data)
-                : data_(std::move(data)), doc_(), code_(code), parsed_(false)
+                : data_(std::move(data)),
+                  doc_(new rapidxml::xml_document<char>()),
+                  code_(code),
+                  parsed_(false)
             {
                 EWS_ASSERT(!data_.empty());
             }
@@ -2275,6 +2278,8 @@ namespace ews
             // sure that parsing is done only once!
             const rapidxml::xml_document<char>& payload()
             {
+                // FIXME: synchronization missing (read of parsed_ and call parse())
+                // TODO: parsed_ boolean not necessary, use if (doc_) { /* ... */ }
                 if (!parsed_)
                 {
                     on_scope_exit set_parsed([&]()
@@ -2283,7 +2288,7 @@ namespace ews
                     });
                     parse();
                 }
-                return doc_;
+                return *doc_;
             }
 
             // Returns the response code of the HTTP request.
@@ -2317,7 +2322,7 @@ namespace ews
                 try
                 {
                     static const int flags = 0;
-                    doc_.parse<flags>(&data_[0]);
+                    doc_->parse<flags>(&data_[0]);
                 }
                 catch (rapidxml::parse_error& e)
                 {
@@ -2327,7 +2332,7 @@ namespace ews
             }
 
             std::vector<char> data_;
-            rapidxml::xml_document<char> doc_;
+            std::unique_ptr<rapidxml::xml_document<char>> doc_;
             long code_;
             bool parsed_;
         };
@@ -3333,7 +3338,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                     { ename::is_complete, "IsComplete" },
                     { ename::is_recurring, "IsRecurring" },
                     { ename::is_team_task, "IsTeamTask" },
-                    { ename::mileage, "mileage" },
+                    { ename::mileage, "Mileage" },
                     { ename::owner, "Owner" },
                     { ename::percent_complete, "PercentComplete" },
                     { ename::recurrence, "Recurrence" },
