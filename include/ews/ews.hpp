@@ -3604,6 +3604,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         };
     }
 
+    // TODO
     template <typename T>
     class property final : public internal::property_base<T>
     {
@@ -3680,6 +3681,13 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             {
                 hash_map_[path] =
                     property<property_path_type>(path, std::move(value));
+            }
+
+            void set_or_update(property_path_type path,
+                               const rapidxml::xml_node<>& node)
+            {
+                set_or_update(path,
+                              std::string(node.value(), node.value_size()));
             }
 
             std::string to_xml(const char* xmlns=nullptr) const
@@ -3784,6 +3792,61 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         }
     };
 
+#ifndef _MSC_VER
+    static_assert(!std::is_default_constructible<body>::value, "");
+    static_assert(std::is_copy_constructible<body>::value, "");
+    static_assert(std::is_copy_assignable<body>::value, "");
+    static_assert(std::is_move_constructible<body>::value, "");
+    static_assert(std::is_move_assignable<body>::value, "");
+#endif
+
+    // Represents an item's <MimeContent CharacterSet="" /> element.
+    //
+    // Contains the ASCII MIME stream of an object that is represented in
+    // base64Binary format (as in RFC2045).
+    class mime_content final
+    {
+    public:
+        mime_content() = default;
+
+        // Copies len bytes from ptr into an internal buffer.
+        mime_content(std::string charset,
+                     const char* const ptr,
+                     std::size_t len)
+            : charset_(std::move(charset)),
+              bytearray_(ptr, ptr + len)
+        {}
+
+        // Returns how the string is encoded, e.g., "UTF-8"
+        const std::string& character_set() const EWS_NOEXCEPT
+        {
+            return charset_;
+        }
+
+        // Note: the pointer to the data is not 0-terminated
+        const char* bytes() const EWS_NOEXCEPT { return bytearray_.data(); }
+
+        std::size_t len_bytes() const EWS_NOEXCEPT { return bytearray_.size(); }
+
+        // Returns true if no MIME content is available.  Note that a
+        // <MimeContent> property is only included in a GetItem response when
+        // explicitly requested using additional properties. This function lets
+        // you test whether MIME content is available.
+        bool none() const EWS_NOEXCEPT { return len_bytes() == 0U; }
+
+    private:
+        std::string charset_;
+        std::vector<char> bytearray_;
+    };
+
+#ifndef _MSC_VER
+    static_assert(std::is_default_constructible<mime_content>::value, "");
+    static_assert(std::is_copy_constructible<mime_content>::value, "");
+    static_assert(std::is_copy_assignable<mime_content>::value, "");
+    static_assert(std::is_move_constructible<mime_content>::value, "");
+    static_assert(std::is_move_assignable<mime_content>::value, "");
+#endif
+
     // Represents a generic item in the Exchange store.
     //
     // Basically:
@@ -3801,9 +3864,11 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         const item_id& get_item_id() const EWS_NOEXCEPT { return item_id_; }
 
-        const std::string& get_mime_content() const EWS_NOEXCEPT
+        mime_content get_mime_content() const
         {
-            return properties_.get(property_path::item::mime_content);
+            // const auto& val =
+            //     properties_.get(property_path::item::mime_content);
+            return mime_content();
         }
 
         void set_subject(const std::string& str)
@@ -3852,9 +3917,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                         node->local_name());
                 if (prop != property_path::item::unknown)
                 {
-                    properties_.set_or_update(prop,
-                                              std::string(node->value(),
-                                                          node->value_size()));
+                    properties_.set_or_update(prop, *node);
                 }
             }
         }
@@ -3942,8 +4005,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                         node->local_name());
                 if (prop != property_path::task::unknown)
                 {
-                    obj.properties_.set_or_update(prop,
-                            std::string(node->value(), node->value_size()));
+                    obj.properties_.set_or_update(prop, *node);
                 }
             }
             return obj;
@@ -4024,8 +4086,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                         node->local_name());
                 if (prop != property_path::contact::unknown)
                 {
-                    obj.properties_.set_or_update(prop,
-                            std::string(node->value(), node->value_size()));
+                    obj.properties_.set_or_update(prop, *node);
                 }
             }
             return obj;

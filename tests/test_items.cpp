@@ -11,7 +11,7 @@ namespace tests
     TEST_F(ItemTest, DefaultConstruction)
     {
         auto i = item();
-        EXPECT_STREQ("", i.get_mime_content().c_str());
+        EXPECT_TRUE(i.get_mime_content().none());
         EXPECT_STREQ("", i.get_subject().c_str());
         EXPECT_FALSE(i.get_item_id().valid());
     }
@@ -27,6 +27,6 @@ namespace tests
             s.delete_contact(std::move(contact));
         });
         contact = s.get_contact(item_id);
-        EXPECT_STRNE("", contact.get_mime_content().c_str());
+        EXPECT_FALSE(contact.get_mime_content().none());
     }
 }

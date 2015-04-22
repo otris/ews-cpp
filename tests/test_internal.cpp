@@ -38,6 +38,40 @@ namespace tests
                   std::strlen(uri::soapxml::envelope()));
     }
 
+    TEST(InternalTest, MimeContentDefaultConstruction)
+    {
+        using mime_content = ews::mime_content;
+
+        auto m = mime_content();
+        EXPECT_TRUE(m.none());
+        EXPECT_EQ(0U, m.len_bytes());
+        EXPECT_TRUE(m.character_set().empty());
+        EXPECT_EQ(nullptr, m.bytes());
+    }
+
+    TEST(InternalTest, MimeContentConstructionWithData)
+    {
+        using mime_content = ews::mime_content;
+        const char* content = "SGVsbG8sIHdvcmxkPw==";
+
+        auto m = mime_content();
+
+        {
+            const auto b = std::string(content);
+            m = mime_content("UTF-8", b.data(), b.length());
+            EXPECT_FALSE(m.none());
+            EXPECT_EQ(20U, m.len_bytes());
+            EXPECT_FALSE(m.character_set().empty());
+            EXPECT_STREQ("UTF-8", m.character_set().c_str());
+            EXPECT_NE(nullptr, m.bytes());
+        }
+
+        // b was destructed
+
+        EXPECT_TRUE(std::equal(m.bytes(), m.bytes() + m.len_bytes(),
+                               content, content + std::strlen(content)));
+    }
+
     TEST(InternalTest, PropertyClass)
     {
         using property_path = ews::property_path;
