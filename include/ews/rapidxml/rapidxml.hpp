@@ -550,7 +550,7 @@ namespace rapidxml
                 explicit scope(xml_namespace_processor& processor)
                     : m_processor(processor),
                       m_stack_position(processor.m_namespace_prefixes.size()),
-                      m_default_namespace(0)
+                      m_default_namespace(nullptr)
                 {
                 }
 
@@ -601,7 +601,8 @@ namespace rapidxml
                                  m_processor.m_namespace_prefixes.rbegin();
                          it != m_processor.m_namespace_prefixes.rend(); ++it)
                         if (compare((*it)->local_name(),
-                                    (*it)->local_name_size(), prefix,
+                                    (*it)->local_name_size(),
+                                    prefix,
                                     prefix_size))
                         {
                             node->namespace_uri((*it)->value(),

@@ -72,7 +72,7 @@ Once you've build the project, you can run the test suite with
 
 ews-cpp is written in a "modern C++" way:
 
-* C++ Standard Library, augmented with rapid_xml for XML parsing
+* C++ Standard Library, augmented with rapidxml for XML parsing
 * Smart pointers instead of raw pointers
 * Pervasive RAII idiom
 * Handle errors using C++ exceptions

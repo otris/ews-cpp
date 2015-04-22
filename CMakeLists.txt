@@ -149,7 +149,7 @@ add_executable(tests
     ${ews_SOURCES}
     ${rapidxml_SOURCES}
     tests/test_contacts.cpp
-    tests/test_internal.cpp
+    tests/test_internals.cpp
     tests/test_item_id.cpp
     tests/test_items.cpp
     tests/test_tasks.cpp)

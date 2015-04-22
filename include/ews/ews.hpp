@@ -11,7 +11,7 @@
 #include <utility>
 #include <memory>
 #ifndef _MSC_VER
-#include <type_traits>
+# include <type_traits>
 #endif
 #include <cstddef>
 #include <cstring>
@@ -19,12 +19,12 @@
 #include <curl/curl.h>
 
 #include "rapidxml/rapidxml.hpp"
+#include "rapidxml/rapidxml_print.hpp"
 
 // Print more detailed error messages, HTTP request/response etc to stderr
 #ifdef EWS_ENABLE_VERBOSE
 # include <iostream>
 # include <ostream>
-# include "rapidxml/rapidxml_print.hpp"
 #endif
 
 // Macro for verifying expressions at run-time. Calls assert() with 'expr'.
@@ -106,7 +106,7 @@ namespace ews
             }
         };
 
-        // Helper function returning reference to the empty string
+        // Helper function returning reference to the one-and-only empty string
         inline const std::string& empty_string()
         {
             static const std::string the_empty_string;
@@ -2241,6 +2241,8 @@ namespace ews
                 EWS_ASSERT(!data_.empty());
             }
 
+            ~http_response() = default;
+
             http_response(const http_response&) = delete;
             http_response& operator=(const http_response&) = delete;
 
@@ -2276,7 +2278,7 @@ namespace ews
             // sure that parsing is done only once!
             const rapidxml::xml_document<char>& payload()
             {
-                // FIXME: synchronization missing (read of parsed_ and call parse())
+                // FIXME: data race, synchronization missing, read of parsed_ and call parse()
                 // TODO: parsed_ boolean not necessary, use if (doc_) { /* ... */ }
                 if (!parsed_)
                 {
@@ -2306,7 +2308,7 @@ namespace ews
                 return code() == 500U;
             }
 
-            // Returns whether the HTTP respone code is 200 (OK).
+            // Returns whether the HTTP response code is 200 (OK).
             bool ok() const EWS_NOEXCEPT
             {
                 return code() == 200U;
@@ -2341,7 +2343,7 @@ namespace ews
         // soon as that function returns true.
         template <typename Function>
         inline void traverse_elements(const rapidxml::xml_node<>& node,
-                                      Function func)
+                                      Function func) EWS_NOEXCEPT
         {
             for (auto child = node.first_node(); child != nullptr;
                  child = child->next_sibling())
@@ -2362,7 +2364,7 @@ namespace ews
         inline rapidxml::xml_node<>*
         get_element_by_qname(const rapidxml::xml_node<>& node,
                              const char* local_name,
-                             const char* namespace_uri)
+                             const char* namespace_uri) EWS_NOEXCEPT
         {
             EWS_ASSERT(local_name && namespace_uri);
 
@@ -2407,7 +2409,8 @@ namespace ews
             if (!elem)
             {
                 throw soap_fault(
-                    "The request failed for unknown reason (no XML in response)");
+                    "The request failed for unknown reason (no XML in response)"
+                );
                 // TODO: what about getting information from HTTP headers
             }
 
@@ -2974,116 +2977,6 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     {
         enum class item
         {
-            // A property that is unknown to this implementation. Used in case
-            // an unrecognized or unsupported element is found in a response
-            unknown,
-
-            // Base64-encoded contents of the MIME stream for an item
-            mime_content,
-
-            // Unique identifier for the folder that contains an item. This is a
-            // read-only property
-            parent_folder_id,
-
-            // PR_MESSAGE_CLASS MAPI property (the message class) for an item
-            item_class,
-
-            // The item's subject. Limited to 255 characters.
-            subject,
-
-            // Enumeration indicating the sensitive nature of an item; valid
-            // values are Normal, Personal, Private, and Confidential
-            sensitivity,
-
-            // Body content of an item
-            body,
-
-            // Metadata about the attachments of an item
-            attachments,
-
-            // Date/time an item was received
-            date_time_received,
-
-            // Size in bytes of an item. This is a read-only property
-            size,
-
-            // Categories associated with an item
-            categories,
-
-            // Enumeration indicating the importance of an item; valid values
-            // are Low, Normal, and High
-            importance,
-
-            // Taken from PR_IN_REPLY_TO_ID MAPI property
-            in_reply_to,
-
-            // True if an item has been submitted for delivery
-            is_submitted,
-
-            // True if an item is a draft
-            is_draft,
-
-            // True if an item is from you
-            is_from_me,
-
-            // True if an item a re-send
-            is_resend,
-
-            // True if an item is unmodified
-            is_unmodified,
-
-            // Collection of Internet message headers associated with an item
-            internet_message_headers,
-
-            // Date/time an item was sent
-            date_time_sent,
-
-            // Date/time an item was created
-            date_time_created,
-
-            // Applicable actions for an item
-            // (NonEmptyArrayOfResponseObjectsType)
-            response_objects,
-
-            // Due date of an item; used for reminders
-            reminder_due_by,
-
-            // True if a reminder has been set on an item
-            reminder_is_set,
-
-            // Number of minutes before the due date that a reminder should be
-            // shown to the user
-            reminder_minutes_before_start,
-
-            // Concatenated string of the display names of the Cc recipients of
-            // an item; each recipient is separated by a semicolon
-            display_cc,
-
-            // Concatenated string of the display names of the To recipients of
-            // an item; each recipient is separated by a semicolon
-            display_to,
-
-            // True if an item has non-hidden attachments. This is a read-only
-            // property
-            has_attachments,
-
-            // List of zero or more extended properties that are requested for
-            // an item
-            extended_property,
-
-            // Culture name associated with the body of an item
-            culture,
-
-            // Beyond 2007 scope:
-
-            // <EffectiveRights/>
-            // <LastModifiedName/>
-            // <LastModifiedTime/>
-            // <IsAssociated/>
-            // <WebClientReadFormQueryString/>
-            // <WebClientEditFormQueryString/>
-            // <ConversationId/>
-            // <UniqueBody/>
         };
 
         enum class task
@@ -3289,428 +3182,196 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
     namespace internal
     {
-        // Primary template
-        template <typename T> struct property_base {};
-
-        // Explicit specialization for T = item
-        template <> struct property_base<property_path::item>
-        {
-            static
-            const std::string& property_path_to_str(property_path::item path)
-            {
-                using ename = property_path::item;
-                static const std::unordered_map<property_path::item,
-                             std::string,
-                             internal::enum_class_hash> hash_map{
-                    { ename::mime_content, "MimeContent" },
-                    { ename::parent_folder_id, "ParentFolderId" },
-                    { ename::item_class, "ItemClass" },
-                    { ename::subject, "Subject" },
-                    { ename::sensitivity, "Sensitivity" },
-                    { ename::body, "Body" },
-                    { ename::attachments, "Attachments" },
-                    { ename::date_time_received, "DateTimeReceived" },
-                    { ename::size, "Size" },
-                    { ename::categories, "Categories" },
-                    { ename::importance, "Importance" },
-                    { ename::in_reply_to, "InReplyTo" },
-                    { ename::is_submitted, "IsSubmitted" },
-                    { ename::is_draft, "IsDraft" },
-                    { ename::is_from_me, "IsFromMe" },
-                    { ename::is_resend, "IsResend" },
-                    { ename::is_unmodified, "IsUnmodified" },
-                    { ename::internet_message_headers, "InternetMessageHeaders" },
-                    { ename::date_time_sent, "DateTimeSent" },
-                    { ename::date_time_created, "DateTimeCreated" },
-                    { ename::response_objects, "ResponseObjects" },
-                    { ename::reminder_due_by, "ReminderDueBy" },
-                    { ename::reminder_is_set, "ReminderIsSet" },
-                    { ename::reminder_minutes_before_start, "ReminderMinutesBeforeStart" },
-                    { ename::display_cc, "DisplayCc" },
-                    { ename::display_to, "DisplayTo" },
-                    { ename::has_attachments, "HasAttachments" },
-                    { ename::extended_property, "ExtendedProperty" },
-                    { ename::culture, "Culture" }
-                    // { ename::effective_rights, "EffectiveRights" },
-                    // { ename::last_modified_name, "LastModifiedName" },
-                    // { ename::last_modified_time, "LastModifiedTime" },
-                    // { ename::is_associated, "IsAssociated" },
-                    // { ename::web_client_read_form_query_string, "WebClientReadFormQueryString" },
-                    // { ename::web_client_edit_form_query_string, "WebClientEditFormQueryString" },
-                    // { ename::conversation_id, "ConversationId" },
-                    // { ename::unique_body, "UniqueBody" },
-                };
-                auto it = hash_map.find(path);
-                if (it == hash_map.end())
-                {
-                    throw exception("Unrecognized property path");
-                }
-                return it->second;
-            }
-
-            // And other direction. Should add boost as dependency and use
-            // boost::bimap and boost::string_ref
-            static property_path::item str_to_property_path(const char* str)
-            {
-                using ename = property_path::item;
-                static const std::unordered_map<std::string,
-                             property_path::item> hash_map{
-                    { "MimeContent", ename::mime_content },
-                    { "ParentFolderId", ename::parent_folder_id },
-                    { "ItemClass", ename::item_class },
-                    { "Subject", ename::subject },
-                    { "Sensitivity", ename::sensitivity },
-                    { "Body", ename::body },
-                    { "Attachments", ename::attachments },
-                    { "DateTimeReceived", ename::date_time_received },
-                    { "Size", ename::size },
-                    { "Categories", ename::categories },
-                    { "Importance", ename::importance },
-                    { "InReplyTo", ename::in_reply_to },
-                    { "IsSubmitted", ename::is_submitted },
-                    { "IsDraft", ename::is_draft },
-                    { "IsFromMe", ename::is_from_me },
-                    { "IsResend", ename::is_resend },
-                    { "IsUnmodified", ename::is_unmodified },
-                    { "InternetMessageHeaders", ename::internet_message_headers },
-                    { "DateTimeSent", ename::date_time_sent },
-                    { "DateTimeCreated", ename::date_time_created },
-                    { "ResponseObjects", ename::response_objects },
-                    { "ReminderDueBy", ename::reminder_due_by },
-                    { "ReminderIsSet", ename::reminder_is_set },
-                    { "ReminderMinutesBeforeStart", ename::reminder_minutes_before_start },
-                    { "DisplayCc", ename::display_cc },
-                    { "DisplayTo", ename::display_to },
-                    { "HasAttachments", ename::has_attachments },
-                    { "ExtendedProperty", ename::extended_property },
-                    { "Culture", ename::culture }
-                    //{ "EffectiveRights", ename::effective_rights },
-                    //{ "LastModifiedName", ename::last_modified_name },
-                    //{ "LastModifiedTime", ename::last_modified_time },
-                    //{ "IsAssociated", ename::is_associated },
-                    //{ "WebClientReadFormQueryString", ename::web_client_read_form_query_string },
-                    //{ "WebClientEditFormQueryString", ename::web_client_edit_form_query_string },
-                    //{ "ConversationId", ename::conversation_id },
-                    //{ "UniqueBody", ename::unique_body },
-                };
-                auto it = hash_map.find(str);
-                if (it == hash_map.end())
-                {
-                    return ename::unknown;
-                }
-                return it->second;
-            }
-        };
-
-        // Explicit specialization for T = task
-        template <> struct property_base<property_path::task>
-        {
-            static
-            const std::string& property_path_to_str(property_path::task path)
-            {
-                using ename = property_path::task;
-                static const std::unordered_map<property_path::task,
-                             std::string,
-                             internal::enum_class_hash> hash_map{
-                    { ename::actual_work, "ActualWork" },
-                    { ename::assigned_time, "AssignedTime" },
-                    { ename::billing_information, "BillingInformation" },
-                    { ename::change_count, "ChangeCount" },
-                    { ename::companies, "Companies" },
-                    { ename::complete_date, "CompleteDate" },
-                    { ename::contacts, "Contacts" },
-                    { ename::delegation_state, "DelegationState" },
-                    { ename::delegator, "Delegator" },
-                    { ename::due_date, "DueDate" },
-                    { ename::is_assignment_editable, "IsAssignmentEditable" },
-                    { ename::is_complete, "IsComplete" },
-                    { ename::is_recurring, "IsRecurring" },
-                    { ename::is_team_task, "IsTeamTask" },
-                    { ename::mileage, "Mileage" },
-                    { ename::owner, "Owner" },
-                    { ename::percent_complete, "PercentComplete" },
-                    { ename::recurrence, "Recurrence" },
-                    { ename::start_date, "StartDate" },
-                    { ename::status, "Status" },
-                    { ename::status_description, "StatusDescription" },
-                    { ename::total_work, "TotalWork" }
-                };
-                auto it = hash_map.find(path);
-                if (it == hash_map.end())
-                {
-                    throw exception("Unrecognized property path");
-                }
-                return it->second;
-            }
-
-            // And other direction. Should add boost as dependency and use
-            // boost::bimap and boost::string_ref
-            static property_path::task str_to_property_path(const char* str)
-            {
-                using ename = property_path::task;
-                static const std::unordered_map<std::string,
-                             property_path::task> hash_map{
-                    { "ActualWork", ename::actual_work },
-                    { "AssignedTime", ename::assigned_time },
-                    { "BillingInformation", ename::billing_information },
-                    { "ChangeCount", ename::change_count },
-                    { "Companies", ename::companies },
-                    { "CompleteDate", ename::complete_date },
-                    { "Contacts", ename::contacts },
-                    { "DelegationState", ename::delegation_state },
-                    { "Delegator", ename::delegator },
-                    { "DueDate", ename::due_date },
-                    { "IsAssignmentEditable", ename::is_assignment_editable },
-                    { "IsComplete", ename::is_complete },
-                    { "IsRecurring", ename::is_recurring },
-                    { "IsTeamTask", ename::is_team_task },
-                    { "mileage", ename::mileage },
-                    { "Owner", ename::owner },
-                    { "PercentComplete", ename::percent_complete },
-                    { "Recurrence", ename::recurrence },
-                    { "StartDate", ename::start_date },
-                    { "Status", ename::status },
-                    { "StatusDescription", ename::status_description },
-                    { "TotalWork", ename::total_work }
-                };
-                auto it = hash_map.find(str);
-                if (it == hash_map.end())
-                {
-                    return ename::unknown;
-                }
-                return it->second;
-            }
-        };
-
-        // Explicit specialization for T = contact
-        template <> struct property_base<property_path::contact>
-        {
-            static
-            const std::string& property_path_to_str(property_path::contact path)
-            {
-                using ename = property_path::contact;
-                static const std::unordered_map<property_path::contact,
-                             std::string,
-                             internal::enum_class_hash> hash_map{
-                    { ename::file_as, "FileAs" },
-                    { ename::file_as_mapping, "FileAsMapping" },
-                    { ename::display_name, "DisplayName" },
-                    { ename::given_name, "GivenName" },
-                    { ename::initials, "Initials" },
-                    { ename::middle_name, "MiddleName" },
-                    { ename::nickname, "Nickname" },
-                    { ename::complete_name, "CompleteName" },
-                    { ename::company_name, "CompanyName" },
-                    { ename::email_addresses, "EmailAddresses" },
-                    { ename::physical_addresses, "PhysicalAddresses" },
-                    { ename::phone_numbers, "PhoneNumbers" },
-                    { ename::assistant_name, "AssistantName" },
-                    { ename::birthday, "Birthday" },
-                    { ename::business_homepage, "BusinessHomePage" },
-                    { ename::children, "Children" },
-                    { ename::companies, "Companies" },
-                    { ename::contact_source, "ContactSource" },
-                    { ename::department, "Department" },
-                    { ename::generation, "Generation" },
-                    { ename::im_addresses, "ImAddresses" },
-                    { ename::job_title, "JobTitle" },
-                    { ename::manager, "Manager" },
-                    { ename::mileage, "Mileage" },
-                    { ename::office_location, "OfficeLocation" },
-                    { ename::postal_address_index, "PostalAddressIndex" },
-                    { ename::profession, "Profession" },
-                    { ename::spouse_name, "SpouseName" },
-                    { ename::surname, "Surname" },
-                    { ename::wedding_anniversary, "WeddingAnniversary" }
-
-                    // { ename::has_picture, "HasPicture" },
-                    // { ename::phonetic_full_name, "PhoneticFullName" },
-                    // { ename::phonetic_first_name, "PhoneticFirstName" },
-                    // { ename::phonetic_last_name, "PhoneticLastName" },
-                    // { ename::alias, "Alias" },
-                    // { ename::notes, "Notes" },
-                    // { ename::photo, "Photo" },
-                    // { ename::user_smime_certificate, "UserSMIMECertificate" },
-                    // { ename::msexchange_certificate, "MSExchangeCertificate" },
-                    // { ename::directory_id, "DirectoryId" },
-                    // { ename::manager_mailbox, "ManagerMailbox" },
-                    // { ename::direct_reports, "DirectReports" }
-                };
-                auto it = hash_map.find(path);
-                if (it == hash_map.end())
-                {
-                    throw exception("Unrecognized property path");
-                }
-                return it->second;
-            }
-
-            static property_path::contact str_to_property_path(const char* str)
-            {
-                using ename = property_path::contact;
-                static const std::unordered_map<std::string,
-                             property_path::contact> hash_map{
-                    { "FileAs", ename::file_as },
-                    { "FileAsMapping", ename::file_as_mapping },
-                    { "DisplayName", ename::display_name },
-                    { "GivenName", ename::given_name },
-                    { "Initials", ename::initials },
-                    { "MiddleName", ename::middle_name },
-                    { "Nickname", ename::nickname },
-                    { "CompleteName", ename::complete_name },
-                    { "CompanyName", ename::company_name },
-                    { "EmailAddresses", ename::email_addresses },
-                    { "PhysicalAddresses", ename::physical_addresses },
-                    { "PhoneNumbers", ename::phone_numbers },
-                    { "AssistantName", ename::assistant_name },
-                    { "Birthday", ename::birthday },
-                    { "BusinessHomePage", ename::business_homepage },
-                    { "Children", ename::children },
-                    { "Companies", ename::companies },
-                    { "ContactSource", ename::contact_source },
-                    { "Department", ename::department },
-                    { "Generation", ename::generation },
-                    { "ImAddresses", ename::im_addresses },
-                    { "JobTitle", ename::job_title },
-                    { "Manager", ename::manager },
-                    { "Mileage", ename::mileage },
-                    { "OfficeLocation", ename::office_location },
-                    { "PostalAddressIndex", ename::postal_address_index },
-                    { "Profession", ename::profession },
-                    { "SpouseName", ename::spouse_name },
-                    { "Surname", ename::surname },
-                    { "WeddingAnniversary", ename::wedding_anniversary },
-
-                    // { "HasPicture", ename::has_picture },
-                    // { "PhoneticFullName", ename::phonetic_full_name },
-                    // { "PhoneticFirstName", ename::phonetic_first_name },
-                    // { "PhoneticLastName", ename::phonetic_last_name },
-                    // { "Alias", ename::alias },
-                    // { "Notes", ename::notes },
-                    // { "Photo", ename::photo },
-                    // { "UserSMIMECertificate", ename::user_smime_certificate },
-                    // { "MSExchangeCertificate", ename::msexchange_certificate },
-                    // { "DirectoryId", ename::directory_id },
-                    // { "ManagerMailbox", ename::manager_mailbox },
-                    // { "DirectReports", ename::direct_reports }
-                };
-                auto it = hash_map.find(str);
-                if (it == hash_map.end())
-                {
-                    // throw exception(std::string("Unrecognized element: ") + str);
-                    return ename::unknown;
-                }
-                return it->second;
-            }
-        };
-    }
-
-    // TODO
-    template <typename T>
-    class property final : public internal::property_base<T>
-    {
-    public:
-        typedef T property_path_type;
-
-        property() = default; // Because of std::unordered_map requirements
-
-        explicit property(property_path_type path)
-            : path_(path), value_()
-        {}
-
-        property(property_path_type path, std::string value)
-            : path_(path), value_(std::move(value))
-        {}
-
-        property_path_type path() const EWS_NOEXCEPT { return path_; }
-        const std::string& element_name() const EWS_NOEXCEPT
-        {
-            return property<property_path_type>::property_path_to_str(path_);
-        }
-
-        const std::string& value() const EWS_NOEXCEPT { return value_; }
-
-        std::string to_xml(const char* xmlns=nullptr) const
-        {
-            if (xmlns)
-            {
-                return std::string("<") + xmlns + ":" + element_name() + ">" +
-                    value() + "</" + xmlns + ":" + element_name() + ">";
-            }
-            else
-            {
-                return "<" + element_name() + ">" + value() + "</" +
-                    element_name() + ">";
-            }
-        }
-
-    private:
-        property_path_type path_;
-        std::string value_;
-    };
-
-#ifndef _MSC_VER
-    static_assert(std::is_default_constructible<property<int>>::value, "");
-    static_assert(std::is_copy_constructible<property<int>>::value, "");
-    static_assert(std::is_copy_assignable<property<int>>::value, "");
-    static_assert(std::is_move_constructible<property<int>>::value, "");
-    static_assert(std::is_move_assignable<property<int>>::value, "");
-#endif
-
-    namespace internal
-    {
-        template <typename T>
-        class property_map final
+        // A self-contained copy of a DOM sub-tree generally used to hold
+        // properties of an item class
+        //
+        // We use rapidxml::print for copying the already parsed xml_document
+        // into a new buffer and then re-parse this buffer again under the
+        // assumption that all child elements are contained in
+        //
+        //     http://schemas.microsoft.com/exchange/services/2006/types
+        //
+        // XML namespace.
+        //
+        // A default constructed item_properties instance makes only sense when
+        // an item class is default constructed. In that case the buffer (and
+        // the DOM) is initially empty and elements are added directly to the
+        // document's root node.
+        class item_properties final
         {
         public:
-            typedef T property_path_type;
+            // Default constructible because item class (and it's descendants)
+            // need to be
+            item_properties()
+                : rawdata_(),
+                  doc_(new rapidxml::xml_document<char>)
+            {}
 
-            property_map() = default;
-
-            const std::string& get(property_path_type path) const EWS_NOEXCEPT
+            explicit item_properties(const rapidxml::xml_node<char>& origin,
+                                 std::size_t size_hint=0U)
+                : rawdata_(),
+                  doc_(new rapidxml::xml_document<char>)
             {
-                // FIXME: unordered_map::find can throw?
-                auto it = hash_map_.find(path);
-                if (it == hash_map_.end())
+                reparse(origin, size_hint);
+            }
+
+            // Needs to be copy- and copy-assignable because item classes are.
+            // However xml_document isn't (and can't be without major rewrite
+            // IMHO).  Hence, copying is quite costly as it involves serializing
+            // DOM tree to string and re-parsing into new tree
+            item_properties& operator=(const item_properties& rhs)
+            {
+                if (&rhs != this)
                 {
-                    return internal::empty_string();
+                    // FIXME: not strong exception safe
+                    rawdata_.clear();
+                    doc_->clear();
+                    reparse(*rhs.doc_, rhs.rawdata_.size());
                 }
-                return it->second.value();
+                return *this;
             }
 
-            void set_or_update(property_path_type path, std::string value)
+            item_properties(const item_properties& other)
+                : rawdata_(),
+                  doc_(new rapidxml::xml_document<char>)
             {
-                hash_map_[path] =
-                    property<property_path_type>(path, std::move(value));
+                reparse(*other.doc_, other.rawdata_.size());
             }
 
-            void set_or_update(property_path_type path,
-                               const rapidxml::xml_node<>& node)
+            rapidxml::xml_node<char>& root() EWS_NOEXCEPT { return *doc_; }
+
+            const rapidxml::xml_node<char>& root() const EWS_NOEXCEPT
             {
-                set_or_update(path,
-                              std::string(node.value(), node.value_size()));
+                return *doc_;
             }
 
-            std::string to_xml(const char* xmlns=nullptr) const
+            // Might return nullptr when there is no such element. Client code
+            // needs to check returned pointer. Should never throw
+            rapidxml::xml_node<char>*
+            get_node(const char* node_name) const EWS_NOEXCEPT
             {
-                std::stringstream sstr;
-                for (const auto& prop : hash_map_)
+                return get_element_by_qname(*doc_,
+                                            node_name,
+                                            uri<>::microsoft::types());
+            }
+
+            std::string get_value_as_string(const char* node_name) const
+            {
+                const auto node = get_node(node_name);
+                return node ?
+                      std::string(node->value(), node->value_size())
+                    : "";
+            }
+
+            void set_or_update(std::string node_name, std::string node_value)
+            {
+                using uri = internal::uri<>;
+                using rapidxml::internal::compare;
+
+                auto oldnode = get_element_by_qname(*doc_,
+                                                    node_name.c_str(),
+                                                    uri::microsoft::types());
+                if (oldnode && compare(node_value.c_str(),
+                                       node_value.length(),
+                                       oldnode->value(),
+                                       oldnode->value_size()))
                 {
-                    sstr << prop.second.to_xml(xmlns) << '\n';
+                    // Nothing to do
+                    return;
                 }
-                return sstr.str();
+
+                auto node_qname = "t:" + node_name;
+                auto ptr_to_qname = doc_->allocate_string(node_qname.c_str());
+                auto ptr_to_value = doc_->allocate_string(node_value.c_str());
+
+                // Strong exception-safety guarantee? Memory isn't leaked, OTOH
+                // it is not freed until document (or the item that owns it) is
+                // destructed either
+
+                auto newnode = doc_->allocate_node(rapidxml::node_element);
+                newnode->qname(ptr_to_qname,
+                               node_qname.length(),
+                               ptr_to_qname + 2);
+                newnode->value(ptr_to_value);
+                newnode->namespace_uri(uri::microsoft::types(),
+                                       uri::microsoft::types_size);
+                if (oldnode)
+                {
+                    doc_->first_node()->insert_node(oldnode, newnode);
+                    doc_->first_node()->remove_node(oldnode);
+                }
+                else
+                {
+                    doc_->append_node(newnode);
+                }
+            }
+
+            std::string to_string() const
+            {
+                std::string str;
+                rapidxml::print(std::back_inserter(str),
+                                *doc_,
+                                rapidxml::print_no_indenting);
+                return str;
             }
 
         private:
-            std::unordered_map<property_path_type, property<property_path_type>,
-                internal::enum_class_hash> hash_map_;
+            std::vector<char> rawdata_;
+            std::unique_ptr<rapidxml::xml_document<char>> doc_;
+
+            // Custom namespace processor for parsing XML sub-tree. Makes
+            // uri::microsoft::types the default namespace.
+            struct custom_namespace_processor
+                : public rapidxml::internal::xml_namespace_processor<char>
+            {
+                struct scope
+                    : public rapidxml::internal::xml_namespace_processor<char>::scope
+                {
+                    explicit scope(xml_namespace_processor& processor)
+                        : rapidxml::internal::xml_namespace_processor<char>::scope(processor)
+                    {
+                        static auto nsattr = make_namespace_attribute();
+                        add_namespace_prefix(&nsattr);
+                    }
+
+                    static
+                    rapidxml::xml_attribute<char> make_namespace_attribute()
+                    {
+                        static const char* const name = "t";
+                        static const char* const value =
+                            uri<>::microsoft::types();
+                        rapidxml::xml_attribute<char> attr;
+                        attr.name(name, 1);
+                        attr.value(value, uri<>::microsoft::types_size);
+                        return attr;
+                    }
+                };
+            };
+
+            inline void reparse(const rapidxml::xml_node<char>& source,
+                                std::size_t size_hint)
+            {
+                rawdata_.reserve(size_hint);
+                rapidxml::print(std::back_inserter(rawdata_),
+                                source,
+                                rapidxml::print_no_indenting);
+                rawdata_.emplace_back('\0');
+
+                // Note: we use xml_document::parse_ns here. This is because we
+                // substitute the default namespace processor with a custom one.
+                // Reason we do this: when we re-parse only a sub-tree of the
+                // original XML document, we loose all enclosing namespace URIs.
+
+                doc_->parse_ns<0, custom_namespace_processor>(&rawdata_[0]);
+            }
         };
 
 #ifndef _MSC_VER
-        static_assert(std::is_default_constructible<property_map<int>>::value, "");
-        static_assert(std::is_copy_constructible<property_map<int>>::value, "");
-        static_assert(std::is_copy_assignable<property_map<int>>::value, "");
-        static_assert(std::is_move_constructible<property_map<int>>::value, "");
-        static_assert(std::is_move_assignable<property_map<int>>::value, "");
+        static_assert(std::is_default_constructible<item_properties>::value, "");
+        static_assert(std::is_copy_constructible<item_properties>::value, "");
+        static_assert(std::is_copy_assignable<item_properties>::value, "");
+        static_assert(std::is_move_constructible<item_properties>::value, "");
+        static_assert(std::is_move_assignable<item_properties>::value, "");
 #endif
 
     }
@@ -3859,77 +3520,180 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     class item
     {
     public:
+#if 0
+            // Base64-encoded contents of the MIME stream for an item
+            mime_content,
+
+            // Unique identifier for the folder that contains an item. This is a
+            // read-only property
+            parent_folder_id,
+
+            // PR_MESSAGE_CLASS MAPI property (the message class) for an item
+            item_class,
+
+            // The item's subject. Limited to 255 characters.
+            subject,
+
+            // Enumeration indicating the sensitive nature of an item; valid
+            // values are Normal, Personal, Private, and Confidential
+            sensitivity,
+
+            // Body content of an item
+            body,
+
+            // Metadata about the attachments of an item
+            attachments,
+
+            // Date/time an item was received
+            date_time_received,
+
+            // Size in bytes of an item. This is a read-only property
+            size,
+
+            // Categories associated with an item
+            categories,
+
+            // Enumeration indicating the importance of an item; valid values
+            // are Low, Normal, and High
+            importance,
+
+            // Taken from PR_IN_REPLY_TO_ID MAPI property
+            in_reply_to,
+
+            // True if an item has been submitted for delivery
+            is_submitted,
+
+            // True if an item is a draft
+            is_draft,
+
+            // True if an item is from you
+            is_from_me,
+
+            // True if an item a re-send
+            is_resend,
+
+            // True if an item is unmodified
+            is_unmodified,
+
+            // Collection of Internet message headers associated with an item
+            internet_message_headers,
+
+            // Date/time an item was sent
+            date_time_sent,
+
+            // Date/time an item was created
+            date_time_created,
+
+            // Applicable actions for an item
+            // (NonEmptyArrayOfResponseObjectsType)
+            response_objects,
+
+            // Due date of an item; used for reminders
+            reminder_due_by,
+
+            // True if a reminder has been set on an item
+            reminder_is_set,
+
+            // Number of minutes before the due date that a reminder should be
+            // shown to the user
+            reminder_minutes_before_start,
+
+            // Concatenated string of the display names of the Cc recipients of
+            // an item; each recipient is separated by a semicolon
+            display_cc,
+
+            // Concatenated string of the display names of the To recipients of
+            // an item; each recipient is separated by a semicolon
+            display_to,
+
+            // True if an item has non-hidden attachments. This is a read-only
+            // property
+            has_attachments,
+
+            // List of zero or more extended properties that are requested for
+            // an item
+            extended_property,
+
+            // Culture name associated with the body of an item
+            culture,
+
+            // Beyond 2007 scope:
+
+            // <EffectiveRights/>
+            // <LastModifiedName/>
+            // <LastModifiedTime/>
+            // <IsAssociated/>
+            // <WebClientReadFormQueryString/>
+            // <WebClientEditFormQueryString/>
+            // <ConversationId/>
+            // <UniqueBody/>
+#endif
+
         item() = default;
+
         explicit item(item_id id) : item_id_(std::move(id)), properties_() {}
+
+        item(item_id&& id, internal::item_properties&& properties)
+            : item_id_(std::move(id)),
+              properties_(std::move(properties))
+        {}
 
         const item_id& get_item_id() const EWS_NOEXCEPT { return item_id_; }
 
         mime_content get_mime_content() const
         {
-            // const auto& val =
-            //     properties_.get(property_path::item::mime_content);
-            return mime_content();
+            const auto node = properties().get_node("MimeContent");
+            return node ?
+                  mime_content(node->first_attribute("CharacterSet")->value(),
+                               node->value(), node->value_size())
+                : mime_content();
         }
 
-        void set_subject(const std::string& str)
+        void set_subject(const std::string& subject)
         {
-            properties_.set_or_update(property_path::item::subject, str);
+            properties().set_or_update("Subject", subject);
         }
 
-        const std::string& get_subject() const EWS_NOEXCEPT
+        std::string get_subject() const
         {
-            return properties_.get(property_path::item::subject);
+            return properties().get_value_as_string("Subject");
         }
 
         void set_reminder_enabled(bool enabled)
         {
-            properties_.set_or_update(property_path::item::reminder_is_set,
-                    enabled ? "true" : "false");
+            properties().set_or_update("ReminderIsSet",
+                                       enabled ? "true" : "false");
         }
 
-        bool is_reminder_enabled() const EWS_NOEXCEPT
+        bool is_reminder_enabled() const
         {
-            const auto& val =
-                properties_.get(property_path::item::reminder_is_set);
-            return val == "true";
+            return properties().get_value_as_string("ReminderIsSet") == "true";
         }
 
         void set_reminder_due_by(const date_time& due_by)
         {
-            properties_.set_or_update(property_path::item::reminder_due_by,
-                    due_by.to_string());
+            properties().set_or_update("ReminderDueBy", due_by.to_string());
         }
 
         date_time get_reminder_due_by() const
         {
-            return date_time(
-                    properties_.get(property_path::item::reminder_due_by));
+            return date_time(properties().get_value_as_string("ReminderDueBy"));
         }
 
     protected:
-        void parse_item_properties(const rapidxml::xml_node<>& elem)
+        internal::item_properties& properties() EWS_NOEXCEPT
         {
-            for (auto node = elem.first_node(); node;
-                 node = node->next_sibling())
-            {
-                const auto prop =
-                    property<property_path::item>::str_to_property_path(
-                        node->local_name());
-                if (prop != property_path::item::unknown)
-                {
-                    properties_.set_or_update(prop, *node);
-                }
-            }
+            return properties_;
         }
 
-        std::string item_properties_to_xml(const char* xmlns) const
+        const internal::item_properties& properties() const EWS_NOEXCEPT
         {
-            return properties_.to_xml(xmlns);
+            return properties_;
         }
 
     private:
         item_id item_id_;
-        internal::property_map<property_path::item> properties_;
+        internal::item_properties properties_;
 
         friend class service;
         // Sub-classes reimplement functions below
@@ -3953,67 +3717,54 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     {
     public:
         task() = default;
-        explicit task(item_id id) : item(id) {}
 
-        void set_body(const body&) {} // TODO: implement, add getter
+        explicit task(item_id id) : item(std::move(id)) {}
+
+        task(item_id&& id, internal::item_properties&& properties)
+            : item(std::move(id), std::move(properties))
+        {}
+
+        void set_body(const body&) {} // TODO: implement, add getter, move to item
 
         // TODO: not in AllProperties shape in EWS 2013, investigate
 
 //        const std::string& get_owner() const EWS_NOEXCEPT
 //        {
-//            return properties_.get(property_path::task::owner);
+//            return properties().get(property_path::task::owner);
 //        }
 
         void set_start_date(const date_time& start_date)
         {
-            properties_.set_or_update(property_path::task::start_date,
-                    start_date.to_string());
+            properties().set_or_update("StartDate", start_date.to_string());
         }
 
         date_time get_start_date() const
         {
-            return date_time(
-                    properties_.get(property_path::task::start_date));
+            return date_time(properties().get_value_as_string("StartDate"));
         }
 
         void set_due_date(const date_time& due_date)
         {
-            properties_.set_or_update(property_path::task::due_date,
-                    due_date.to_string());
+            properties().set_or_update("DueDate", due_date.to_string());
         }
 
         date_time get_due_date() const
         {
-            return date_time(
-                    properties_.get(property_path::task::due_date));
+            return date_time(properties().get_value_as_string("DueDate"));
         }
 
-        // TODO: 100% code dupe in contact class.
         // Makes a task instance from a <Task> XML element
         static task from_xml_element(const rapidxml::xml_node<>& elem)
         {
             using uri = internal::uri<>;
-
-            auto node = elem.first_node_ns(uri::microsoft::types(), "ItemId");
-            EWS_ASSERT(node && "Expected <ItemId>");
-            auto obj = task(item_id::from_xml_element(*node));
-            obj.parse_item_properties(elem);
-            for (node = elem.first_node(); node; node = node->next_sibling())
-            {
-                const auto prop =
-                    property<property_path::task>::str_to_property_path(
-                        node->local_name());
-                if (prop != property_path::task::unknown)
-                {
-                    obj.properties_.set_or_update(prop, *node);
-                }
-            }
-            return obj;
+            auto id_node = elem.first_node_ns(uri::microsoft::types(),
+                                              "ItemId");
+            EWS_ASSERT(id_node && "Expected <ItemId>");
+            return task(item_id::from_xml_element(*id_node),
+                        internal::item_properties(elem));
         }
 
     private:
-        internal::property_map<property_path::task> properties_;
-
         friend class service;
         std::string create_item_request_string() const
         {
@@ -4024,8 +3775,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                   "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
               "<Items>" \
               "<t:Task>";
-            sstr << item_properties_to_xml("t") << "\n";
-            sstr << properties_.to_xml("t") << "\n";
+            sstr << properties().to_string() << "\n";
             sstr << "</t:Task>" \
               "</Items>" \
               "</CreateItem>";
@@ -4046,55 +3796,46 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     {
     public:
         contact() = default;
+
         explicit contact(item_id id) : item(id) {}
+
+        contact(item_id&& id, internal::item_properties&& properties)
+            : item(std::move(id), std::move(properties))
+        {}
 
         void set_given_name(const std::string& given_name)
         {
-            properties_.set_or_update(property_path::contact::given_name,
-                    given_name);
+            properties().set_or_update("GivenName", given_name);
         }
 
-        const std::string& get_given_name() const EWS_NOEXCEPT
+        std::string get_given_name() const
         {
-            return properties_.get(property_path::contact::given_name);
+            return properties().get_value_as_string("GivenName");
         }
 
         void set_surname(const std::string& surname)
         {
-            properties_.set_or_update(property_path::contact::surname, surname);
+            properties().set_or_update("Surname", surname);
         }
 
-        const std::string& get_surname() const EWS_NOEXCEPT
+        std::string get_surname() const
         {
-            return properties_.get(property_path::contact::surname);
+            return properties().get_value_as_string("Surname");
         }
 
         // Makes a contact instance from a <Contact> XML element
-        // TODO: code dupe with task class
+        // FIXME: 100% code dupe with task class
         static contact from_xml_element(const rapidxml::xml_node<>& elem)
         {
             using uri = internal::uri<>;
-
-            auto node = elem.first_node_ns(uri::microsoft::types(), "ItemId");
-            EWS_ASSERT(node && "Expected <ItemId>");
-            auto obj = contact(item_id::from_xml_element(*node));
-            obj.parse_item_properties(elem);
-            for (node = elem.first_node(); node; node = node->next_sibling())
-            {
-                const auto prop =
-                    property<property_path::contact>::str_to_property_path(
-                        node->local_name());
-                if (prop != property_path::contact::unknown)
-                {
-                    obj.properties_.set_or_update(prop, *node);
-                }
-            }
-            return obj;
+            auto id_node = elem.first_node_ns(uri::microsoft::types(),
+                                              "ItemId");
+            EWS_ASSERT(id_node && "Expected <ItemId>");
+            return contact(item_id::from_xml_element(*id_node),
+                           internal::item_properties(elem));
         }
 
     private:
-        internal::property_map<property_path::contact> properties_;
-
         friend class service;
         std::string create_item_request_string() const
         {
@@ -4105,8 +3846,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                   "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
               "<Items>" \
               "<t:Contact>";
-            sstr << item_properties_to_xml("t") << "\n";
-            sstr << properties_.to_xml("t") << "\n";
+            sstr << properties().to_string() << "\n";
             sstr << "</t:Contact>" \
               "</Items>" \
               "</CreateItem>";
