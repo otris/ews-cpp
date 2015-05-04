@@ -68,14 +68,13 @@ namespace tests
 
         // b was destructed
 
-#if defined(_MSC_VER) && _MSC_VER <= 1800
-        // VC++ 12.0 still does not have C++11 std::equal overloads
+#if EWS_HAS_ROBUST_NONMODIFYING_SEQ_OPS
+        EXPECT_TRUE(std::equal(m.bytes(), m.bytes() + m.len_bytes(),
+                               content, content + std::strlen(content)));
+#else
         EXPECT_TRUE(m.len_bytes() == std::strlen(content) &&
                     std::equal(m.bytes(), m.bytes() + m.len_bytes(),
                                content));
-#else
-        EXPECT_TRUE(std::equal(m.bytes(), m.bytes() + m.len_bytes(),
-                               content, content + std::strlen(content)));
 #endif
     }
 

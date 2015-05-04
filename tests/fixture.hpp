@@ -6,13 +6,6 @@
 #include <ews/ews_test_support.hpp>
 #include <gtest/gtest.h>
 
-// Feature test macro: GNU libstdc++ prior version 4.9.0 does not have
-// std::make_unique function
-#define EWS_HAS_MAKE_UNIQUE
-#if defined(__GLIBCXX__) && __GLIBCXX__ < 20140422
-# undef EWS_HAS_MAKE_UNIQUE
-#endif
-
 namespace tests
 {
     // Global data used in tests; initialized at program-start

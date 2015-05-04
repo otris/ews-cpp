@@ -118,6 +118,33 @@ if(ENABLE_VERBOSE)
     add_definitions(-DEWS_ENABLE_VERBOSE)
 endif()
 
+# Feature test macros
+include(CheckCXXSourceCompiles)
+
+# N3656 - negative: libstdc++ prior 4.9.0
+CHECK_CXX_SOURCE_COMPILES("
+#include <memory>
+int main() { std::unique_ptr<int> foo = std::make_unique<int>(4); }
+" HAS_MAKE_UNIQUE)
+
+if(HAS_MAKE_UNIQUE)
+    add_definitions(-DEWS_HAS_MAKE_UNIQUE)
+endif()
+
+# N3671 - negative: _MSC_VER <= 1800, libstdc++ prior 4.9.0
+CHECK_CXX_SOURCE_COMPILES("
+#include <algorithm>
+#include <cstring>
+static const char source[] = \"foo\";
+static const char dest[] = \"bar\";
+int main() { std::equal(source, source + std::strlen(source),
+                        dest, dest + std::strlen(dest)); }
+" HAS_ROBUST_NONMODIFYING_SEQ_OPS)
+
+if(HAS_ROBUST_NONMODIFYING_SEQ_OPS)
+    add_definitions(-DEWS_HAS_ROBUST_NONMODIFYING_SEQ_OPS)
+endif()
+
 add_executable(tests
     ${ews_SOURCES}
     ${rapidxml_SOURCES}
