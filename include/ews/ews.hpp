@@ -106,13 +106,6 @@ namespace ews
             }
         };
 
-        // Helper function returning reference to the one-and-only empty string
-        inline const std::string& empty_string()
-        {
-            static const std::string the_empty_string;
-            return the_empty_string;
-        }
-
         // Forward declarations
         class http_request;
     }
@@ -2973,213 +2966,6 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     static_assert(std::is_move_assignable<item_id>::value, "");
 #endif
 
-    struct property_path
-    {
-        enum class item
-        {
-        };
-
-        enum class task
-        {
-            // A property that is unknown to this implementation. Used in case
-            // an unrecognized or unsupported element is found in a response
-            unknown,
-
-            // Represents the actual amount of work expended on the task.
-            // Measured in minutes
-            actual_work,
-
-            // Time the task was assigned to the current owner
-            assigned_time,
-
-            // Billing information associated with this task
-            billing_information,
-
-            // How many times this task has been acted upon (sent, accepted,
-            // etc.). This is simply a way to resolve conflicts when the
-            // delegator sends multiple updates. Also known as TaskVersion
-            change_count,
-
-            // A list of company names associated with this task
-            companies,
-
-            // Time the task was completed
-            complete_date,
-
-            // Contact names associated with this task
-            contacts,
-
-            // Enumeration value indicating whether the delegated task was
-            // accepted or not
-            delegation_state,
-
-            // Display name of the user that delegated the task
-            delegator,
-
-            // The date that the task is due
-            due_date,
-
-            // TODO
-            is_assignment_editable,
-
-            // True if the task is marked as complete
-            is_complete,
-
-            // True if the task is recurring
-            is_recurring,
-
-            // True if the task is a team task
-            is_team_task,
-
-            // Mileage associated with the task, potentially used for
-            // reimbursement purposes
-            mileage,
-
-            // The name of the user who owns the task. This is a read-only
-            // property
-            owner,
-
-            // The percentage of the task that has been completed. Valid values
-            // are 0-100
-            percent_complete,
-
-            // Used for recurring tasks
-            recurrence,
-
-            // The date that work on the task should start
-            start_date,
-
-            // The status of the task
-            status,
-
-            // A localized string version of the status. Useful for display
-            // purposes
-            status_description,
-
-            // The total amount of work for this task
-            total_work,
-
-            // 2012 and/or 2013 dialect
-        };
-
-        enum class contact
-        {
-            // A property that is unknown to this implementation. Used in case
-            // an unrecognized or unsupported element is found in a response
-            unknown,
-
-            // How the name should be filed for display/sorting purposes
-            file_as,
-
-            // How the various parts of a contact's information interact to form
-            // the FileAs property value
-            file_as_mapping,
-
-            // The name to display for a contact
-            display_name,
-
-            // The name by which a person is known; often referred to as a
-            // person's first name
-            given_name,
-
-            // Initials for the contact
-            initials,
-
-            // The middle name for the contact
-            middle_name,
-
-            // Another name by which the contact is known
-            nickname,
-
-            // A combination of several name fields in one convenient place
-            // (read-only)
-            complete_name,
-
-            // The company that the contact is affiliated with
-            company_name,
-
-            // A collection of e-mail addresses for the contact
-            email_addresses,
-
-            // A collection of mailing addresses for the contact
-            physical_addresses,
-
-            // A collection of phone numbers for the contact
-            phone_numbers,
-
-            // The name of the contact's assistant
-            assistant_name,
-
-            // The contact's birthday
-            birthday,
-
-            // Web page for the contact's business; typically a URL
-            business_homepage,
-
-            // A collection of children's names associated with the contact
-            children,
-
-            // A collection of companies a contact is associated with
-            companies,
-
-            // Indicates whether this is a directory or a store contact
-            // (read-only)
-            contact_source,
-
-            // The department name that the contact is in
-            department,
-
-            // Sr, Jr, I, II, III, and so on
-            generation,
-
-            // A collection of instant messaging addresses for the contact
-            im_addresses,
-
-            // The job title for the contact
-            job_title,
-
-            // The name of the contact's manager
-            manager,
-
-            // The distance that the contact resides from some reference point
-            mileage,
-
-            // Location of the contact's office
-            office_location,
-
-            // The physical addresses in the PhysicalAddresses collection that
-            // represents the mailing address for the contact
-            postal_address_index,
-
-            // Occupation or discipline of the contact
-            profession,
-
-            // Name of the contact's spouse
-            spouse_name,
-
-            // The family name of the contact; usually considered the last name
-            surname,
-
-            // Date that the contact was married
-            wedding_anniversary
-
-            // Everything below is beyond EWS 2007 subset
-
-            // has_picture,
-            // phonetic_full_name,
-            // phonetic_first_name,
-            // phonetic_last_name,
-            // alias,
-            // notes,
-            // photo,
-            // user_smime_certificate,
-            // msexchange_certificate,
-            // directory_id,
-            // manager_mailbox,
-            // direct_reports,
-        };
-    };
-
     namespace internal
     {
         // A self-contained copy of a DOM sub-tree generally used to hold
@@ -3520,115 +3306,6 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     class item
     {
     public:
-#if 0
-            // Base64-encoded contents of the MIME stream for an item
-            mime_content,
-
-            // Unique identifier for the folder that contains an item. This is a
-            // read-only property
-            parent_folder_id,
-
-            // PR_MESSAGE_CLASS MAPI property (the message class) for an item
-            item_class,
-
-            // The item's subject. Limited to 255 characters.
-            subject,
-
-            // Enumeration indicating the sensitive nature of an item; valid
-            // values are Normal, Personal, Private, and Confidential
-            sensitivity,
-
-            // Body content of an item
-            body,
-
-            // Metadata about the attachments of an item
-            attachments,
-
-            // Date/time an item was received
-            date_time_received,
-
-            // Size in bytes of an item. This is a read-only property
-            size,
-
-            // Categories associated with an item
-            categories,
-
-            // Enumeration indicating the importance of an item; valid values
-            // are Low, Normal, and High
-            importance,
-
-            // Taken from PR_IN_REPLY_TO_ID MAPI property
-            in_reply_to,
-
-            // True if an item has been submitted for delivery
-            is_submitted,
-
-            // True if an item is a draft
-            is_draft,
-
-            // True if an item is from you
-            is_from_me,
-
-            // True if an item a re-send
-            is_resend,
-
-            // True if an item is unmodified
-            is_unmodified,
-
-            // Collection of Internet message headers associated with an item
-            internet_message_headers,
-
-            // Date/time an item was sent
-            date_time_sent,
-
-            // Date/time an item was created
-            date_time_created,
-
-            // Applicable actions for an item
-            // (NonEmptyArrayOfResponseObjectsType)
-            response_objects,
-
-            // Due date of an item; used for reminders
-            reminder_due_by,
-
-            // True if a reminder has been set on an item
-            reminder_is_set,
-
-            // Number of minutes before the due date that a reminder should be
-            // shown to the user
-            reminder_minutes_before_start,
-
-            // Concatenated string of the display names of the Cc recipients of
-            // an item; each recipient is separated by a semicolon
-            display_cc,
-
-            // Concatenated string of the display names of the To recipients of
-            // an item; each recipient is separated by a semicolon
-            display_to,
-
-            // True if an item has non-hidden attachments. This is a read-only
-            // property
-            has_attachments,
-
-            // List of zero or more extended properties that are requested for
-            // an item
-            extended_property,
-
-            // Culture name associated with the body of an item
-            culture,
-
-            // Beyond 2007 scope:
-
-            // <EffectiveRights/>
-            // <LastModifiedName/>
-            // <LastModifiedTime/>
-            // <IsAssociated/>
-            // <WebClientReadFormQueryString/>
-            // <WebClientEditFormQueryString/>
-            // <ConversationId/>
-            // <UniqueBody/>
-#endif
-
         item() = default;
 
         explicit item(item_id id) : item_id_(std::move(id)), properties_() {}
@@ -3640,45 +3317,153 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         const item_id& get_item_id() const EWS_NOEXCEPT { return item_id_; }
 
+        // Base64-encoded contents of the MIME stream for an item
         mime_content get_mime_content() const
         {
             const auto node = properties().get_node("MimeContent");
-            return node ?
-                  mime_content(node->first_attribute("CharacterSet")->value(),
-                               node->value(), node->value_size())
-                : mime_content();
+            if (!node)
+            {
+                return mime_content();
+            }
+            auto charset = node->first_attribute("CharacterSet");
+            EWS_ASSERT(charset &&
+                    "Expected <MimeContent> to have CharacterSet attribute");
+            return mime_content(charset->value(),
+                                node->value(),
+                                node->value_size());
         }
 
+        // Unique identifier for the folder that contains an item. This is a
+        // read-only property
+        // TODO: get_parent_folder_id
+
+        // PR_MESSAGE_CLASS MAPI property (the message class) for an item
+        // TODO: get_item_class
+
+        // Sets this item's subject. Limited to 255 characters.
         void set_subject(const std::string& subject)
         {
             properties().set_or_update("Subject", subject);
         }
 
+        // Returns this item's subject
         std::string get_subject() const
         {
             return properties().get_value_as_string("Subject");
         }
 
+        // Enumeration indicating the sensitive nature of an item; valid
+        // values are Normal, Personal, Private, and Confidential
+        // TODO: get_sensitivity
+
+        // Body content of an item
+        void set_body(const body&) {} // TODO: implement
+        // TODO: get_body
+
+        // Metadata about the attachments of an item
+        // TODO: get_attachments
+
+        // Date/time an item was received
+        // TODO: get_date_time_received
+
+        // Size in bytes of an item. This is a read-only property
+        // TODO: get_size
+
+        // Categories associated with an item
+        // TODO: get_categories
+
+        // Enumeration indicating the importance of an item; valid values
+        // are Low, Normal, and High
+        // TODO: get_importance
+
+        // Taken from PR_IN_REPLY_TO_ID MAPI property
+        // TODO: get_in_reply_to
+
+        // True if an item has been submitted for delivery
+        // TODO: get_is_submitted
+
+        // True if an item is a draft
+        // TODO: is_draft
+
+        // True if an item is from you
+        // TODO: is_from_me
+
+        // True if an item a re-send
+        // TODO: is_resend
+
+        // True if an item is unmodified
+        // TODO: is_unmodified
+
+        // Collection of Internet message headers associated with an item
+        // TODO: get_internet_message_headers
+
+        // Date/time an item was sent
+        // TODO: get_date_time_sent
+
+        // Date/time an item was created
+        // TODO: get_date_time_created
+
+        // Applicable actions for an item
+        // (NonEmptyArrayOfResponseObjectsType)
+        // TODO: get_response_objects
+
+        // Set due date of an item; used for reminders
+        void set_reminder_due_by(const date_time& due_by)
+        {
+            properties().set_or_update("ReminderDueBy", due_by.to_string());
+        }
+
+        // Returns the due date of an item; used for reminders
+        date_time get_reminder_due_by() const
+        {
+            return date_time(properties().get_value_as_string("ReminderDueBy"));
+        }
+
+        // Set a reminder on an item
         void set_reminder_enabled(bool enabled)
         {
             properties().set_or_update("ReminderIsSet",
                                        enabled ? "true" : "false");
         }
 
+        // True if a reminder has been set on an item
         bool is_reminder_enabled() const
         {
             return properties().get_value_as_string("ReminderIsSet") == "true";
         }
 
-        void set_reminder_due_by(const date_time& due_by)
-        {
-            properties().set_or_update("ReminderDueBy", due_by.to_string());
-        }
+        // Number of minutes before the due date that a reminder should be
+        // shown to the user
+        // TODO: get_reminder_minutes_before_start
 
-        date_time get_reminder_due_by() const
-        {
-            return date_time(properties().get_value_as_string("ReminderDueBy"));
-        }
+        // Concatenated string of the display names of the Cc recipients of
+        // an item; each recipient is separated by a semicolon
+        // TODO: get_display_cc
+
+        // Concatenated string of the display names of the To recipients of
+        // an item; each recipient is separated by a semicolon
+        // TODO: get_display_to
+
+        // True if an item has non-hidden attachments. This is a read-only
+        // property
+        // TODO: has_attachments
+
+        // List of zero or more extended properties that are requested for
+        // an item
+        // TODO: get_extended_property
+
+        // Culture name associated with the body of an item
+        // TODO: get_culture
+
+        // Following properties are beyond 2007 scope:
+        //   <EffectiveRights/>
+        //   <LastModifiedName/>
+        //   <LastModifiedTime/>
+        //   <IsAssociated/>
+        //   <WebClientReadFormQueryString/>
+        //   <WebClientEditFormQueryString/>
+        //   <ConversationId/>
+        //   <UniqueBody/>
 
     protected:
         internal::item_properties& properties() EWS_NOEXCEPT
@@ -3724,34 +3509,105 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             : item(std::move(id), std::move(properties))
         {}
 
-        void set_body(const body&) {} // TODO: implement, add getter, move to item
+        // Represents the actual amount of work expended on the task. Measured
+        // in minutes
+        // TODO: get_actual_work
 
-        // TODO: not in AllProperties shape in EWS 2013, investigate
+        // Time the task was assigned to the current owner
+        // TODO: get_assigned_time
 
-//        const std::string& get_owner() const EWS_NOEXCEPT
-//        {
-//            return properties().get(property_path::task::owner);
-//        }
+        // Billing information associated with this task
+        // TODO: get_billing_information
 
-        void set_start_date(const date_time& start_date)
-        {
-            properties().set_or_update("StartDate", start_date.to_string());
-        }
+        // How many times this task has been acted upon (sent, accepted,
+        // etc.). This is simply a way to resolve conflicts when the
+        // delegator sends multiple updates. Also known as TaskVersion
+        // TODO: get_change_count
 
-        date_time get_start_date() const
-        {
-            return date_time(properties().get_value_as_string("StartDate"));
-        }
+        // A list of company names associated with this task
+        // TODO: get_companies
 
+        // Time the task was completed
+        // TODO: get_complete_date
+
+        // Contact names associated with this task
+        // TODO: get_contacts
+
+        // Enumeration value indicating whether the delegated task was
+        // accepted or not
+        // TODO: get_delegation_state
+
+        // Display name of the user that delegated the task
+        // TODO: get_delegator
+
+        // Sets the date that the task is due
         void set_due_date(const date_time& due_date)
         {
             properties().set_or_update("DueDate", due_date.to_string());
         }
 
+        // Returns the date that the task is due
         date_time get_due_date() const
         {
             return date_time(properties().get_value_as_string("DueDate"));
         }
+
+        // TODO: is_assignment_editable, possible values 0-5, 2007 dialect?
+
+        // True if the task is marked as complete
+        // TODO: is_complete
+
+        // True if the task is recurring
+        // TODO: is_recurring
+
+        // True if the task is a team task
+        // TODO: is_team_task
+
+        // Mileage associated with the task, potentially used for reimbursement
+        // purposes
+        // TODO: get_mileage
+
+        // The name of the user who owns the task. This is a read-only property
+        // TODO: Not in AllProperties shape in EWS 2013, investigate
+#if 0
+        std::string get_owner() const
+        {
+            return properties().get_value_as_string("Owner");
+        }
+#endif
+
+        // The percentage of the task that has been completed. Valid values are
+        // 0-100
+        // TODO: get_percent_complete
+
+        // Used for recurring tasks
+        // TODO: get_recurrence
+
+        // Set the date that work on the task should start
+        void set_start_date(const date_time& start_date)
+        {
+            properties().set_or_update("StartDate", start_date.to_string());
+        }
+
+        // Returns the date that work on the task should start
+        date_time get_start_date() const
+        {
+            return date_time(properties().get_value_as_string("StartDate"));
+        }
+
+        // The status of the task
+        // TODO: get_status
+
+        // A localized string version of the status. Useful for display
+        // purposes
+        // TODO: get_status_description
+
+        // The total amount of work for this task
+        // TODO: get_total_work
+
+        // Every property below is 2012 or 2013 dialect
+
+        // TODO: add remaining properties
 
         // Makes a task instance from a <Task> XML element
         static task from_xml_element(const rapidxml::xml_node<>& elem)
@@ -3803,25 +3659,134 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             : item(std::move(id), std::move(properties))
         {}
 
+        // How the name should be filed for display/sorting purposes
+        // TODO: file_as
+
+        // How the various parts of a contact's information interact to form
+        // the FileAs property value
+        // TODO: file_as_mapping
+
+        // The name to display for a contact
+        // TODO: get_display_name
+
+        // Sets the name by which a person is known to `given_name`; often
+        // referred to as a person's first name
         void set_given_name(const std::string& given_name)
         {
             properties().set_or_update("GivenName", given_name);
         }
 
+        // Returns the person's first name
         std::string get_given_name() const
         {
             return properties().get_value_as_string("GivenName");
         }
 
+        // Initials for the contact
+        // TODO: get_initials
+
+        // The middle name for the contact
+        // TODO: get_middle_name
+
+        // Another name by which the contact is known
+        // TODO: get_nickname
+
+        // A combination of several name fields in one convenient place
+        // (read-only)
+        // TODO: get_complete_name
+
+        // The company that the contact is affiliated with
+        // TODO: get_company_name
+
+        // A collection of e-mail addresses for the contact
+        // TODO: get_email_addresses
+
+        // A collection of mailing addresses for the contact
+        // TODO: get_physical_addresses
+
+        // A collection of phone numbers for the contact
+        // TODO: get_phone_numbers
+
+        // The name of the contact's assistant
+        // TODO: get_assistant_name
+
+        // The contact's birthday
+        // TODO: get_birthday
+
+        // Web page for the contact's business; typically a URL
+        // TODO: get_business_homepage
+
+        // A collection of children's names associated with the contact
+        // TODO: get_children
+
+        // A collection of companies a contact is associated with
+        // TODO: get_companies
+
+        // Indicates whether this is a directory or a store contact
+        // (read-only)
+        // TODO: get_contact_source
+
+        // The department name that the contact is in
+        // TODO: get_department
+
+        // Sr, Jr, I, II, III, and so on
+        // TODO: get_generation
+
+        // A collection of instant messaging addresses for the contact
+        // TODO: get_im_addresses
+
+        // The job title for the contact
+        // TODO: get_job_title
+
+        // The name of the contact's manager
+        // TODO: get_manager
+
+        // The distance that the contact resides from some reference point
+        // TODO: get_mileage
+
+        // Location of the contact's office
+        // TODO: get_office_location
+
+        // The physical addresses in the PhysicalAddresses collection that
+        // represents the mailing address for the contact
+        // TODO: get_postal_address_index
+
+        // Occupation or discipline of the contact
+        // TODO: get_profession
+
+        // Name of the contact's spouse
+        // TODO: get_spouse_name
+
+        // Sets the family name of the contact; usually considered the last name
         void set_surname(const std::string& surname)
         {
             properties().set_or_update("Surname", surname);
         }
 
+        // Returns the family name of the contact; usually considered the last
+        // name
         std::string get_surname() const
         {
             return properties().get_value_as_string("Surname");
         }
+
+        // Date that the contact was married
+        // TODO: get_wedding_anniversary
+
+        // Everything below is beyond EWS 2007 subset
+
+        // has_picture
+        // phonetic_full_name
+        // phonetic_first_name
+        // phonetic_last_name
+        // alias
+        // notes
+        // photo
+        // user_smime_certificate
+        // msexchange_certificate
+        // directory_id
+        // manager_mailbox
+        // direct_reports
 
         // Makes a contact instance from a <Contact> XML element
         // FIXME: 100% code dupe with task class
