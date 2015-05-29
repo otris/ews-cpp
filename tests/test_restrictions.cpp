@@ -16,10 +16,10 @@ R"(<IsEqualTo><FieldURI FieldURI="task:IsComplete"/><FieldURIOrConstant><Constan
     TEST(RestrictionTest, IsEqualToBooleanConstantRendersCorrectlyWithNamespace)
     {
         const char* expected =
-R"(<t:IsEqualTo><t:FieldURI FieldURI="task:IsComplete"/><t:FieldURIOrConstant><t:Constant Value="false"/></t:FieldURIOrConstant></t:IsEqualTo>)";
+R"(<s:IsEqualTo><s:FieldURI FieldURI="task:IsComplete"/><s:FieldURIOrConstant><s:Constant Value="false"/></s:FieldURIOrConstant></s:IsEqualTo>)";
         task_property_path task;
         auto restr = is_equal_to(task.is_complete, false);
-        EXPECT_STREQ(expected, restr.to_xml("t").c_str());
+        EXPECT_STREQ(expected, restr.to_xml("s").c_str());
     }
 
     TEST(RestrictionTest, IsEqualToStringConstantRendersCorrectly)

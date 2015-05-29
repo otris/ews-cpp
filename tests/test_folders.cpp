@@ -9,7 +9,7 @@ namespace tests
     TEST(FolderTest, DistinguishedFolderIdFromWellKnownName)
     {
         distinguished_folder_id id = standard_folder::inbox;
-        EXPECT_STREQ("<t:DistinguishedFolderId Id=\"inbox\" />",
-                     id.to_xml("t").c_str());
+        EXPECT_STREQ("<x:DistinguishedFolderId Id=\"inbox\" />",
+                     id.to_xml("x").c_str());
     }
 }

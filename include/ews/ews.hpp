@@ -4015,10 +4015,10 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         distinguished_folder_id(standard_folder folder)
             : folder_id([&](const char* xmlns) -> std::string
                     {
-                        const char* pref = "";
+                        auto pref = std::string();
                         if (xmlns)
                         {
-                            pref = "t:";
+                            pref = std::string(xmlns) + ":";
                         }
                         std::stringstream sstr;
                         sstr << "<" << pref << "DistinguishedFolderId Id=\"";
@@ -4460,10 +4460,10 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             : restriction([&](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
-                        const char* pref = "";
+                        auto pref = std::string();
                         if (xmlns)
                         {
-                            pref = "t:";
+                            pref = std::string(xmlns) + ":";
                         }
                         sstr << "<" << pref << "IsEqualTo><" << pref;
                         sstr << "FieldURI FieldURI=\"";
