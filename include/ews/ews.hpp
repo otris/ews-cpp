@@ -3833,6 +3833,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     class property_path
     {
     public:
+        property_path() = delete;
+
         // Intentionally not explicit
         property_path(const char* uri) : uri_(uri) {}
 
@@ -3843,6 +3845,14 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     private:
         const char* uri_;
     };
+
+#ifndef _MSC_VER
+    static_assert(!std::is_default_constructible<property_path>::value, "");
+    static_assert(std::is_copy_constructible<property_path>::value, "");
+    static_assert(std::is_copy_assignable<property_path>::value, "");
+    static_assert(std::is_move_constructible<property_path>::value, "");
+    static_assert(std::is_move_assignable<property_path>::value, "");
+#endif
 
     struct folder_property_path final
     {
@@ -3945,7 +3955,18 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     };
 
     struct meeting_property_path final
-    {};
+    {
+        const property_path associated_calendar_item_id = "meeting:AssociatedCalendarItemId";
+        const property_path is_delegated = "meeting:IsDelegated";
+        const property_path is_out_of_date = "meeting:IsOutOfDate";
+        const property_path has_been_processed = "meeting:HasBeenProcessed";
+        const property_path response_type = "meeting:ResponseType";
+        const property_path proposed_start = "meeting:ProposedStart";
+        const property_path proposed_end = "meeting:PropsedEnd";
+        const property_path meeting_request_type = "meetingRequest:MeetingRequestType";
+        const property_path intended_free_busy_status = "meetingRequest:IntendedFreeBusyStatus";
+        const property_path change_highlights = "meetingRequest:ChangeHighlights";
+    };
 
     struct calendar_property_path final
     {
@@ -4028,7 +4049,105 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     };
 
     struct contact_property_path final
-    {};
+    {
+        const property_path alias = "contacts:Alias";
+        const property_path assistant_name = "contacts:AssistantName";
+        const property_path birthday = "contacts:Birthday";
+        const property_path business_home_page = "contacts:BusinessHomePage";
+        const property_path children = "contacts:Children";
+        const property_path companies = "contacts:Companies";
+        const property_path company_name = "contacts:CompanyName";
+        const property_path complete_name = "contacts:CompleteName";
+        const property_path contact_source = "contacts:ContactSource";
+        const property_path culture = "contacts:Culture";
+        const property_path department = "contacts:Department";
+        const property_path display_name = "contacts:DisplayName";
+        const property_path directory_id = "contacts:DirectoryId";
+        const property_path direct_reports = "contacts:DirectReports";
+        const property_path email_addresses = "contacts:EmailAddresses";
+        const property_path file_as = "contacts:FileAs";
+        const property_path file_as_mapping = "contacts:FileAsMapping";
+        const property_path generation = "contacts:Generation";
+        const property_path given_name = "contacts:GivenName";
+        const property_path im_addresses = "contacts:ImAddresses";
+        const property_path initials = "contacts:Initials";
+        const property_path job_title = "contacts:JobTitle";
+        const property_path manager = "contacts:Manager";
+        const property_path manager_mailbox = "contacts:ManagerMailbox";
+        const property_path middle_name = "contacts:MiddleName";
+        const property_path mileage = "contacts:Mileage";
+        const property_path ms_exchange_certificate = "contacts:MSExchangeCertificate";
+        const property_path nickname = "contacts:Nickname";
+        const property_path notes = "contacts:Notes";
+        const property_path office_location = "contacts:OfficeLocation";
+        const property_path phone_numbers = "contacts:PhoneNumbers";
+        const property_path phonetic_full_name = "contacts:PhoneticFullName";
+        const property_path phonetic_first_name = "contacts:PhoneticFirstName";
+        const property_path phonetic_last_name = "contacts:PhoneticLastName";
+        const property_path photo = "contacts:Photo";
+        const property_path physical_address = "contacts:PhysicalAddresses";
+        const property_path postal_adress_index = "contacts:PostalAddressIndex";
+        const property_path profession = "contacts:Profession";
+        const property_path spouse_name = "contacts:SpouseName";
+        const property_path surname = "contacts:Surname";
+        const property_path wedding_anniversary = "contacts:WeddingAnniversary";
+        const property_path smime_certificate = "contacts:UserSMIMECertificate";
+        const property_path has_picture = "contacts:HasPicture";
+    };
+
+    struct distribution_list_property_path final
+    {
+        const property_path members = "distributionlist:Members";
+    };
+
+    struct post_item_property_path final
+    {
+        const property_path posted_time = "postitem:PostedTime";
+    };
+
+    struct conversation_property_path final
+    {
+        const property_path conversation_id = "conversation:ConversationId";
+        const property_path conversation_topic = "conversation:ConversationTopic";
+        const property_path unique_recipients = "conversation:UniqueRecipients";
+        const property_path global_unique_recipients = "conversation:GlobalUniqueRecipients";
+        const property_path unique_unread_senders = "conversation:UniqueUnreadSenders";
+        const property_path global_unique_unread_readers = "conversation:GlobalUniqueUnreadSenders";
+        const property_path unique_senders = "conversation:UniqueSenders";
+        const property_path global_unique_senders = "conversation:GlobalUniqueSenders";
+        const property_path last_delivery_time = "conversation:LastDeliveryTime";
+        const property_path global_last_delivery_time = "conversation:GlobalLastDeliveryTime";
+        const property_path categories = "conversation:Categories";
+        const property_path global_categories = "conversation:GlobalCategories";
+        const property_path flag_status = "conversation:FlagStatus";
+        const property_path global_flag_status = "conversation:GlobalFlagStatus";
+        const property_path has_attachments = "conversation:HasAttachments";
+        const property_path global_has_attachments = "conversation:GlobalHasAttachments";
+        const property_path has_irm = "conversation:HasIrm";
+        const property_path global_has_irm = "conversation:GlobalHasIrm";
+        const property_path message_count = "conversation:MessageCount";
+        const property_path global_message_count = "conversation:GlobalMessageCount";
+        const property_path unread_count = "conversation:UnreadCount";
+        const property_path global_unread_count = "conversation:GlobalUnreadCount";
+        const property_path size = "conversation:Size";
+        const property_path global_size = "conversation:GlobalSize";
+        const property_path item_classes = "conversation:ItemClasses";
+        const property_path global_item_classes = "conversation:GlobalItemClasses";
+        const property_path importance = "conversation:Importance";
+        const property_path global_importance = "conversation:GlobalImportance";
+        const property_path item_ids = "conversation:ItemIds";
+        const property_path global_item_ids = "conversation:GlobalItemIds";
+        const property_path last_modified_time = "conversation:LastModifiedTime";
+        const property_path instance_key = "conversation:InstanceKey";
+        const property_path preview = "conversation:Preview";
+        const property_path global_parent_folder_id = "conversation:GlobalParentFolderId";
+        const property_path next_predicted_action = "conversation:NextPredictedAction";
+        const property_path grouping_action = "conversation:GroupingAction";
+        const property_path icon_index = "conversation:IconIndex";
+        const property_path global_icon_index = "conversation:GlobalIconIndex";
+        const property_path draft_item_ids = "conversation:DraftItemIds";
+        const property_path has_clutter = "conversation:HasClutter";
+    };
 
     // Base-class for
     //
