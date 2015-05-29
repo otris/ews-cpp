@@ -6,6 +6,7 @@
 #include <vector>
 #include <unordered_map>
 #include <sstream>
+#include <ios>
 #include <algorithm>
 #include <functional>
 #include <utility>
@@ -2877,8 +2878,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             {
             }
         };
-
-    } // internal
+    }
 
     // Function is not thread-safe; should be set-up when application is still
     // in single-threaded context. Calling this function more than once does no
@@ -3555,7 +3555,10 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // TODO: is_assignment_editable, possible values 0-5, 2007 dialect?
 
         // True if the task is marked as complete
-        // TODO: is_complete
+        bool is_complete() const
+        {
+            return properties().get_value_as_string("IsComplete") == "true";
+        }
 
         // True if the task is recurring
         // TODO: is_recurring
@@ -3826,6 +3829,316 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     static_assert(std::is_move_constructible<contact>::value, "");
     static_assert(std::is_move_assignable<contact>::value, "");
 #endif
+
+    class property_path
+    {
+    public:
+        // Intentionally not explicit
+        property_path(const char* uri) : uri_(uri) {}
+
+        // Returns the <FieldURI> element for this property. Identifies
+        // frequently referenced properties by URI
+        std::string field_uri() const { return uri_; }
+
+    private:
+        const char* uri_;
+    };
+
+    struct folder_property_path final
+    {
+        const property_path folder_id = "folder:FolderId";
+        const property_path parent_folder_id = "folder:ParentFolderId";
+        const property_path display_name = "folder:DisplayName";
+        const property_path unread_count = "folder:UnreadCount";
+        const property_path total_count = "folder:TotalCount";
+        const property_path child_folder_count = "folder:ChildFolderCount";
+        const property_path folder_class = "folder:FolderClass";
+        const property_path search_parameters = "folder:SearchParameters";
+        const property_path managed_folder_information = "folder:ManagedFolderInformation";
+        const property_path permission_set = "folder:PermissionSet";
+        const property_path effective_rights = "folder:EffectiveRights";
+        const property_path sharing_effective_rights = "folder:SharingEffectiveRights";
+    };
+
+    struct item_property_path final
+    {
+        const property_path item_id = "item:ItemId";
+        const property_path parent_folder_id = "item:ParentFolderId";
+        const property_path item_class = "item:ItemClass";
+        const property_path mime_content = "item:MimeContent";
+        const property_path attachment = "item:Attachments";
+        const property_path subject = "item:Subject";
+        const property_path date_time_received = "item:DateTimeReceived";
+        const property_path size = "item:Size";
+        const property_path categories = "item:Categories";
+        const property_path has_attachments = "item:HasAttachments";
+        const property_path importance = "item:Importance";
+        const property_path in_reply_to = "item:InReplyTo";
+        const property_path internet_message_headers = "item:InternetMessageHeaders";
+        const property_path is_associated = "item:IsAssociated";
+        const property_path is_draft = "item:IsDraft";
+        const property_path is_from_me = "item:IsFromMe";
+        const property_path is_resend = "item:IsResend";
+        const property_path is_submitted = "item:IsSubmitted";
+        const property_path is_unmodified = "item:IsUnmodified";
+        const property_path date_time_sent = "item:DateTimeSent";
+        const property_path date_time_created = "item:DateTimeCreated";
+        const property_path body = "item:Body";
+        const property_path response_objects = "item:ResponseObjects";
+        const property_path sensitivity = "item:Sensitivity";
+        const property_path reminder_due_by = "item:ReminderDueBy";
+        const property_path reminder_is_set = "item:ReminderIsSet";
+        const property_path reminder_next_time = "item:ReminderNextTime";
+        const property_path reminder_minutes_before_start = "item:ReminderMinutesBeforeStart";
+        const property_path display_to = "item:DisplayTo";
+        const property_path display_cc = "item:DisplayCc";
+        const property_path culture = "item:Culture";
+        const property_path effective_rights = "item:EffectiveRights";
+        const property_path last_modified_name = "item:LastModifiedName";
+        const property_path last_modified_time = "item:LastModifiedTime";
+        const property_path conversation_id = "item:ConversationId";
+        const property_path unique_body = "item:UniqueBody";
+        const property_path flag = "item:Flag";
+        const property_path store_entry_id = "item:StoreEntryId";
+        const property_path instance_key = "item:InstanceKey";
+        const property_path normalized_body = "item:NormalizedBody";
+        const property_path entity_extraction_result = "item:EntityExtractionResult";
+        const property_path policy_tag = "item:PolicyTag";
+        const property_path archive_tag = "item:ArchiveTag";
+        const property_path retention_date = "item:RetentionDate";
+        const property_path preview = "item:Preview";
+        const property_path next_predicted_action = "item:NextPredictedAction";
+        const property_path grouping_action = "item:GroupingAction";
+        const property_path predicted_action_reasons = "item:PredictedActionReasons";
+        const property_path is_clutter = "item:IsClutter";
+        const property_path rights_management_license_data = "item:RightsManagementLicenseData";
+        const property_path block_status = "item:BlockStatus";
+        const property_path has_blocked_images = "item:HasBlockedImages";
+        const property_path web_client_read_from_query_string = "item:WebClientReadFormQueryString";
+        const property_path web_client_edit_from_query_string = "item:WebClientEditFormQueryString";
+        const property_path text_body = "item:TextBody";
+        const property_path icon_index = "item:IconIndex";
+        const property_path mime_content_utf8 = "item:MimeContentUTF8";
+    };
+
+    struct message_property_path final
+    {
+        const property_path conversation_index = "message:ConversationIndex";
+        const property_path conversation_topic = "message:ConversationTopic";
+        const property_path internet_message_id = "message:InternetMessageId";
+        const property_path is_read = "message:IsRead";
+        const property_path is_response_requested = "message:IsResponseRequested";
+        const property_path is_read_receipt_requested = "message:IsReadReceiptRequested";
+        const property_path is_delivery_receipt_requested = "message:IsDeliveryReceiptRequested";
+        const property_path received_by = "message:ReceivedBy";
+        const property_path received_representing = "message:ReceivedRepresenting";
+        const property_path references = "message:References";
+        const property_path reply_to = "message:ReplyTo";
+        const property_path from = "message:From";
+        const property_path sender = "message:Sender";
+        const property_path to_recipients = "message:ToRecipients";
+        const property_path cc_recipients = "message:CcRecipients";
+        const property_path bcc_recipients = "message:BccRecipients";
+        const property_path approval_request_data = "message:ApprovalRequestData";
+        const property_path voting_information = "message:VotingInformation";
+        const property_path reminder_message_data = "message:ReminderMessageData";
+    };
+
+    struct meeting_property_path final
+    {};
+
+    struct calendar_property_path final
+    {
+        const property_path start = "calendar:Start";
+        const property_path end = "calendar:End";
+        const property_path original_start = "calendar:OriginalStart";
+        const property_path start_wall_clock = "calendar:StartWallClock";
+        const property_path end_wall_clock = "calendar:EndWallClock";
+        const property_path start_time_zone_id = "calendar:StartTimeZoneId";
+        const property_path end_time_zone_id = "calendar:EndTimeZoneId";
+        const property_path is_all_day_event = "calendar:IsAllDayEvent";
+        const property_path legacy_free_busy_status = "calendar:LegacyFreeBusyStatus";
+        const property_path location = "calendar:Location";
+        const property_path when = "calendar:When";
+        const property_path is_meeting = "calendar:IsMeeting";
+        const property_path is_cancelled = "calendar:IsCancelled";
+        const property_path is_recurring = "calendar:IsRecurring";
+        const property_path meeting_request_was_sent = "calendar:MeetingRequestWasSent";
+        const property_path is_response_requested = "calendar:IsResponseRequested";
+        const property_path calendar_item_type = "calendar:CalendarItemType";
+        const property_path my_response_type = "calendar:MyResponseType";
+        const property_path organizer = "calendar:Organizer";
+        const property_path required_attendees = "calendar:RequiredAttendees";
+        const property_path optional_attendees = "calendar:OptionalAttendees";
+        const property_path resources = "calendar:Resources";
+        const property_path conflicting_meeting_count = "calendar:ConflictingMeetingCount";
+        const property_path adjacent_meeting_count = "calendar:AdjacentMeetingCount";
+        const property_path conflicting_meetings = "calendar:ConflictingMeetings";
+        const property_path adjacent_meetings = "calendar:AdjacentMeetings";
+        const property_path duration = "calendar:Duration";
+        const property_path time_zone = "calendar:TimeZone";
+        const property_path appointment_reply_time = "calendar:AppointmentReplyTime";
+        const property_path appointment_sequence_number = "calendar:AppointmentSequenceNumber";
+        const property_path appointment_state = "calendar:AppointmentState";
+        const property_path recurrence = "calendar:Recurrence";
+        const property_path first_occurrence = "calendar:FirstOccurrence";
+        const property_path last_occurrence = "calendar:LastOccurrence";
+        const property_path modified_occurrences = "calendar:ModifiedOccurrences";
+        const property_path deleted_occurrences = "calendar:DeletedOccurrences";
+        const property_path meeting_time_zone = "calendar:MeetingTimeZone";
+        const property_path conference_type = "calendar:ConferenceType";
+        const property_path allow_new_time_proposal = "calendar:AllowNewTimeProposal";
+        const property_path is_online_meeting = "calendar:IsOnlineMeeting";
+        const property_path meeting_workspace_url = "calendar:MeetingWorkspaceUrl";
+        const property_path net_show_url = "calendar:NetShowUrl";
+        const property_path uid = "calendar:UID";
+        const property_path recurrence_id = "calendar:RecurrenceId";
+        const property_path date_time_stamp = "calendar:DateTimeStamp";
+        const property_path start_time_zone = "calendar:StartTimeZone";
+        const property_path end_time_zone = "calendar:EndTimeZone";
+        const property_path join_online_meeting_url = "calendar:JoinOnlineMeetingUrl";
+        const property_path online_meeting_settings = "calendar:OnlineMeetingSettings";
+        const property_path is_organizer = "calendar:IsOrganizer";
+    };
+
+    struct task_property_path final
+    {
+        const property_path actual_work = "task:ActualWork";
+        const property_path assigned_time = "task:AssignedTime";
+        const property_path billing_information = "task:BillingInformation";
+        const property_path change_count = "task:ChangeCount";
+        const property_path companies = "task:Companies";
+        const property_path complete_date = "task:CompleteDate";
+        const property_path contacts = "task:Contacts";
+        const property_path delegation_state = "task:DelegationState";
+        const property_path delegator = "task:Delegator";
+        const property_path due_date = "task:DueDate";
+        const property_path is_assignment_editable = "task:IsAssignmentEditable";
+        const property_path is_complete = "task:IsComplete";
+        const property_path is_recurring = "task:IsRecurring";
+        const property_path is_team_task = "task:IsTeamTask";
+        const property_path mileage = "task:Mileage";
+        const property_path owner = "task:Owner";
+        const property_path percent_complete = "task:PercentComplete";
+        const property_path recurrence = "task:Recurrence";
+        const property_path start_date = "task:StartDate";
+        const property_path status = "task:Status";
+        const property_path status_description = "task:StatusDescription";
+        const property_path total_work = "task:TotalWork";
+    };
+
+    struct contact_property_path final
+    {};
+
+    // Base-class for
+    //
+    //   - exists
+    //   - excludes
+    //   - is_equal_to
+    //   - is_not_equal_to
+    //   - is_greater_than
+    //   - is_greater_than_or_equal_to
+    //   - is_less_than
+    //   - is_less_than_or_equal_to
+    //   - contains
+    //   - not
+    //   - and
+    //   - or
+    //
+    // search expressions.
+    class restriction
+    {
+    public:
+        ~restriction() = default;
+
+        std::string to_xml(const char* xmlns=nullptr) const
+        {
+            return func_(xmlns);
+        }
+
+    protected:
+        explicit restriction(std::function<std::string (const char*)>&& func)
+            : func_(std::move(func))
+        {
+        }
+
+    private:
+        std::function<std::string (const char*)> func_;
+    };
+
+    // A search expression that compares a property with either a constant value
+    // or another property and evaluates to true if they are equal.
+    class is_equal_to final : public restriction
+    {
+    public:
+        is_equal_to(property_path path, bool b)
+            : restriction([&](const char* xmlns) -> std::string
+                    {
+                        std::stringstream sstr;
+                        const char* pref = "";
+                        if (xmlns)
+                        {
+                            pref = "t:";
+                        }
+                        sstr << "<" << pref << "IsEqualTo><" << pref;
+                        sstr << "FieldURI FieldURI=\"";
+                        sstr << path.field_uri();
+                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
+                        sstr << pref << "Constant Value=\"";
+                        sstr << std::boolalpha << b;
+                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
+                        sstr << pref << "IsEqualTo>";
+                        return sstr.str();
+                    })
+        {
+        }
+
+        is_equal_to(property_path path, const char* str)
+            : restriction([=](const char* xmlns) -> std::string
+                    {
+                        std::stringstream sstr;
+                        const char* pref = "";
+                        if (xmlns)
+                        {
+                            pref = "t:";
+                        }
+                        sstr << "<" << pref << "IsEqualTo><" << pref;
+                        sstr << "FieldURI FieldURI=\"";
+                        sstr << path.field_uri();
+                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
+                        sstr << pref << "Constant Value=\"";
+                        sstr << str;
+                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
+                        sstr << pref << "IsEqualTo>";
+                        return sstr.str();
+                    })
+        {
+        }
+
+        is_equal_to(property_path path, date_time when)
+            : restriction([&](const char* xmlns) -> std::string
+                    {
+                        std::stringstream sstr;
+                        const char* pref = "";
+                        if (xmlns)
+                        {
+                            pref = "t:";
+                        }
+                        sstr << "<" << pref << "IsEqualTo><" << pref;
+                        sstr << "FieldURI FieldURI=\"";
+                        sstr << path.field_uri();
+                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
+                        sstr << pref << "Constant Value=\"";
+                        sstr << when.to_string();
+                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
+                        sstr << pref << "IsEqualTo>";
+                        return sstr.str();
+                    })
+        {
+        }
+
+        // TODO: is_equal_to(property_path, property_path) {}
+    };
 
     // The service class contains all methods that can be performed on an
     // Exchange server.
