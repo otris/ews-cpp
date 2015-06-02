@@ -1,4 +1,5 @@
 #include "fixture.hpp"
+
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -130,5 +131,30 @@ namespace tests
 
         // Check if it is still in store
         EXPECT_THROW(service().get_task(item_id), ews::exchange_error);
+    }
+
+    TEST_F(TaskTest, FindTasks)
+    {
+        ews::task_property_path task;
+        ews::distinguished_folder_id folder = ews::standard_folder::tasks;
+        const auto initial_count = service().find_item(folder,
+            ews::is_equal_to(task.is_complete, false)).size();
+
+        auto start_time = ews::date_time("2015-05-29T17:00:00Z");
+        auto end_time   = ews::date_time("2015-05-29T17:30:00Z");
+        auto t = ews::task();
+        t.set_subject("Feed the cat");
+        t.set_body(ews::body("And don't forget to buy some Whiskas"));
+        t.set_start_date(start_time);
+        t.set_due_date(end_time);
+        const auto item_id = service().create_item(t);
+        t = service().get_task(item_id);
+        ews::internal::on_scope_exit delete_item([&]
+        {
+            service().delete_task(std::move(t));
+        });
+        auto ids = service().find_item(folder,
+                                       ews::is_equal_to(task.is_complete, false));
+        EXPECT_EQ(initial_count + 1, ids.size());
     }
 }

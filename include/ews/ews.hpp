@@ -107,6 +107,26 @@ namespace ews
             }
         };
 
+#if 0
+        class ios_flag_saver final
+        {
+        public:
+            explicit ios_flag_saver(std::ostream& ios)
+                : stream_(ios), flags_(stream_.flags())
+            {
+            }
+
+            ~ios_flag_saver() { stream_.flags(flags_); }
+
+            ios_flag_saver(const ios_flag_saver& other) = delete;
+            ios_flag_saver& operator=(const ios_flag_saver& rhs) = delete;
+
+        private:
+            std::ostream& stream_;
+            std::ios::fmtflags flags_;
+        };
+#endif
+
         // Forward declarations
         class http_request;
     }
@@ -2824,6 +2844,24 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             }
         };
 
+        class find_item_response_message final
+            : public response_message_with_items<item_id>
+        {
+        public:
+            // implemented below
+            static find_item_response_message parse(http_response&);
+
+        private:
+            find_item_response_message(response_class cls,
+                                       response_code code,
+                                       std::vector<item_id> items)
+                : response_message_with_items<item_id>(cls,
+                  code,
+                  std::move(items))
+            {
+            }
+        };
+
         template <typename ItemType>
         class get_item_response_message final
             : public response_message_with_items<ItemType>
@@ -3188,6 +3226,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     // If your date or date/time strings are not formatted properly, Microsoft
     // EWS will likely give you a SOAP fault which this library transports to
     // you as an exception of type ews::soap_fault.
+    // TODO: we don't really need date class, date_time class is sufficient if
+    // xs:date and xs:dateTime are interchangeable.
 
     // A date/time string wrapper class for xs:dateTime formatted strings.
     //
@@ -4013,7 +4053,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         // Intentionally not explicit
         distinguished_folder_id(standard_folder folder)
-            : folder_id([&](const char* xmlns) -> std::string
+            : folder_id([=](const char* xmlns) -> std::string
                     {
                         auto pref = std::string();
                         if (xmlns)
@@ -4102,14 +4142,14 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         property_path() = delete;
 
         // Intentionally not explicit
-        property_path(const char* uri) : uri_(uri) {}
+        property_path(const char* uri) : uri_(std::string(uri)) {}
 
         // Returns the <FieldURI> element for this property. Identifies
         // frequently referenced properties by URI
         std::string field_uri() const { return uri_; }
 
     private:
-        const char* uri_;
+        std::string uri_;
     };
 
 #ifndef _MSC_VER
@@ -4120,7 +4160,15 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     static_assert(std::is_move_assignable<property_path>::value, "");
 #endif
 
-    struct folder_property_path final
+    namespace internal
+    {
+        struct no_assign
+        {
+            no_assign& operator=(const no_assign&) = delete;
+        };
+    }
+
+    struct folder_property_path final : public internal::no_assign
     {
         const property_path folder_id = "folder:FolderId";
         const property_path parent_folder_id = "folder:ParentFolderId";
@@ -4136,7 +4184,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         const property_path sharing_effective_rights = "folder:SharingEffectiveRights";
     };
 
-    struct item_property_path final
+    struct item_property_path final : public internal::no_assign
     {
         const property_path item_id = "item:ItemId";
         const property_path parent_folder_id = "item:ParentFolderId";
@@ -4197,7 +4245,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         const property_path mime_content_utf8 = "item:MimeContentUTF8";
     };
 
-    struct message_property_path final
+    struct message_property_path final : public internal::no_assign
     {
         const property_path conversation_index = "message:ConversationIndex";
         const property_path conversation_topic = "message:ConversationTopic";
@@ -4220,7 +4268,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         const property_path reminder_message_data = "message:ReminderMessageData";
     };
 
-    struct meeting_property_path final
+    struct meeting_property_path final : public internal::no_assign
     {
         const property_path associated_calendar_item_id = "meeting:AssociatedCalendarItemId";
         const property_path is_delegated = "meeting:IsDelegated";
@@ -4234,7 +4282,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         const property_path change_highlights = "meetingRequest:ChangeHighlights";
     };
 
-    struct calendar_property_path final
+    struct calendar_property_path final : public internal::no_assign
     {
         const property_path start = "calendar:Start";
         const property_path end = "calendar:End";
@@ -4288,7 +4336,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         const property_path is_organizer = "calendar:IsOrganizer";
     };
 
-    struct task_property_path final
+    struct task_property_path final : public internal::no_assign
     {
         const property_path actual_work = "task:ActualWork";
         const property_path assigned_time = "task:AssignedTime";
@@ -4314,7 +4362,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         const property_path total_work = "task:TotalWork";
     };
 
-    struct contact_property_path final
+    struct contact_property_path final : public internal::no_assign
     {
         const property_path alias = "contacts:Alias";
         const property_path assistant_name = "contacts:AssistantName";
@@ -4361,17 +4409,17 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         const property_path has_picture = "contacts:HasPicture";
     };
 
-    struct distribution_list_property_path final
+    struct distribution_list_property_path final : public internal::no_assign
     {
         const property_path members = "distributionlist:Members";
     };
 
-    struct post_item_property_path final
+    struct post_item_property_path final : public internal::no_assign
     {
         const property_path posted_time = "postitem:PostedTime";
     };
 
-    struct conversation_property_path final
+    struct conversation_property_path final : public internal::no_assign
     {
         const property_path conversation_id = "conversation:ConversationId";
         const property_path conversation_topic = "conversation:ConversationTopic";
@@ -4457,7 +4505,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     {
     public:
         is_equal_to(property_path path, bool b)
-            : restriction([&](const char* xmlns) -> std::string
+            : restriction([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
                         auto pref = std::string();
@@ -4501,7 +4549,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         }
 
         is_equal_to(property_path path, date_time when)
-            : restriction([&](const char* xmlns) -> std::string
+            : restriction([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
                         const char* pref = "";
@@ -4573,19 +4621,20 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         // Delete a task item from the Exchange store
         void delete_task(task&& the_task,
-                         delete_type del_type,
-                         affected_task_occurrences affected)
+                         delete_type del_type = delete_type::hard_delete,
+                         affected_task_occurrences affected =
+                            affected_task_occurrences::all_occurrences)
         {
             using internal::delete_item_response_message;
 
             const std::string request_string =
-              "<DeleteItem " \
-                  "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
-                  "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" " \
-                  "DeleteType=\"" + delete_type_str(del_type) + "\" " \
-                  "AffectedTaskOccurrences=\"" + affected_task_occurrences_str(affected) + "\">" \
-              "<ItemIds>" + the_task.get_item_id().to_xml("t") + "</ItemIds>" \
-              "</DeleteItem>";
+R"(
+    <m:DeleteItem
+      DeleteType=")" + delete_type_str(del_type) + R"("
+      AffectedTaskOccurrences=")" + affected_task_occurrences_str(affected) + R"(">
+      <m:ItemIds>)" + the_task.get_item_id().to_xml("t") + R"(</m:ItemIds>
+    </m:DeleteItem>
+)";
             auto response = request(request_string);
             const auto response_message =
                 delete_item_response_message::parse(response);
@@ -4602,11 +4651,11 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             using internal::delete_item_response_message;
 
             const std::string request_string =
-              "<DeleteItem " \
-                  "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
-                  "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\">" \
-              "<ItemIds>" + the_contact.get_item_id().to_xml("t") + "</ItemIds>" \
-              "</DeleteItem>";
+R"(
+    <m:DeleteItem>
+      <m:ItemIds>)" + the_contact.get_item_id().to_xml("t") + R"(</m:ItemIds>
+    </m:DeleteItem>
+)";
             auto response = request(request_string);
             const auto response_message =
                 delete_item_response_message::parse(response);
@@ -4627,6 +4676,35 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         item_id create_item(const contact& the_item)
         {
             return create_item<contact>(the_item);
+        }
+
+        std::vector<item_id> find_item(const folder_id& parent_folder_id,
+                                       restriction filter)
+        {
+            using find_item_response_message =
+                internal::find_item_response_message;
+
+            const std::string request_string =
+R"(
+    <m:FindItem Traversal="Shallow">
+      <m:ItemShape>
+        <t:BaseShape>IdOnly</t:BaseShape>
+      </m:ItemShape>
+      <t:Restriction>)" + filter.to_xml("t") + R"(</t:Restriction>
+      <m:ParentFolderIds>)" + parent_folder_id.to_xml("t") + R"(</m:ParentFolderIds>
+    </m:FindItem>
+)";
+            auto response = request(request_string);
+#ifdef EWS_ENABLE_VERBOSE
+            std::cerr << response.payload() << std::endl;
+#endif
+            const auto response_message =
+                find_item_response_message::parse(response);
+            if (!response_message.success())
+            {
+                throw exchange_error(response_message.get_response_code());
+            }
+            return response_message.items();
         }
 
     private:
@@ -4664,17 +4742,17 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             // TODO: remove <AdditionalProperties> below, add parameter(s) or
             // overload to allow users customization
             const std::string request_string =
-              "<GetItem " \
-                  "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
-                  "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
-              "<ItemShape>" \
-              "<t:BaseShape>" + base_shape_str(shape) + "</t:BaseShape>" \
-              "<t:AdditionalProperties>" \
-              "<t:FieldURI FieldURI=\"item:MimeContent\"/>" \
-              "</t:AdditionalProperties>" \
-              "</ItemShape>" \
-              "<ItemIds>" + id.to_xml("t") + "</ItemIds>" \
-              "</GetItem>";
+R"(
+    <m:GetItem>
+      <m:ItemShape>
+        <t:BaseShape>)" + base_shape_str(shape) + R"(</t:BaseShape>
+        <t:AdditionalProperties>
+          <t:FieldURI FieldURI="item:MimeContent"/>
+        </t:AdditionalProperties>
+      </m:ItemShape>
+      <m:ItemIds>)" + id.to_xml("t") + R"(</m:ItemIds>
+    </m:GetItem>
+)";
             auto response = request(request_string);
 #ifdef EWS_ENABLE_VERBOSE
             std::cerr << response.payload() << std::endl;
@@ -4761,6 +4839,42 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             return create_item_response_message(result.first,
                                                 result.second,
                                                 std::move(item_ids));
+        }
+
+        inline find_item_response_message
+            find_item_response_message::parse(http_response& response)
+        {
+            using uri = internal::uri<>;
+            using internal::get_element_by_qname;
+
+            const auto& doc = response.payload();
+            auto elem = get_element_by_qname(doc,
+                                             "FindItemResponseMessage",
+                                             uri::microsoft::messages());
+
+            EWS_ASSERT(elem &&
+                "Expected <FindItemResponseMessage>, got nullptr");
+            const auto result = parse_response_class_and_code(*elem);
+
+            auto root_folder = elem->first_node_ns(uri::microsoft::messages(), "RootFolder");
+
+            auto items_elem =
+                root_folder->first_node_ns(uri::microsoft::types(), "Items");
+            EWS_ASSERT(items_elem && "Expected <t:Items> element");
+
+            auto items = std::vector<item_id>();
+            for (auto item_elem = items_elem->first_node(); item_elem;
+                 item_elem = item_elem->next_sibling())
+            {
+                EWS_ASSERT(item_elem && "Expected an element, got nullptr");
+                auto item_id_elem = item_elem->first_node();
+                EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
+                items.emplace_back(
+                    item_id::from_xml_element(*item_id_elem));
+            }
+            return find_item_response_message(result.first,
+                                              result.second,
+                                              std::move(items));
         }
 
         template <typename ItemType>
