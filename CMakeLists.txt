@@ -174,8 +174,9 @@ function(add_example EXAMPLE_NAME)
         LINK_FLAGS "${SANITIZE_LDFLAGS}")
 endfunction()
 
-add_example(raw_soap_request)
 add_example(create_task)
+add_example(find_tasks)
+add_example(raw_soap_request)
 
 install(FILES ${ews_SOURCES} DESTINATION include/ews)
 install(FILES ${rapidxml_SOURCES} DESTINATION include/ews/rapidxml)
