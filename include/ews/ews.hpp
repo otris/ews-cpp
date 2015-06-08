@@ -2670,6 +2670,10 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             request_stream << "</soap:Body>\n";
             request_stream << "</soap:Envelope>\n";
 
+#if EWS_ENABLE_VERBOSE
+            std::cerr << request_stream.str() << std::endl;
+#endif
+
             return request.send(request_stream.str());
         }
 
