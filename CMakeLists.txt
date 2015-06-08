@@ -177,6 +177,7 @@ endfunction()
 add_example(create_task)
 add_example(find_tasks)
 add_example(raw_soap_request)
+add_example(update_contact)
 
 install(FILES ${ews_SOURCES} DESTINATION include/ews)
 install(FILES ${rapidxml_SOURCES} DESTINATION include/ews/rapidxml)

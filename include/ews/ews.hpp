@@ -107,26 +107,6 @@ namespace ews
             }
         };
 
-#if 0
-        class ios_flag_saver final
-        {
-        public:
-            explicit ios_flag_saver(std::ostream& ios)
-                : stream_(ios), flags_(stream_.flags())
-            {
-            }
-
-            ~ios_flag_saver() { stream_.flags(flags_); }
-
-            ios_flag_saver(const ios_flag_saver& other) = delete;
-            ios_flag_saver& operator=(const ios_flag_saver& rhs) = delete;
-
-        private:
-            std::ostream& stream_;
-            std::ios::fmtflags flags_;
-        };
-#endif
-
         // Forward declarations
         class http_request;
     }
@@ -4354,14 +4334,12 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     class property_path
     {
     public:
-        property_path() = delete;
-
         // Intentionally not explicit
         property_path(const char* uri) : uri_(std::string(uri)) {}
 
         // Returns the <FieldURI> element for this property. Identifies
         // frequently referenced properties by URI
-        std::string field_uri() const { return uri_; }
+        const std::string& field_uri() const EWS_NOEXCEPT { return uri_; }
 
     private:
         std::string uri_;
@@ -4373,6 +4351,27 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     static_assert(std::is_copy_assignable<property_path>::value, "");
     static_assert(std::is_move_constructible<property_path>::value, "");
     static_assert(std::is_move_assignable<property_path>::value, "");
+#endif
+
+    class indexed_property_path : public property_path
+    {
+    public:
+        indexed_property_path(const char* uri, const char* index)
+            : property_path(uri), index_(std::string(index))
+        {}
+
+        const std::string& field_index() const EWS_NOEXCEPT { return index_; }
+
+    private:
+        std::string index_;
+    };
+
+#ifndef _MSC_VER
+    static_assert(!std::is_default_constructible<indexed_property_path>::value, "");
+    static_assert(std::is_copy_constructible<indexed_property_path>::value, "");
+    static_assert(std::is_copy_assignable<indexed_property_path>::value, "");
+    static_assert(std::is_move_constructible<indexed_property_path>::value, "");
+    static_assert(std::is_move_assignable<indexed_property_path>::value, "");
 #endif
 
     namespace internal
@@ -4594,6 +4593,9 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         const property_path directory_id = "contacts:DirectoryId";
         const property_path direct_reports = "contacts:DirectReports";
         const property_path email_addresses = "contacts:EmailAddresses";
+        const indexed_property_path email_address_1{ "contacts:EmailAddress", "EmailAddress1" };
+        const indexed_property_path email_address_2{ "contacts:EmailAddress", "EmailAddress2" };
+        const indexed_property_path email_address_3{ "contacts:EmailAddress", "EmailAddress3" };
         const property_path file_as = "contacts:FileAs";
         const property_path file_as_mapping = "contacts:FileAsMapping";
         const property_path generation = "contacts:Generation";
@@ -4753,6 +4755,29 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                         sstr << "<" << pref << "IsEqualTo><" << pref;
                         sstr << "FieldURI FieldURI=\"";
                         sstr << path.field_uri();
+                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
+                        sstr << pref << "Constant Value=\"";
+                        sstr << str;
+                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
+                        sstr << pref << "IsEqualTo>";
+                        return sstr.str();
+                    })
+        {
+        }
+
+        is_equal_to(indexed_property_path path, const char* str)
+            : restriction([=](const char* xmlns) -> std::string
+                    {
+                        std::stringstream sstr;
+                        const char* pref = "";
+                        if (xmlns)
+                        {
+                            pref = "t:";
+                        }
+                        sstr << "<" << pref << "IsEqualTo><" << pref;
+                        sstr << "IndexedFieldURI FieldURI=\"";
+                        sstr << path.field_uri();
+                        sstr << "\" FieldIndex=\"" << path.field_index();
                         sstr << "\"/><" << pref << "FieldURIOrConstant><";
                         sstr << pref << "Constant Value=\"";
                         sstr << str;

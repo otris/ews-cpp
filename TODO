@@ -1,6 +1,7 @@
                                       TODO
                                       ====
 
+- add test: service.get_task(id) whereas id is ID of a contact
 - SIGPIPE issue, investigate, options?
 - implement ews::body
 - Set-up a new Exchange VM on some KVM host

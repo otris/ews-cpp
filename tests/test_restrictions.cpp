@@ -24,8 +24,6 @@ R"(<s:IsEqualTo><s:FieldURI FieldURI="task:IsComplete"/><s:FieldURIOrConstant><s
 
     TEST(RestrictionTest, IsEqualToStringConstantRendersCorrectly)
     {
-        // TODO: check with valgrind memtool; see capture clause in c'tor
-        // overload
         const char* expected =
 R"(<IsEqualTo><FieldURI FieldURI="folder:DisplayName"/><FieldURIOrConstant><Constant Value="Inbox"/></FieldURIOrConstant></IsEqualTo>)";
         folder_property_path folder;
@@ -41,5 +39,23 @@ R"(<IsEqualTo><FieldURI FieldURI="item:DateTimeCreated"/><FieldURIOrConstant><Co
         item_property_path item;
         auto restr = is_equal_to(item.date_time_created, yesterday);
         EXPECT_STREQ(expected, restr.to_xml().c_str());
+    }
+
+    TEST(RestrictionTest, IndexedFieldURIIsEqualToStringConstantRendersCorrectly)
+    {
+        const char* expected =
+R"(<IsEqualTo><IndexedFieldURI FieldURI="contacts:EmailAddress" FieldIndex="EmailAddress3"/><FieldURIOrConstant><Constant Value="jane.dow@contoso.com"/></FieldURIOrConstant></IsEqualTo>)";
+        contact_property_path contact;
+        auto restr = is_equal_to(contact.email_address_3, "jane.dow@contoso.com");
+        EXPECT_STREQ(expected, restr.to_xml().c_str());
+    }
+
+    TEST(RestrictionTest, IndexedFieldURIIsEqualToStringConstantRendersCorrectlyWithNamespace)
+    {
+        const char* expected =
+R"(<t:IsEqualTo><t:IndexedFieldURI FieldURI="contacts:EmailAddress" FieldIndex="EmailAddress1"/><t:FieldURIOrConstant><t:Constant Value="bruce@willis.com"/></t:FieldURIOrConstant></t:IsEqualTo>)";
+        contact_property_path contact;
+        auto restr = is_equal_to(contact.email_address_1, "bruce@willis.com");
+        EXPECT_STREQ(expected, restr.to_xml("t").c_str());
     }
 }
