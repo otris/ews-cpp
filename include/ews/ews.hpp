@@ -4934,7 +4934,7 @@ R"(
       <m:ItemShape>
         <t:BaseShape>IdOnly</t:BaseShape>
       </m:ItemShape>
-      <t:Restriction>)" + filter.to_xml("t") + R"(</t:Restriction>
+      <m:Restriction>)" + filter.to_xml("t") + R"(</m:Restriction>
       <m:ParentFolderIds>)" + parent_folder_id.to_xml("t") + R"(</m:ParentFolderIds>
     </m:FindItem>
 )";
