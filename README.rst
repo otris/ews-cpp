@@ -9,6 +9,20 @@ Supported Compilers
 * Visual Studio 2013
 
 
+Supported Operating Systems
+---------------------------
+
+* Microsoft Windows 8
+* Mac OS X 10.10
+* RHEL 7
+
+
+Supported Microsoft Exchange Server Versions
+--------------------------------------------
+
+* Microsoft Exchange Server 2013 SP1
+
+
 Run-time Dependencies
 ---------------------
 
