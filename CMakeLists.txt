@@ -174,6 +174,7 @@ function(add_example EXAMPLE_NAME)
         LINK_FLAGS "${SANITIZE_LDFLAGS}")
 endfunction()
 
+add_example(create_contact)
 add_example(create_task)
 add_example(find_tasks)
 add_example(raw_soap_request)
