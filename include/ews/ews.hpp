@@ -3079,6 +3079,11 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                                             uri<>::microsoft::types());
             }
 
+            rapidxml::xml_document<char>* document() const EWS_NOEXCEPT
+            {
+                return doc_.get();
+            }
+
             std::string get_value_as_string(const char* node_name) const
             {
                 const auto node = get_node(node_name);
@@ -3690,6 +3695,54 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     static_assert(std::is_move_assignable<task>::value, "");
 #endif
 
+    // Represents a contact's email address
+    class email_address final
+    {
+    public:
+        explicit email_address(std::string value,
+                               std::string name = std::string(),
+                               std::string routing_type = std::string(),
+                               std::string mailbox_type = std::string())
+            : value_(std::move(value)),
+              name_(std::move(name)),
+              routing_type_(std::move(routing_type)),
+              mailbox_type_(std::move(mailbox_type))
+        {}
+
+        // The address
+        const std::string& value() const EWS_NOEXCEPT { return value_; }
+
+        // Defines the name of the mailbox user; optional
+        const std::string& name() const EWS_NOEXCEPT { return name_; }
+
+        // Defines the routing that is used for the mailbox, attribute is
+        // optional. Default is SMTP
+        const std::string& routing_type() const EWS_NOEXCEPT
+        {
+            return routing_type_;
+        }
+
+        // Defines the mailbox type of a mailbox user; optional
+        const std::string& mailbox_type() const EWS_NOEXCEPT
+        {
+            return mailbox_type_;
+        }
+
+    private:
+        std::string value_;
+        std::string name_;
+        std::string routing_type_;
+        std::string mailbox_type_;
+    };
+
+#ifndef _MSC_VER
+    static_assert(!std::is_default_constructible<email_address>::value, "");
+    static_assert(std::is_copy_constructible<email_address>::value, "");
+    static_assert(std::is_copy_assignable<email_address>::value, "");
+    static_assert(std::is_move_constructible<email_address>::value, "");
+    static_assert(std::is_move_assignable<email_address>::value, "");
+#endif
+
     // A contact item in the Exchange store.
     class contact final : public item
     {
@@ -3742,7 +3795,59 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // TODO: get_company_name
 
         // A collection of e-mail addresses for the contact
-        // TODO: get_email_addresses
+        std::vector<email_address> get_email_addresses() const
+        {
+            const auto addresses = properties().get_node("EmailAddresses");
+            if (!addresses)
+            {
+                return std::vector<email_address>();
+            }
+            std::vector<email_address> result;
+            for (auto entry = addresses->first_node(); entry;
+                 entry = entry->next_sibling())
+            {
+                auto name_attr = entry->first_attribute("Name");
+                auto routing_type_attr = entry->first_attribute("RoutingType");
+                auto mailbox_type_attr = entry->first_attribute("MailboxType");
+                result.emplace_back(
+                    email_address(
+                        entry->value(),
+                        name_attr ? name_attr->value() : "",
+                        routing_type_attr ? routing_type_attr->value() : "",
+                        mailbox_type_attr ? mailbox_type_attr->value() : ""));
+            }
+            return result;
+        }
+
+        std::string get_email_address_1() const
+        {
+            return get_email_address_by_key("EmailAddress1");
+        }
+
+        void set_email_address_1(email_address address)
+        {
+            set_email_address_by_key("EmailAddress1", std::move(address));
+        }
+
+        std::string get_email_address_2() const
+        {
+            return get_email_address_by_key("EmailAddress2");
+        }
+
+        void set_email_address_2(email_address address)
+        {
+            set_email_address_by_key("EmailAddress2", std::move(address));
+        }
+
+        std::string get_email_address_3() const
+        {
+            return get_email_address_by_key("EmailAddress3");
+        }
+
+        void set_email_address_3(email_address address)
+        {
+            set_email_address_by_key("EmailAddress3", std::move(address));
+        }
 
         // A collection of mailing addresses for the contact
         // TODO: get_physical_addresses
@@ -3859,6 +3964,116 @@ R"(<?xml version="1.0" encoding="utf-8"?>
               "</Items>" \
               "</CreateItem>";
             return sstr.str();
+        }
+
+        // Helper function for get_email_address_{1,2,3}
+        std::string get_email_address_by_key(const char* key) const
+        {
+            using rapidxml::internal::compare;
+
+            // <Entry Key="" Name="" RoutingType="" MailboxType="" />
+            const auto addresses = properties().get_node("EmailAddresses");
+            if (!addresses)
+            {
+                return "";
+            }
+            for (auto entry = addresses->first_node(); entry;
+                 entry = entry->next_sibling())
+            {
+                for (auto attr = entry->first_attribute(); attr;
+                     attr = attr->next_attribute())
+                {
+                    if (   compare(attr->name(), attr->name_size(),
+                                   "Key", 3)
+                        && compare(attr->value(), attr->value_size(),
+                                   key, std::strlen(key)))
+                    {
+                        return std::string(entry->value(), entry->value_size());
+                    }
+                }
+            }
+            // None with such key
+            return "";
+        }
+
+        // Helper function for set_email_address_{1,2,3}
+        void set_email_address_by_key(const char* key, email_address&& mail)
+        {
+            using uri = internal::uri<>;
+            using rapidxml::internal::compare;
+
+            auto doc = properties().document();
+            auto addresses = properties().get_node("EmailAddresses");
+            if (addresses)
+            {
+                // Check if there is alread any entry for given key
+
+                bool exists = false;
+                auto entry = addresses->first_node();
+                for (; entry && !exists; entry = entry->next_sibling())
+                {
+                    for (auto attr = entry->first_attribute(); attr;
+                         attr = attr->next_attribute())
+                    {
+                        if (   compare(attr->name(), attr->name_size(),
+                                       "Key", 3)
+                            && compare(attr->value(), attr->value_size(),
+                                       key, std::strlen(key)))
+                        {
+                            exists = true;
+                            break;
+                        }
+                    }
+                }
+                if (exists)
+                {
+                    addresses->remove_node(entry);
+                }
+            }
+            else
+            {
+                // Need to construct <EmailAddresses> node first
+
+                auto ptr_to_qname = doc->allocate_string("t:EmailAddresses");
+                addresses = doc->allocate_node(rapidxml::node_element);
+                addresses->qname(ptr_to_qname,
+                                 std::strlen("t:EmailAddresses"),
+                                 ptr_to_qname + 2);
+                addresses->namespace_uri(uri::microsoft::types(),
+                                         uri::microsoft::types_size);
+                doc->append_node(addresses);
+            }
+
+            // <Entry Key="" Name="" RoutingType="" MailboxType="" />
+            auto new_entry_qname = doc->allocate_string("t:Entry");
+            auto new_entry_value = doc->allocate_string(mail.value().c_str());
+            auto new_entry = doc->allocate_node(rapidxml::node_element);
+            new_entry->qname(new_entry_qname,
+                             std::strlen("t:Entry"),
+                             new_entry_qname + 2);
+            new_entry->namespace_uri(uri::microsoft::types(),
+                                     uri::microsoft::types_size);
+            new_entry->value(new_entry_value);
+            new_entry->append_attribute(doc->allocate_attribute("Key", key));
+            if (!mail.name().empty())
+            {
+                new_entry->append_attribute(
+                        doc->allocate_attribute("Name",
+                                                mail.name().c_str()));
+            }
+            if (!mail.routing_type().empty())
+            {
+                new_entry->append_attribute(
+                        doc->allocate_attribute("RoutingType",
+                                                mail.routing_type().c_str()));
+            }
+            if (!mail.mailbox_type().empty())
+            {
+                new_entry->append_attribute(
+                        doc->allocate_attribute("MailboxType",
+                                                mail.mailbox_type().c_str()));
+            }
+            addresses->append_node(new_entry);
         }
     };
 
