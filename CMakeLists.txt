@@ -131,6 +131,18 @@ if(HAS_MAKE_UNIQUE)
     add_definitions(-DEWS_HAS_MAKE_UNIQUE)
 endif()
 
+# Non-buggy <type_traits> implementation - negative VS 2013
+CHECK_CXX_SOURCE_COMPILES("
+#include <type_traits>
+struct Fu { Fu(const Fu&) = delete; };
+static_assert(!std::is_copy_constructible<Fu>::value, \"\");
+int main() { }
+" HAS_NON_BUGGY_TYPE_TRAITS)
+
+if(HAS_NON_BUGGY_TYPE_TRAITS)
+    add_definitions(-DEWS_HAS_NON_BUGGY_TYPE_TRAITS)
+endif()
+
 # N3671 - negative: _MSC_VER <= 1800, libstdc++ prior 4.9.0
 CHECK_CXX_SOURCE_COMPILES("
 #include <algorithm>

@@ -11,7 +11,7 @@
 #include <functional>
 #include <utility>
 #include <memory>
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
 # include <type_traits>
 #endif
 #include <cstddef>
@@ -91,8 +91,7 @@ namespace ews
             std::function<void(void)> func_;
         };
 
-#ifndef _MSC_VER
-        // <type_traits> is broken in Visual Studio 12, disregard
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
         static_assert(!std::is_copy_constructible<on_scope_exit>::value, "");
         static_assert(!std::is_copy_assignable<on_scope_exit>::value, "");
         static_assert(!std::is_default_constructible<on_scope_exit>::value, "");
@@ -2998,7 +2997,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         std::string change_key_;
     };
 
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(std::is_default_constructible<item_id>::value, "");
     static_assert(std::is_copy_constructible<item_id>::value, "");
     static_assert(std::is_copy_assignable<item_id>::value, "");
@@ -3197,7 +3196,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             }
         };
 
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
         static_assert(std::is_default_constructible<item_properties>::value, "");
         static_assert(std::is_copy_constructible<item_properties>::value, "");
         static_assert(std::is_copy_assignable<item_properties>::value, "");
@@ -3286,7 +3285,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         }
     };
 
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(!std::is_default_constructible<body>::value, "");
     static_assert(std::is_copy_constructible<body>::value, "");
     static_assert(std::is_copy_assignable<body>::value, "");
@@ -3333,7 +3332,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         std::vector<char> bytearray_;
     };
 
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(std::is_default_constructible<mime_content>::value, "");
     static_assert(std::is_copy_constructible<mime_content>::value, "");
     static_assert(std::is_copy_assignable<mime_content>::value, "");
@@ -3536,7 +3535,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         }
     };
 
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(std::is_default_constructible<item>::value, "");
     static_assert(std::is_copy_constructible<item>::value, "");
     static_assert(std::is_copy_assignable<item>::value, "");
@@ -3689,7 +3688,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         }
     };
 
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(std::is_default_constructible<task>::value, "");
     static_assert(std::is_copy_constructible<task>::value, "");
     static_assert(std::is_copy_assignable<task>::value, "");
@@ -3737,7 +3736,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         std::string mailbox_type_;
     };
 
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(!std::is_default_constructible<email_address>::value, "");
     static_assert(std::is_copy_constructible<email_address>::value, "");
     static_assert(std::is_copy_assignable<email_address>::value, "");
@@ -4088,7 +4087,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         }
     };
 
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(std::is_default_constructible<contact>::value, "");
     static_assert(std::is_copy_constructible<contact>::value, "");
     static_assert(std::is_copy_assignable<contact>::value, "");
@@ -4262,7 +4261,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         std::function<std::string (const char*)> func_;
     };
 
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(!std::is_default_constructible<folder_id>::value, "");
     static_assert(std::is_copy_constructible<folder_id>::value, "");
     static_assert(std::is_copy_assignable<folder_id>::value, "");
@@ -4354,7 +4353,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         }
     };
 
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(!std::is_default_constructible<distinguished_folder_id>::value, "");
     static_assert(std::is_copy_constructible<distinguished_folder_id>::value, "");
     static_assert(std::is_copy_assignable<distinguished_folder_id>::value, "");
@@ -4383,7 +4382,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         std::string uri_;
     };
 
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(!std::is_default_constructible<property_path>::value, "");
     static_assert(std::is_copy_constructible<property_path>::value, "");
     static_assert(std::is_copy_assignable<property_path>::value, "");
@@ -4404,7 +4403,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         std::string index_;
     };
 
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(!std::is_default_constructible<indexed_property_path>::value, "");
     static_assert(std::is_copy_constructible<indexed_property_path>::value, "");
     static_assert(std::is_copy_assignable<indexed_property_path>::value, "");
@@ -4754,7 +4753,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         std::string item_type_;
     };
 
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(!std::is_default_constructible<property>::value, "");
     static_assert(std::is_copy_constructible<property>::value, "");
     static_assert(std::is_copy_assignable<property>::value, "");
@@ -4798,7 +4797,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         std::function<std::string (const char*)> func_;
     };
 
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(!std::is_default_constructible<restriction>::value, "");
     static_assert(std::is_copy_constructible<restriction>::value, "");
     static_assert(std::is_copy_assignable<restriction>::value, "");
