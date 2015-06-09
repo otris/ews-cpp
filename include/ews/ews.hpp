@@ -2846,6 +2846,24 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             }
         };
 
+        class update_item_response_message final
+            : public response_message_with_items<item_id>
+        {
+        public:
+            // implemented below
+            static update_item_response_message parse(http_response&);
+
+        private:
+            update_item_response_message(response_class cls,
+                                       response_code code,
+                                       std::vector<item_id> items)
+                : response_message_with_items<item_id>(cls,
+                  code,
+                  std::move(items))
+            {
+            }
+        };
+
         template <typename ItemType>
         class get_item_response_message final
             : public response_message_with_items<ItemType>
@@ -3867,8 +3885,17 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // A collection of instant messaging addresses for the contact
         // TODO: get_im_addresses
 
-        // The job title for the contact
-        // TODO: get_job_title
+        // Sets this contact's job title.
+        void set_job_title(const std::string& title)
+        {
+            properties().set_or_update("JobTitle", title);
+        }
+
+        // Returns the job title for the contact
+        std::string get_job_title() const
+        {
+            return properties().get_value_as_string("JobTitle");
+        }
 
         // The name of the contact's manager
         // TODO: get_manager
@@ -4345,6 +4372,13 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // frequently referenced properties by URI
         const std::string& field_uri() const EWS_NOEXCEPT { return uri_; }
 
+        std::string property_name() const
+        {
+            auto n = uri_.rfind(':');
+            EWS_ASSERT(n != std::string::npos);
+            return uri_.substr(n + 1);
+        }
+
     private:
         std::string uri_;
     };
@@ -4684,6 +4718,50 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         const property_path has_clutter = "conversation:HasClutter";
     };
 
+    class property final
+    {
+    public:
+        // TODO: to overload set
+
+        property(property_path path, std::string value)
+            : path_(std::move(path)),
+              value_(std::move(value)),
+              item_type_("Contact")
+        {
+        }
+
+        std::string to_xml(const char* xmlns) const
+        {
+            std::stringstream sstr;
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            sstr << "<" << pref << "FieldURI FieldURI=\"";
+            sstr << path_.field_uri() << "\"/>";
+            sstr << "<" << pref << item_type_ << ">";
+            sstr << "<" << pref << path_.property_name() << ">";
+            sstr << value_;
+            sstr << "</" << pref << path_.property_name() << ">";
+            sstr << "</" << pref << item_type_ << ">";
+            return sstr.str();
+        }
+
+    private:
+        property_path path_;
+        std::string value_;
+        std::string item_type_;
+    };
+
+#ifndef _MSC_VER
+    static_assert(!std::is_default_constructible<property>::value, "");
+    static_assert(std::is_copy_constructible<property>::value, "");
+    static_assert(std::is_copy_assignable<property>::value, "");
+    static_assert(std::is_move_constructible<property>::value, "");
+    static_assert(std::is_move_assignable<property>::value, "");
+#endif
+
     // Base-class for
     //
     //   - exists
@@ -4719,6 +4797,14 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     private:
         std::function<std::string (const char*)> func_;
     };
+
+#ifndef _MSC_VER
+    static_assert(!std::is_default_constructible<restriction>::value, "");
+    static_assert(std::is_copy_constructible<restriction>::value, "");
+    static_assert(std::is_copy_assignable<restriction>::value, "");
+    static_assert(std::is_move_constructible<restriction>::value, "");
+    static_assert(std::is_move_assignable<restriction>::value, "");
+#endif
 
     // A search expression that compares a property with either a constant value
     // or another property and evaluates to true if they are equal.
@@ -4951,6 +5037,42 @@ R"(
             return response_message.items();
         }
 
+        // TODO: conflict resolution needs to be part of API
+        // TODO: currently, this can only do <SetItemField>, need to support
+        // <AppendToItemField> and <DeleteItemField>
+        item_id update_item(item_id id, property prop)
+        {
+            const std::string request_string =
+R"(
+    <m:UpdateItem MessageDisposition="SaveOnly" ConflictResolution="AutoResolve">
+      <m:ItemChanges>
+        <t:ItemChange>
+          )" + id.to_xml("t") + R"(
+          <t:Updates>
+            <t:SetItemField>
+              )" + prop.to_xml("t") + R"(
+            </t:SetItemField>
+          </t:Updates>
+        </t:ItemChange>
+      </m:ItemChanges>
+    </m:UpdateItem>
+)";
+
+            auto response = request(request_string);
+#ifdef EWS_ENABLE_VERBOSE
+            std::cerr << response.payload() << std::endl;
+#endif
+            const auto response_message =
+                internal::update_item_response_message::parse(response);
+            if (!response_message.success())
+            {
+                throw exchange_error(response_message.get_response_code());
+            }
+            EWS_ASSERT(!response_message.items().empty()
+                    && "Expected at least one item");
+            return response_message.items().front();
+        }
+
     private:
         std::string server_uri_;
         std::string domain_;
@@ -5086,7 +5208,7 @@ R"(
         }
 
         inline find_item_response_message
-            find_item_response_message::parse(http_response& response)
+        find_item_response_message::parse(http_response& response)
         {
             using uri = internal::uri<>;
             using internal::get_element_by_qname;
@@ -5119,6 +5241,40 @@ R"(
             return find_item_response_message(result.first,
                                               result.second,
                                               std::move(items));
+        }
+
+        inline update_item_response_message
+        update_item_response_message::parse(http_response& response)
+        {
+            using uri = internal::uri<>;
+            using internal::get_element_by_qname;
+
+            const auto& doc = response.payload();
+            auto elem = get_element_by_qname(doc,
+                                             "UpdateItemResponseMessage",
+                                             uri::microsoft::messages());
+
+            EWS_ASSERT(elem &&
+                "Expected <UpdateItemResponseMessage>, got nullptr");
+            const auto result = parse_response_class_and_code(*elem);
+
+            auto items_elem =
+                elem->first_node_ns(uri::microsoft::messages(), "Items");
+            EWS_ASSERT(items_elem && "Expected <m:Items> element");
+
+            auto items = std::vector<item_id>();
+            for (auto item_elem = items_elem->first_node(); item_elem;
+                 item_elem = item_elem->next_sibling())
+            {
+                EWS_ASSERT(item_elem && "Expected an element, got nullptr");
+                auto item_id_elem = item_elem->first_node();
+                EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
+                items.emplace_back(
+                    item_id::from_xml_element(*item_id_elem));
+            }
+            return update_item_response_message(result.first,
+                                                result.second,
+                                                std::move(items));
         }
 
         template <typename ItemType>

@@ -24,12 +24,27 @@ int main()
             ews::standard_folder::contacts;
         ews::contact_property_path contact_property;
         auto restriction =
-            ews::is_equal_to(contact_property.email_address_1, "john@doe.com");
+            ews::is_equal_to(contact_property.email_address_1,
+                    "superhero@ducktales.com");
         auto item_ids = service.find_item(contacts_folder, restriction);
+
+        std::cout << "Found " << item_ids.size() << " item(s)\n";
 
         for (const auto& id : item_ids)
         {
-            std::cout << id.to_xml() << std::endl;
+            auto contact = service.get_contact(id);
+            auto job_title_property =
+                ews::property(contact_property.job_title, "Superhero");
+            auto new_id = service.update_item(id, job_title_property);
+            (void)new_id;
+
+            // TODO: check this!
+#if 0
+            std::cout << "Subject: " << contact.get_subject() << std::endl;
+            std::cout << "GivenName: " << contact.get_given_name() << std::endl;
+            std::cout << "EmailAddress1: " << contact.get_email_address_1() << std::endl;
+            std::cout << "Surname: " << contact.get_surname() << std::endl;
+#endif
         }
     }
     catch (std::exception& exc)

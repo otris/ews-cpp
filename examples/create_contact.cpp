@@ -25,6 +25,7 @@ int main()
         contact.set_subject("Duck");
         contact.set_email_address_1(
                 ews::email_address("superhero@ducktales.com"));
+        contact.set_job_title("Average Citizen");
 
         auto item_id = service.create_item(contact);
         std::cout << item_id.to_xml() << std::endl;
