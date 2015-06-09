@@ -15,6 +15,7 @@ Supported Operating Systems
 * Microsoft Windows 8
 * Mac OS X 10.10
 * RHEL 7
+* Ubuntu 14.04
 
 
 Supported Microsoft Exchange Server Versions
