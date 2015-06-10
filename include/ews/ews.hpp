@@ -2044,6 +2044,37 @@ namespace ews
         }
     }
 
+    enum class conflict_resolution
+    {
+        // If there is a conflict, the update operation fails and an error is
+        // returned
+        never_overwrite,
+
+        // The update operation automatically resolves any conflict
+        auto_resolve,
+
+        // If there is a conflict, the update operation will overwrite
+        // information
+        always_overwrite
+    };
+
+    // TODO: move to internal namespace
+    inline std::string
+    conflict_resolution_str(conflict_resolution val)
+    {
+        switch (val)
+        {
+            case conflict_resolution::never_overwrite:
+                return "NeverOverwrite";
+            case conflict_resolution::auto_resolve:
+                return "AutoResolve";
+            case conflict_resolution::always_overwrite:
+                return "AlwaysOverwrite";
+            default:
+                throw exception("Bad enum value");
+        }
+    }
+
     // Exception thrown when a request was not successful
     class exchange_error final : public exception
     {
@@ -3912,8 +3943,17 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // Occupation or discipline of the contact
         // TODO: get_profession
 
-        // Name of the contact's spouse
-        // TODO: get_spouse_name
+        // Set name of the contact's significant other
+        void set_spouse_name(const std::string& spouse_name)
+        {
+            properties().set_or_update("SpouseName", spouse_name);
+        }
+
+        // Get name of the contact's significant other
+        std::string get_spouse_name() const
+        {
+            return properties().get_value_as_string("SpouseName");
+        }
 
         // Sets the family name of the contact; usually considered the last name
         void set_surname(const std::string& surname)
@@ -5036,14 +5076,18 @@ R"(
             return response_message.items();
         }
 
-        // TODO: conflict resolution needs to be part of API
         // TODO: currently, this can only do <SetItemField>, need to support
         // <AppendToItemField> and <DeleteItemField>
-        item_id update_item(item_id id, property prop)
+        item_id
+        update_item(item_id id,
+                    property prop,
+                    conflict_resolution res = conflict_resolution::auto_resolve)
         {
             const std::string request_string =
 R"(
-    <m:UpdateItem MessageDisposition="SaveOnly" ConflictResolution="AutoResolve">
+    <m:UpdateItem
+        MessageDisposition="SaveOnly"
+        ConflictResolution=")" + conflict_resolution_str(res) + R"(">
       <m:ItemChanges>
         <t:ItemChange>
           )" + id.to_xml("t") + R"(
