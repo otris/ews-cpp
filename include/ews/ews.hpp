@@ -2047,14 +2047,17 @@ namespace ews
     enum class conflict_resolution
     {
         // If there is a conflict, the update operation fails and an error is
-        // returned
+        // returned. The call to update_item never overwrites data that has
+        // changed underneath you!
         never_overwrite,
 
-        // The update operation automatically resolves any conflict
+        // The update operation automatically resolves any conflict (if it can,
+        // otherwise the request fails)
         auto_resolve,
 
         // If there is a conflict, the update operation will overwrite
-        // information
+        // information. Ignores changes that occurred underneath you; last
+        // writer wins!
         always_overwrite
     };
 
@@ -3303,6 +3306,21 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         std::string date_string_;
     };
 
+    // Specifies the type of a <Body> element
+    enum class body_type { best, plain_text, html };
+
+    // TODO: move to internal namespace
+    inline std::string body_type_str(body_type type)
+    {
+        switch (type)
+        {
+            case body_type::best: return "Best";
+            case body_type::plain_text: return "Text";
+            case body_type::html: return "HTML";
+            default: throw exception("Bad enum value");
+        }
+    }
+
     // Represents the actual body content of a message.
     //
     // This can be of type Best, HTML, or plain-text. See EWS XML elements
@@ -3310,14 +3328,70 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     class body final
     {
     public:
-        body(const std::string& text) // intentionally not explicit
+        // Creates an empty body element; body_type is plain-text
+        body()
+            : content_(),
+              type_(body_type::plain_text),
+              is_truncated_(false)
         {
-            (void)text;
         }
+
+        // Creates a new body element with given content and type
+        explicit body(std::string content,
+                      body_type type = body_type::plain_text)
+            : content_(std::move(content)),
+              type_(type),
+              is_truncated_(false)
+        {
+        }
+
+        body_type type() const EWS_NOEXCEPT { return type_; }
+
+        void set_type(body_type type) { type_ = type; }
+
+        bool is_truncated() const EWS_NOEXCEPT { return is_truncated_; }
+
+        void set_truncated(bool truncated) { is_truncated_ = truncated; }
+
+        const std::string& content() const EWS_NOEXCEPT { return content_; }
+
+        void set_content(std::string content) { content_ = std::move(content); }
+
+        std::string to_xml(const char* xmlns=nullptr) const
+        {
+            //FIXME: what about IsTruncated attribute?
+            static const auto cdata_beg = std::string("<![CDATA[");
+            static const auto cdata_end = std::string("]]>");
+
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "Body BodyType=\"" << body_type_str(type());
+            sstr << "\">";
+            if (   type() == body_type::html
+                && !(content_.compare(0, cdata_beg.length(), cdata_beg) == 0))
+            {
+                sstr << cdata_beg << content_ << cdata_end;
+            }
+            else
+            {
+                sstr << content_;
+            }
+            sstr << "</" << pref << "Body>";
+            return sstr.str();
+        }
+
+    private:
+        std::string content_;
+        body_type type_;
+        bool is_truncated_;
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<body>::value, "");
+    static_assert(std::is_default_constructible<body>::value, "");
     static_assert(std::is_copy_constructible<body>::value, "");
     static_assert(std::is_copy_assignable<body>::value, "");
     static_assert(std::is_move_constructible<body>::value, "");
@@ -3433,9 +3507,107 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // values are Normal, Personal, Private, and Confidential
         // TODO: get_sensitivity
 
-        // Body content of an item
-        void set_body(const body&) {} // TODO: implement
-        // TODO: get_body
+        // Set the body content of an item
+        void set_body(const body& b)
+        {
+            using uri = internal::uri<>;
+
+            auto doc = properties().document();
+
+            auto body_node = properties().get_node("Body");
+            if (body_node)
+            {
+                doc->remove_node(body_node);
+            }
+
+            auto ptr_to_qname = doc->allocate_string("t:Body");
+            body_node = doc->allocate_node(rapidxml::node_element);
+            body_node->qname(ptr_to_qname,
+                             std::strlen("t:Body"),
+                             ptr_to_qname + 2);
+            body_node->namespace_uri(uri::microsoft::types(),
+                                     uri::microsoft::types_size);
+
+            auto ptr_to_value =
+                doc->allocate_string(b.content().c_str());
+            body_node->value(ptr_to_value, b.content().length());
+
+            auto ptr_to_key = doc->allocate_string("BodyType");
+            ptr_to_value = doc->allocate_string(
+                    body_type_str(b.type()).c_str());
+            body_node->append_attribute(
+                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
+
+            bool truncated = b.is_truncated();
+            if (truncated)
+            {
+                ptr_to_key = doc->allocate_string("IsTruncated");
+                ptr_to_value = doc->allocate_string(
+                        truncated ? "true" : "false");
+                body_node->append_attribute(
+                       doc->allocate_attribute(ptr_to_key, ptr_to_value));
+            }
+
+            doc->append_node(body_node);
+        }
+
+        // Returns the body contents of an item
+        body get_body() const
+        {
+            using rapidxml::internal::compare;
+
+            body b;
+            auto body_node = properties().get_node("Body");
+            if (body_node)
+            {
+                for (auto attr = body_node->first_attribute(); attr;
+                     attr = attr->next_attribute())
+                {
+                    if (compare(attr->name(), attr->name_size(),
+                                "BodyType", std::strlen("BodyType")))
+                    {
+                        if (compare(attr->value(), attr->value_size(),
+                                    "HTML", std::strlen("HTML")))
+                        {
+                            b.set_type(body_type::html);
+                        }
+                        else if (compare(attr->value(), attr->value_size(),
+                                         "Text", std::strlen("Text")))
+                        {
+                            b.set_type(body_type::plain_text);
+                        }
+                        else if (compare(attr->value(), attr->value_size(),
+                                         "Best", std::strlen("Best")))
+                        {
+                            b.set_type(body_type::best);
+                        }
+                        else
+                        {
+                            EWS_ASSERT(false
+                                && "Unexpected attribute value for BodyType");
+                        }
+                    }
+                    else if (compare(attr->name(), attr->name_size(),
+                                     "IsTruncated", std::strlen("IsTruncated")))
+                    {
+                        const auto val =
+                            compare(attr->value(), attr->value_size(),
+                                    "true", std::strlen("true"));
+                        b.set_truncated(val);
+                    }
+                    else
+                    {
+                        EWS_ASSERT(false
+                                && "Unexpected attribute in <Body> element");
+                    }
+                }
+
+                auto content = std::string(body_node->value(),
+                                           body_node->value_size());
+                b.set_content(std::move(content));
+            }
+            return b;
+        }
 
         // Metadata about the attachments of an item
         // TODO: get_attachments
@@ -3556,14 +3728,6 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     private:
         item_id item_id_;
         internal::item_properties properties_;
-
-        friend class service;
-        // Sub-classes reimplement functions below
-        std::string create_item_request_string() const
-        {
-            EWS_ASSERT(false && "TODO");
-            return std::string();
-        }
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
@@ -3987,7 +4151,6 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // direct_reports
 
         // Makes a contact instance from a <Contact> XML element
-        // FIXME: 100% code dupe with task class
         static contact from_xml_element(const rapidxml::xml_node<>& elem)
         {
             using uri = internal::uri<>;
@@ -4104,24 +4267,32 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             new_entry->namespace_uri(uri::microsoft::types(),
                                      uri::microsoft::types_size);
             new_entry->value(new_entry_value);
-            new_entry->append_attribute(doc->allocate_attribute("Key", key));
+            auto ptr_to_key = doc->allocate_string("Key");
+            auto ptr_to_value = doc->allocate_string(key);
+            new_entry->append_attribute(doc->allocate_attribute(ptr_to_key,
+                                                                ptr_to_value));
             if (!mail.name().empty())
             {
+                ptr_to_key = doc->allocate_string("Name");
+                ptr_to_value = doc->allocate_string(mail.name().c_str());
                 new_entry->append_attribute(
-                        doc->allocate_attribute("Name",
-                                                mail.name().c_str()));
+                        doc->allocate_attribute(ptr_to_key, ptr_to_value));
             }
             if (!mail.routing_type().empty())
             {
+                ptr_to_key = doc->allocate_string("RoutingType");
+                ptr_to_value = doc->allocate_string(
+                        mail.routing_type().c_str());
                 new_entry->append_attribute(
-                        doc->allocate_attribute("RoutingType",
-                                                mail.routing_type().c_str()));
+                        doc->allocate_attribute(ptr_to_key, ptr_to_value));
             }
             if (!mail.mailbox_type().empty())
             {
+                ptr_to_key = doc->allocate_string("MailboxType");
+                ptr_to_value = doc->allocate_string(
+                        mail.mailbox_type().c_str());
                 new_entry->append_attribute(
-                        doc->allocate_attribute("MailboxType",
-                                                mail.mailbox_type().c_str()));
+                        doc->allocate_attribute(ptr_to_key, ptr_to_value));
             }
             addresses->append_node(new_entry);
         }
@@ -4760,8 +4931,19 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     class property final
     {
     public:
-        // TODO: to overload set
+        // TODO: HACK: works only for contacts! overload set?
 
+        // This c'tor is chosen when user wants to delete a property from an
+        // item in service::update_item
+        property(property_path path)
+            : path_(std::move(path)),
+              value_(),
+              item_type_("Contact")
+        {
+        }
+
+        // This c'tor is chosen when user wants to set or update an item's
+        // property in service::update_item
         property(property_path path, std::string value)
             : path_(std::move(path)),
               value_(std::move(value)),
@@ -4786,6 +4968,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             sstr << "</" << pref << item_type_ << ">";
             return sstr.str();
         }
+
+        bool empty_value() const EWS_NOEXCEPT { return value_.empty(); }
 
     private:
         property_path path_;
@@ -4977,15 +5161,21 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         }
 
         // Gets a task from the Exchange store
-        task get_task(item_id id)
+        task get_task(const item_id& id)
         {
-            return get_item<task>(id, base_shape::all_properties);
+            return get_item_impl<task>(id, base_shape::all_properties);
         }
 
         // Gets a contact from the Exchange store
-        contact get_contact(item_id id)
+        contact get_contact(const item_id& id)
         {
-            return get_item<contact>(id, base_shape::all_properties);
+            return get_item_impl<contact>(id, base_shape::all_properties);
+        }
+
+        // Delete an arbitrary item from the Exchange store
+        void delete_item(item&& the_item)
+        {
+            delete_item_impl<item>(std::move(the_item));
         }
 
         // Delete a task item from the Exchange store
@@ -5017,34 +5207,32 @@ R"(
         // Delete a contact item from the Exchange store
         void delete_contact(contact&& the_contact)
         {
-            using internal::delete_item_response_message;
-
-            const std::string request_string =
-R"(
-    <m:DeleteItem>
-      <m:ItemIds>)" + the_contact.get_item_id().to_xml("t") + R"(</m:ItemIds>
-    </m:DeleteItem>
-)";
-            auto response = request(request_string);
-            const auto response_message =
-                delete_item_response_message::parse(response);
-            if (!response_message.success())
-            {
-                throw exchange_error(response_message.get_response_code());
-            }
-            the_contact = contact();
+            delete_item_impl(std::move(the_contact));
         }
 
+        // Following items can be created in Exchange:
+        //
+        // - Calendar items
+        // - E-mail messages
+        // - Meeting requests
+        // - Tasks
+        // - Contacts
+        //
         // Only purpose of this overload-set is to prevent exploding template
         // code in errors messages in caller's code
-        item_id create_item(const task& the_item)
+
+        // Creates a new task item from the given object in the Exchange store
+        // and returns it's item_id if successful
+        item_id create_item(const task& the_task)
         {
-            return create_item<task>(the_item);
+            return create_item_impl(the_task);
         }
 
-        item_id create_item(const contact& the_item)
+        // Creates a new contact item from the given object in the Exchange
+        // store and returns it's item_id if successful
+        item_id create_item(const contact& the_contact)
         {
-            return create_item<contact>(the_item);
+            return create_item_impl(the_contact);
         }
 
         std::vector<item_id> find_item(const folder_id& parent_folder_id,
@@ -5143,7 +5331,7 @@ R"(
 
         // Gets an item from the server.
         template <typename ItemType>
-        ItemType get_item(item_id id, base_shape shape)
+        ItemType get_item_impl(const item_id& id, base_shape shape)
         {
             using get_item_response_message =
                 internal::get_item_response_message<ItemType>;
@@ -5179,7 +5367,7 @@ R"(
 
         // Creates an item on the server and returns it's item_id.
         template <typename ItemType>
-        item_id create_item(const ItemType& the_item)
+        item_id create_item_impl(const ItemType& the_item)
         {
             using internal::create_item_response_message;
 
@@ -5193,6 +5381,27 @@ R"(
             EWS_ASSERT(!response_message.items().empty()
                     && "Expected at least one item");
             return response_message.items().front();
+        }
+
+        template <typename ItemType>
+        void delete_item_impl(ItemType&& the_item)
+        {
+            using internal::delete_item_response_message;
+
+            const std::string request_string =
+R"(
+    <m:DeleteItem>
+      <m:ItemIds>)" + the_item.get_item_id().to_xml("t") + R"(</m:ItemIds>
+    </m:DeleteItem>
+)";
+            auto response = request(request_string);
+            const auto response_message =
+                delete_item_response_message::parse(response);
+            if (!response_message.success())
+            {
+                throw exchange_error(response_message.get_response_code());
+            }
+            the_item = ItemType();
         }
     };
 

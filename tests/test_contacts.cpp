@@ -26,42 +26,6 @@ namespace tests
         }
     }
 
-    TEST_F(ContactTest, UpdateItemWithSetItemField)
-    {
-        // SetItemField is used whenever we want to replace an existing value.
-        // If none exists yet, it is created
-
-        auto contact = ews::contact();
-        contact.set_given_name("Minnie");
-        contact.set_surname("Mouse");
-        const auto item_id = service().create_item(contact);
-        auto minnie = service().get_contact(item_id);
-        ews::internal::on_scope_exit delete_item([&]
-        {
-            service().delete_contact(std::move(minnie));
-        });
-
-        EXPECT_STREQ("", minnie.get_spouse_name().c_str());
-        auto contact_property = ews::contact_property_path();
-        auto spouse_name_property = ews::property(contact_property.spouse_name,
-                                                  "Mickey");
-        auto new_id =
-            service().update_item(minnie.get_item_id(),
-                                  spouse_name_property,
-                                  ews::conflict_resolution::auto_resolve);
-        minnie = service().get_contact(new_id);
-        EXPECT_STREQ("Mickey", minnie.get_spouse_name().c_str());
-
-        spouse_name_property = ews::property(contact_property.spouse_name,
-                                             "Peg-Leg Pedro");
-        new_id =
-            service().update_item(minnie.get_item_id(),
-                                  spouse_name_property,
-                                  ews::conflict_resolution::auto_resolve);
-        minnie = service().get_contact(new_id);
-        EXPECT_STREQ("Peg-Leg Pedro", minnie.get_spouse_name().c_str());
-    }
-
     TEST_F(ContactTest, GetEmailAddress)
     {
         auto contact = ews::contact();

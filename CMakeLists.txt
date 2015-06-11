@@ -166,6 +166,7 @@ add_executable(tests
     tests/test_item_id.cpp
     tests/test_items.cpp
     tests/test_restrictions.cpp
+    tests/test_service.cpp
     tests/test_tasks.cpp)
 target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
 set_target_properties(tests PROPERTIES

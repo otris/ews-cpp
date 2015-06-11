@@ -44,9 +44,7 @@ namespace tests
             return *service_ptr_;
         }
 
-    private:
-        std::unique_ptr<ews::service> service_ptr_;
-
+    protected:
         virtual void SetUp()
         {
             BaseFixture::SetUp();
@@ -70,5 +68,8 @@ namespace tests
             service_ptr_.reset();
             BaseFixture::TearDown();
         }
+
+    private:
+        std::unique_ptr<ews::service> service_ptr_;
     };
 }

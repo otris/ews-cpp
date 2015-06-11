@@ -10,4 +10,8 @@
 - Why do we start parsing XML payload when server's response code is 503?
 - Add example: assign task to multiple mailbox owners, update task, check who
   has completed it
-- Document exception hierarchy; where?
+- Document exception hierarchy; in Doxygen
+- body, mime_content, et al. should be wrapped with something like
+  boost::optional<>, right? See mime_content::none()
+- fix wrong libeay32.dll usage on Marlena's machine (Intel's one instead of
+  libcurl's), how to manipulate the path?
