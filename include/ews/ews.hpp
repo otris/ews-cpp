@@ -106,6 +106,13 @@ namespace ews
             }
         };
 
+        // Helper class; makes sub-classes not copy assignable. Prevents MSVC++
+        // from trying (and miserably failing) at generating those functions
+        struct no_assign
+        {
+            no_assign& operator=(const no_assign&) = delete;
+        };
+
         // Forward declarations
         class http_request;
     }
@@ -3695,7 +3702,10 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         // True if an item has non-hidden attachments. This is a read-only
         // property
-        // TODO: has_attachments
+        bool has_attachments() const
+        {
+            return properties().get_value_as_string("HasAttachments") == "true";
+        }
 
         // List of zero or more extended properties that are requested for
         // an item
@@ -3795,7 +3805,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         // TODO: is_assignment_editable, possible values 0-5, 2007 dialect?
 
-        // True if the task is marked as complete
+        // True if the task is marked as complete. This is a read-only property
+        // See also set_percent_complete
         bool is_complete() const
         {
             return properties().get_value_as_string("IsComplete") == "true";
@@ -4584,9 +4595,30 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         std::string property_name() const
         {
-            auto n = uri_.rfind(':');
+            const auto n = uri_.rfind(':');
             EWS_ASSERT(n != std::string::npos);
             return uri_.substr(n + 1);
+        }
+
+        std::string class_name() const
+        {
+            // TODO: we know at compile-time to which class a property belongs
+            const auto n = uri_.find(':');
+            EWS_ASSERT(n != std::string::npos);
+            const auto substr = uri_.substr(0, n);
+            if (substr == "item")
+            {
+                return "Item";
+            }
+            else if (substr == "contacts")
+            {
+                return "Contact";
+            }
+            else if (substr == "task")
+            {
+                return "Task";
+            }
+            EWS_ASSERT(false && "Should never reach here");
         }
 
     private:
@@ -4621,14 +4653,6 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     static_assert(std::is_move_constructible<indexed_property_path>::value, "");
     static_assert(std::is_move_assignable<indexed_property_path>::value, "");
 #endif
-
-    namespace internal
-    {
-        struct no_assign
-        {
-            no_assign& operator=(const no_assign&) = delete;
-        };
-    }
 
     struct folder_property_path final : public internal::no_assign
     {
@@ -4935,10 +4959,9 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         // This c'tor is chosen when user wants to delete a property from an
         // item in service::update_item
-        property(property_path path)
+        explicit property(property_path path)
             : path_(std::move(path)),
-              value_(),
-              item_type_("Contact")
+              value_()
         {
         }
 
@@ -4946,22 +4969,73 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // property in service::update_item
         property(property_path path, std::string value)
             : path_(std::move(path)),
-              value_(std::move(value)),
-              item_type_("Contact")
+              value_(std::move(value))
         {
         }
 
         property(property_path path, const char* value)
             : path_(std::move(path)),
-              value_(std::string(value)),
-              item_type_("Contact")
+              value_(std::string(value))
+        {
+        }
+
+        property(property_path path, int value)
+            : path_(std::move(path)),
+              value_(std::to_string(value))
+        {
+        }
+
+        property(property_path path, long value)
+            : path_(std::move(path)),
+              value_(std::to_string(value))
+        {
+        }
+
+        property(property_path path, long long value)
+            : path_(std::move(path)),
+              value_(std::to_string(value))
+        {
+        }
+
+        property(property_path path, unsigned value)
+            : path_(std::move(path)),
+              value_(std::to_string(value))
+        {
+        }
+
+        property(property_path path, unsigned long value)
+            : path_(std::move(path)),
+              value_(std::to_string(value))
+        {
+        }
+
+        property(property_path path, unsigned long long value)
+            : path_(std::move(path)),
+              value_(std::to_string(value))
+        {
+        }
+
+        property(property_path path, float value)
+            : path_(std::move(path)),
+              value_(std::to_string(value))
+        {
+        }
+
+        property(property_path path, double value)
+            : path_(std::move(path)),
+              value_(std::to_string(value))
+        {
+        }
+
+        property(property_path path, long double value)
+            : path_(std::move(path)),
+              value_(std::to_string(value))
         {
         }
 
         property(property_path path, bool value)
             : path_(std::move(path)),
-              value_(value ? "true" : "false"),
-              item_type_("Contact")
+              value_(value ? "true" : "false")
         {
         }
 
@@ -4975,11 +5049,11 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             }
             sstr << "<" << pref << "FieldURI FieldURI=\"";
             sstr << path_.field_uri() << "\"/>";
-            sstr << "<" << pref << item_type_ << ">";
+            sstr << "<" << pref << path_.class_name() << ">";
             sstr << "<" << pref << path_.property_name() << ">";
             sstr << value_;
             sstr << "</" << pref << path_.property_name() << ">";
-            sstr << "</" << pref << item_type_ << ">";
+            sstr << "</" << pref << path_.class_name() << ">";
             return sstr.str();
         }
 
@@ -4988,7 +5062,6 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     private:
         property_path path_;
         std::string value_;
-        std::string item_type_;
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS

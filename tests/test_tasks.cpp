@@ -161,7 +161,7 @@ namespace tests
         ews::task_property_path task_property;
         auto get_milk = test_task();
         ASSERT_FALSE(get_milk.is_complete());
-        auto prop = ews::property(task_property.is_complete, true);
+        auto prop = ews::property(task_property.percent_complete, 100);
         auto new_id = service().update_item(get_milk.get_item_id(), prop);
         get_milk = service().get_task(new_id);
         EXPECT_TRUE(get_milk.is_complete());

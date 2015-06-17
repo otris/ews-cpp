@@ -5,6 +5,18 @@ namespace tests
 {
     class ServiceTest : public ContactTest {};
 
+    TEST_F(ServiceTest, UpdateItemOfReadOnlyPropertyThrows)
+    {
+        ews::item_property_path item_property;
+        auto minnie = test_contact();
+        ASSERT_FALSE(minnie.has_attachments());
+        auto prop = ews::property(item_property.has_attachments, true);
+        EXPECT_THROW(
+        {
+            service().update_item(minnie.get_item_id(), prop);
+        }, ews::exchange_error); // ErrorInvalidPropertySet
+    }
+
     TEST_F(ServiceTest, UpdateItemWithSetItemField)
     {
         // <SetItemField> is used whenever we want to replace an existing value.
