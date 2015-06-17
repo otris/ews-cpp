@@ -104,4 +104,31 @@ namespace tests
     private:
         ews::task task_;
     };
+
+    // Create and remove a contact on the server
+    class ContactTest : public ServiceFixture
+    {
+    public:
+        void SetUp()
+        {
+            ServiceFixture::SetUp();
+
+            contact_.set_given_name("Minnie");
+            contact_.set_surname("Mouse");
+            const auto item_id = service().create_item(contact_);
+            contact_ = service().get_contact(item_id);
+        }
+
+        void TearDown()
+        {
+            service().delete_contact(std::move(contact_));
+
+            ServiceFixture::TearDown();
+        }
+
+        ews::contact& test_contact() { return contact_; }
+
+    private:
+        ews::contact contact_;
+    };
 }

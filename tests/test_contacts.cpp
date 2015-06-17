@@ -3,8 +3,6 @@
 
 namespace tests
 {
-    class ContactTest : public ServiceFixture {};
-
     TEST_F(ContactTest, GetContactWithInvalidIdThrows)
     {
         auto invalid_id = ews::item_id();
@@ -26,33 +24,26 @@ namespace tests
         }
     }
 
-    TEST_F(ContactTest, GetEmailAddress)
+    TEST_F(ContactTest, UpdateEmailAddressProperty)
     {
-        auto contact = ews::contact();
-        contact.set_given_name("General");
-        contact.set_surname("Snozzie");
-        const auto item_id = service().create_item(contact);
-        auto general_snozzie = service().get_contact(item_id);
-        ews::internal::on_scope_exit delete_item([&]
-        {
-            service().delete_contact(std::move(general_snozzie));
-        });
+        auto minnie = test_contact();
 
-        EXPECT_STREQ("", general_snozzie.get_email_address_1().c_str());
-        EXPECT_STREQ("", general_snozzie.get_email_address_2().c_str());
-        EXPECT_STREQ("", general_snozzie.get_email_address_3().c_str());
-        EXPECT_TRUE(general_snozzie.get_email_addresses().empty());
+        EXPECT_STREQ("", minnie.get_email_address_1().c_str());
+        EXPECT_STREQ("", minnie.get_email_address_2().c_str());
+        EXPECT_STREQ("", minnie.get_email_address_3().c_str());
+        EXPECT_TRUE(minnie.get_email_addresses().empty());
 
-        general_snozzie.set_email_address_1(
-                ews::email_address("snozzie@duckburg.com")
+        minnie.set_email_address_1(
+                ews::email_address("minnie.mouse@duckburg.com")
             );
-        EXPECT_STREQ("snozzie@duckburg.com",
-                     general_snozzie.get_email_address_1().c_str());
-        EXPECT_STREQ("", general_snozzie.get_email_address_2().c_str());
-        EXPECT_STREQ("", general_snozzie.get_email_address_3().c_str());
-        auto addresses = general_snozzie.get_email_addresses();
+        EXPECT_STREQ("minnie.mouse@duckburg.com",
+                     minnie.get_email_address_1().c_str());
+        EXPECT_STREQ("", minnie.get_email_address_2().c_str());
+        EXPECT_STREQ("", minnie.get_email_address_3().c_str());
+        auto addresses = minnie.get_email_addresses();
         ASSERT_FALSE(addresses.empty());
-        EXPECT_STREQ("snozzie@duckburg.com", addresses.front().value().c_str());
+        EXPECT_STREQ("minnie.mouse@duckburg.com",
+                     addresses.front().value().c_str());
 
         // TODO: delete an email address entry from a contact
     }
