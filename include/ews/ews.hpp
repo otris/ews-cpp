@@ -4951,6 +4951,15 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         {
         }
 
+        // This c'tor is chosen when user wants to set or update an item's
+        // property in service::update_item
+        property(property_path path, bool value)
+            : path_(std::move(path)),
+              value_(value ? "true" : "false"),
+              item_type_("Contact")
+        {
+        }
+
         std::string to_xml(const char* xmlns) const
         {
             std::stringstream sstr;

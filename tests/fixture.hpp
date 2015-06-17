@@ -72,4 +72,36 @@ namespace tests
     private:
         std::unique_ptr<ews::service> service_ptr_;
     };
+
+    // Create and remove a task on the server
+    class TaskTest : public ServiceFixture
+    {
+    public:
+        void SetUp()
+        {
+            ServiceFixture::SetUp();
+
+            task_.set_subject("Get some milk");
+            task_.set_body(ews::body("Get some milk from the store"));
+            task_.set_start_date(ews::date_time("2015-06-17T19:00:00Z"));
+            task_.set_due_date(ews::date_time("2015-06-17T19:30:00Z"));
+            const auto item_id = service().create_item(task_);
+            task_ = service().get_task(item_id);
+        }
+
+        void TearDown()
+        {
+            service().delete_task(
+                    std::move(task_),
+                    ews::delete_type::hard_delete,
+                    ews::affected_task_occurrences::all_occurrences);
+
+            ServiceFixture::TearDown();
+        }
+
+        ews::task& test_task() { return task_; }
+
+    private:
+        ews::task task_;
+    };
 }
