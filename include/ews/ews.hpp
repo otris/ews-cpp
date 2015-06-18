@@ -4619,6 +4619,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                 return "Task";
             }
             EWS_ASSERT(false && "Should never reach here");
+            return "";
         }
 
     private:
