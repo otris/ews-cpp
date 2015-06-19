@@ -4606,20 +4606,56 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             const auto n = uri_.find(':');
             EWS_ASSERT(n != std::string::npos);
             const auto substr = uri_.substr(0, n);
-            if (substr == "item")
+            if (substr == "folder")
+            {
+                return "Folder";
+            }
+            else if (substr == "item")
             {
                 return "Item";
             }
-            else if (substr == "contacts")
+            else if (substr == "message")
             {
-                return "Contact";
+                return "Message";
+            }
+            else if (substr == "meeting")
+            {
+                return "Meeting";
+            }
+            else if (substr == "meetingRequest")
+            {
+                return "MeetingRequest";
+            }
+            else if (substr == "calendar")
+            {
+                return "Calendar";
             }
             else if (substr == "task")
             {
                 return "Task";
             }
-            EWS_ASSERT(false && "Should never reach here");
-            return "";
+            else if (substr == "contacts")
+            {
+                return "Contact";
+            }
+            else if (substr == "distributionlist")
+            {
+                return "DistributionList";
+            }
+            else if (substr == "postitem")
+            {
+                return "PostItem";
+            }
+            else if (substr == "conversation")
+            {
+                return "Conversation";
+            }
+            // Persona missing
+            // else if (substr == "")
+            // {
+            //     return "";
+            // }
+            throw exception("Unknown property path");
         }
 
     private:
@@ -4764,6 +4800,10 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         const property_path response_type = "meeting:ResponseType";
         const property_path proposed_start = "meeting:ProposedStart";
         const property_path proposed_end = "meeting:PropsedEnd";
+    };
+
+    struct meeting_request_property_path final : public internal::no_assign
+    {
         const property_path meeting_request_type = "meetingRequest:MeetingRequestType";
         const property_path intended_free_busy_status = "meetingRequest:IntendedFreeBusyStatus";
         const property_path change_highlights = "meetingRequest:ChangeHighlights";

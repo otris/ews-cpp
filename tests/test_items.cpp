@@ -32,6 +32,87 @@ R"(<x:Body BodyType="HTML"><![CDATA[<b>Here is some HTML</b>]]></x:Body>)";
         EXPECT_STREQ(expected, b.to_xml("x").c_str());
     }
 
+    TEST(PropertyPathTest, ConstructFromURI)
+    {
+        ews::property_path path = "";
+
+        path = "folder:FolderId";
+        EXPECT_STREQ("folder:FolderId", path.field_uri().c_str());
+        EXPECT_STREQ("FolderId", path.property_name().c_str());
+        EXPECT_STREQ("Folder", path.class_name().c_str());
+
+        path = "item:DisplayCc";
+        EXPECT_STREQ("item:DisplayCc", path.field_uri().c_str());
+        EXPECT_STREQ("DisplayCc", path.property_name().c_str());
+        EXPECT_STREQ("Item", path.class_name().c_str());
+
+        path = "message:ToRecipients";
+        EXPECT_STREQ("message:ToRecipients", path.field_uri().c_str());
+        EXPECT_STREQ("ToRecipients", path.property_name().c_str());
+        EXPECT_STREQ("Message", path.class_name().c_str());
+
+        path = "meeting:IsOutOfDate";
+        EXPECT_STREQ("meeting:IsOutOfDate", path.field_uri().c_str());
+        EXPECT_STREQ("IsOutOfDate", path.property_name().c_str());
+        EXPECT_STREQ("Meeting", path.class_name().c_str());
+
+        path = "meetingRequest:MeetingRequestType";
+        EXPECT_STREQ("meetingRequest:MeetingRequestType",
+                     path.field_uri().c_str());
+        EXPECT_STREQ("MeetingRequestType", path.property_name().c_str());
+        EXPECT_STREQ("MeetingRequest", path.class_name().c_str());
+
+        path = "calendar:Start";
+        EXPECT_STREQ("calendar:Start", path.field_uri().c_str());
+        EXPECT_STREQ("Start", path.property_name().c_str());
+        EXPECT_STREQ("Calendar", path.class_name().c_str());
+
+        path = "task:AssignedTime";
+        EXPECT_STREQ("task:AssignedTime", path.field_uri().c_str());
+        EXPECT_STREQ("AssignedTime", path.property_name().c_str());
+        EXPECT_STREQ("Task", path.class_name().c_str());
+
+        path = "contacts:Children";
+        EXPECT_STREQ("contacts:Children", path.field_uri().c_str());
+        EXPECT_STREQ("Children", path.property_name().c_str());
+        EXPECT_STREQ("Contact", path.class_name().c_str());
+
+        path = "distributionlist:Members";
+        EXPECT_STREQ("distributionlist:Members", path.field_uri().c_str());
+        EXPECT_STREQ("Members", path.property_name().c_str());
+        EXPECT_STREQ("DistributionList", path.class_name().c_str());
+
+        path = "postitem:PostedTime";
+        EXPECT_STREQ("postitem:PostedTime", path.field_uri().c_str());
+        EXPECT_STREQ("PostedTime", path.property_name().c_str());
+        EXPECT_STREQ("PostItem", path.class_name().c_str());
+
+        path = "conversation:ConversationId";
+        EXPECT_STREQ("conversation:ConversationId", path.field_uri().c_str());
+        EXPECT_STREQ("ConversationId", path.property_name().c_str());
+        EXPECT_STREQ("Conversation", path.class_name().c_str());
+    }
+
+    TEST(PropertyPathTest, ClassNameThrowsOnInvalidURI)
+    {
+        ews::property_path path = "";
+        EXPECT_THROW(path.class_name(), ews::exception);
+    }
+
+    TEST(PropertyPathTest, ClassNameThrowsOnInvalidURIWhat)
+    {
+        ews::property_path path = "";
+        try
+        {
+            path.class_name();
+            FAIL() << "Expected exception to be raised";
+        }
+        catch (ews::exception& exc)
+        {
+            EXPECT_STREQ("Unknown property path", exc.what());
+        }
+    }
+
     TEST(ItemTest, DefaultConstruction)
     {
         auto i = ews::item();
