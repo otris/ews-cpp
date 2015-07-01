@@ -70,11 +70,15 @@ namespace tests
         // property he wanted to update
 
         auto minnie = test_contact();
+        ASSERT_FALSE(minnie.get_given_name().empty());
         auto contact_property = ews::contact_property_path();
         auto prop = ews::property(contact_property.given_name);
         auto new_id = service().update_item(minnie.get_item_id(), prop);
         minnie = service().get_contact(new_id);
-        EXPECT_STREQ("", minnie.get_given_name().c_str());
+        EXPECT_TRUE(minnie.get_given_name().empty());
+
+        // FIXME: does not fail but request string contains <SetItemField>,
+        // should contain <DeleteItemField> instead
     }
 
 #if 0
