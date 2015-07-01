@@ -4662,6 +4662,11 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         std::string uri_;
     };
 
+    inline bool operator==(const property_path& lhs, const property_path& rhs)
+    {
+        return lhs.field_uri() == rhs.field_uri();
+    }
+
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(!std::is_default_constructible<property_path>::value, "");
     static_assert(std::is_copy_constructible<property_path>::value, "");
@@ -4993,21 +4998,21 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         const property_path has_clutter = "conversation:HasClutter";
     };
 
+    // Represents a single property
+    //
+    // Used in ews::service::update_item method call
     class property final
     {
     public:
-        // TODO: HACK: works only for contacts! overload set?
-
-        // This c'tor is chosen when user wants to delete a property from an
-        // item in service::update_item
+        // Use this constructor if you want to delete a property from an item
         explicit property(property_path path)
             : path_(std::move(path)),
               value_()
         {
         }
 
-        // This c'tor is chosen when user wants to set or update an item's
-        // property in service::update_item
+        // Use this constructor (and following overloads) whenever you want to
+        // set or update an item's property
         property(property_path path, std::string value)
             : path_(std::move(path)),
               value_(std::move(value))
@@ -5080,6 +5085,12 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         {
         }
 
+        property(property_path path, const body& value)
+            : path_(std::move(path)),
+              value_(value.to_xml("t"))
+        {
+        }
+
         std::string to_xml(const char* xmlns) const
         {
             std::stringstream sstr;
@@ -5089,16 +5100,18 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                 pref = std::string(xmlns) + ":";
             }
             sstr << "<" << pref << "FieldURI FieldURI=\"";
-            sstr << path_.field_uri() << "\"/>";
-            sstr << "<" << pref << path_.class_name() << ">";
-            sstr << "<" << pref << path_.property_name() << ">";
+            sstr << path().field_uri() << "\"/>";
+            sstr << "<" << pref << path().class_name() << ">";
+            sstr << "<" << pref << path().property_name() << ">";
             sstr << value_;
-            sstr << "</" << pref << path_.property_name() << ">";
-            sstr << "</" << pref << path_.class_name() << ">";
+            sstr << "</" << pref << path().property_name() << ">";
+            sstr << "</" << pref << path().class_name() << ">";
             return sstr.str();
         }
 
         bool empty_value() const EWS_NOEXCEPT { return value_.empty(); }
+
+        const property_path& path() const EWS_NOEXCEPT { return path_; }
 
     private:
         property_path path_;

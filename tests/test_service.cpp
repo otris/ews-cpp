@@ -14,7 +14,24 @@ namespace tests
         EXPECT_THROW(
         {
             service().update_item(minnie.get_item_id(), prop);
-        }, ews::exchange_error); // ErrorInvalidPropertySet
+        }, ews::exchange_error);
+    }
+
+    TEST_F(ServiceTest, UpdateItemOfReadOnlyPropertyThrowsWhatMessage)
+    {
+        ews::item_property_path item_property;
+        auto minnie = test_contact();
+        ASSERT_FALSE(minnie.has_attachments());
+        auto prop = ews::property(item_property.has_attachments, true);
+        try
+        {
+            service().update_item(minnie.get_item_id(), prop);
+            FAIL() << "Expected exception to be thrown";
+        }
+        catch (ews::exchange_error& exc)
+        {
+            EXPECT_STREQ("ErrorInvalidPropertySet", exc.what());
+        }
     }
 
     TEST_F(ServiceTest, UpdateItemWithSetItemField)
