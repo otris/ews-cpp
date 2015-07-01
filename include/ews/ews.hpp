@@ -3452,6 +3452,55 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     static_assert(std::is_move_assignable<mime_content>::value, "");
 #endif
 
+    // Represents a contact's email address
+    class email_address final
+    {
+    public:
+        explicit email_address(std::string value,
+                               std::string name = std::string(),
+                               std::string routing_type = std::string(),
+                               std::string mailbox_type = std::string())
+            : value_(std::move(value)),
+              name_(std::move(name)),
+              routing_type_(std::move(routing_type)),
+              mailbox_type_(std::move(mailbox_type))
+        {}
+
+        // The address
+        const std::string& value() const EWS_NOEXCEPT { return value_; }
+
+        // Defines the name of the mailbox user; optional
+        const std::string& name() const EWS_NOEXCEPT { return name_; }
+
+        // Defines the routing that is used for the mailbox, attribute is
+        // optional. Default is SMTP
+        const std::string& routing_type() const EWS_NOEXCEPT
+        {
+            return routing_type_;
+        }
+
+        // Defines the mailbox type of a mailbox user; optional
+        const std::string& mailbox_type() const EWS_NOEXCEPT
+        {
+            return mailbox_type_;
+        }
+
+    private:
+        std::string value_;
+        std::string name_;
+        std::string routing_type_;
+        std::string mailbox_type_;
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<email_address>::value, "");
+    static_assert(std::is_copy_constructible<email_address>::value, "");
+    static_assert(std::is_copy_assignable<email_address>::value, "");
+    static_assert(std::is_move_constructible<email_address>::value, "");
+    static_assert(std::is_move_assignable<email_address>::value, "");
+#endif
+
+
     // Represents a generic item in the Exchange store.
     //
     // Basically:
@@ -3900,54 +3949,6 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     static_assert(std::is_copy_assignable<task>::value, "");
     static_assert(std::is_move_constructible<task>::value, "");
     static_assert(std::is_move_assignable<task>::value, "");
-#endif
-
-    // Represents a contact's email address
-    class email_address final
-    {
-    public:
-        explicit email_address(std::string value,
-                               std::string name = std::string(),
-                               std::string routing_type = std::string(),
-                               std::string mailbox_type = std::string())
-            : value_(std::move(value)),
-              name_(std::move(name)),
-              routing_type_(std::move(routing_type)),
-              mailbox_type_(std::move(mailbox_type))
-        {}
-
-        // The address
-        const std::string& value() const EWS_NOEXCEPT { return value_; }
-
-        // Defines the name of the mailbox user; optional
-        const std::string& name() const EWS_NOEXCEPT { return name_; }
-
-        // Defines the routing that is used for the mailbox, attribute is
-        // optional. Default is SMTP
-        const std::string& routing_type() const EWS_NOEXCEPT
-        {
-            return routing_type_;
-        }
-
-        // Defines the mailbox type of a mailbox user; optional
-        const std::string& mailbox_type() const EWS_NOEXCEPT
-        {
-            return mailbox_type_;
-        }
-
-    private:
-        std::string value_;
-        std::string name_;
-        std::string routing_type_;
-        std::string mailbox_type_;
-    };
-
-#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<email_address>::value, "");
-    static_assert(std::is_copy_constructible<email_address>::value, "");
-    static_assert(std::is_copy_assignable<email_address>::value, "");
-    static_assert(std::is_move_constructible<email_address>::value, "");
-    static_assert(std::is_move_assignable<email_address>::value, "");
 #endif
 
     // A contact item in the Exchange store.
@@ -5412,6 +5413,21 @@ R"(
                     property prop,
                     conflict_resolution res = conflict_resolution::auto_resolve)
         {
+            auto item_change_open_tag = "<t:SetItemField>";
+            auto item_change_close_tag = "</t:SetItemField>";
+            if (   prop.path() == "calendar:OptionalAttendees"
+                || prop.path() == "calendar:RequiredAttendees"
+                || prop.path() == "calendar:Resources"
+                || prop.path() == "item:Body"
+                || prop.path() == "message:ToRecipients"
+                || prop.path() == "message:CcRecipients"
+                || prop.path() == "message:BccRecipients"
+                || prop.path() == "message:ReplyTo")
+            {
+                item_change_open_tag = "<t:AppendToItemField>";
+                item_change_close_tag = "</t:AppendToItemField>";
+            }
+
             const std::string request_string =
 R"(
     <m:UpdateItem
@@ -5421,9 +5437,9 @@ R"(
         <t:ItemChange>
           )" + id.to_xml("t") + R"(
           <t:Updates>
-            <t:SetItemField>
+            )" + item_change_open_tag + R"(
               )" + prop.to_xml("t") + R"(
-            </t:SetItemField>
+            )" + item_change_close_tag + R"(
           </t:Updates>
         </t:ItemChange>
       </m:ItemChanges>
