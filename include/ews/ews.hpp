@@ -2069,8 +2069,7 @@ namespace ews
     };
 
     // TODO: move to internal namespace
-    inline std::string
-    conflict_resolution_str(conflict_resolution val)
+    inline std::string conflict_resolution_str(conflict_resolution val)
     {
         switch (val)
         {
@@ -2080,6 +2079,38 @@ namespace ews
                 return "AutoResolve";
             case conflict_resolution::always_overwrite:
                 return "AlwaysOverwrite";
+            default:
+                throw exception("Bad enum value");
+        }
+    }
+
+    // <CreateItem> and <UpdateItem> methods use this attribute. Only applicable
+    // to e-mail messages
+    enum class message_disposition
+    {
+        // Save the message in a specified folder or in the Drafts folder if
+        // none is given
+        save_only,
+
+        // Send the message and do not save a copy in the sender's mailbox
+        send_only,
+
+        // Send the message and save a copy in a specified folder or in the
+        // mailbox owner's Sent Items folder if none is given
+        send_and_save_copy
+    };
+
+    // TODO: move to internal namespace
+    inline std::string message_disposition_str(message_disposition val)
+    {
+        switch (val)
+        {
+            case message_disposition::save_only:
+                return "SaveOnly";
+            case message_disposition::send_only:
+                return "SendOnly";
+            case message_disposition::send_and_save_copy:
+                return "SendAndSaveCopy";
             default:
                 throw exception("Bad enum value");
         }
@@ -3456,15 +3487,26 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     class email_address final
     {
     public:
+        explicit email_address(item_id id)
+            : id_(std::move(id)),
+              value_(),
+              name_(),
+              routing_type_(),
+              mailbox_type_()
+        {}
+
         explicit email_address(std::string value,
                                std::string name = std::string(),
                                std::string routing_type = std::string(),
                                std::string mailbox_type = std::string())
-            : value_(std::move(value)),
+            : id_(),
+              value_(std::move(value)),
               name_(std::move(name)),
               routing_type_(std::move(routing_type)),
               mailbox_type_(std::move(mailbox_type))
         {}
+
+        const item_id& id() const EWS_NOEXCEPT { return id_; }
 
         // The address
         const std::string& value() const EWS_NOEXCEPT { return value_; }
@@ -3486,6 +3528,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         }
 
     private:
+        item_id id_;
         std::string value_;
         std::string name_;
         std::string routing_type_;
@@ -3601,7 +3644,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                 ptr_to_value = doc->allocate_string(
                         truncated ? "true" : "false");
                 body_node->append_attribute(
-                       doc->allocate_attribute(ptr_to_key, ptr_to_value));
+                        doc->allocate_attribute(ptr_to_key, ptr_to_value));
             }
 
             doc->append_node(body_node);
@@ -4316,6 +4359,288 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     static_assert(std::is_copy_assignable<contact>::value, "");
     static_assert(std::is_move_constructible<contact>::value, "");
     static_assert(std::is_move_assignable<contact>::value, "");
+#endif
+
+    // A message item in the Exchange store.
+    class message final : public item
+    {
+    public:
+        message() = default;
+
+        explicit message(item_id id) : item(id) {}
+
+        message(item_id&& id, internal::item_properties&& properties)
+            : item(std::move(id), std::move(properties))
+        {}
+
+        // <Sender/>
+
+        void set_to_recipients(const std::vector<email_address>& recipients)
+        {
+            using uri = internal::uri<>;
+
+            auto doc = properties().document();
+
+            auto to_recipients_node = properties().get_node("ToRecipients");
+            if (to_recipients_node)
+            {
+                doc->remove_node(to_recipients_node);
+            }
+
+            auto ptr_to_qname = doc->allocate_string("t:ToRecipients");
+            to_recipients_node = doc->allocate_node(rapidxml::node_element);
+            to_recipients_node->qname(ptr_to_qname,
+                                      std::strlen("t:ToRecipients"),
+                                      ptr_to_qname + 2);
+            to_recipients_node->namespace_uri(uri::microsoft::types(),
+                                              uri::microsoft::types_size);
+
+            for (const auto& recipient : recipients)
+            {
+                ptr_to_qname = doc->allocate_string("t:Mailbox");
+                auto mailbox_node = doc->allocate_node(rapidxml::node_element);
+                mailbox_node->qname(ptr_to_qname,
+                                    std::strlen("t:Mailbox"),
+                                    ptr_to_qname + 2);
+                mailbox_node->namespace_uri(uri::microsoft::types(),
+                                            uri::microsoft::types_size);
+
+                if (!recipient.id().valid())
+                {
+                    EWS_ASSERT(!recipient.value().empty()
+                  && "Neither item_id nor value set in email_address instance");
+
+                    ptr_to_qname = doc->allocate_string("t:EmailAddress");
+                    auto ptr_to_value = doc->allocate_string(
+                            recipient.value().c_str());
+                    auto node = doc->allocate_node(rapidxml::node_element);
+                    node->qname(ptr_to_qname,
+                                std::strlen("t:EmailAddress"),
+                                ptr_to_qname + 2);
+                    node->value(ptr_to_value);
+                    node->namespace_uri(uri::microsoft::types(),
+                                        uri::microsoft::types_size);
+                    mailbox_node->append_node(node);
+
+                    if (!recipient.name().empty())
+                    {
+                        ptr_to_qname = doc->allocate_string("t:Name");
+                        ptr_to_value = doc->allocate_string(
+                                recipient.name().c_str());
+                        node = doc->allocate_node(rapidxml::node_element);
+                        node->qname(ptr_to_qname,
+                                    std::strlen("t:Name"),
+                                    ptr_to_qname + 2);
+                        node->value(ptr_to_value);
+                        node->namespace_uri(uri::microsoft::types(),
+                                            uri::microsoft::types_size);
+                        mailbox_node->append_node(node);
+                    }
+
+                    if (!recipient.routing_type().empty())
+                    {
+                        ptr_to_qname = doc->allocate_string("t:RoutingType");
+                        ptr_to_value = doc->allocate_string(
+                                recipient.routing_type().c_str());
+                        node = doc->allocate_node(rapidxml::node_element);
+                        node->qname(ptr_to_qname,
+                                    std::strlen("t:RoutingType"),
+                                    ptr_to_qname + 2);
+                        node->value(ptr_to_value);
+                        node->namespace_uri(uri::microsoft::types(),
+                                            uri::microsoft::types_size);
+                        mailbox_node->append_node(node);
+                    }
+
+                    if (!recipient.mailbox_type().empty())
+                    {
+                        ptr_to_qname = doc->allocate_string("t:MailboxType");
+                        ptr_to_value = doc->allocate_string(
+                                recipient.mailbox_type().c_str());
+                        node = doc->allocate_node(rapidxml::node_element);
+                        node->qname(ptr_to_qname,
+                                    std::strlen("t:MailboxType"),
+                                    ptr_to_qname + 2);
+                        node->value(ptr_to_value);
+                        node->namespace_uri(uri::microsoft::types(),
+                                            uri::microsoft::types_size);
+                        mailbox_node->append_node(node);
+                    }
+                }
+                else
+                {
+                    ptr_to_qname = doc->allocate_string("t:ItemId");
+                    auto item_id_node =
+                        doc->allocate_node(rapidxml::node_element);
+                    item_id_node->qname(ptr_to_qname,
+                                        std::strlen("t:ItemId"),
+                                        ptr_to_qname + 2);
+                    item_id_node->namespace_uri(uri::microsoft::types(),
+                                                uri::microsoft::types_size);
+
+                    auto ptr_to_key = doc->allocate_string("Id");
+                    auto ptr_to_value = doc->allocate_string(
+                            recipient.id().id().c_str()); // Uh, thats smelly
+                    item_id_node->append_attribute(
+                            doc->allocate_attribute(ptr_to_key, ptr_to_value));
+
+                    ptr_to_key = doc->allocate_string("ChangeKey");
+                    ptr_to_value = doc->allocate_string(
+                            recipient.id().change_key().c_str());
+                    item_id_node->append_attribute(
+                            doc->allocate_attribute(ptr_to_key, ptr_to_value));
+
+                    mailbox_node->append_node(item_id_node);
+                }
+
+                to_recipients_node->append_node(mailbox_node);
+            }
+
+            doc->append_node(to_recipients_node);
+        }
+
+        std::vector<email_address> get_to_recipients()
+        {
+            using rapidxml::internal::compare;
+
+            const auto recipients = properties().get_node("ToRecipients");
+            if (!recipients)
+            {
+                return std::vector<email_address>();
+            }
+            std::vector<email_address> result;
+            for (auto mailbox = recipients->first_node(); mailbox;
+                 mailbox = mailbox->next_sibling())
+            {
+                // <EmailAddress> child element is required except when dealing
+                // with a private distribution list or a contact from a user's
+                // contacts folder, in which case the <ItemId> child element is
+                // used instead
+
+                std::string name;
+                std::string address;
+                std::string routing_type;
+                std::string mailbox_type;
+                item_id id;
+
+                for (auto node = mailbox->first_node(); node;
+                     node = node->next_sibling())
+                {
+                    if (compare(node->local_name(),
+                                node->local_name_size(),
+                                "Name",
+                                std::strlen("Name")))
+                    {
+                        name = std::string(node->value(), node->value_size());
+                    }
+                    else if (compare(node->local_name(),
+                                     node->local_name_size(),
+                                     "EmailAddress",
+                                     std::strlen("EmailAddress")))
+                    {
+                        address =
+                            std::string(node->value(), node->value_size());
+                    }
+                    else if (compare(node->local_name(),
+                                     node->local_name_size(),
+                                     "RoutingType",
+                                     std::strlen("RoutingType")))
+                    {
+                        routing_type =
+                            std::string(node->value(), node->value_size());
+                    }
+                    else if (compare(node->local_name(),
+                                     node->local_name_size(),
+                                     "MailboxType",
+                                     std::strlen("MailboxType")))
+                    {
+                        mailbox_type =
+                            std::string(node->value(), node->value_size());
+                    }
+                    else if (compare(node->local_name(),
+                                     node->local_name_size(),
+                                     "ItemId",
+                                     std::strlen("ItemId")))
+                    {
+                        id = item_id::from_xml_element(*node);
+                    }
+                    else
+                    {
+                        throw exception(
+                                "Unexpected child element in <Mailbox>");
+                    }
+                }
+
+                if (!id.valid())
+                {
+                    EWS_ASSERT(!address.empty()
+                            && "<EmailAddress> element value can't be empty");
+
+                    result.emplace_back(
+                        email_address(
+                            std::move(address),
+                            std::move(name),
+                            std::move(routing_type),
+                            std::move(mailbox_type)));
+                }
+                else
+                {
+                    result.emplace_back(
+                        email_address(
+                            std::move(id)));
+                }
+            }
+            return result;
+        }
+
+        // <CcRecipients/>
+        // <BccRecipients/>
+        // <IsReadReceiptRequested/>
+        // <IsDeliveryReceiptRequested/>
+        // <ConversationIndex/>
+        // <ConversationTopic/>
+        // <From/>
+        // <InternetMessageId/>
+        // <IsRead/>
+        // <IsResponseRequested/>
+        // <References/>
+        // <ReplyTo/>
+
+        // Makes a message instance from a <Message> XML element
+        static message from_xml_element(const rapidxml::xml_node<>& elem)
+        {
+            using uri = internal::uri<>;
+            auto id_node = elem.first_node_ns(uri::microsoft::types(),
+                                              "ItemId");
+            EWS_ASSERT(id_node && "Expected <ItemId>");
+            return message(item_id::from_xml_element(*id_node),
+                           internal::item_properties(elem));
+        }
+
+    private:
+        friend class service;
+        std::string
+        create_item_request_string(ews::message_disposition disposition) const
+        {
+            std::stringstream sstr;
+            sstr << "<m:CreateItem MessageDisposition=\""
+                 << message_disposition_str(disposition) << "\">";
+            sstr << "<m:Items>";
+            sstr << "<t:Message>";
+            sstr << properties().to_string() << "\n";
+            sstr << "</t:Message>";
+            sstr << "</m:Items>";
+            sstr << "</m:CreateItem>";
+            return sstr.str();
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(std::is_default_constructible<message>::value, "");
+    static_assert(std::is_copy_constructible<message>::value, "");
+    static_assert(std::is_copy_assignable<message>::value, "");
+    static_assert(std::is_move_constructible<message>::value, "");
+    static_assert(std::is_move_assignable<message>::value, "");
 #endif
 
     // Well known folder names enumeration. Usually rendered to XML as
@@ -5314,6 +5639,12 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             return get_item_impl<contact>(id, base_shape::all_properties);
         }
 
+        // Gets a message item from the Exchange store
+        message get_message(const item_id& id)
+        {
+            return get_item_impl<message>(id, base_shape::all_properties);
+        }
+
         // Delete an arbitrary item from the Exchange store
         void delete_item(item&& the_item)
         {
@@ -5346,10 +5677,16 @@ R"(
             the_task = task();
         }
 
-        // Delete a contact item from the Exchange store
+        // Delete a contact from the Exchange store
         void delete_contact(contact&& the_contact)
         {
             delete_item_impl(std::move(the_contact));
+        }
+
+        // Delete a message item from the Exchange store
+        void delete_message(message&& the_message)
+        {
+            delete_item_impl(std::move(the_message));
         }
 
         // Following items can be created in Exchange:
@@ -5375,6 +5712,51 @@ R"(
         item_id create_item(const contact& the_contact)
         {
             return create_item_impl(the_contact);
+        }
+
+        item_id create_item(const message& the_message,
+                            ews::message_disposition disposition)
+        {
+            using internal::create_item_response_message;
+
+            auto response =
+                request(the_message.create_item_request_string(disposition));
+            const auto response_message =
+                create_item_response_message::parse(response);
+            if (!response_message.success())
+            {
+                throw exchange_error(response_message.get_response_code());
+            }
+            EWS_ASSERT(!response_message.items().empty()
+                    && "Expected a message item");
+            return response_message.items().front();
+        }
+
+        std::vector<item_id> find_item(const folder_id& parent_folder_id)
+        {
+            using find_item_response_message =
+                internal::find_item_response_message;
+
+            const std::string request_string =
+R"(
+    <m:FindItem Traversal="Shallow">
+      <m:ItemShape>
+        <t:BaseShape>IdOnly</t:BaseShape>
+      </m:ItemShape>
+      <m:ParentFolderIds>)" + parent_folder_id.to_xml("t") + R"(</m:ParentFolderIds>
+    </m:FindItem>
+)";
+            auto response = request(request_string);
+#ifdef EWS_ENABLE_VERBOSE
+            std::cerr << response.payload() << std::endl;
+#endif
+            const auto response_message =
+                find_item_response_message::parse(response);
+            if (!response_message.success())
+            {
+                throw exchange_error(response_message.get_response_code());
+            }
+            return response_message.items();
         }
 
         std::vector<item_id> find_item(const folder_id& parent_folder_id,

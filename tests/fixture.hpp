@@ -131,4 +131,8 @@ namespace tests
     private:
         ews::contact contact_;
     };
+
+    struct MessageTest : public ServiceFixture
+    {
+    };
 }
