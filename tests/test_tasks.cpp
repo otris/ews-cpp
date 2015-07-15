@@ -102,11 +102,222 @@ namespace tests
     TEST_F(TaskTest, UpdateIsCompleteProperty)
     {
         auto get_milk = test_task();
+
+        auto complete_date = get_milk.get_complete_date();
         ASSERT_FALSE(get_milk.is_complete());
         auto prop = ews::property(ews::task_property_path::percent_complete,
                                   100);
         auto new_id = service().update_item(get_milk.get_item_id(), prop);
         get_milk = service().get_task(new_id);
+
         EXPECT_TRUE(get_milk.is_complete());
+        get_milk.get_complete_date();
+    }
+
+    TEST_F(TaskTest, InitialActualWorkProperty)
+    {
+        auto task = ews::task();
+        EXPECT_EQ(0, task.get_actual_work());
+    }
+
+    TEST_F(TaskTest, SetActualWorkProperty)
+    {
+        auto task = ews::task();
+        task.set_actual_work(42);
+        EXPECT_EQ(42, task.get_actual_work());
+    }
+
+    TEST_F(TaskTest, SetActualWorkPropertyServer)
+    {
+        auto task = test_task();
+        auto prop = ews::property(ews::task_property_path::actual_work, 42);
+        auto new_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(new_id);
+        EXPECT_EQ(42, task.get_actual_work());
+
+        prop = ews::property(ews::task_property_path::actual_work, 1729);
+        new_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(new_id);
+        EXPECT_EQ(1729, task.get_actual_work());
+    }
+
+    //TODO: assigned_time
+
+    TEST_F(TaskTest, GetBillingInformationIsEmptyInitially)
+    {
+        auto task = test_task();
+        auto billing_information = task.get_billing_information();
+        EXPECT_TRUE(billing_information.empty());
+    }
+
+    TEST_F(TaskTest, SetBillingInformationProperty)
+    {
+        auto task = ews::task();
+        task.set_billing_information("Billing Information Test");
+        EXPECT_STREQ("Billing Information Test", task.get_billing_information().c_str());
+    }
+
+    TEST_F(TaskTest, SetBillingInformationPropertyServer)
+    {
+        auto task = test_task();
+        auto prop = ews::property(ews::task_property_path::billing_information,
+                                  "Billing Information Test 1");
+        auto new_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(new_id);
+        EXPECT_STREQ("Billing Information Test 1",
+                     task.get_billing_information().c_str());
+
+        prop = ews::property(ews::task_property_path::billing_information,
+                             "Billing Information Test 2");
+        new_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(new_id);
+        EXPECT_STREQ("Billing Information Test 2",
+                     task.get_billing_information().c_str());
+    }
+
+    // TODO: ChangeCount - Test with Delegation
+
+    // TODO
+    TEST_F(TaskTest, GetCompaniesIsEmptyInitially)
+    {
+        auto task = test_task();
+        auto companies = task.get_companies();
+        EXPECT_TRUE(companies.empty());
+    }
+
+    TEST_F(TaskTest, SetCompaniesProperty)
+    {
+        const auto comps = std::vector<std::string>{
+            "Tic Tric Tac Inc.",
+        };
+        auto task = ews::task();
+        task.set_companies(comps);
+        ASSERT_EQ(1U, task.get_companies().size());
+        EXPECT_STREQ("Tic Tric Tac Inc.", task.get_companies()[0].c_str());
+    }
+
+    TEST_F(TaskTest, SetCompaniesPropertyServer)
+    {
+        const auto comps = std::vector<std::string>{
+            "Tic Tric Tac Inc.",
+        };
+        auto task = test_task();
+        auto prop = ews::property(ews::task_property_path::companies, comps);
+        auto new_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(new_id);
+        ASSERT_EQ(1U, task.get_companies().size());
+        EXPECT_STREQ("Tic Tric Tac Inc.", task.get_companies()[0].c_str());
+    }
+
+    TEST_F(TaskTest, GetContactsIsEmptyInitially)
+    {
+        auto task = test_task();
+        auto contacts = task.get_contacts();
+        EXPECT_TRUE(contacts.empty());
+    }
+
+    // TODO: Contacts
+
+    // TODO: DelegationState
+    //TEST_F(TaskTest, GetDelegationState)
+    //{
+    //    auto task = test_task();
+    //    EXPECT_EQ(ews::delegation_state::no_match, task.get_delegation_state());
+    //}
+
+    // TODO: Delegator
+
+    // TODO: IsAssignmentEditable
+
+    // TODO: IsRecurring
+
+    // TODO: IsTeamTask
+
+    TEST_F(TaskTest, GetMileageIsEmptyInitially)
+    {
+        auto task = test_task();
+        auto mileage = task.get_mileage();
+        EXPECT_TRUE(mileage.empty());
+    }
+
+    TEST_F(TaskTest, SetMileageProperty)
+    {
+        auto task = ews::task();
+        task.set_mileage("Mileage Test");
+        EXPECT_STREQ("Mileage Test", task.get_mileage().c_str());
+    }
+
+    TEST_F(TaskTest, SetMileagePropertyServer)
+    {
+        auto task = test_task();
+        auto prop = ews::property(ews::task_property_path::mileage, "Mileage Test");
+        auto new_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(new_id);
+        EXPECT_STREQ("Mileage Test", task.get_mileage().c_str());
+
+        prop = ews::property(ews::task_property_path::mileage, "Mileage Test 2");
+        new_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(new_id);
+        EXPECT_STREQ("Mileage Test 2", task.get_mileage().c_str());
+    }
+
+    TEST_F(TaskTest, InitialPercentCompleteProperty)
+    {
+        auto task = ews::task();
+        EXPECT_EQ(0, task.get_percent_complete());
+    }
+
+    TEST_F(TaskTest, SetPercentCompleteProperty)
+    {
+        auto task = ews::task();
+        task.set_percent_complete(55);
+        EXPECT_EQ(55, task.get_percent_complete());
+    }
+
+    TEST_F(TaskTest, SetPercentCompletePropertyServer)
+    {
+        auto task = test_task();
+        auto prop = ews::property(ews::task_property_path::percent_complete, 55);
+        auto new_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(new_id);
+        EXPECT_EQ(55, task.get_percent_complete());
+
+        prop = ews::property(ews::task_property_path::percent_complete, 100);
+        new_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(new_id);
+        EXPECT_EQ(100, task.get_percent_complete());
+    }
+
+    //TODO: Recurrence
+
+    //TODO: Status
+
+    //TODO: StatusDescription
+
+    TEST_F(TaskTest, InitialTotalWorkProperty)
+    {
+        auto task = ews::task();
+        EXPECT_EQ(0, task.get_total_work());
+    }
+
+    TEST_F(TaskTest, SetTotalWorkProperty)
+    {
+        auto task = ews::task();
+        task.set_total_work(3000);
+        EXPECT_EQ(3000, task.get_total_work());
+    }
+
+    TEST_F(TaskTest, SetTotalWorkPropertyServer)
+    {
+        auto task = test_task();
+        auto prop = ews::property(ews::task_property_path::total_work, 3000);
+        auto new_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(new_id);
+        EXPECT_EQ(3000, task.get_total_work());
+
+        prop = ews::property(ews::task_property_path::total_work, 6000);
+        new_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(new_id);
+        EXPECT_EQ(6000, task.get_total_work());
     }
 }

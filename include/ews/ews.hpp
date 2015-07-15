@@ -6406,6 +6406,71 @@ namespace ews
     static_assert(std::is_move_assignable<item>::value, "");
 #endif
 
+    enum class delegation_state
+    {
+        no_match,
+        own_new,
+        owned,
+        accepted,
+        declined,
+        max
+    };
+
+    namespace internal
+    {
+        inline std::string enum_to_str(delegation_state state)
+        {
+            switch (state)
+            {
+            case delegation_state::no_match:
+                return "NoMatch";
+            case delegation_state::own_new:
+                return "OwnNew";
+            case delegation_state::owned:
+                return "Owned";
+            case delegation_state::accepted:
+                return "Accepted";
+            case delegation_state::declined:
+                return "Declined";
+            case delegation_state::max:
+                return "Max";
+            default: throw exception("Unexpected <DelegationState>");
+
+            }
+        }
+    }
+
+    enum class status
+    {
+        not_started,
+        in_progress,
+        completed,
+        waiting_on_others,
+        deferred
+    };
+
+    namespace internal
+    {
+        inline std::string enum_to_str(status s)
+        {
+            switch (s)
+            {
+            case status::not_started:
+                return "NotStarted";
+            case status::in_progress:
+                return "InProgress";
+            case status::completed:
+                return "Completed";
+            case status::waiting_on_others:
+                return "WaitingOnOthers";
+            case status::deferred:
+                return "Deferred";
+            default:
+                throw exception("Unexpected <Status>");
+            }
+        }
+    }
+
     //! Represents a concrete task in the Exchange store.
     class task final : public item
     {
@@ -6426,34 +6491,170 @@ namespace ews
 
         // Represents the actual amount of work expended on the task. Measured
         // in minutes
-        // TODO: get_actual_work
+        int get_actual_work() const
+        {
+            const auto val = properties().get_value_as_string("ActualWork");
+            if (val.empty())
+            {
+                return 0;
+            }
+            return std::stoi(val);
+        }
 
-        // Time the task was assigned to the current owner
-        // TODO: get_assigned_time
+        void set_actual_work(int actual_work)
+        {
+            properties().set_or_update("ActualWork", std::to_string(actual_work));
+        }
+
+        // Time the task was assigned to the current owner. This is a read-only property.
+        date_time get_assigned_time() const
+        {
+            return date_time(properties().get_value_as_string("AssignedTime"));
+        }
 
         // Billing information associated with this task
-        // TODO: get_billing_information
+        std::string get_billing_information() const
+        {
+            return properties().get_value_as_string("BillingInformation");
+        }
+
+        void set_billing_information(const std::string& billing_information)
+        {
+            properties().set_or_update("BillingInformation", billing_information);
+        }
 
         // How many times this task has been acted upon (sent, accepted,
         // etc.). This is simply a way to resolve conflicts when the
         // delegator sends multiple updates. Also known as TaskVersion
-        // TODO: get_change_count
+        // Seems to be read-only.
+        int get_change_count() const
+        {
+            const auto val = properties().get_value_as_string("ChangeCount");
+            if (val.empty())
+            {
+                return 0;
+            }
+            return std::stoi(val);
+        }
 
         // A list of company names associated with this task
-        // TODO: get_companies
+        // Server accepts only one String-Element, although it is an ArrayOfStringsType
+        std::vector<std::string> get_companies() const
+        {
+            auto node = properties().get_node("Companies");
+            if (!node)
+            {
+                return std::vector<std::string>();
+            }
+            auto res = std::vector<std::string>();
+            for (auto entry = node->first_node(); entry;
+                 entry = entry->next_sibling())
+            {
+                res.emplace_back(std::string(entry->value(),
+                                             entry->value_size()));
+            }
+            return res;
+        }
+
+        void set_companies(const std::vector<std::string>& companies)
+        {
+            using uri = internal::uri<>;
+
+            auto companies_node = properties().get_node("Companies");
+            if (companies_node)
+            {
+                auto doc = companies_node->document();
+                doc->remove_node(companies_node);
+            }
+            if (companies.empty())
+            {
+                // Nothing to do
+                return;
+            }
+
+            auto doc = properties().document();
+            auto ptr_to_qname = doc->allocate_string("t:Companies");
+            companies_node = doc->allocate_node(rapidxml::node_element);
+            companies_node->qname(ptr_to_qname, std::strlen("t:Companies"), ptr_to_qname + 2);
+            companies_node->namespace_uri(uri::microsoft::types(),
+                                          uri::microsoft::types_size);
+            doc->append_node(companies_node);
+
+            for (const auto& company : companies)
+            {
+                ptr_to_qname = doc->allocate_string("t:String");
+                auto node = doc->allocate_node(rapidxml::node_element);
+                node->qname(ptr_to_qname, std::strlen("t:String"), ptr_to_qname + 2);
+                node->namespace_uri(uri::microsoft::types(),
+                                    uri::microsoft::types_size);
+                auto ptr_to_value = doc->allocate_string(company.c_str());
+                node->value(ptr_to_value);
+                companies_node->append_node(node);
+            }
+        }
 
         // Time the task was completed
-        // TODO: get_complete_date
+        date_time get_complete_date() const
+        {
+            return date_time(properties().get_value_as_string("CompleteDate"));
+        }
 
         // Contact names associated with this task
-        // TODO: get_contacts
+        std::string get_contacts() const
+        {
+            auto res = std::string();
+            // TODO
+            //auto node = properties().get_node("Contacts");
+            return res;
+        }
 
         // Enumeration value indicating whether the delegated task was
-        // accepted or not
-        // TODO: get_delegation_state
+        // accepted or not. This is a read-only property.
+        void set_delegation_state(delegation_state state)
+        {
+            properties().set_or_update("DelegationState",
+                                       internal::enum_to_str(state));
+        }
+
+        delegation_state get_delegation_state() const
+        {
+            const auto& val =
+                properties().get_value_as_string("DelegationState");
+            if (val == "NoMatch")
+            {
+                return delegation_state::no_match;
+            }
+            else if (val == "OwnNew")
+            {
+                return delegation_state::own_new;
+            }
+            else if (val == "Owned")
+            {
+                return delegation_state::owned;
+            }
+            else if (val == "Accepted")
+            {
+                return delegation_state::accepted;
+            }
+            else if (val == "Declined")
+            {
+                return delegation_state::declined;
+            }
+            else if (val == "Max")
+            {
+                return delegation_state::max;
+            }
+            else
+            {
+                throw exception("Unexpected <DelegationState>");
+            }
+        }
 
         // Display name of the user that delegated the task
-        // TODO: get_delegator
+        std::string get_delegator() const
+        {
+            return properties().get_value_as_string("Delegator");
+        }
 
         //! Sets the date that the task is due
         void set_due_date(const date_time& due_date)
@@ -6468,10 +6669,16 @@ namespace ews
         }
 
         // TODO: is_assignment_editable, possible values 0-5, 2007 dialect?
+        // This is a read-only property.
+        int is_assignment_editable() const
+        {
+            EWS_ASSERT(false && "TODO");
+            return 0;
+        }
 
         //! \brief True if the task is marked as complete.
         //!
-        //! This is a read-only property.  See also
+        //! This is a read-only property. See also
         //! task_property_path::percent_complete
         bool is_complete() const
         {
@@ -6480,13 +6687,30 @@ namespace ews
 
         // True if the task is recurring
         // TODO: is_recurring
+        bool is_recurring() const
+        {
+            return properties().get_value_as_string("IsRecurring") == "true";
+        }
 
-        // True if the task is a team task
+        // True if the task is a team task. This is a read-only property.
         // TODO: is_team_task
+        bool is_team_task() const
+        {
+            return properties().get_value_as_string("IsTeamTask") == "true";
+        }
 
         // Mileage associated with the task, potentially used for reimbursement
         // purposes
         // TODO: get_mileage
+        std::string get_mileage() const
+        {
+            return properties().get_value_as_string("Mileage");
+        }
+
+        void set_mileage(const std::string& mileage)
+        {
+            properties().set_or_update("Mileage", mileage);
+        }
 
         // The name of the user who owns the task. This is a read-only property
         // TODO: Not in AllProperties shape in EWS 2013, investigate
@@ -6497,9 +6721,26 @@ namespace ews
         }
 #endif
 
-        // The percentage of the task that has been completed. Valid values are
-        // 0-100
-        // TODO: get_percent_complete
+        //! \brief Returns the percentage of the task that has been completed.
+        //!
+        //! Valid values are 0-100
+        double get_percent_complete() const
+        {
+            const auto val =
+                properties().get_value_as_string("PercentComplete");
+            if (val.empty())
+            {
+                return 0;
+            }
+            return std::stoi(val);
+        }
+
+        // TODO: test?
+        void set_percent_complete(double percent_complete)
+        {
+            properties().set_or_update("PercentComplete",
+                                       std::to_string(percent_complete));
+        }
 
         // Used for recurring tasks
         // TODO: get_recurrence
@@ -6516,15 +6757,74 @@ namespace ews
             return date_time(properties().get_value_as_string("StartDate"));
         }
 
-        // The status of the task
-        // TODO: get_status
+        //! Returns the status of the task
+        status get_status() const
+        {
+            const auto& val = properties().get_value_as_string("Status");
+            if (val == "NotStarted")
+            {
+                return status::not_started;
+            }
+            else if (val == "InProgress")
+            {
+                return status::in_progress;
+            }
+            else if (val == "Completed")
+            {
+                return status::completed;
+            }
+            else if (val == "WaitingOnOthers")
+            {
+                return status::waiting_on_others;
+            }
+            else if (val == "Deferred")
+            {
+                return status::deferred;
+            }
+            else
+            {
+                throw exception("Unexpected <Status>");
+            }
+        }
 
-        // A localized string version of the status. Useful for display
-        // purposes
-        // TODO: get_status_description
+        //! Sets the status of the task to \p status
+        void set_status(status status)
+        {
+            properties().set_or_update("Status", internal::enum_to_str(status));
+        }
 
-        // The total amount of work for this task
-        // TODO: get_total_work
+        //! \brief Returns the status description.
+        //!
+        //! A localized string version of the status. Useful for display
+        //! purposes. This is a read-only property.
+        std::string get_status_description() const
+        {
+            return properties().get_value_as_string("StatusDescription");
+        }
+
+        //! Sets the status description
+        // TODO: is there a test! Seems weird to have such a function
+        void set_status_description(const std::string& status_description)
+        {
+            properties().set_or_update("StatusDescription", status_description);
+        }
+
+        //! Returns the total amount of work for this task
+        int get_total_work() const
+        {
+            const auto val = properties().get_value_as_string("TotalWork");
+            if (val.empty())
+            {
+                return 0;
+            }
+            return std::stoi(val);
+        }
+
+        // TODO: test? doxygen comment
+        void set_total_work(int total_work)
+        {
+            properties().set_or_update("TotalWork", std::to_string(total_work));
+        }
 
         // Every property below is 2012 or 2013 dialect
 
@@ -7647,7 +7947,7 @@ namespace ews
         //! Use this constructor if you want to delete a property from an item
         explicit property(property_path path)
             : path_(std::move(path)),
-              value_()
+            value_()
         {
         }
 
@@ -7655,95 +7955,95 @@ namespace ews
         // set or update an item's property
         property(property_path path, std::string value)
             : path_(std::move(path)),
-              value_(std::move(value))
+            value_(std::move(value))
         {
         }
 
         property(property_path path, const char* value)
             : path_(std::move(path)),
-              value_(std::string(value))
+            value_(std::string(value))
         {
         }
 
         property(property_path path, int value)
             : path_(std::move(path)),
-              value_(std::to_string(value))
+            value_(std::to_string(value))
         {
         }
 
         property(property_path path, long value)
             : path_(std::move(path)),
-              value_(std::to_string(value))
+            value_(std::to_string(value))
         {
         }
 
         property(property_path path, long long value)
             : path_(std::move(path)),
-              value_(std::to_string(value))
+            value_(std::to_string(value))
         {
         }
 
         property(property_path path, unsigned value)
             : path_(std::move(path)),
-              value_(std::to_string(value))
+            value_(std::to_string(value))
         {
         }
 
         property(property_path path, unsigned long value)
             : path_(std::move(path)),
-              value_(std::to_string(value))
+            value_(std::to_string(value))
         {
         }
 
         property(property_path path, unsigned long long value)
             : path_(std::move(path)),
-              value_(std::to_string(value))
+            value_(std::to_string(value))
         {
         }
 
         property(property_path path, float value)
             : path_(std::move(path)),
-              value_(std::to_string(value))
+            value_(std::to_string(value))
         {
         }
 
         property(property_path path, double value)
             : path_(std::move(path)),
-              value_(std::to_string(value))
+            value_(std::to_string(value))
         {
         }
 
         property(property_path path, long double value)
             : path_(std::move(path)),
-              value_(std::to_string(value))
+            value_(std::to_string(value))
         {
         }
 
         property(property_path path, bool value)
             : path_(std::move(path)),
-              value_(value ? "true" : "false")
+            value_(value ? "true" : "false")
         {
         }
 
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
         template <typename T,
             typename = typename std::enable_if<std::is_enum<T>::value>::type>
-        property(property_path path, T enum_value)
+            property(property_path path, T enum_value)
             : path_(std::move(path)),
-              value_(internal::enum_to_str(enum_value))
+            value_(internal::enum_to_str(enum_value))
         {
         }
 #else
         property(property_path path, ews::sensitivity enum_value)
             : path_(std::move(path)),
-              value_(internal::enum_to_str(enum_value))
+            value_(internal::enum_to_str(enum_value))
         {
         }
 #endif
 
         property(property_path path, const body& value)
             : path_(std::move(path)),
-              value_(value.to_xml("t"))
+            value_(value.to_xml("t"))
         {
         }
 
@@ -7755,6 +8055,18 @@ namespace ews
             for (const auto& addr : value)
             {
                 sstr << addr.to_xml("t");
+            }
+            value_ = sstr.str();
+        }
+
+        property(property_path path, const std::vector<std::string>& value)
+            : path_(std::move(path)),
+              value_()
+        {
+            std::stringstream sstr;
+            for (const auto& str : value)
+            {
+                sstr << "<t:String>" << str << "</t:String>";
             }
             value_ = sstr.str();
         }
