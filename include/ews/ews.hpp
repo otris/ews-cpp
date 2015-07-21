@@ -3484,6 +3484,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 #endif
 
     // Represents a contact's email address
+    // TODO: maybe rename to mailbox
     class email_address final
     {
     public:
@@ -3506,6 +3507,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
               mailbox_type_(std::move(mailbox_type))
         {}
 
+        // TODO: rename
         const item_id& id() const EWS_NOEXCEPT { return id_; }
 
         // The address
@@ -3525,6 +3527,46 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         const std::string& mailbox_type() const EWS_NOEXCEPT
         {
             return mailbox_type_;
+        }
+
+        std::string to_xml(const char* xmlns=nullptr) const
+        {
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "Mailbox>";
+            if (id().valid())
+            {
+                sstr << id().to_xml(xmlns);
+            }
+            else
+            {
+                sstr << "<" << pref << "EmailAddress>" << value()
+                     <<"</" << pref << "EmailAddress>";
+
+                if (!name().empty())
+                {
+                    sstr << "<" << pref << "Name>" << name()
+                         << "</" << pref << "Name>";
+                }
+
+                if (!routing_type().empty())
+                {
+                    sstr << "<" << pref << "RoutingType>" << routing_type()
+                         << "</" << pref << "RoutingType>";
+                }
+
+                if (!mailbox_type().empty())
+                {
+                    sstr << "<" << pref << "MailboxType>" << mailbox_type()
+                         << "</" << pref << "MailboxType>";
+                }
+            }
+            sstr << "</" << pref << "Mailbox>";
+            return sstr.str();
         }
 
     private:
@@ -5415,6 +5457,18 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             : path_(std::move(path)),
               value_(value.to_xml("t"))
         {
+        }
+
+        property(property_path path, const std::vector<email_address>& value)
+            : path_(std::move(path)),
+              value_()
+        {
+            std::stringstream sstr;
+            for (const auto& addr : value)
+            {
+                sstr << addr.to_xml("t");
+            }
+            value_ = sstr.str();
         }
 
         std::string to_xml(const char* xmlns) const

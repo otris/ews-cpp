@@ -1,6 +1,8 @@
 #include "fixture.hpp"
 #include <utility>
 
+using on_scope_exit = ews::internal::on_scope_exit;
+
 namespace tests
 {
     class ServiceTest : public ContactTest {};
@@ -81,7 +83,6 @@ namespace tests
         // should contain <DeleteItemField> instead
     }
 
-#if 0
     TEST_F(ServiceTest, UpdateItemWithAppendToItemField)
     {
         // <AppendToItemField> is automatically deduced by service::update_item
@@ -97,18 +98,32 @@ namespace tests
         // - message:BccRecipients
         // - message:ReplyTo
 
-        auto item_property = ews::item_property_path();
-        auto minnie = test_contact();
+        auto message_property = ews::message_property_path();
 
-        // TODO: property c'tor needs overload for other property types, too!
-        //
-        // - find a way to serialize those properties to a simple string
-        //   including attributes and all
-        // - then maybe get rid of property_path::property_name
+        auto message = ews::message();
+        message.set_subject("You are hiding again, aren't you?");
+        std::vector<ews::email_address> recipients{
+            ews::email_address("darkwing.duck@duckburg.com")
+        };
+        message.set_to_recipients(recipients);
+        auto item_id = service().create_item(
+                message,
+                ews::message_disposition::save_only);
+        on_scope_exit delete_message([&]
+        {
+            service().delete_message(std::move(message));
+        });
+        message = service().get_message(item_id);
+        recipients = message.get_to_recipients();
+        EXPECT_EQ(1U, recipients.size());
 
-        // auto body = ews::body("Some text", ews::body_type::plain_text);
-        // auto prop = ews::property(item_property.body, body);
-        // auto new_id = service().update_item(minnie.get_item_id(), prop);
+        std::vector<ews::email_address> additional_recipients{
+            ews::email_address("gus.goose@duckburg.com")
+        };
+        auto prop = ews::property(message_property.to_recipients,
+                                  additional_recipients);
+        auto new_id = service().update_item(message.get_item_id(), prop);
+        message = service().get_message(item_id);
+        ASSERT_EQ(2U, message.get_to_recipients().size());
     }
-#endif
 }
