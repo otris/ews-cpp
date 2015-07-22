@@ -1,4 +1,4 @@
-#include "fixture.hpp"
+#include "fixtures.hpp"
 
 using folder_id = ews::folder_id;
 using distinguished_folder_id = ews::distinguished_folder_id;
