@@ -1998,6 +1998,96 @@ namespace ews
         return it->second;
     }
 
+    enum class server_version
+    {
+        // Target the schema files for the initial release version of
+        // Exchange 2007
+        exchange_2007,
+
+        // Target the schema files for Exchange 2007 Service Pack 1 (SP1),
+        // Exchange 2007 Service Pack 2 (SP2), and
+        // Exchange 2007 Service Pack 3 (SP3)
+        exchange_2007_sp1,
+
+        // Target the schema files for Exchange 2010
+        exchange_2010,
+
+        // Target the schema files for Exchange 2010 Service Pack 1 (SP1)
+        exchange_2010_sp1,
+
+        // Target the schema files for Exchange 2010 Service Pack 2 (SP2)
+        // and Exchange 2010 Service Pack 3 (SP3)
+        exchange_2010_sp2,
+
+        // Target the schema files for Exchange 2013
+        exchange_2013,
+
+        // Target the schema files for Exchange 2013 Service Pack 1 (SP1)
+        exchange_2013_sp1
+    };
+
+    namespace internal
+    {
+        inline std::string server_version_to_str(server_version vers)
+        {
+            switch (vers)
+            {
+                case server_version::exchange_2007:
+                    return "Exchange2007";
+                case server_version::exchange_2007_sp1:
+                    return "Exchange2007_SP1";
+                case server_version::exchange_2010:
+                    return "Exchange2010";
+                case server_version::exchange_2010_sp1:
+                    return "Exchange2010_SP1";
+                case server_version::exchange_2010_sp2:
+                    return "Exchange2010_SP2";
+                case server_version::exchange_2013:
+                    return "Exchange2013";
+                case server_version::exchange_2013_sp1:
+                    return "Exchange2013_SP1";
+                default:
+                    throw exception("Bad enum value");
+            }
+        }
+
+        inline server_version str_to_server_version(const std::string& str)
+        {
+            if (str == "Exchange2007")
+            {
+                return server_version::exchange_2007;
+            }
+            else if (str == "Exchange2007_SP1")
+            {
+                return server_version::exchange_2007_sp1;
+            }
+            else if (str == "Exchange2010")
+            {
+                return server_version::exchange_2010;
+            }
+            else if (str == "Exchange2010_SP1")
+            {
+                return server_version::exchange_2010_sp1;
+            }
+            else if (str == "Exchange2010_SP2")
+            {
+                return server_version::exchange_2010_sp2;
+            }
+            else if (str == "Exchange2013")
+            {
+                return server_version::exchange_2013;
+            }
+            else if (str == "Exchange2013_SP1")
+            {
+                return server_version::exchange_2013_sp1;
+            }
+            else
+            {
+                throw exception("Unrecognized <RequestServerVersion>");
+            }
+        }
+    }
+
     enum class base_shape { id_only, default_shape, all_properties };
 
     // TODO: move to internal namespace
@@ -2005,8 +2095,8 @@ namespace ews
     {
         switch (shape)
         {
-            case base_shape::id_only: return "IdOnly";
-            case base_shape::default_shape: return "Default";
+            case base_shape::id_only:        return "IdOnly";
+            case base_shape::default_shape:  return "Default";
             case base_shape::all_properties: return "AllProperties";
             default: throw exception("Bad enum value");
         }
@@ -2700,14 +2790,17 @@ namespace ews
         // soap_headers: Any SOAP headers to add.
         //
         // Returns the response.
+        template <typename RequestHandler = http_request>
         inline http_response make_raw_soap_request(
-            const std::string& url, const std::string& username,
-            const std::string& password, const std::string& domain,
+            const std::string& url,
+            const std::string& username,
+            const std::string& password,
+            const std::string& domain,
             const std::string& soap_body,
             const std::vector<std::string>& soap_headers)
         {
-            http_request request{url};
-            request.set_method(http_request::method::POST);
+            RequestHandler request{url};
+            request.set_method(RequestHandler::method::POST);
             request.set_content_type("text/xml; charset=utf-8");
 
             ntlm_credentials creds{username, password, domain};
@@ -4010,7 +4103,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         }
 
     private:
-        friend class service;
+        template <typename U> friend class basic_service;
         std::string create_item_request_string() const
         {
             std::stringstream sstr;
@@ -4259,7 +4352,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         }
 
     private:
-        friend class service;
+        template <typename U> friend class basic_service;
         std::string create_item_request_string() const
         {
             std::stringstream sstr;
@@ -4660,7 +4753,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         }
 
     private:
-        friend class service;
+        template <typename U> friend class basic_service;
         std::string
         create_item_request_string(ews::message_disposition disposition) const
         {
@@ -5661,7 +5754,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     // - get_task
     //
     // and so on and so on.
-    class service final
+    template <typename RequestHandler = internal::http_request>
+    class basic_service final
     {
     public:
         // FIXME: credentials are stored plain-text in memory
@@ -5671,14 +5765,26 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // crashed and some automatic mechanism sent a minidump over the wire.
         // What are our options? Security-by-obscurity: we could hash
         // credentials with a hash of the process-id or something.
-        service(std::string server_uri, std::string domain,
-                std::string username, std::string password)
+        basic_service(std::string server_uri,
+                      std::string domain,
+                      std::string username,
+                      std::string password)
             : server_uri_(std::move(server_uri)),
               domain_(std::move(domain)),
               username_(std::move(username)),
               password_(std::move(password)),
               server_version_("Exchange2013_SP1")
         {
+        }
+
+        void set_request_server_version(server_version vers)
+        {
+            server_version_ = internal::server_version_to_str(vers);
+        }
+
+        server_version get_request_server_version() const
+        {
+            return internal::str_to_server_version(server_version_);
         }
 
         // Gets a task from the Exchange store
@@ -5775,6 +5881,9 @@ R"(
 
             auto response =
                 request(the_message.create_item_request_string(disposition));
+#ifdef EWS_ENABLE_VERBOSE
+            std::cerr << response.payload() << std::endl;
+#endif
             const auto response_message =
                 create_item_response_message::parse(response);
             if (!response_message.success())
@@ -5908,16 +6017,16 @@ R"(
         // checks the response for faults.
         internal::http_response request(const std::string& request_string)
         {
-            // TODO: support multiple dialects depending on server version
             const auto soap_headers = std::vector<std::string> {
-                "<t:RequestServerVersion Version=\"Exchange2013_SP1\"/>"
+                "<t:RequestServerVersion Version=\"" + server_version_ + "\"/>"
             };
-            auto response = internal::make_raw_soap_request(server_uri_,
-                                                            username_,
-                                                            password_,
-                                                            domain_,
-                                                            request_string,
-                                                            soap_headers);
+            auto response =
+                internal::make_raw_soap_request<RequestHandler>(server_uri_,
+                                                                username_,
+                                                                password_,
+                                                                domain_,
+                                                                request_string,
+                                                                soap_headers);
             internal::raise_exception_if_soap_fault(response);
             return response;
         }
@@ -5965,6 +6074,9 @@ R"(
             using internal::create_item_response_message;
 
             auto response = request(the_item.create_item_request_string());
+#ifdef EWS_ENABLE_VERBOSE
+            std::cerr << response.payload() << std::endl;
+#endif
             const auto response_message =
                 create_item_response_message::parse(response);
             if (!response_message.success())
@@ -5988,6 +6100,9 @@ R"(
     </m:DeleteItem>
 )";
             auto response = request(request_string);
+#ifdef EWS_ENABLE_VERBOSE
+            std::cerr << response.payload() << std::endl;
+#endif
             const auto response_message =
                 delete_item_response_message::parse(response);
             if (!response_message.success())
@@ -5997,6 +6112,16 @@ R"(
             the_item = ItemType();
         }
     };
+
+    typedef basic_service<> service;
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<service>::value, "");
+    static_assert(std::is_copy_constructible<service>::value, "");
+    static_assert(std::is_copy_assignable<service>::value, "");
+    static_assert(std::is_move_constructible<service>::value, "");
+    static_assert(std::is_move_assignable<service>::value, "");
+#endif
 
     // Implementations
 

@@ -1,10 +1,13 @@
 #pragma once
 
-#include <memory>
-
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
 #include <gtest/gtest.h>
+
+#include <string>
+#include <vector>
+#include <memory>
+#include <utility>
 
 namespace tests
 {
@@ -31,6 +34,120 @@ namespace tests
         {
             ews::tear_down();
         }
+    };
+
+    class FakeServiceFixture : public BaseFixture
+    {
+    public:
+        struct http_request_mock final
+        {
+            struct storage
+            {
+                static storage& instance()
+                {
+                    thread_local storage inst;
+                    return inst;
+                }
+
+                std::string request_string;
+                std::vector<char> fake_response;
+            };
+
+            http_request_mock() = default;
+
+            bool header_contains(const std::string& search_str) const
+            {
+                const auto& request_str = storage::instance().request_string;
+                const auto header_end_idx = request_str.find("</soap:Header>");
+                const auto search_str_idx = request_str.find(search_str);
+                return     search_str_idx != std::string::npos
+                        && search_str_idx < header_end_idx;
+            }
+
+            // Below same public interface as ews::internal::http_request class
+            enum class method { POST };
+
+            explicit http_request_mock(const std::string& url)
+            {
+                (void)url;
+            }
+
+            void set_method(method m)
+            {
+                (void)m;
+            }
+
+            void set_content_type(const std::string& content_type)
+            {
+                (void)content_type;
+            }
+
+            void set_credentials(const ews::internal::credentials& creds)
+            {
+                (void)creds;
+            }
+
+            template <typename... Args> void set_option(CURLoption, Args...) {}
+
+            ews::internal::http_response send(const std::string& request)
+            {
+                auto& s = storage::instance();
+                s.request_string = request;
+                auto response_bytes = s.fake_response;
+                return ews::internal::http_response(200,
+                                                    std::move(response_bytes));
+            }
+        };
+
+        virtual ~FakeServiceFixture() = default;
+
+        ews::basic_service<http_request_mock>& service()
+        {
+            return *service_ptr_;
+        }
+
+        http_request_mock get_last_request()
+        {
+            return http_request_mock();
+        }
+
+        void set_next_fake_response(const char* str)
+        {
+            auto& storage = http_request_mock::storage::instance();
+            storage.fake_response =
+                std::vector<char>(str, str + std::strlen(str));
+            storage.fake_response.push_back('\0');
+        }
+
+    protected:
+        virtual void SetUp()
+        {
+            BaseFixture::SetUp();
+#ifdef EWS_HAS_MAKE_UNIQUE
+            service_ptr_ = std::make_unique<
+                                ews::basic_service<http_request_mock>>(
+                                    "https://example.com/ews/Exchange.asmx",
+                                    "FAKEDOMAIN",
+                                    "fakeuser",
+                                    "fakepassword");
+#else
+            service_ptr_ = std::unique_ptr<ews::basic_service<http_request_mock>>(
+                                new ews::basic_service<http_request_mock>(
+                                    "https://example.com/ews/Exchange.asmx",
+                                    "FAKEDOMAIN",
+                                    "fakeuser",
+                                    "fakepassword"));
+#endif
+        }
+
+        virtual void TearDown()
+        {
+            service_ptr_.reset();
+            BaseFixture::TearDown();
+        }
+
+    private:
+        std::unique_ptr<ews::basic_service<http_request_mock>> service_ptr_;
     };
 
     // Set-up and tear down a service object
