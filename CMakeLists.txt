@@ -121,6 +121,16 @@ endif()
 # Feature test macros
 include(CheckCXXSourceCompiles)
 
+# Test support for noexcept specifier - negative: VS 2013
+CHECK_CXX_SOURCE_COMPILES("
+void func() noexcept { }
+int main() { }
+" HAS_NOEXCEPT_SPECIFIER)
+
+if(HAS_NOEXCEPT_SPECIFIER)
+    add_definitions(-DEWS_HAS_NOEXCEPT_SPECIFIER)
+endif()
+
 # N3656 - negative: libstdc++ prior 4.9.0
 CHECK_CXX_SOURCE_COMPILES("
 #include <memory>

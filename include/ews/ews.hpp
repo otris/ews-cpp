@@ -41,11 +41,10 @@
 # endif
 #endif // !NDEBUG
 
-// Visual Studio 12 does not support noexcept specifier.
-#ifndef _MSC_VER
+#ifdef EWS_HAS_NOEXCEPT_SPECIFIER
 # define EWS_NOEXCEPT noexcept
 #else
-# define EWS_NOEXCEPT 
+# define EWS_NOEXCEPT
 #endif
 
 namespace ews
