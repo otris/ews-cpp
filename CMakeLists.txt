@@ -170,6 +170,7 @@ endif()
 add_executable(tests
     ${ews_SOURCES}
     ${rapidxml_SOURCES}
+    tests/test_attachments.cpp
     tests/test_contacts.cpp
     tests/test_folders.cpp
     tests/test_internals.cpp

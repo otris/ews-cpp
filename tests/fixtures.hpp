@@ -252,4 +252,36 @@ namespace tests
     struct MessageTest : public ServiceFixture
     {
     };
+
+    struct AttachmentTest : public ServiceFixture
+    {
+    public:
+        void SetUp()
+        {
+            ServiceFixture::SetUp();
+
+            auto msg = ews::message();
+            msg.set_subject("Honorable Minister of Finance - Release Funds");
+            std::vector<ews::email_address> recipients{
+                ews::email_address("udom.emmanuel@zenith-bank.com.ng")
+            };
+            msg.set_to_recipients(recipients);
+            auto item_id = service().create_item(
+                    msg,
+                    ews::message_disposition::save_only);
+            message_ = service().get_message(item_id);
+        }
+
+        void TearDown()
+        {
+            service().delete_message(std::move(message_));
+
+            ServiceFixture::TearDown();
+        }
+
+        ews::message& test_message() { return message_; }
+
+    private:
+        ews::message message_;
+    };
 }

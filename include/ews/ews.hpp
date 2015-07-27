@@ -3169,6 +3169,90 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     static_assert(std::is_move_assignable<item_id>::value, "");
 #endif
 
+    // Contains the unique identifier of an attachment.
+    class attachment_id final
+    {
+    public:
+        attachment_id() = default;
+
+        explicit attachment_id(std::string id) : id_(std::move(id)) {}
+
+        attachment_id(std::string id, item_id root_item_id)
+            : id_(std::move(id)),
+              root_item_id_(std::move(root_item_id))
+        {}
+
+        const std::string& id() const EWS_NOEXCEPT { return id_; }
+
+        const item_id& root_item_id() const EWS_NOEXCEPT
+        {
+            return root_item_id_;
+        }
+
+        bool valid() const EWS_NOEXCEPT { return !id_.empty(); }
+
+        std::string to_xml(const char* xmlns=nullptr) const
+        {
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "AttachmentId Id=\"" << id() << "\"";
+            if (root_item_id().valid())
+            {
+                sstr << " RootItemId=\"" << root_item_id().id()
+                     << "\" RootItemChangeKey=\"" << root_item_id().change_key()
+                     << "\"";
+            }
+            sstr << "/>";
+            return sstr.str();
+        }
+
+        // Makes an attachment_id instance from an <AttachmentId> element
+        static attachment_id from_xml_element(const rapidxml::xml_node<>& elem)
+        {
+            auto id_attr = elem.first_attribute("Id");
+            EWS_ASSERT(id_attr && "Missing attribute Id in <AttachmentId>");
+            auto id = std::string(id_attr->value(), id_attr->value_size());
+            auto root_item_id = std::string();
+            auto root_item_ckey = std::string();
+
+            auto root_item_id_attr = elem.first_attribute("RootItemId");
+            if (root_item_id_attr)
+            {
+                root_item_id =
+                    std::string(root_item_id_attr->value(),
+                                root_item_id_attr->value_size());
+                auto root_item_ckey_attr =
+                    elem.first_attribute("RootItemChangeKey");
+                EWS_ASSERT(root_item_ckey_attr
+                        && "Expected attribute RootItemChangeKey");
+                root_item_ckey = std::string(root_item_ckey_attr->value(),
+                                             root_item_ckey_attr->value_size());
+            }
+
+            return root_item_id.empty() ?
+                   attachment_id(std::move(id)) :
+                   attachment_id(std::move(id),
+                                 item_id(std::move(root_item_id),
+                                         std::move(root_item_ckey)));
+        }
+
+    private:
+        std::string id_;
+        item_id root_item_id_;
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(std::is_default_constructible<attachment_id>::value, "");
+    static_assert(std::is_copy_constructible<attachment_id>::value, "");
+    static_assert(std::is_copy_assignable<attachment_id>::value, "");
+    static_assert(std::is_move_constructible<attachment_id>::value, "");
+    static_assert(std::is_move_assignable<attachment_id>::value, "");
+#endif
+
     namespace internal
     {
         // A self-contained copy of a DOM sub-tree generally used to hold
@@ -6003,6 +6087,15 @@ R"(
             EWS_ASSERT(!response_message.items().empty()
                     && "Expected at least one item");
             return response_message.items().front();
+        }
+
+        // content_type: the MIME content type of the attachment. On Windows
+        // you can use HKEY_CLASSES_ROOT/MIME/Database/Content Type registry
+        // hive to get the content type from a file extension. On a UNIX see
+        // magic(5) and file(1).
+        attachment_id create_attachment(std::string content_type)
+        {
+            return attachment_id("");
         }
 
     private:
