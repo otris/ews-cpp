@@ -3,6 +3,9 @@
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
 #include <gtest/gtest.h>
+#ifdef EWS_USE_BOOST_LIBRARY
+# include <boost/filesystem.hpp>
+#endif
 
 #include <string>
 #include <vector>
@@ -253,7 +256,30 @@ namespace tests
     {
     };
 
-    struct AttachmentTest : public ServiceFixture
+    struct ItemAttachmentTest : public BaseFixture
+    {
+    };
+
+#ifdef EWS_USE_BOOST_LIBRARY
+    class FileAttachmentTest : public BaseFixture
+    {
+    public:
+        FileAttachmentTest()
+            : assets_dir_("/home/bkircher/src/ews-cpp/tests/assets")
+        {
+        }
+
+        const boost::filesystem::path& assets_dir() const
+        {
+            return assets_dir_;
+        }
+
+    private:
+        boost::filesystem::path assets_dir_;
+    };
+#endif // EWS_USE_BOOST_LIBRARY
+
+    class AttachmentTest : public ServiceFixture
     {
     public:
         void SetUp()

@@ -53,7 +53,7 @@ namespace tests
     TEST(AttachmentIdTest, FromXmlNodeWithIdAndRootIdAttributes)
     {
         const char* xml =
-            R"(<AttachmentId Id="abcde" RootItemId="qwertz" RootItemChangeKey="edcba"/>)";
+R"(<AttachmentId Id="abcde" RootItemId="qwertz" RootItemChangeKey="edcba"/>)";
         std::vector<char> buf(xml, xml + std::strlen(xml));
         buf.push_back('\0');
         xml_document doc;
@@ -70,7 +70,7 @@ namespace tests
     TEST(AttachmentIdTest, ToXMLWithNamespace)
     {
         const char* expected =
-            R"(<ns:AttachmentId Id="abcde" RootItemId="qwertz" RootItemChangeKey="edcba"/>)";
+R"(<ns:AttachmentId Id="abcde" RootItemId="qwertz" RootItemChangeKey="edcba"/>)";
         const auto obj =
             ews::attachment_id("abcde", ews::item_id("qwertz", "edcba"));
         EXPECT_STREQ(expected, obj.to_xml("ns").c_str());
@@ -79,7 +79,7 @@ namespace tests
     TEST(AttachmentIdTest, ToXML)
     {
         const char* expected =
-            R"(<AttachmentId Id="abcde" RootItemId="qwertz" RootItemChangeKey="edcba"/>)";
+R"(<AttachmentId Id="abcde" RootItemId="qwertz" RootItemChangeKey="edcba"/>)";
         const auto obj =
             ews::attachment_id("abcde", ews::item_id("qwertz", "edcba"));
         EXPECT_STREQ(expected, obj.to_xml().c_str());
@@ -88,7 +88,7 @@ namespace tests
     TEST(AttachmentIdTest, FromAndToXMLRoundTrip)
     {
         const char* xml =
-            R"(<AttachmentId Id="abcde" RootItemId="qwertz" RootItemChangeKey="edcba"/>)";
+R"(<AttachmentId Id="abcde" RootItemId="qwertz" RootItemChangeKey="edcba"/>)";
         std::vector<char> buf(xml, xml + std::strlen(xml));
         buf.push_back('\0');
         xml_document doc;
@@ -98,8 +98,63 @@ namespace tests
         EXPECT_STREQ(xml, obj.to_xml().c_str());
     }
 
-    TEST_F(AttachmentTest, CreateAndDeleteAttachment)
+    TEST_F(ItemAttachmentTest, DefaultConstructorCreatesItemAttachment)
     {
-        FAIL() << "TODO";
+        auto attachment = ews::attachment();
+        EXPECT_EQ(ews::attachment::type::item, attachment.get_type());
     }
+
+    // TEST_F(ItemAttachmentTest, CreateFromItem)
+    // {
+    //     auto item_attachment = ews::attachment::from_item();
+    // }
+
+#ifdef EWS_USE_BOOST_LIBRARY
+    TEST_F(FileAttachmentTest, CreateFromFile)
+    {
+        const auto path = assets_dir()/"ballmer_peak.png";
+        auto file_attachment = ews::attachment::from_file(path.string(),
+                                                          "image/png",
+                                                          "Ballmer Peak");
+        EXPECT_EQ(ews::attachment::type::file, file_attachment.get_type());
+        EXPECT_FALSE(file_attachment.id().valid());
+        EXPECT_STREQ("Ballmer Peak", file_attachment.name().c_str());
+        EXPECT_STREQ("image/png", file_attachment.content_type().c_str());
+        EXPECT_NE(nullptr, file_attachment.content());
+        EXPECT_EQ(93525U, file_attachment.content_size());
+    }
+
+    TEST_F(FileAttachmentTest, CreateFromFileThrowsIfFileDoesNotExists)
+    {
+        const auto path = assets_dir()/"unlikely_to_exist.txt";
+        EXPECT_THROW(
+        {
+            ews::attachment::from_file(path.string(), "image/png", "");
+
+        }, ews::exception);
+    }
+
+    TEST_F(FileAttachmentTest, CreateFromFileExceptionMessage)
+    {
+        const auto path = assets_dir()/"unlikely_to_exist.txt";
+        try
+        {
+            ews::attachment::from_file(path.string(), "image/png", "");
+            FAIL() << "Expected exception to be raised";
+        }
+        catch (ews::exception& exc)
+        {
+            auto expected = "Could not open file for reading: " + path.string();
+            EXPECT_STREQ(expected.c_str(), exc.what());
+        }
+    }
+#endif // EWS_USE_BOOST_LIBRARY
+
+    // TEST_F(AttachmentTest, CreateAndDeleteAttachment)
+    // {
+    //     auto& msg = test_message();
+    //     auto file_attachment = ews::attachment::from_file();
+    //     auto attachment_id = service().create_attachment(msg, file_attachment);
+    //     ASSERT_TRUE(attachment_id.valid());
+    // }
 }

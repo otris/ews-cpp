@@ -110,6 +110,16 @@ set(GTEST_INCLUDE_DIR ${GTEST_ROOT}/include)
 set(GTEST_LIBRARIES gtest gtest_main)
 include_directories(${GTEST_INCLUDE_DIR})
 
+# Boost is optional as it is only used by some test cases
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_UES_STATIC_RUNTIME OFF)
+find_package(Boost 1.57 COMPONENTS system filesystem)
+if(Boost_FOUND)
+    add_definitions(-DEWS_USE_BOOST_LIBRARY -DBOOST_FILESYSTEM_NO_DEPRECATED)
+    include_directories(${Boost_INCLUDE_DIRS})
+endif()
+
 if(ENABLE_ASSERTS)
     add_definitions(-DEWS_ENABLE_ASSERTS)
 endif()
@@ -180,7 +190,13 @@ add_executable(tests
     tests/test_restrictions.cpp
     tests/test_service.cpp
     tests/test_tasks.cpp)
-target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
+
+if(Boost_FOUND)
+    target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES}
+        ${Boost_LIBRARIES})
+else()
+    target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
+endif()
 set_target_properties(tests PROPERTIES
     LINKER_LANGUAGE CXX
     COMPILE_FLAGS "${SANITIZE_CXXFLAGS}"

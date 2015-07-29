@@ -6,8 +6,10 @@
 #include <vector>
 #include <unordered_map>
 #include <sstream>
+#include <fstream>
 #include <ios>
 #include <algorithm>
+#include <iterator>
 #include <functional>
 #include <utility>
 #include <memory>
@@ -5823,6 +5825,93 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // TODO: is_equal_to(property_path, property_path) {}
     };
 
+    class attachment final
+    {
+    public:
+        enum class type { item, file };
+
+        attachment() = default;
+
+        static attachment from_file(std::string file_path,
+                                    std::string content_type,
+                                    std::string name)
+        {
+            // Try open file
+            auto ifstr = std::ifstream(file_path,
+                                       std::ifstream::in | std::ios::binary);
+            if (!ifstr.is_open())
+            {
+                throw exception(
+                        "Could not open file for reading: " + file_path);
+            }
+
+            // Stop eating newlines in binary mode
+            ifstr.unsetf(std::ios::skipws);
+
+            // Determine size
+            ifstr.seekg(0, std::ios::end);
+            const auto file_size = ifstr.tellg();
+            ifstr.seekg(0, std::ios::beg);
+
+            // Allocate buffer
+            auto buffer = std::vector<unsigned char>();
+            buffer.reserve(file_size);
+
+            // Read
+            buffer.insert(begin(buffer),
+                          std::istream_iterator<unsigned char>(ifstr),
+                          std::istream_iterator<unsigned char>());
+
+            auto obj = attachment();
+            obj.type_ = type::file;
+            obj.name_ = std::move(name);
+            obj.content_type_ = std::move(content_type);
+            obj.content_ = std::move(buffer);
+            return obj;
+        }
+
+        // static attachment from_item()
+        // {
+        //     return attachment();
+        // }
+
+        const attachment_id& id() const EWS_NOEXCEPT { return id_; }
+
+        const std::string& name() const EWS_NOEXCEPT { return name_; }
+
+        const std::string& content_type() const EWS_NOEXCEPT
+        {
+            return content_type_;
+        }
+
+        const unsigned char* content() const EWS_NOEXCEPT
+        {
+            return content_.data();
+        }
+
+        std::size_t content_size() const EWS_NOEXCEPT
+        {
+            return content_.size();
+        }
+
+        type get_type() const EWS_NOEXCEPT { return type_; }
+
+    private:
+        attachment_id id_;
+        std::string name_;
+        std::string content_type_;
+        std::vector<unsigned char> content_;
+        type type_;
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(std::is_default_constructible<attachment>::value, "");
+    static_assert(std::is_copy_constructible<attachment>::value, "");
+    static_assert(std::is_copy_assignable<attachment>::value, "");
+    static_assert(std::is_move_constructible<attachment>::value, "");
+    static_assert(std::is_move_assignable<attachment>::value, "");
+#endif
+
     // The service class contains all methods that can be performed on an
     // Exchange server.
     //
@@ -6089,13 +6178,21 @@ R"(
             return response_message.items().front();
         }
 
-        // content_type: the MIME content type of the attachment. On Windows
-        // you can use HKEY_CLASSES_ROOT/MIME/Database/Content Type registry
-        // hive to get the content type from a file extension. On a UNIX see
-        // magic(5) and file(1).
-        attachment_id create_attachment(std::string content_type)
+        // content_type: the (RFC 2046) MIME content type of the attachment. On
+        // Windows you can use HKEY_CLASSES_ROOT/MIME/Database/Content Type
+        // registry hive to get the content type from a file extension. On a
+        // UNIX see magic(5) and file(1).
+        attachment_id create_attachment(const item& parent_item,
+                                        const attachment& att)
         {
-            return attachment_id("");
+            return attachment_id();
+        }
+
+        std::vector<attachment_id>
+        create_attachment(const item& parent_item,
+                          const std::vector<attachment>& attachments)
+        {
+            return std::vector<attachment>();
         }
 
     private:
