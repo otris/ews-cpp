@@ -293,17 +293,47 @@ namespace tests
     {
     public:
         FileAttachmentTest()
-            : assets_dir_("/home/bkircher/src/ews-cpp/tests/assets")
+            : assetsdir_("/home/bkircher/src/ews-cpp/tests/assets")
         {
+        }
+
+        void SetUp()
+        {
+            BaseFixture::SetUp();
+
+            olddir_ = boost::filesystem::current_path();
+            workingdir_ = boost::filesystem::unique_path(
+                        boost::filesystem::temp_directory_path() /
+                        "%%%%-%%%%-%%%%-%%%%");
+            ASSERT_TRUE(boost::filesystem::create_directory(workingdir_))
+                << "Unable to create temporary working directory";
+            boost::filesystem::current_path(workingdir_);
+        }
+
+        void TearDown()
+        {
+            EXPECT_TRUE(boost::filesystem::is_empty(workingdir_))
+                << "Temporary directory not empty on TearDown";
+            boost::filesystem::remove_all(workingdir_);
+            boost::filesystem::current_path(olddir_);
+
+            BaseFixture::TearDown();
         }
 
         const boost::filesystem::path& assets_dir() const
         {
-            return assets_dir_;
+            return assetsdir_;
+        }
+
+        const boost::filesystem::path& cwd() const
+        {
+            return workingdir_;
         }
 
     private:
-        boost::filesystem::path assets_dir_;
+        boost::filesystem::path assetsdir_;
+        boost::filesystem::path olddir_;
+        boost::filesystem::path workingdir_;
     };
 #endif // EWS_USE_BOOST_LIBRARY
 }

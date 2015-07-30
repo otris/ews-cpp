@@ -6023,6 +6023,38 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // attachment; otherwise 0.
         std::size_t content_size() const EWS_NOEXCEPT { return content_size_; }
 
+        // If this is a <FileAttachment>, writes content to file.  Does nothing
+        // if this is an <ItemAttachment>.  Returns the number of bytes
+        // written.
+        std::size_t write_content_to_file(const std::string& file_path)
+        {
+            if (get_type() == type::item)
+            {
+                return 0U;
+            }
+
+            const auto raw_bytes = internal::base64::decode(content_);
+
+            auto ofstr = std::ofstream(file_path,
+                                       std::ofstream::out | std::ios::binary);
+            if (!ofstr.is_open())
+            {
+                if (file_path.empty())
+                {
+                    throw exception(
+                        "Could not open file for writing: no file name given");
+                }
+
+                throw exception(
+                        "Could not open file for writing: " + file_path);
+            }
+
+            std::copy(begin(raw_bytes), end(raw_bytes),
+                      std::ostreambuf_iterator<char>(ofstr));
+            ofstr.close();
+            return raw_bytes.size();
+        }
+
         // std::string to_xml(const char* xmlns=nullptr) const
         // {}
 
@@ -6111,6 +6143,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             buffer.insert(begin(buffer),
                           std::istream_iterator<unsigned char>(ifstr),
                           std::istream_iterator<unsigned char>());
+            ifstr.close();
 
             // And encode
             auto content = internal::base64::encode(buffer);
