@@ -18,6 +18,7 @@
 #endif
 #include <cstddef>
 #include <cstring>
+#include <cctype>
 
 #include <curl/curl.h>
 
@@ -113,6 +114,170 @@ namespace ews
         {
             no_assign& operator=(const no_assign&) = delete;
         };
+
+        namespace base64
+        {
+            // Following code (everything in base64 namespace) is a slightly
+            // modified version of the original implementation from
+            // René Nyffenegger available at
+            //
+            //     http://www.adp-gmbh.ch/cpp/common/base64.html
+            //
+            // Copyright (C) 2004-2008 René Nyffenegger
+            //
+            // This source code is provided 'as-is', without any express or
+            // implied warranty. In no event will the author be held liable for
+            // any damages arising from the use of this software.
+            //
+            // Permission is granted to anyone to use this software for any
+            // purpose, including commercial applications, and to alter it and
+            // redistribute it freely, subject to the following restrictions:
+            //
+            // 1. The origin of this source code must not be misrepresented;
+            //    you must not claim that you wrote the original source code.
+            //    If you use this source code in a product, an acknowledgment
+            //    in the product documentation would be appreciated but is not
+            //    required.
+            //
+            // 2. Altered source versions must be plainly marked as such, and
+            //    must not be misrepresented as being the original source code.
+            //
+            // 3. This notice may not be removed or altered from any source
+            //    distribution.
+            //
+            // René Nyffenegger rene.nyffenegger@adp-gmbh.ch
+
+            inline const std::string& valid_chars()
+            {
+                static const auto chars =
+                    std::string("ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                "abcdefghijklmnopqrstuvwxyz"
+                                "0123456789+/");
+                return chars;
+            }
+
+            inline bool is_base64(unsigned char c) EWS_NOEXCEPT
+            {
+                return std::isalnum(c) || (c == '+') || (c == '/');
+            }
+
+            inline std::string encode(const std::vector<unsigned char>& buf)
+            {
+                const auto& base64_chars = valid_chars();
+                int i = 0;
+                int j = 0;
+                unsigned char char_array_3[3];
+                unsigned char char_array_4[4];
+                auto buflen = buf.size();
+                auto bufit = begin(buf);
+                std::string ret;
+
+                while (buflen--)
+                {
+                    char_array_3[i++] = *(bufit++);
+                    if (i == 3)
+                    {
+                        char_array_4[0] =  (char_array_3[0] & 0xfc) >> 2;
+                        char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+                        char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+                        char_array_4[3] =   char_array_3[2] & 0x3f;
+
+                        for(i = 0; (i < 4); i++)
+                        {
+                            ret += base64_chars[char_array_4[i]];
+                        }
+                        i = 0;
+                    }
+                }
+
+                if (i)
+                {
+                    for(j = i; j < 3; j++)
+                    {
+                        char_array_3[j] = '\0';
+                    }
+
+                    char_array_4[0] =  (char_array_3[0] & 0xfc) >> 2;
+                    char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+                    char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+                    char_array_4[3] =   char_array_3[2] & 0x3f;
+
+                    for (j = 0; (j < i + 1); j++)
+                    {
+                        ret += base64_chars[char_array_4[j]];
+                    }
+
+                    while((i++ < 3))
+                    {
+                        ret += '=';
+                    }
+                }
+
+                return ret;
+            }
+
+            inline
+            std::vector<unsigned char> decode(const std::string& encoded_string)
+            {
+                const auto& base64_chars = valid_chars();
+                int in_len = encoded_string.size();
+                int i = 0;
+                int j = 0;
+                int in = 0;
+                unsigned char char_array_4[4];
+                unsigned char char_array_3[3];
+                std::vector<unsigned char> ret;
+
+                while (   in_len--
+                       && (encoded_string[in] != '=')
+                       && is_base64(encoded_string[in]))
+                {
+                    char_array_4[i++] = encoded_string[in]; in++;
+                    if (i == 4)
+                    {
+                      for (i = 0; i < 4; i++)
+                      {
+                          char_array_4[i] = base64_chars.find(char_array_4[i]);
+                      }
+
+                      char_array_3[0] =  (char_array_4[0] << 2)        + ((char_array_4[1] & 0x30) >> 4);
+                      char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+                      char_array_3[2] = ((char_array_4[2] & 0x3) << 6) +   char_array_4[3];
+
+                      for (i = 0; (i < 3); i++)
+                      {
+                          ret.push_back(char_array_3[i]);
+                      }
+                      i = 0;
+                    }
+                }
+
+                if (i)
+                {
+                    for (j = i; j < 4; j++)
+                    {
+                        char_array_4[j] = 0;
+                    }
+
+                    for (j = 0; j < 4; j++)
+                    {
+                        char_array_4[j] = base64_chars.find(char_array_4[j]);
+                    }
+
+                    char_array_3[0] =  (char_array_4[0] << 2)        + ((char_array_4[1] & 0x30) >> 4);
+                    char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+                    char_array_3[2] = ((char_array_4[2] & 0x3) << 6) +   char_array_4[3];
+
+                    for (j = 0; (j < i - 1); j++)
+                    {
+                        ret.push_back(char_array_3[j]);
+                    }
+                }
+
+                return ret;
+            }
+
+        } // base64
 
         // Forward declarations
         class http_request;
@@ -3617,7 +3782,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
     // Represents an item's <MimeContent CharacterSet="" /> element.
     //
     // Contains the ASCII MIME stream of an object that is represented in
-    // base64Binary format (as in RFC2045).
+    // base64Binary format (as in RFC 2045).
     class mime_content final
     {
     public:
@@ -5825,6 +5990,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // TODO: is_equal_to(property_path, property_path) {}
     };
 
+    // Represents a <FileAttachment> or a <ItemAttachment>
     class attachment final
     {
     public:
@@ -5832,6 +5998,90 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         attachment() = default;
 
+        const attachment_id& id() const EWS_NOEXCEPT { return id_; }
+
+        const std::string& name() const EWS_NOEXCEPT { return name_; }
+
+        const std::string& content_type() const EWS_NOEXCEPT
+        {
+            return content_type_;
+        }
+
+        // Returns either ews::attachment::type::file or
+        // ews::attachment::type::item
+        type get_type() const EWS_NOEXCEPT { return type_; }
+
+        // If this is a <FileAttachment>, returns the Base64-encoded contents
+        // of the file attachment. If this is an <ItemAttachment>, the empty
+        // string.
+        const std::string& content() const EWS_NOEXCEPT
+        {
+            return content_;
+        }
+
+        // If this is a <FileAttachment>, returns the size in bytes of the file
+        // attachment; otherwise 0.
+        std::size_t content_size() const EWS_NOEXCEPT { return content_size_; }
+
+        // std::string to_xml(const char* xmlns=nullptr) const
+        // {}
+
+        static attachment from_xml_element(const rapidxml::xml_node<>& elem)
+        {
+            using uri = internal::uri<>;
+
+            const auto elem_name = std::string(elem.local_name(),
+                                               elem.local_name_size());
+            EWS_ASSERT((elem_name == "FileAttachment"
+                     || elem_name == "ItemAttachment")
+                    && "Expected <FileAttachment> or <ItemAttachment>");
+
+            auto obj = attachment();
+            if (elem_name == "FileAttachment")
+            {
+                obj.type_ = type::file;
+                auto id_node = elem.first_node_ns(uri::microsoft::types(),
+                                                 "AttachmentId");
+                EWS_ASSERT(id_node && "Expected <AttachmentId>");
+                obj.id_ = attachment_id::from_xml_element(*id_node);
+
+                auto name_node = elem.first_node_ns(uri::microsoft::types(),
+                                                    "Name");
+                if (name_node)
+                {
+                    obj.name_ = std::string(name_node->value(),
+                                            name_node->value_size());
+                }
+
+                auto content_type_node =
+                    elem.first_node_ns(uri::microsoft::types(), "ContentType");
+                if (content_type_node)
+                {
+                    obj.content_type_ =
+                        std::string(content_type_node->value(),
+                                    content_type_node->value_size());
+                }
+
+                auto content_node = elem.first_node_ns(uri::microsoft::types(),
+                                                       "Content");
+                if (content_node)
+                {
+                    obj.content_ = std::string(content_node->value(),
+                                               content_node->value_size());
+                }
+            }
+            else
+            {
+                obj.type_ = type::item;
+            }
+            return obj;
+        }
+
+        // Creates a new <FileAttachment> from a given file.
+        //
+        // Returns a new <FileAttachment> that you can pass to
+        // ews::service::create_attachment in order to create the attachment on
+        // the server.
         static attachment from_file(std::string file_path,
                                     std::string content_type,
                                     std::string name)
@@ -5862,45 +6112,52 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                           std::istream_iterator<unsigned char>(ifstr),
                           std::istream_iterator<unsigned char>());
 
+            // And encode
+            auto content = internal::base64::encode(buffer);
+
             auto obj = attachment();
             obj.type_ = type::file;
             obj.name_ = std::move(name);
             obj.content_type_ = std::move(content_type);
-            obj.content_ = std::move(buffer);
+            obj.content_ = std::move(content);
+            obj.content_size_ = buffer.size();
             return obj;
         }
 
-        // static attachment from_item()
-        // {
-        //     return attachment();
-        // }
-
-        const attachment_id& id() const EWS_NOEXCEPT { return id_; }
-
-        const std::string& name() const EWS_NOEXCEPT { return name_; }
-
-        const std::string& content_type() const EWS_NOEXCEPT
+        // Creates a new <ItemAttachment> from a given item.
+        //
+        // It is not necessary for the item to already exist in the Exchange
+        // store. If it doesn't, it will be automatically created.
+        static attachment from_item(const item& the_item, std::string name)
         {
-            return content_type_;
-        }
+            (void)the_item;
 
-        const unsigned char* content() const EWS_NOEXCEPT
-        {
-            return content_.data();
-        }
+            // Creating a new <ItemAttachment> with the <CreateAttachment>
+            // method is pretty similar to a <CreateItem> method call. However,
+            // most of the times we do not want to create item attachments out
+            // of thin air but attach an _existing_ item.
+            //
+            // If we want create an attachment from an existing item, we need
+            // to first call <GetItem> before we call <CreateItem> and put the
+            // complete item from the response into the <CreateAttachment>
+            // call.
+            //
+            // There is a shortcut: use <BaseShape>IdOnly</BaseShape> and
+            // <AdditionalProperties> with item::MimeContent in <GetItem> call,
+            // remove <ItemId> from the response and pass that to
+            // <CreateAttachment>.
 
-        std::size_t content_size() const EWS_NOEXCEPT
-        {
-            return content_.size();
+            auto obj = attachment();
+            obj.name_ = std::move(name);
+            return obj;
         }
-
-        type get_type() const EWS_NOEXCEPT { return type_; }
 
     private:
         attachment_id id_;
         std::string name_;
         std::string content_type_;
-        std::vector<unsigned char> content_;
+        std::string content_;
+        std::size_t content_size_;
         type type_;
     };
 
@@ -6183,8 +6440,10 @@ R"(
         // registry hive to get the content type from a file extension. On a
         // UNIX see magic(5) and file(1).
         attachment_id create_attachment(const item& parent_item,
-                                        const attachment& att)
+                                        const attachment& a)
         {
+            (void)parent_item;
+            (void)a;
             return attachment_id();
         }
 
@@ -6192,7 +6451,9 @@ R"(
         create_attachment(const item& parent_item,
                           const std::vector<attachment>& attachments)
         {
-            return std::vector<attachment>();
+            (void)parent_item;
+            (void)attachments;
+            return std::vector<attachment_id>();
         }
 
     private:
@@ -6381,7 +6642,8 @@ R"(
                 "Expected <FindItemResponseMessage>, got nullptr");
             const auto result = parse_response_class_and_code(*elem);
 
-            auto root_folder = elem->first_node_ns(uri::microsoft::messages(), "RootFolder");
+            auto root_folder = elem->first_node_ns(uri::microsoft::messages(),
+                                                   "RootFolder");
 
             auto items_elem =
                 root_folder->first_node_ns(uri::microsoft::types(), "Items");

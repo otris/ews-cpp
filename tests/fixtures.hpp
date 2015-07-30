@@ -256,29 +256,6 @@ namespace tests
     {
     };
 
-    struct ItemAttachmentTest : public BaseFixture
-    {
-    };
-
-#ifdef EWS_USE_BOOST_LIBRARY
-    class FileAttachmentTest : public BaseFixture
-    {
-    public:
-        FileAttachmentTest()
-            : assets_dir_("/home/bkircher/src/ews-cpp/tests/assets")
-        {
-        }
-
-        const boost::filesystem::path& assets_dir() const
-        {
-            return assets_dir_;
-        }
-
-    private:
-        boost::filesystem::path assets_dir_;
-    };
-#endif // EWS_USE_BOOST_LIBRARY
-
     class AttachmentTest : public ServiceFixture
     {
     public:
@@ -310,4 +287,23 @@ namespace tests
     private:
         ews::message message_;
     };
+
+#ifdef EWS_USE_BOOST_LIBRARY
+    class FileAttachmentTest : public BaseFixture
+    {
+    public:
+        FileAttachmentTest()
+            : assets_dir_("/home/bkircher/src/ews-cpp/tests/assets")
+        {
+        }
+
+        const boost::filesystem::path& assets_dir() const
+        {
+            return assets_dir_;
+        }
+
+    private:
+        boost::filesystem::path assets_dir_;
+    };
+#endif // EWS_USE_BOOST_LIBRARY
 }
