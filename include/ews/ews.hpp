@@ -5998,30 +5998,44 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         attachment() = default;
 
-        const attachment_id& id() const EWS_NOEXCEPT { return id_; }
-
-        const std::string& name() const EWS_NOEXCEPT { return name_; }
-
-        const std::string& content_type() const EWS_NOEXCEPT
+        attachment_id id() const
         {
-            return content_type_;
+            auto node = xml_.get_node("AttachmentId");
+            if (!node)
+            {
+                return attachment_id();
+            }
+            return attachment_id::from_xml_element(*node);
         }
 
-        // Returns either ews::attachment::type::file or
-        // ews::attachment::type::item
-        type get_type() const EWS_NOEXCEPT { return type_; }
+        std::string name() const
+        {
+            return xml_.get_value_as_string("Name");
+        }
+
+        std::string content_type() const
+        {
+            return xml_.get_value_as_string("ContentType");
+        }
 
         // If this is a <FileAttachment>, returns the Base64-encoded contents
         // of the file attachment. If this is an <ItemAttachment>, the empty
         // string.
-        const std::string& content() const EWS_NOEXCEPT
+        std::string content() const
         {
-            return content_;
+            return xml_.get_value_as_string("Content");
         }
 
         // If this is a <FileAttachment>, returns the size in bytes of the file
         // attachment; otherwise 0.
-        std::size_t content_size() const EWS_NOEXCEPT { return content_size_; }
+        std::size_t content_size() const
+        {
+            auto size = xml_.get_value_as_string("Size");
+            return size.empty() ? 0U : std::stoul(size);
+        }
+
+        // Returns either type::file or type::item
+        type get_type() const EWS_NOEXCEPT { return type_; }
 
         // If this is a <FileAttachment>, writes content to file.  Does nothing
         // if this is an <ItemAttachment>.  Returns the number of bytes
@@ -6033,7 +6047,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                 return 0U;
             }
 
-            const auto raw_bytes = internal::base64::decode(content_);
+            const auto raw_bytes = internal::base64::decode(content());
 
             auto ofstr = std::ofstream(file_path,
                                        std::ofstream::out | std::ios::binary);
@@ -6060,55 +6074,13 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         static attachment from_xml_element(const rapidxml::xml_node<>& elem)
         {
-            using uri = internal::uri<>;
-
             const auto elem_name = std::string(elem.local_name(),
                                                elem.local_name_size());
             EWS_ASSERT((elem_name == "FileAttachment"
                      || elem_name == "ItemAttachment")
                     && "Expected <FileAttachment> or <ItemAttachment>");
-
-            auto obj = attachment();
-            if (elem_name == "FileAttachment")
-            {
-                obj.type_ = type::file;
-                auto id_node = elem.first_node_ns(uri::microsoft::types(),
-                                                 "AttachmentId");
-                EWS_ASSERT(id_node && "Expected <AttachmentId>");
-                obj.id_ = attachment_id::from_xml_element(*id_node);
-
-                auto name_node = elem.first_node_ns(uri::microsoft::types(),
-                                                    "Name");
-                if (name_node)
-                {
-                    obj.name_ = std::string(name_node->value(),
-                                            name_node->value_size());
-                }
-
-                auto content_type_node =
-                    elem.first_node_ns(uri::microsoft::types(), "ContentType");
-                if (content_type_node)
-                {
-                    obj.content_type_ =
-                        std::string(content_type_node->value(),
-                                    content_type_node->value_size());
-                }
-
-                auto content_node = elem.first_node_ns(uri::microsoft::types(),
-                                                       "Content");
-                if (content_node)
-                {
-                    obj.content_ = std::string(content_node->value(),
-                                               content_node->value_size());
-                }
-
-                // TODO: parse missing nodes
-            }
-            else
-            {
-                obj.type_ = type::item;
-            }
-            return obj;
+            return attachment(elem_name == "FileAttachment" ?
+                    type::file : type::item, internal::xml_subtree(elem));
         }
 
         // Creates a new <FileAttachment> from a given file.
@@ -6116,7 +6088,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // Returns a new <FileAttachment> that you can pass to
         // ews::service::create_attachment in order to create the attachment on
         // the server.
-        static attachment from_file(std::string file_path,
+        static attachment from_file(const std::string& file_path,
                                     std::string content_type,
                                     std::string name)
         {
@@ -6152,10 +6124,10 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
             auto obj = attachment();
             obj.type_ = type::file;
-            obj.name_ = std::move(name);
-            obj.content_type_ = std::move(content_type);
-            obj.content_ = std::move(content);
-            obj.content_size_ = buffer.size();
+            obj.xml_.set_or_update("Name", std::move(name));
+            obj.xml_.set_or_update("ContentType", std::move(content_type));
+            obj.xml_.set_or_update("Content", std::move(content));
+            obj.xml_.set_or_update("Size", std::to_string(buffer.size()));
             return obj;
         }
 
@@ -6183,16 +6155,19 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             // <CreateAttachment>.
 
             auto obj = attachment();
-            obj.name_ = std::move(name);
+            obj.type_ = type::item;
+            obj.xml_.set_or_update("Name", std::move(name));
             return obj;
         }
 
     private:
-        attachment_id id_;
-        std::string name_;
-        std::string content_type_;
-        std::string content_;
-        std::size_t content_size_;
+        attachment(type&& t, internal::xml_subtree&& xml)
+            : xml_(std::move(xml)),
+              type_(std::move(t))
+        {
+        }
+
+        internal::xml_subtree xml_;
         type type_;
     };
 
