@@ -9,7 +9,7 @@
 namespace tests
 {
 #pragma warning(suppress: 6262)
-    TEST(OfflineTaskTest, FromXmlElement)
+    TEST(OfflineTaskTest, FromXMLElement)
     {
         using xml_document = rapidxml::xml_document<>;
 

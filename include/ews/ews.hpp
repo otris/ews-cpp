@@ -6069,8 +6069,16 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             return raw_bytes.size();
         }
 
-        // std::string to_xml(const char* xmlns=nullptr) const
-        // {}
+        std::string to_xml() const
+        {
+            auto elem = std::string(get_type() == type::item ?
+                    "ItemAttachment" : "FileAttachment");
+            std::stringstream sstr;
+            sstr << "<t:" << elem << ">";
+            sstr << xml_.to_string();
+            sstr << "</t:" << elem << ">";
+            return sstr.str();
+        }
 
         static attachment from_xml_element(const rapidxml::xml_node<>& elem)
         {

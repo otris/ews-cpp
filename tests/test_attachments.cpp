@@ -56,7 +56,7 @@ namespace tests
         EXPECT_STREQ("qwertz", obj.root_item_id().change_key().c_str());
     }
 
-    TEST(AttachmentIdTest, FromXmlNodeWithIdAttributeOnly)
+    TEST(AttachmentIdTest, FromXMLNodeWithIdAttributeOnly)
     {
         const char* xml = R"(<AttachmentId Id="abcde"/>)";
         std::vector<char> buf(xml, xml + std::strlen(xml));
@@ -70,7 +70,7 @@ namespace tests
         EXPECT_FALSE(obj.root_item_id().valid());
     }
 
-    TEST(AttachmentIdTest, FromXmlNodeWithIdAndRootIdAttributes)
+    TEST(AttachmentIdTest, FromXMLNodeWithIdAndRootIdAttributes)
     {
         const char* xml =
 R"(<AttachmentId Id="abcde" RootItemId="qwertz" RootItemChangeKey="edcba"/>)";
@@ -169,10 +169,33 @@ R"(<AttachmentId Id="abcde" RootItemId="qwertz" RootItemChangeKey="edcba"/>)";
         EXPECT_EQ(0U, obj.content_size());
     }
 
-    // TODO: to_xml
+    TEST_F(AttachmentTest, ToXML)
+    {
+        auto item = ews::item();
+        auto item_attachment = ews::attachment::from_item(item, "Some name");
+        const auto xml = item_attachment.to_xml();
+        EXPECT_FALSE(xml.empty());
+        EXPECT_STREQ(
+            "<t:ItemAttachment><t:Name>Some name</t:Name></t:ItemAttachment>",
+            xml.c_str());
+    }
+
     // TODO: from_item
 
 #ifdef EWS_USE_BOOST_LIBRARY
+    TEST_F(FileAttachmentTest, ToXML)
+    {
+        const auto path = assets_dir() / "ballmer_peak.png";
+        auto attachment = ews::attachment::from_file(path.string(),
+                                                     "image/png",
+                                                     "Ballmer Peak");
+        const auto xml = attachment.to_xml();
+        EXPECT_FALSE(xml.empty());
+        const char* prefix = "<t:FileAttachment>";
+        EXPECT_TRUE(std::equal(prefix, prefix + std::strlen(prefix),
+                    begin(xml)));
+    }
+
     TEST_F(FileAttachmentTest, WriteContentToFileDoesNothingIfItemAttachment)
     {
         const auto target_path = cwd() / "output.bin";

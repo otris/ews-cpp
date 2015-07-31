@@ -31,7 +31,7 @@ namespace tests
     }
 
 #pragma warning(suppress: 6262)
-    TEST(ItemIdTest, FromXmlNode)
+    TEST(ItemIdTest, FromXMLNode)
     {
         char buf[] = "<ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>";
         xml_document doc;
