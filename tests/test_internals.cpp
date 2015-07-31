@@ -104,7 +104,7 @@ namespace tests
             get_element_by_qname(doc,
                                  "EffectiveRights",
                                  uri<>::microsoft::types());
-        auto effective_rights = item_properties(*effective_rights_element);
+        auto effective_rights = xml_subtree(*effective_rights_element);
         EXPECT_STREQ(
             "<t:EffectiveRights><t:Delete>true</t:Delete><t:Modify>true</t:Modify><t:Read>true</t:Read></t:EffectiveRights>",
             effective_rights.to_string().c_str());
@@ -119,7 +119,7 @@ namespace tests
             R"(<html lang="en"><head><meta charset="utf-8"/><title>Welcome</title></head><body><h1>Greetings</h1><p>Hello!</p></body></html>)");
         doc.parse<0>(str);
         auto body_element = get_element_by_qname(doc, "body", "");
-        auto body = item_properties(*body_element);
+        auto body = xml_subtree(*body_element);
         rapidxml::xml_node<char>* node = nullptr;
         ASSERT_NO_THROW(
         {
@@ -139,7 +139,7 @@ namespace tests
             get_element_by_qname(doc,
                                  "EffectiveRights",
                                  uri<>::microsoft::types());
-        auto effective_rights = item_properties(*effective_rights_element);
+        auto effective_rights = xml_subtree(*effective_rights_element);
 
         EXPECT_STREQ("true", effective_rights.get_node("Delete")->value());
     }
@@ -155,7 +155,7 @@ namespace tests
             get_element_by_qname(doc,
                                  "EffectiveRights",
                                  uri<>::microsoft::types());
-        auto effective_rights = item_properties(*effective_rights_element);
+        auto effective_rights = xml_subtree(*effective_rights_element);
 
         effective_rights.set_or_update("Modify", "false");
         EXPECT_STREQ("false", effective_rights.get_node("Modify")->value());
@@ -164,5 +164,5 @@ namespace tests
             effective_rights.to_string().c_str());
     }
 
-    // TODO: test size_hint parameter of item_properties reduces/eliminates reallocs
+    // TODO: test size_hint parameter of xml_subtree reduces/eliminates reallocs
 }

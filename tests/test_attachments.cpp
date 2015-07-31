@@ -169,6 +169,9 @@ R"(<AttachmentId Id="abcde" RootItemId="qwertz" RootItemChangeKey="edcba"/>)";
         EXPECT_EQ(0U, obj.content_size());
     }
 
+    // TODO: to_xml
+    // TODO: from_item
+
 #ifdef EWS_USE_BOOST_LIBRARY
     TEST_F(FileAttachmentTest, WriteContentToFileDoesNothingIfItemAttachment)
     {

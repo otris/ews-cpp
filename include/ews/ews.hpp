@@ -3433,21 +3433,21 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         //
         // XML namespace.
         //
-        // A default constructed item_properties instance makes only sense when
-        // an item class is default constructed. In that case the buffer (and
-        // the DOM) is initially empty and elements are added directly to the
+        // A default constructed xml_subtree instance makes only sense when an
+        // item class is default constructed. In that case the buffer (and the
+        // DOM) is initially empty and elements are added directly to the
         // document's root node.
-        class item_properties final
+        class xml_subtree final
         {
         public:
             // Default constructible because item class (and it's descendants)
             // need to be
-            item_properties()
+            xml_subtree()
                 : rawdata_(),
                   doc_(new rapidxml::xml_document<char>)
             {}
 
-            explicit item_properties(const rapidxml::xml_node<char>& origin,
+            explicit xml_subtree(const rapidxml::xml_node<char>& origin,
                                  std::size_t size_hint=0U)
                 : rawdata_(),
                   doc_(new rapidxml::xml_document<char>)
@@ -3459,7 +3459,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             // However xml_document isn't (and can't be without major rewrite
             // IMHO).  Hence, copying is quite costly as it involves serializing
             // DOM tree to string and re-parsing into new tree
-            item_properties& operator=(const item_properties& rhs)
+            xml_subtree& operator=(const xml_subtree& rhs)
             {
                 if (&rhs != this)
                 {
@@ -3471,7 +3471,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                 return *this;
             }
 
-            item_properties(const item_properties& other)
+            xml_subtree(const xml_subtree& other)
                 : rawdata_(),
                   doc_(new rapidxml::xml_document<char>)
             {
@@ -3612,11 +3612,11 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-        static_assert(std::is_default_constructible<item_properties>::value, "");
-        static_assert(std::is_copy_constructible<item_properties>::value, "");
-        static_assert(std::is_copy_assignable<item_properties>::value, "");
-        static_assert(std::is_move_constructible<item_properties>::value, "");
-        static_assert(std::is_move_assignable<item_properties>::value, "");
+        static_assert(std::is_default_constructible<xml_subtree>::value, "");
+        static_assert(std::is_copy_constructible<xml_subtree>::value, "");
+        static_assert(std::is_copy_assignable<xml_subtree>::value, "");
+        static_assert(std::is_move_constructible<xml_subtree>::value, "");
+        static_assert(std::is_move_assignable<xml_subtree>::value, "");
 #endif
 
     }
@@ -3945,7 +3945,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         explicit item(item_id id) : item_id_(std::move(id)), properties_() {}
 
-        item(item_id&& id, internal::item_properties&& properties)
+        item(item_id&& id, internal::xml_subtree&& properties)
             : item_id_(std::move(id)),
               properties_(std::move(properties))
         {}
@@ -4202,19 +4202,19 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         //   <UniqueBody/>
 
     protected:
-        internal::item_properties& properties() EWS_NOEXCEPT
+        internal::xml_subtree& properties() EWS_NOEXCEPT
         {
             return properties_;
         }
 
-        const internal::item_properties& properties() const EWS_NOEXCEPT
+        const internal::xml_subtree& properties() const EWS_NOEXCEPT
         {
             return properties_;
         }
 
     private:
         item_id item_id_;
-        internal::item_properties properties_;
+        internal::xml_subtree properties_;
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
@@ -4233,7 +4233,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         explicit task(item_id id) : item(std::move(id)) {}
 
-        task(item_id&& id, internal::item_properties&& properties)
+        task(item_id&& id, internal::xml_subtree&& properties)
             : item(std::move(id), std::move(properties))
         {}
 
@@ -4349,7 +4349,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                                               "ItemId");
             EWS_ASSERT(id_node && "Expected <ItemId>");
             return task(item_id::from_xml_element(*id_node),
-                        internal::item_properties(elem));
+                        internal::xml_subtree(elem));
         }
 
     private:
@@ -4387,7 +4387,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         explicit contact(item_id id) : item(id) {}
 
-        contact(item_id&& id, internal::item_properties&& properties)
+        contact(item_id&& id, internal::xml_subtree&& properties)
             : item(std::move(id), std::move(properties))
         {}
 
@@ -4598,7 +4598,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                                               "ItemId");
             EWS_ASSERT(id_node && "Expected <ItemId>");
             return contact(item_id::from_xml_element(*id_node),
-                           internal::item_properties(elem));
+                           internal::xml_subtree(elem));
         }
 
     private:
@@ -4754,7 +4754,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
         explicit message(item_id id) : item(id) {}
 
-        message(item_id&& id, internal::item_properties&& properties)
+        message(item_id&& id, internal::xml_subtree&& properties)
             : item(std::move(id), std::move(properties))
         {}
 
@@ -4999,7 +4999,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                                               "ItemId");
             EWS_ASSERT(id_node && "Expected <ItemId>");
             return message(item_id::from_xml_element(*id_node),
-                           internal::item_properties(elem));
+                           internal::xml_subtree(elem));
         }
 
     private:
@@ -6026,7 +6026,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
         // If this is a <FileAttachment>, writes content to file.  Does nothing
         // if this is an <ItemAttachment>.  Returns the number of bytes
         // written.
-        std::size_t write_content_to_file(const std::string& file_path)
+        std::size_t write_content_to_file(const std::string& file_path) const
         {
             if (get_type() == type::item)
             {
@@ -6101,6 +6101,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                     obj.content_ = std::string(content_node->value(),
                                                content_node->value_size());
                 }
+
+                // TODO: parse missing nodes
             }
             else
             {
