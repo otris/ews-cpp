@@ -6049,8 +6049,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 
             const auto raw_bytes = internal::base64::decode(content());
 
-            auto ofstr = std::ofstream(file_path,
-                                       std::ofstream::out | std::ios::binary);
+            std::ofstream ofstr(file_path,
+                                std::ofstream::out | std::ios::binary);
             if (!ofstr.is_open())
             {
                 if (file_path.empty())
@@ -6101,8 +6101,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
                                     std::string name)
         {
             // Try open file
-            auto ifstr = std::ifstream(file_path,
-                                       std::ifstream::in | std::ios::binary);
+            std::ifstream ifstr(file_path,
+                                std::ifstream::in | std::ios::binary);
             if (!ifstr.is_open())
             {
                 throw exception(
