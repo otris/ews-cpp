@@ -107,7 +107,7 @@ include_directories(${ews_INCLUDE_DIR} ${CURL_INCLUDE_DIRS})
 add_subdirectory(3rdparty/gtest)
 set(GTEST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/gtest)
 set(GTEST_INCLUDE_DIR ${GTEST_ROOT}/include)
-set(GTEST_LIBRARIES gtest gtest_main)
+set(GTEST_LIBRARIES gtest)
 include_directories(${GTEST_INCLUDE_DIR})
 
 # Boost is optional as it is only used by some test cases
@@ -180,6 +180,7 @@ endif()
 add_executable(tests
     ${ews_SOURCES}
     ${rapidxml_SOURCES}
+    tests/main.cpp
     tests/test_attachments.cpp
     tests/test_contacts.cpp
     tests/test_folders.cpp

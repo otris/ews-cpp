@@ -14,8 +14,7 @@
 
 namespace tests
 {
-    // Global data used in tests; initialized at program-start
-    struct Environment
+    struct environment
     {
         static const ews::test::credentials& credentials()
         {
@@ -168,7 +167,7 @@ namespace tests
         virtual void SetUp()
         {
             BaseFixture::SetUp();
-            const auto& creds = Environment::credentials();
+            const auto& creds = environment::credentials();
 #ifdef EWS_HAS_MAKE_UNIQUE
             service_ptr_ = std::make_unique<ews::service>(creds.server_uri,
                                                           creds.domain,
@@ -293,7 +292,7 @@ namespace tests
     {
     public:
         FileAttachmentTest()
-            : assetsdir_("/home/bkircher/src/ews-cpp/tests/assets")
+            : assetsdir_(ews::test::global_data::instance().assets_dir)
         {
         }
 

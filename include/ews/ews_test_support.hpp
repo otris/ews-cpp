@@ -1,3 +1,5 @@
+// Global data used in tests and examples; initialized at program-start
+
 #pragma once
 
 #include <string>
@@ -52,5 +54,16 @@ namespace ews
             cred.server_uri = get_or_throw_env("EWS_TEST_URI");
             return cred;
         }
+
+        struct global_data
+        {
+            std::string assets_dir;
+
+            static global_data& instance()
+            {
+                static global_data inst;
+                return inst;
+            }
+        };
     }
 }
