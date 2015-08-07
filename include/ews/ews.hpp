@@ -2723,6 +2723,20 @@ namespace ews
             {
                 return;
             }
+
+            try
+            {
+                // Try parsing, if not already done before
+                response.payload();
+            }
+            catch (parse_error& error)
+            {
+                throw soap_fault(
+                    "The request failed for unknown reason (could not parse response)"
+                );
+            }
+
+            // Parsing should be done by now
             const auto& doc = response.payload();
             auto elem = get_element_by_qname(doc,
                                              "ResponseCode",
@@ -2730,9 +2744,8 @@ namespace ews
             if (!elem)
             {
                 throw soap_fault(
-                    "The request failed for unknown reason (no XML in response)"
+                    "The request failed for unknown reason (unexpected XML in response)"
                 );
-                // TODO: what about getting information from HTTP headers
             }
 
             if (compare(elem->value(),
