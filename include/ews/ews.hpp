@@ -220,7 +220,7 @@ namespace ews
             std::vector<unsigned char> decode(const std::string& encoded_string)
             {
                 const auto& base64_chars = valid_chars();
-                int in_len = encoded_string.size();
+                auto in_len = encoded_string.size();
                 int i = 0;
                 int j = 0;
                 int in = 0;
@@ -2452,7 +2452,7 @@ namespace ews
         inline curl_error make_curl_error(const std::string& msg,
                                           CURLcode rescode)
         {
-            std::string reason{ curl_easy_strerror(rescode) };
+            auto reason = std::string(curl_easy_strerror(rescode));
 #ifdef NDEBUG
             (void)msg;
             return curl_error(reason);
@@ -2489,7 +2489,7 @@ namespace ews
         class curl_string_list final
         {
         public:
-            curl_string_list() EWS_NOEXCEPT : slist_{ nullptr } {}
+            curl_string_list() EWS_NOEXCEPT : slist_(nullptr) {}
 
             ~curl_string_list() { curl_slist_free_all(slist_); }
 

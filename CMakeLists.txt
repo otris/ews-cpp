@@ -151,6 +151,26 @@ if(HAS_MAKE_UNIQUE)
     add_definitions(-DEWS_HAS_MAKE_UNIQUE)
 endif()
 
+# N2326 defaulted and deleted functions - negative: VS 2012 of course
+CHECK_CXX_SOURCE_COMPILES("
+struct Fu { Fu() = default; Fu(const Fu&) = delete; };
+int main() { }
+" HAS_DEFAULT_AND_DELETE)
+
+if(HAS_DEFAULT_AND_DELETE)
+    add_definitions(-DEWS_HAS_DEFAULT_AND_DELETE)
+endif()
+
+# Variadic templates - negative: VS 2012
+CHECK_CXX_SOURCE_COMPILES("
+template <typename... T> void func(T...) { }
+int main() { }
+" HAS_VARIADIC_TEMPLATES)
+
+if(HAS_VARIADIC_TEMPLATES)
+    add_definitions(-DEWS_HAS_VARIADIC_TEMPLATES)
+endif()
+
 # Non-buggy <type_traits> implementation - negative VS 2013
 CHECK_CXX_SOURCE_COMPILES("
 #include <type_traits>

@@ -4,15 +4,16 @@ README
 Supported Compilers
 -------------------
 
+* Visual Studio 2012
+* Visual Studio 2013
 * Clang 3.5 with libc++
 * GCC 4.8 with libstdc++
-* Visual Studio 2013
 
 
 Supported Operating Systems
 ---------------------------
 
-* Microsoft Windows 8
+* Microsoft Windows 8.1
 * Mac OS X 10.10
 * RHEL 7
 * Ubuntu 14.04
