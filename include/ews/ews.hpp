@@ -4,7 +4,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <unordered_map>
 #include <sstream>
 #include <fstream>
 #include <ios>
@@ -98,15 +97,6 @@ namespace ews
         static_assert(!std::is_copy_assignable<on_scope_exit>::value, "");
         static_assert(!std::is_default_constructible<on_scope_exit>::value, "");
 #endif
-
-        // Helper functor; calculate hash of 'enum class'
-        struct enum_class_hash
-        {
-            template <typename T> std::size_t operator()(T val) const
-            {
-                return static_cast<std::size_t>(val);
-            }
-        };
 
         // Helper class; makes sub-classes not copy assignable. Prevents MSVC++
         // from trying (and miserably failing) at generating those functions
@@ -1596,572 +1586,1648 @@ namespace ews
     };
 
     // TODO: move to internal namespace
-    inline response_code str_to_response_code(const char* str)
+    inline response_code str_to_response_code(const std::string& str)
     {
-        static const std::unordered_map<std::string, response_code> m{
-            { "NoError", response_code::no_error },
-            { "ErrorAccessDenied", response_code::error_access_denied },
-            { "ErrorAccountDisabled", response_code::error_account_disabled },
-            { "ErrorAddressSpaceNotFound", response_code::error_address_space_not_found },
-            { "ErrorADOperation", response_code::error_ad_operation },
-            { "ErrorADSessionFilter", response_code::error_ad_session_filter },
-            { "ErrorADUnavailable", response_code::error_ad_unavailable },
-            { "ErrorAutoDiscoverFailed", response_code::error_auto_discover_failed },
-            { "ErrorAffectedTaskOccurrencesRequired", response_code::error_affected_task_occurrences_required },
-            { "ErrorAttachmentSizeLimitExceeded", response_code::error_attachment_size_limit_exceeded },
-            { "ErrorAvailabilityConfigNotFound", response_code::error_availability_config_not_found },
-            { "ErrorBatchProcessingStopped", response_code::error_batch_processing_stopped },
-            { "ErrorCalendarCannotMoveOrCopyOccurrence", response_code::error_calendar_cannot_move_or_copy_occurrence },
-            { "ErrorCalendarCannotUpdateDeletedItem", response_code::error_calendar_cannot_update_deleted_item },
-            { "ErrorCalendarCannotUseIdForOccurrenceId", response_code::error_calendar_cannot_use_id_for_occurrence_id },
-            { "ErrorCalendarCannotUseIdForRecurringMasterId", response_code::error_calendar_cannot_use_id_for_recurring_master_id },
-            { "ErrorCalendarDurationIsTooLong", response_code::error_calendar_duration_is_too_long },
-            { "ErrorCalendarEndDateIsEarlierThanStartDate", response_code::error_calendar_end_date_is_earlier_than_start_date },
-            { "ErrorCalendarFolderIsInvalidForCalendarView", response_code::error_calendar_folder_is_invalid_for_calendar_view },
-            { "ErrorCalendarInvalidAttributeValue", response_code::error_calendar_invalid_attribute_value },
-            { "ErrorCalendarInvalidDayForTimeChangePattern", response_code::error_calendar_invalid_day_for_time_change_pattern },
-            { "ErrorCalendarInvalidDayForWeeklyRecurrence", response_code::error_calendar_invalid_day_for_weekly_recurrence },
-            { "ErrorCalendarInvalidPropertyState", response_code::error_calendar_invalid_property_state },
-            { "ErrorCalendarInvalidPropertyValue", response_code::error_calendar_invalid_property_value },
-            { "ErrorCalendarInvalidRecurrence", response_code::error_calendar_invalid_recurrence },
-            { "ErrorCalendarInvalidTimeZone", response_code::error_calendar_invalid_time_zone },
-            { "ErrorCalendarIsDelegatedForAccept", response_code::error_calendar_is_delegated_for_accept },
-            { "ErrorCalendarIsDelegatedForDecline", response_code::error_calendar_is_delegated_for_decline },
-            { "ErrorCalendarIsDelegatedForRemove", response_code::error_calendar_is_delegated_for_remove },
-            { "ErrorCalendarIsDelegatedForTentative", response_code::error_calendar_is_delegated_for_tentative },
-            { "ErrorCalendarIsNotOrganizer", response_code::error_calendar_is_not_organizer },
-            { "ErrorCalendarIsOrganizerForAccept", response_code::error_calendar_is_organizer_for_accept },
-            { "ErrorCalendarIsOrganizerForDecline", response_code::error_calendar_is_organizer_for_decline },
-            { "ErrorCalendarIsOrganizerForRemove", response_code::error_calendar_is_organizer_for_remove },
-            { "ErrorCalendarIsOrganizerForTentative", response_code::error_calendar_is_organizer_for_tentative },
-            { "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange", response_code::error_calendar_occurrence_index_is_out_of_recurrence_range },
-            { "ErrorCalendarOccurrenceIsDeletedFromRecurrence", response_code::error_calendar_occurrence_is_deleted_from_recurrence },
-            { "ErrorCalendarOutOfRange", response_code::error_calendar_out_of_range },
-            { "ErrorCalendarViewRangeTooBig", response_code::error_calendar_view_range_too_big },
-            { "ErrorCannotCreateCalendarItemInNonCalendarFolder", response_code::error_cannot_create_calendar_item_in_non_calendar_folder },
-            { "ErrorCannotCreateContactInNonContactsFolder", response_code::error_cannot_create_contact_in_non_contacts_folder },
-            { "ErrorCannotCreateTaskInNonTaskFolder", response_code::error_cannot_create_task_in_non_task_folder },
-            { "ErrorCannotDeleteObject", response_code::error_cannot_delete_object },
-            { "ErrorCannotDeleteTaskOccurrence", response_code::error_cannot_delete_task_occurrence },
-            { "ErrorCannotOpenFileAttachment", response_code::error_cannot_open_file_attachment },
-            { "ErrorCannotUseFolderIdForItemId", response_code::error_cannot_use_folder_id_for_item_id },
-            { "ErrorCannotUserItemIdForFolderId", response_code::error_cannot_user_item_id_for_folder_id },
-            { "ErrorChangeKeyRequired", response_code::error_change_key_required },
-            { "ErrorChangeKeyRequiredForWriteOperations", response_code::error_change_key_required_for_write_operations },
-            { "ErrorConnectionFailed", response_code::error_connection_failed },
-            { "ErrorContentConversionFailed", response_code::error_content_conversion_failed },
-            { "ErrorCorruptData", response_code::error_corrupt_data },
-            { "ErrorCreateItemAccessDenied", response_code::error_create_item_access_denied },
-            { "ErrorCreateManagedFolderPartialCompletion", response_code::error_create_managed_folder_partial_completion },
-            { "ErrorCreateSubfolderAccessDenied", response_code::error_create_subfolder_access_denied },
-            { "ErrorCrossMailboxMoveCopy", response_code::error_cross_mailbox_move_copy },
-            { "ErrorDataSizeLimitExceeded", response_code::error_data_size_limit_exceeded },
-            { "ErrorDataSourceOperation", response_code::error_data_source_operation },
-            { "ErrorDeleteDistinguishedFolder", response_code::error_delete_distinguished_folder },
-            { "ErrorDeleteItemsFailed", response_code::error_delete_items_failed },
-            { "ErrorDuplicateInputFolderNames", response_code::error_duplicate_input_folder_names },
-            { "ErrorEmailAddressMismatch", response_code::error_email_address_mismatch },
-            { "ErrorEventNotFound", response_code::error_event_not_found },
-            { "ErrorExpiredSubscription", response_code::error_expired_subscription },
-            { "ErrorFolderCorrupt", response_code::error_folder_corrupt },
-            { "ErrorFolderNotFound", response_code::error_folder_not_found },
-            { "ErrorFolderPropertyRequestFailed", response_code::error_folder_property_request_failed },
-            { "ErrorFolderSave", response_code::error_folder_save },
-            { "ErrorFolderSaveFailed", response_code::error_folder_save_failed },
-            { "ErrorFolderSavePropertyError", response_code::error_folder_save_property_error },
-            { "ErrorFolderExists", response_code::error_folder_exists },
-            { "ErrorFreeBusyGenerationFailed", response_code::error_free_busy_generation_failed },
-            { "ErrorGetServerSecurityDescriptorFailed", response_code::error_get_server_security_descriptor_failed },
-            { "ErrorImpersonateUserDenied", response_code::error_impersonate_user_denied },
-            { "ErrorImpersonationDenied", response_code::error_impersonation_denied },
-            { "ErrorImpersonationFailed", response_code::error_impersonation_failed },
-            { "ErrorIncorrectUpdatePropertyCount", response_code::error_incorrect_update_property_count },
-            { "ErrorIndividualMailboxLimitReached", response_code::error_individual_mailbox_limit_reached },
-            { "ErrorInsufficientResources", response_code::error_insufficient_resources },
-            { "ErrorInternalServerError", response_code::error_internal_server_error },
-            { "ErrorInternalServerTransientError", response_code::error_internal_server_transient_error },
-            { "ErrorInvalidAccessLevel", response_code::error_invalid_access_level },
-            { "ErrorInvalidAttachmentId", response_code::error_invalid_attachment_id },
-            { "ErrorInvalidAttachmentSubfilter", response_code::error_invalid_attachment_subfilter },
-            { "ErrorInvalidAttachmentSubfilterTextFilter", response_code::error_invalid_attachment_subfilter_text_filter },
-            { "ErrorInvalidAuthorizationContext", response_code::error_invalid_authorization_context },
-            { "ErrorInvalidChangeKey", response_code::error_invalid_change_key },
-            { "ErrorInvalidClientSecurityContext", response_code::error_invalid_client_security_context },
-            { "ErrorInvalidCompleteDate", response_code::error_invalid_complete_date },
-            { "ErrorInvalidCrossForestCredentials", response_code::error_invalid_cross_forest_credentials },
-            { "ErrorInvalidExchangeImpersonationHeaderData", response_code::error_invalid_exchange_impersonation_header_data },
-            { "ErrorInvalidExcludesRestriction", response_code::error_invalid_excludes_restriction },
-            { "ErrorInvalidExpressionTypeForSubFilter", response_code::error_invalid_expression_type_for_sub_filter },
-            { "ErrorInvalidExtendedProperty", response_code::error_invalid_extended_property },
-            { "ErrorInvalidExtendedPropertyValue", response_code::error_invalid_extended_property_value },
-            { "ErrorInvalidFolderId", response_code::error_invalid_folder_id },
-            { "ErrorInvalidFractionalPagingParameters", response_code::error_invalid_fractional_paging_parameters },
-            { "ErrorInvalidFreeBusyViewType", response_code::error_invalid_free_busy_view_type },
-            { "ErrorInvalidId", response_code::error_invalid_id },
-            { "ErrorInvalidIdEmpty", response_code::error_invalid_id_empty },
-            { "ErrorInvalidIdMalformed", response_code::error_invalid_id_malformed },
-            { "ErrorInvalidIdMonikerTooLong", response_code::error_invalid_id_moniker_too_long },
-            { "ErrorInvalidIdNotAnItemAttachmentId", response_code::error_invalid_id_not_an_item_attachment_id },
-            { "ErrorInvalidIdReturnedByResolveNames", response_code::error_invalid_id_returned_by_resolve_names },
-            { "ErrorInvalidIdStoreObjectIdTooLong", response_code::error_invalid_id_store_object_id_too_long },
-            { "ErrorInvalidIdTooManyAttachmentLevels", response_code::error_invalid_id_too_many_attachment_levels },
-            { "ErrorInvalidIdXml", response_code::error_invalid_id_xml },
-            { "ErrorInvalidIndexedPagingParameters", response_code::error_invalid_indexed_paging_parameters },
-            { "ErrorInvalidInternetHeaderChildNodes", response_code::error_invalid_internet_header_child_nodes },
-            { "ErrorInvalidItemForOperationCreateItemAttachment", response_code::error_invalid_item_for_operation_create_item_attachment },
-            { "ErrorInvalidItemForOperationCreateItem", response_code::error_invalid_item_for_operation_create_item },
-            { "ErrorInvalidItemForOperationAcceptItem", response_code::error_invalid_item_for_operation_accept_item },
-            { "ErrorInvalidItemForOperationCancelItem", response_code::error_invalid_item_for_operation_cancel_item },
-            { "ErrorInvalidItemForOperationDeclineItem", response_code::error_invalid_item_for_operation_decline_item },
-            { "ErrorInvalidItemForOperationExpandDL", response_code::error_invalid_item_for_operation_expand_dl },
-            { "ErrorInvalidItemForOperationRemoveItem", response_code::error_invalid_item_for_operation_remove_item },
-            { "ErrorInvalidItemForOperationSendItem", response_code::error_invalid_item_for_operation_send_item },
-            { "ErrorInvalidItemForOperationTentative", response_code::error_invalid_item_for_operation_tentative },
-            { "ErrorInvalidManagedFolderProperty", response_code::error_invalid_managed_folder_property },
-            { "ErrorInvalidManagedFolderQuota", response_code::error_invalid_managed_folder_quota },
-            { "ErrorInvalidManagedFolderSize", response_code::error_invalid_managed_folder_size },
-            { "ErrorInvalidMergedFreeBusyInterval", response_code::error_invalid_merged_free_busy_interval },
-            { "ErrorInvalidNameForNameResolution", response_code::error_invalid_name_for_name_resolution },
-            { "ErrorInvalidNetworkServiceContext", response_code::error_invalid_network_service_context },
-            { "ErrorInvalidOofParameter", response_code::error_invalid_oof_parameter },
-            { "ErrorInvalidPagingMaxRows", response_code::error_invalid_paging_max_rows },
-            { "ErrorInvalidParentFolder", response_code::error_invalid_parent_folder },
-            { "ErrorInvalidPercentCompleteValue", response_code::error_invalid_percent_complete_value },
-            { "ErrorInvalidPropertyAppend", response_code::error_invalid_property_append },
-            { "ErrorInvalidPropertyDelete", response_code::error_invalid_property_delete },
-            { "ErrorInvalidPropertyForExists", response_code::error_invalid_property_for_exists },
-            { "ErrorInvalidPropertyForOperation", response_code::error_invalid_property_for_operation },
-            { "ErrorInvalidPropertyRequest", response_code::error_invalid_property_request },
-            { "ErrorInvalidPropertySet", response_code::error_invalid_property_set },
-            { "ErrorInvalidPropertyUpdateSentMessage", response_code::error_invalid_property_update_sent_message },
-            { "ErrorInvalidPullSubscriptionId", response_code::error_invalid_pull_subscription_id },
-            { "ErrorInvalidPushSubscriptionUrl", response_code::error_invalid_push_subscription_url },
-            { "ErrorInvalidRecipients", response_code::error_invalid_recipients },
-            { "ErrorInvalidRecipientSubfilter", response_code::error_invalid_recipient_subfilter },
-            { "ErrorInvalidRecipientSubfilterComparison", response_code::error_invalid_recipient_subfilter_comparison },
-            { "ErrorInvalidRecipientSubfilterOrder", response_code::error_invalid_recipient_subfilter_order },
-            { "ErrorInvalidRecipientSubfilterTextFilter", response_code::error_invalid_recipient_subfilter_text_filter },
-            { "ErrorInvalidReferenceItem", response_code::error_invalid_reference_item },
-            { "ErrorInvalidRequest", response_code::error_invalid_request },
-            { "ErrorInvalidRestriction", response_code::error_invalid_restriction },
-            { "ErrorInvalidRoutingType", response_code::error_invalid_routing_type },
-            { "ErrorInvalidScheduledOofDuration", response_code::error_invalid_scheduled_oof_duration },
-            { "ErrorInvalidSecurityDescriptor", response_code::error_invalid_security_descriptor },
-            { "ErrorInvalidSendItemSaveSettings", response_code::error_invalid_send_item_save_settings },
-            { "ErrorInvalidSerializedAccessToken", response_code::error_invalid_serialized_access_token },
-            { "ErrorInvalidSid", response_code::error_invalid_sid },
-            { "ErrorInvalidSmtpAddress", response_code::error_invalid_smtp_address },
-            { "ErrorInvalidSubfilterType", response_code::error_invalid_subfilter_type },
-            { "ErrorInvalidSubfilterTypeNotAttendeeType", response_code::error_invalid_subfilter_type_not_attendee_type },
-            { "ErrorInvalidSubfilterTypeNotRecipientType", response_code::error_invalid_subfilter_type_not_recipient_type },
-            { "ErrorInvalidSubscription", response_code::error_invalid_subscription },
-            { "ErrorInvalidSyncStateData", response_code::error_invalid_sync_state_data },
-            { "ErrorInvalidTimeInterval", response_code::error_invalid_time_interval },
-            { "ErrorInvalidUserOofSettings", response_code::error_invalid_user_oof_settings },
-            { "ErrorInvalidUserPrincipalName", response_code::error_invalid_user_principal_name },
-            { "ErrorInvalidUserSid", response_code::error_invalid_user_sid },
-            { "ErrorInvalidUserSidMissingUPN", response_code::error_invalid_user_sid_missing_upn },
-            { "ErrorInvalidValueForProperty", response_code::error_invalid_value_for_property },
-            { "ErrorInvalidWatermark", response_code::error_invalid_watermark },
-            { "ErrorIrresolvableConflict", response_code::error_irresolvable_conflict },
-            { "ErrorItemCorrupt", response_code::error_item_corrupt },
-            { "ErrorItemNotFound", response_code::error_item_not_found },
-            { "ErrorItemPropertyRequestFailed", response_code::error_item_property_request_failed },
-            { "ErrorItemSave", response_code::error_item_save },
-            { "ErrorItemSavePropertyError", response_code::error_item_save_property_error },
-            { "ErrorLegacyMailboxFreeBusyViewTypeNotMerged", response_code::error_legacy_mailbox_free_busy_view_type_not_merged },
-            { "ErrorLocalServerObjectNotFound", response_code::error_local_server_object_not_found },
-            { "ErrorLogonAsNetworkServiceFailed", response_code::error_logon_as_network_service_failed },
-            { "ErrorMailboxConfiguration", response_code::error_mailbox_configuration },
-            { "ErrorMailboxDataArrayEmpty", response_code::error_mailbox_data_array_empty },
-            { "ErrorMailboxDataArrayTooBig", response_code::error_mailbox_data_array_too_big },
-            { "ErrorMailboxLogonFailed", response_code::error_mailbox_logon_failed },
-            { "ErrorMailboxMoveInProgress", response_code::error_mailbox_move_in_progress },
-            { "ErrorMailboxStoreUnavailable", response_code::error_mailbox_store_unavailable },
-            { "ErrorMailRecipientNotFound", response_code::error_mail_recipient_not_found },
-            { "ErrorManagedFolderAlreadyExists", response_code::error_managed_folder_already_exists },
-            { "ErrorManagedFolderNotFound", response_code::error_managed_folder_not_found },
-            { "ErrorManagedFoldersRootFailure", response_code::error_managed_folders_root_failure },
-            { "ErrorMeetingSuggestionGenerationFailed", response_code::error_meeting_suggestion_generation_failed },
-            { "ErrorMessageDispositionRequired", response_code::error_message_disposition_required },
-            { "ErrorMessageSizeExceeded", response_code::error_message_size_exceeded },
-            { "ErrorMimeContentConversionFailed", response_code::error_mime_content_conversion_failed },
-            { "ErrorMimeContentInvalid", response_code::error_mime_content_invalid },
-            { "ErrorMimeContentInvalidBase64String", response_code::error_mime_content_invalid_base64_string },
-            { "ErrorMissingArgument", response_code::error_missing_argument },
-            { "ErrorMissingEmailAddress", response_code::error_missing_email_address },
-            { "ErrorMissingEmailAddressForManagedFolder", response_code::error_missing_email_address_for_managed_folder },
-            { "ErrorMissingInformationEmailAddress", response_code::error_missing_information_email_address },
-            { "ErrorMissingInformationReferenceItemId", response_code::error_missing_information_reference_item_id },
-            { "ErrorMissingItemForCreateItemAttachment", response_code::error_missing_item_for_create_item_attachment },
-            { "ErrorMissingManagedFolderId", response_code::error_missing_managed_folder_id },
-            { "ErrorMissingRecipients", response_code::error_missing_recipients },
-            { "ErrorMoveCopyFailed", response_code::error_move_copy_failed },
-            { "ErrorMoveDistinguishedFolder", response_code::error_move_distinguished_folder },
-            { "ErrorNameResolutionMultipleResults", response_code::error_name_resolution_multiple_results },
-            { "ErrorNameResolutionNoMailbox", response_code::error_name_resolution_no_mailbox },
-            { "ErrorNameResolutionNoResults", response_code::error_name_resolution_no_results },
-            { "ErrorNoCalendar", response_code::error_no_calendar },
-            { "ErrorNoFolderClassOverride", response_code::error_no_folder_class_override },
-            { "ErrorNoFreeBusyAccess", response_code::error_no_free_busy_access },
-            { "ErrorNonExistentMailbox", response_code::error_non_existent_mailbox },
-            { "ErrorNonPrimarySmtpAddress", response_code::error_non_primary_smtp_address },
-            { "ErrorNoPropertyTagForCustomProperties", response_code::error_no_property_tag_for_custom_properties },
-            { "ErrorNotEnoughMemory", response_code::error_not_enough_memory },
-            { "ErrorObjectTypeChanged", response_code::error_object_type_changed },
-            { "ErrorOccurrenceCrossingBoundary", response_code::error_occurrence_crossing_boundary },
-            { "ErrorOccurrenceTimeSpanTooBig", response_code::error_occurrence_time_span_too_big },
-            { "ErrorParentFolderIdRequired", response_code::error_parent_folder_id_required },
-            { "ErrorParentFolderNotFound", response_code::error_parent_folder_not_found },
-            { "ErrorPasswordChangeRequired", response_code::error_password_change_required },
-            { "ErrorPasswordExpired", response_code::error_password_expired },
-            { "ErrorPropertyUpdate", response_code::error_property_update },
-            { "ErrorPropertyValidationFailure", response_code::error_property_validation_failure },
-            { "ErrorProxyRequestNotAllowed", response_code::error_proxy_request_not_allowed },
-            { "ErrorPublicFolderRequestProcessingFailed", response_code::error_public_folder_request_processing_failed },
-            { "ErrorPublicFolderServerNotFound", response_code::error_public_folder_server_not_found },
-            { "ErrorQueryFilterTooLong", response_code::error_query_filter_too_long },
-            { "ErrorQuotaExceeded", response_code::error_quota_exceeded },
-            { "ErrorReadEventsFailed", response_code::error_read_events_failed },
-            { "ErrorReadReceiptNotPending", response_code::error_read_receipt_not_pending },
-            { "ErrorRecurrenceEndDateTooBig", response_code::error_recurrence_end_date_too_big },
-            { "ErrorRecurrenceHasNoOccurrence", response_code::error_recurrence_has_no_occurrence },
-            { "ErrorRequestAborted", response_code::error_request_aborted },
-            { "ErrorRequestStreamTooBig", response_code::error_request_stream_too_big },
-            { "ErrorRequiredPropertyMissing", response_code::error_required_property_missing },
-            { "ErrorResponseSchemaValidation", response_code::error_response_schema_validation },
-            { "ErrorRestrictionTooLong", response_code::error_restriction_too_long },
-            { "ErrorRestrictionTooComplex", response_code::error_restriction_too_complex },
-            { "ErrorResultSetTooBig", response_code::error_result_set_too_big },
-            { "ErrorSavedItemFolderNotFound", response_code::error_saved_item_folder_not_found },
-            { "ErrorSchemaValidation", response_code::error_schema_validation },
-            { "ErrorSearchFolderNotInitialized", response_code::error_search_folder_not_initialized },
-            { "ErrorSendAsDenied", response_code::error_send_as_denied },
-            { "ErrorSendMeetingCancellationsRequired", response_code::error_send_meeting_cancellations_required },
-            { "ErrorSendMeetingInvitationsOrCancellationsRequired", response_code::error_send_meeting_invitations_or_cancellations_required },
-            { "ErrorSendMeetingInvitationsRequired", response_code::error_send_meeting_invitations_required },
-            { "ErrorSentMeetingRequestUpdate", response_code::error_sent_meeting_request_update },
-            { "ErrorSentTaskRequestUpdate", response_code::error_sent_task_request_update },
-            { "ErrorServerBusy", response_code::error_server_busy },
-            { "ErrorStaleObject", response_code::error_stale_object },
-            { "ErrorSubscriptionAccessDenied", response_code::error_subscription_access_denied },
-            { "ErrorSubscriptionDelegateAccessNotSupported", response_code::error_subscription_delegate_access_not_supported },
-            { "ErrorSubscriptionNotFound", response_code::error_subscription_not_found },
-            { "ErrorSyncFolderNotFound", response_code::error_sync_folder_not_found },
-            { "ErrorTimeIntervalTooBig", response_code::error_time_interval_too_big },
-            { "ErrorToFolderNotFound", response_code::error_to_folder_not_found },
-            { "ErrorTokenSerializationDenied", response_code::error_token_serialization_denied },
-            { "ErrorUnableToGetUserOofSettings", response_code::error_unable_to_get_user_oof_settings },
-            { "ErrorUnsupportedCulture", response_code::error_unsupported_culture },
-            { "ErrorUnsupportedMapiPropertyType", response_code::error_unsupported_mapi_property_type },
-            { "ErrorUnsupportedMimeConversion", response_code::error_unsupported_mime_conversion },
-            { "ErrorUnsupportedPathForQuery", response_code::error_unsupported_path_for_query },
-            { "ErrorUnsupportedPathForSortGroup", response_code::error_unsupported_path_for_sort_group },
-            { "ErrorUnsupportedPropertyDefinition", response_code::error_unsupported_property_definition },
-            { "ErrorUnsupportedQueryFilter", response_code::error_unsupported_query_filter },
-            { "ErrorUnsupportedRecurrence", response_code::error_unsupported_recurrence },
-            { "ErrorUnsupportedSubFilter", response_code::error_unsupported_sub_filter },
-            { "ErrorUnsupportedTypeForConversion", response_code::error_unsupported_type_for_conversion },
-            { "ErrorUpdatePropertyMismatch", response_code::error_update_property_mismatch },
-            { "ErrorVirusDetected", response_code::error_virus_detected },
-            { "ErrorVirusMessageDeleted", response_code::error_virus_message_deleted },
-            { "ErrorVoiceMailNotImplemented", response_code::error_voice_mail_not_implemented },
-            { "ErrorWebRequestInInvalidState", response_code::error_web_request_in_invalid_state },
-            { "ErrorWin32InteropError", response_code::error_win32_interop_error },
-            { "ErrorWorkingHoursSaveFailed", response_code::error_working_hours_save_failed },
-            { "ErrorWorkingHoursXmlMalformed", response_code::error_working_hours_xml_malformed }
-        };
-        auto it = m.find(str);
-        if (it == m.end())
+        if (str == "NoError")
+        {
+            return response_code::no_error;
+        }
+        else if (str == "ErrorAccessDenied")
+        {
+            return response_code::error_access_denied;
+        }
+        else if (str == "ErrorAccountDisabled")
+        {
+            return response_code::error_account_disabled;
+        }
+        else if (str == "ErrorAddressSpaceNotFound")
+        {
+            return response_code::error_address_space_not_found;
+        }
+        else if (str == "ErrorADOperation")
+        {
+            return response_code::error_ad_operation;
+        }
+        else if (str == "ErrorADSessionFilter")
+        {
+            return response_code::error_ad_session_filter;
+        }
+        else if (str == "ErrorADUnavailable")
+        {
+            return response_code::error_ad_unavailable;
+        }
+        else if (str == "ErrorAutoDiscoverFailed")
+        {
+            return response_code::error_auto_discover_failed;
+        }
+        else if (str == "ErrorAffectedTaskOccurrencesRequired")
+        {
+            return response_code::error_affected_task_occurrences_required;
+        }
+        else if (str == "ErrorAttachmentSizeLimitExceeded")
+        {
+            return response_code::error_attachment_size_limit_exceeded;
+        }
+        else if (str == "ErrorAvailabilityConfigNotFound")
+        {
+            return response_code::error_availability_config_not_found;
+        }
+        else if (str == "ErrorBatchProcessingStopped")
+        {
+            return response_code::error_batch_processing_stopped;
+        }
+        else if (str == "ErrorCalendarCannotMoveOrCopyOccurrence")
+        {
+            return response_code::error_calendar_cannot_move_or_copy_occurrence;
+        }
+        else if (str == "ErrorCalendarCannotUpdateDeletedItem")
+        {
+            return response_code::error_calendar_cannot_update_deleted_item;
+        }
+        else if (str == "ErrorCalendarCannotUseIdForOccurrenceId")
+        {
+            return response_code::error_calendar_cannot_use_id_for_occurrence_id;
+        }
+        else if (str == "ErrorCalendarCannotUseIdForRecurringMasterId")
+        {
+            return response_code::error_calendar_cannot_use_id_for_recurring_master_id;
+        }
+        else if (str == "ErrorCalendarDurationIsTooLong")
+        {
+            return response_code::error_calendar_duration_is_too_long;
+        }
+        else if (str == "ErrorCalendarEndDateIsEarlierThanStartDate")
+        {
+            return response_code::error_calendar_end_date_is_earlier_than_start_date;
+        }
+        else if (str == "ErrorCalendarFolderIsInvalidForCalendarView")
+        {
+            return response_code::error_calendar_folder_is_invalid_for_calendar_view;
+        }
+        else if (str == "ErrorCalendarInvalidAttributeValue")
+        {
+            return response_code::error_calendar_invalid_attribute_value;
+        }
+        else if (str == "ErrorCalendarInvalidDayForTimeChangePattern")
+        {
+            return response_code::error_calendar_invalid_day_for_time_change_pattern;
+        }
+        else if (str == "ErrorCalendarInvalidDayForWeeklyRecurrence")
+        {
+            return response_code::error_calendar_invalid_day_for_weekly_recurrence;
+        }
+        else if (str == "ErrorCalendarInvalidPropertyState")
+        {
+            return response_code::error_calendar_invalid_property_state;
+        }
+        else if (str == "ErrorCalendarInvalidPropertyValue")
+        {
+            return response_code::error_calendar_invalid_property_value;
+        }
+        else if (str == "ErrorCalendarInvalidRecurrence")
+        {
+            return response_code::error_calendar_invalid_recurrence;
+        }
+        else if (str == "ErrorCalendarInvalidTimeZone")
+        {
+            return response_code::error_calendar_invalid_time_zone;
+        }
+        else if (str == "ErrorCalendarIsDelegatedForAccept")
+        {
+            return response_code::error_calendar_is_delegated_for_accept;
+        }
+        else if (str == "ErrorCalendarIsDelegatedForDecline")
+        {
+            return response_code::error_calendar_is_delegated_for_decline;
+        }
+        else if (str == "ErrorCalendarIsDelegatedForRemove")
+        {
+            return response_code::error_calendar_is_delegated_for_remove;
+        }
+        else if (str == "ErrorCalendarIsDelegatedForTentative")
+        {
+            return response_code::error_calendar_is_delegated_for_tentative;
+        }
+        else if (str == "ErrorCalendarIsNotOrganizer")
+        {
+            return response_code::error_calendar_is_not_organizer;
+        }
+        else if (str == "ErrorCalendarIsOrganizerForAccept")
+        {
+            return response_code::error_calendar_is_organizer_for_accept;
+        }
+        else if (str == "ErrorCalendarIsOrganizerForDecline")
+        {
+            return response_code::error_calendar_is_organizer_for_decline;
+        }
+        else if (str == "ErrorCalendarIsOrganizerForRemove")
+        {
+            return response_code::error_calendar_is_organizer_for_remove;
+        }
+        else if (str == "ErrorCalendarIsOrganizerForTentative")
+        {
+            return response_code::error_calendar_is_organizer_for_tentative;
+        }
+        else if (str == "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange")
+        {
+            return response_code::error_calendar_occurrence_index_is_out_of_recurrence_range;
+        }
+        else if (str == "ErrorCalendarOccurrenceIsDeletedFromRecurrence")
+        {
+            return response_code::error_calendar_occurrence_is_deleted_from_recurrence;
+        }
+        else if (str == "ErrorCalendarOutOfRange")
+        {
+            return response_code::error_calendar_out_of_range;
+        }
+        else if (str == "ErrorCalendarViewRangeTooBig")
+        {
+            return response_code::error_calendar_view_range_too_big;
+        }
+        else if (str == "ErrorCannotCreateCalendarItemInNonCalendarFolder")
+        {
+            return response_code::error_cannot_create_calendar_item_in_non_calendar_folder;
+        }
+        else if (str == "ErrorCannotCreateContactInNonContactsFolder")
+        {
+            return response_code::error_cannot_create_contact_in_non_contacts_folder;
+        }
+        else if (str == "ErrorCannotCreateTaskInNonTaskFolder")
+        {
+            return response_code::error_cannot_create_task_in_non_task_folder;
+        }
+        else if (str == "ErrorCannotDeleteObject")
+        {
+            return response_code::error_cannot_delete_object;
+        }
+        else if (str == "ErrorCannotDeleteTaskOccurrence")
+        {
+            return response_code::error_cannot_delete_task_occurrence;
+        }
+        else if (str == "ErrorCannotOpenFileAttachment")
+        {
+            return response_code::error_cannot_open_file_attachment;
+        }
+        else if (str == "ErrorCannotUseFolderIdForItemId")
+        {
+            return response_code::error_cannot_use_folder_id_for_item_id;
+        }
+        else if (str == "ErrorCannotUserItemIdForFolderId")
+        {
+            return response_code::error_cannot_user_item_id_for_folder_id;
+        }
+        else if (str == "ErrorChangeKeyRequired")
+        {
+            return response_code::error_change_key_required;
+        }
+        else if (str == "ErrorChangeKeyRequiredForWriteOperations")
+        {
+            return response_code::error_change_key_required_for_write_operations;
+        }
+        else if (str == "ErrorConnectionFailed")
+        {
+            return response_code::error_connection_failed;
+        }
+        else if (str == "ErrorContentConversionFailed")
+        {
+            return response_code::error_content_conversion_failed;
+        }
+        else if (str == "ErrorCorruptData")
+        {
+            return response_code::error_corrupt_data;
+        }
+        else if (str == "ErrorCreateItemAccessDenied")
+        {
+            return response_code::error_create_item_access_denied;
+        }
+        else if (str == "ErrorCreateManagedFolderPartialCompletion")
+        {
+            return response_code::error_create_managed_folder_partial_completion;
+        }
+        else if (str == "ErrorCreateSubfolderAccessDenied")
+        {
+            return response_code::error_create_subfolder_access_denied;
+        }
+        else if (str == "ErrorCrossMailboxMoveCopy")
+        {
+            return response_code::error_cross_mailbox_move_copy;
+        }
+        else if (str == "ErrorDataSizeLimitExceeded")
+        {
+            return response_code::error_data_size_limit_exceeded;
+        }
+        else if (str == "ErrorDataSourceOperation")
+        {
+            return response_code::error_data_source_operation;
+        }
+        else if (str == "ErrorDeleteDistinguishedFolder")
+        {
+            return response_code::error_delete_distinguished_folder;
+        }
+        else if (str == "ErrorDeleteItemsFailed")
+        {
+            return response_code::error_delete_items_failed;
+        }
+        else if (str == "ErrorDuplicateInputFolderNames")
+        {
+            return response_code::error_duplicate_input_folder_names;
+        }
+        else if (str == "ErrorEmailAddressMismatch")
+        {
+            return response_code::error_email_address_mismatch;
+        }
+        else if (str == "ErrorEventNotFound")
+        {
+            return response_code::error_event_not_found;
+        }
+        else if (str == "ErrorExpiredSubscription")
+        {
+            return response_code::error_expired_subscription;
+        }
+        else if (str == "ErrorFolderCorrupt")
+        {
+            return response_code::error_folder_corrupt;
+        }
+        else if (str == "ErrorFolderNotFound")
+        {
+            return response_code::error_folder_not_found;
+        }
+        else if (str == "ErrorFolderPropertyRequestFailed")
+        {
+            return response_code::error_folder_property_request_failed;
+        }
+        else if (str == "ErrorFolderSave")
+        {
+            return response_code::error_folder_save;
+        }
+        else if (str == "ErrorFolderSaveFailed")
+        {
+            return response_code::error_folder_save_failed;
+        }
+        else if (str == "ErrorFolderSavePropertyError")
+        {
+            return response_code::error_folder_save_property_error;
+        }
+        else if (str == "ErrorFolderExists")
+        {
+            return response_code::error_folder_exists;
+        }
+        else if (str == "ErrorFreeBusyGenerationFailed")
+        {
+            return response_code::error_free_busy_generation_failed;
+        }
+        else if (str == "ErrorGetServerSecurityDescriptorFailed")
+        {
+            return response_code::error_get_server_security_descriptor_failed;
+        }
+        else if (str == "ErrorImpersonateUserDenied")
+        {
+            return response_code::error_impersonate_user_denied;
+        }
+        else if (str == "ErrorImpersonationDenied")
+        {
+            return response_code::error_impersonation_denied;
+        }
+        else if (str == "ErrorImpersonationFailed")
+        {
+            return response_code::error_impersonation_failed;
+        }
+        else if (str == "ErrorIncorrectUpdatePropertyCount")
+        {
+            return response_code::error_incorrect_update_property_count;
+        }
+        else if (str == "ErrorIndividualMailboxLimitReached")
+        {
+            return response_code::error_individual_mailbox_limit_reached;
+        }
+        else if (str == "ErrorInsufficientResources")
+        {
+            return response_code::error_insufficient_resources;
+        }
+        else if (str == "ErrorInternalServerError")
+        {
+            return response_code::error_internal_server_error;
+        }
+        else if (str == "ErrorInternalServerTransientError")
+        {
+            return response_code::error_internal_server_transient_error;
+        }
+        else if (str == "ErrorInvalidAccessLevel")
+        {
+            return response_code::error_invalid_access_level;
+        }
+        else if (str == "ErrorInvalidAttachmentId")
+        {
+            return response_code::error_invalid_attachment_id;
+        }
+        else if (str == "ErrorInvalidAttachmentSubfilter")
+        {
+            return response_code::error_invalid_attachment_subfilter;
+        }
+        else if (str == "ErrorInvalidAttachmentSubfilterTextFilter")
+        {
+            return response_code::error_invalid_attachment_subfilter_text_filter;
+        }
+        else if (str == "ErrorInvalidAuthorizationContext")
+        {
+            return response_code::error_invalid_authorization_context;
+        }
+        else if (str == "ErrorInvalidChangeKey")
+        {
+            return response_code::error_invalid_change_key;
+        }
+        else if (str == "ErrorInvalidClientSecurityContext")
+        {
+            return response_code::error_invalid_client_security_context;
+        }
+        else if (str == "ErrorInvalidCompleteDate")
+        {
+            return response_code::error_invalid_complete_date;
+        }
+        else if (str == "ErrorInvalidCrossForestCredentials")
+        {
+            return response_code::error_invalid_cross_forest_credentials;
+        }
+        else if (str == "ErrorInvalidExchangeImpersonationHeaderData")
+        {
+            return response_code::error_invalid_exchange_impersonation_header_data;
+        }
+        else if (str == "ErrorInvalidExcludesRestriction")
+        {
+            return response_code::error_invalid_excludes_restriction;
+        }
+        else if (str == "ErrorInvalidExpressionTypeForSubFilter")
+        {
+            return response_code::error_invalid_expression_type_for_sub_filter;
+        }
+        else if (str == "ErrorInvalidExtendedProperty")
+        {
+            return response_code::error_invalid_extended_property;
+        }
+        else if (str == "ErrorInvalidExtendedPropertyValue")
+        {
+            return response_code::error_invalid_extended_property_value;
+        }
+        else if (str == "ErrorInvalidFolderId")
+        {
+            return response_code::error_invalid_folder_id;
+        }
+        else if (str == "ErrorInvalidFractionalPagingParameters")
+        {
+            return response_code::error_invalid_fractional_paging_parameters;
+        }
+        else if (str == "ErrorInvalidFreeBusyViewType")
+        {
+            return response_code::error_invalid_free_busy_view_type;
+        }
+        else if (str == "ErrorInvalidId")
+        {
+            return response_code::error_invalid_id;
+        }
+        else if (str == "ErrorInvalidIdEmpty")
+        {
+            return response_code::error_invalid_id_empty;
+        }
+        else if (str == "ErrorInvalidIdMalformed")
+        {
+            return response_code::error_invalid_id_malformed;
+        }
+        else if (str == "ErrorInvalidIdMonikerTooLong")
+        {
+            return response_code::error_invalid_id_moniker_too_long;
+        }
+        else if (str == "ErrorInvalidIdNotAnItemAttachmentId")
+        {
+            return response_code::error_invalid_id_not_an_item_attachment_id;
+        }
+        else if (str == "ErrorInvalidIdReturnedByResolveNames")
+        {
+            return response_code::error_invalid_id_returned_by_resolve_names;
+        }
+        else if (str == "ErrorInvalidIdStoreObjectIdTooLong")
+        {
+            return response_code::error_invalid_id_store_object_id_too_long;
+        }
+        else if (str == "ErrorInvalidIdTooManyAttachmentLevels")
+        {
+            return response_code::error_invalid_id_too_many_attachment_levels;
+        }
+        else if (str == "ErrorInvalidIdXml")
+        {
+            return response_code::error_invalid_id_xml;
+        }
+        else if (str == "ErrorInvalidIndexedPagingParameters")
+        {
+            return response_code::error_invalid_indexed_paging_parameters;
+        }
+        else if (str == "ErrorInvalidInternetHeaderChildNodes")
+        {
+            return response_code::error_invalid_internet_header_child_nodes;
+        }
+        else if (str == "ErrorInvalidItemForOperationCreateItemAttachment")
+        {
+            return response_code::error_invalid_item_for_operation_create_item_attachment;
+        }
+        else if (str == "ErrorInvalidItemForOperationCreateItem")
+        {
+            return response_code::error_invalid_item_for_operation_create_item;
+        }
+        else if (str == "ErrorInvalidItemForOperationAcceptItem")
+        {
+            return response_code::error_invalid_item_for_operation_accept_item;
+        }
+        else if (str == "ErrorInvalidItemForOperationCancelItem")
+        {
+            return response_code::error_invalid_item_for_operation_cancel_item;
+        }
+        else if (str == "ErrorInvalidItemForOperationDeclineItem")
+        {
+            return response_code::error_invalid_item_for_operation_decline_item;
+        }
+        else if (str == "ErrorInvalidItemForOperationExpandDL")
+        {
+            return response_code::error_invalid_item_for_operation_expand_dl;
+        }
+        else if (str == "ErrorInvalidItemForOperationRemoveItem")
+        {
+            return response_code::error_invalid_item_for_operation_remove_item;
+        }
+        else if (str == "ErrorInvalidItemForOperationSendItem")
+        {
+            return response_code::error_invalid_item_for_operation_send_item;
+        }
+        else if (str == "ErrorInvalidItemForOperationTentative")
+        {
+            return response_code::error_invalid_item_for_operation_tentative;
+        }
+        else if (str == "ErrorInvalidManagedFolderProperty")
+        {
+            return response_code::error_invalid_managed_folder_property;
+        }
+        else if (str == "ErrorInvalidManagedFolderQuota")
+        {
+            return response_code::error_invalid_managed_folder_quota;
+        }
+        else if (str == "ErrorInvalidManagedFolderSize")
+        {
+            return response_code::error_invalid_managed_folder_size;
+        }
+        else if (str == "ErrorInvalidMergedFreeBusyInterval")
+        {
+            return response_code::error_invalid_merged_free_busy_interval;
+        }
+        else if (str == "ErrorInvalidNameForNameResolution")
+        {
+            return response_code::error_invalid_name_for_name_resolution;
+        }
+        else if (str == "ErrorInvalidNetworkServiceContext")
+        {
+            return response_code::error_invalid_network_service_context;
+        }
+        else if (str == "ErrorInvalidOofParameter")
+        {
+            return response_code::error_invalid_oof_parameter;
+        }
+        else if (str == "ErrorInvalidPagingMaxRows")
+        {
+            return response_code::error_invalid_paging_max_rows;
+        }
+        else if (str == "ErrorInvalidParentFolder")
+        {
+            return response_code::error_invalid_parent_folder;
+        }
+        else if (str == "ErrorInvalidPercentCompleteValue")
+        {
+            return response_code::error_invalid_percent_complete_value;
+        }
+        else if (str == "ErrorInvalidPropertyAppend")
+        {
+            return response_code::error_invalid_property_append;
+        }
+        else if (str == "ErrorInvalidPropertyDelete")
+        {
+            return response_code::error_invalid_property_delete;
+        }
+        else if (str == "ErrorInvalidPropertyForExists")
+        {
+            return response_code::error_invalid_property_for_exists;
+        }
+        else if (str == "ErrorInvalidPropertyForOperation")
+        {
+            return response_code::error_invalid_property_for_operation;
+        }
+        else if (str == "ErrorInvalidPropertyRequest")
+        {
+            return response_code::error_invalid_property_request;
+        }
+        else if (str == "ErrorInvalidPropertySet")
+        {
+            return response_code::error_invalid_property_set;
+        }
+        else if (str == "ErrorInvalidPropertyUpdateSentMessage")
+        {
+            return response_code::error_invalid_property_update_sent_message;
+        }
+        else if (str == "ErrorInvalidPullSubscriptionId")
+        {
+            return response_code::error_invalid_pull_subscription_id;
+        }
+        else if (str == "ErrorInvalidPushSubscriptionUrl")
+        {
+            return response_code::error_invalid_push_subscription_url;
+        }
+        else if (str == "ErrorInvalidRecipients")
+        {
+            return response_code::error_invalid_recipients;
+        }
+        else if (str == "ErrorInvalidRecipientSubfilter")
+        {
+            return response_code::error_invalid_recipient_subfilter;
+        }
+        else if (str == "ErrorInvalidRecipientSubfilterComparison")
+        {
+            return response_code::error_invalid_recipient_subfilter_comparison;
+        }
+        else if (str == "ErrorInvalidRecipientSubfilterOrder")
+        {
+            return response_code::error_invalid_recipient_subfilter_order;
+        }
+        else if (str == "ErrorInvalidRecipientSubfilterTextFilter")
+        {
+            return response_code::error_invalid_recipient_subfilter_text_filter;
+        }
+        else if (str == "ErrorInvalidReferenceItem")
+        {
+            return response_code::error_invalid_reference_item;
+        }
+        else if (str == "ErrorInvalidRequest")
+        {
+            return response_code::error_invalid_request;
+        }
+        else if (str == "ErrorInvalidRestriction")
+        {
+            return response_code::error_invalid_restriction;
+        }
+        else if (str == "ErrorInvalidRoutingType")
+        {
+            return response_code::error_invalid_routing_type;
+        }
+        else if (str == "ErrorInvalidScheduledOofDuration")
+        {
+            return response_code::error_invalid_scheduled_oof_duration;
+        }
+        else if (str == "ErrorInvalidSecurityDescriptor")
+        {
+            return response_code::error_invalid_security_descriptor;
+        }
+        else if (str == "ErrorInvalidSendItemSaveSettings")
+        {
+            return response_code::error_invalid_send_item_save_settings;
+        }
+        else if (str == "ErrorInvalidSerializedAccessToken")
+        {
+            return response_code::error_invalid_serialized_access_token;
+        }
+        else if (str == "ErrorInvalidSid")
+        {
+            return response_code::error_invalid_sid;
+        }
+        else if (str == "ErrorInvalidSmtpAddress")
+        {
+            return response_code::error_invalid_smtp_address;
+        }
+        else if (str == "ErrorInvalidSubfilterType")
+        {
+            return response_code::error_invalid_subfilter_type;
+        }
+        else if (str == "ErrorInvalidSubfilterTypeNotAttendeeType")
+        {
+            return response_code::error_invalid_subfilter_type_not_attendee_type;
+        }
+        else if (str == "ErrorInvalidSubfilterTypeNotRecipientType")
+        {
+            return response_code::error_invalid_subfilter_type_not_recipient_type;
+        }
+        else if (str == "ErrorInvalidSubscription")
+        {
+            return response_code::error_invalid_subscription;
+        }
+        else if (str == "ErrorInvalidSyncStateData")
+        {
+            return response_code::error_invalid_sync_state_data;
+        }
+        else if (str == "ErrorInvalidTimeInterval")
+        {
+            return response_code::error_invalid_time_interval;
+        }
+        else if (str == "ErrorInvalidUserOofSettings")
+        {
+            return response_code::error_invalid_user_oof_settings;
+        }
+        else if (str == "ErrorInvalidUserPrincipalName")
+        {
+            return response_code::error_invalid_user_principal_name;
+        }
+        else if (str == "ErrorInvalidUserSid")
+        {
+            return response_code::error_invalid_user_sid;
+        }
+        else if (str == "ErrorInvalidUserSidMissingUPN")
+        {
+            return response_code::error_invalid_user_sid_missing_upn;
+        }
+        else if (str == "ErrorInvalidValueForProperty")
+        {
+            return response_code::error_invalid_value_for_property;
+        }
+        else if (str == "ErrorInvalidWatermark")
+        {
+            return response_code::error_invalid_watermark;
+        }
+        else if (str == "ErrorIrresolvableConflict")
+        {
+            return response_code::error_irresolvable_conflict;
+        }
+        else if (str == "ErrorItemCorrupt")
+        {
+            return response_code::error_item_corrupt;
+        }
+        else if (str == "ErrorItemNotFound")
+        {
+            return response_code::error_item_not_found;
+        }
+        else if (str == "ErrorItemPropertyRequestFailed")
+        {
+            return response_code::error_item_property_request_failed;
+        }
+        else if (str == "ErrorItemSave")
+        {
+            return response_code::error_item_save;
+        }
+        else if (str == "ErrorItemSavePropertyError")
+        {
+            return response_code::error_item_save_property_error;
+        }
+        else if (str == "ErrorLegacyMailboxFreeBusyViewTypeNotMerged")
+        {
+            return response_code::error_legacy_mailbox_free_busy_view_type_not_merged;
+        }
+        else if (str == "ErrorLocalServerObjectNotFound")
+        {
+            return response_code::error_local_server_object_not_found;
+        }
+        else if (str == "ErrorLogonAsNetworkServiceFailed")
+        {
+            return response_code::error_logon_as_network_service_failed;
+        }
+        else if (str == "ErrorMailboxConfiguration")
+        {
+            return response_code::error_mailbox_configuration;
+        }
+        else if (str == "ErrorMailboxDataArrayEmpty")
+        {
+            return response_code::error_mailbox_data_array_empty;
+        }
+        else if (str == "ErrorMailboxDataArrayTooBig")
+        {
+            return response_code::error_mailbox_data_array_too_big;
+        }
+        else if (str == "ErrorMailboxLogonFailed")
+        {
+            return response_code::error_mailbox_logon_failed;
+        }
+        else if (str == "ErrorMailboxMoveInProgress")
+        {
+            return response_code::error_mailbox_move_in_progress;
+        }
+        else if (str == "ErrorMailboxStoreUnavailable")
+        {
+            return response_code::error_mailbox_store_unavailable;
+        }
+        else if (str == "ErrorMailRecipientNotFound")
+        {
+            return response_code::error_mail_recipient_not_found;
+        }
+        else if (str == "ErrorManagedFolderAlreadyExists")
+        {
+            return response_code::error_managed_folder_already_exists;
+        }
+        else if (str == "ErrorManagedFolderNotFound")
+        {
+            return response_code::error_managed_folder_not_found;
+        }
+        else if (str == "ErrorManagedFoldersRootFailure")
+        {
+            return response_code::error_managed_folders_root_failure;
+        }
+        else if (str == "ErrorMeetingSuggestionGenerationFailed")
+        {
+            return response_code::error_meeting_suggestion_generation_failed;
+        }
+        else if (str == "ErrorMessageDispositionRequired")
+        {
+            return response_code::error_message_disposition_required;
+        }
+        else if (str == "ErrorMessageSizeExceeded")
+        {
+            return response_code::error_message_size_exceeded;
+        }
+        else if (str == "ErrorMimeContentConversionFailed")
+        {
+            return response_code::error_mime_content_conversion_failed;
+        }
+        else if (str == "ErrorMimeContentInvalid")
+        {
+            return response_code::error_mime_content_invalid;
+        }
+        else if (str == "ErrorMimeContentInvalidBase64String")
+        {
+            return response_code::error_mime_content_invalid_base64_string;
+        }
+        else if (str == "ErrorMissingArgument")
+        {
+            return response_code::error_missing_argument;
+        }
+        else if (str == "ErrorMissingEmailAddress")
+        {
+            return response_code::error_missing_email_address;
+        }
+        else if (str == "ErrorMissingEmailAddressForManagedFolder")
+        {
+            return response_code::error_missing_email_address_for_managed_folder;
+        }
+        else if (str == "ErrorMissingInformationEmailAddress")
+        {
+            return response_code::error_missing_information_email_address;
+        }
+        else if (str == "ErrorMissingInformationReferenceItemId")
+        {
+            return response_code::error_missing_information_reference_item_id;
+        }
+        else if (str == "ErrorMissingItemForCreateItemAttachment")
+        {
+            return response_code::error_missing_item_for_create_item_attachment;
+        }
+        else if (str == "ErrorMissingManagedFolderId")
+        {
+            return response_code::error_missing_managed_folder_id;
+        }
+        else if (str == "ErrorMissingRecipients")
+        {
+            return response_code::error_missing_recipients;
+        }
+        else if (str == "ErrorMoveCopyFailed")
+        {
+            return response_code::error_move_copy_failed;
+        }
+        else if (str == "ErrorMoveDistinguishedFolder")
+        {
+            return response_code::error_move_distinguished_folder;
+        }
+        else if (str == "ErrorNameResolutionMultipleResults")
+        {
+            return response_code::error_name_resolution_multiple_results;
+        }
+        else if (str == "ErrorNameResolutionNoMailbox")
+        {
+            return response_code::error_name_resolution_no_mailbox;
+        }
+        else if (str == "ErrorNameResolutionNoResults")
+        {
+            return response_code::error_name_resolution_no_results;
+        }
+        else if (str == "ErrorNoCalendar")
+        {
+            return response_code::error_no_calendar;
+        }
+        else if (str == "ErrorNoFolderClassOverride")
+        {
+            return response_code::error_no_folder_class_override;
+        }
+        else if (str == "ErrorNoFreeBusyAccess")
+        {
+            return response_code::error_no_free_busy_access;
+        }
+        else if (str == "ErrorNonExistentMailbox")
+        {
+            return response_code::error_non_existent_mailbox;
+        }
+        else if (str == "ErrorNonPrimarySmtpAddress")
+        {
+            return response_code::error_non_primary_smtp_address;
+        }
+        else if (str == "ErrorNoPropertyTagForCustomProperties")
+        {
+            return response_code::error_no_property_tag_for_custom_properties;
+        }
+        else if (str == "ErrorNotEnoughMemory")
+        {
+            return response_code::error_not_enough_memory;
+        }
+        else if (str == "ErrorObjectTypeChanged")
+        {
+            return response_code::error_object_type_changed;
+        }
+        else if (str == "ErrorOccurrenceCrossingBoundary")
+        {
+            return response_code::error_occurrence_crossing_boundary;
+        }
+        else if (str == "ErrorOccurrenceTimeSpanTooBig")
+        {
+            return response_code::error_occurrence_time_span_too_big;
+        }
+        else if (str == "ErrorParentFolderIdRequired")
+        {
+            return response_code::error_parent_folder_id_required;
+        }
+        else if (str == "ErrorParentFolderNotFound")
+        {
+            return response_code::error_parent_folder_not_found;
+        }
+        else if (str == "ErrorPasswordChangeRequired")
+        {
+            return response_code::error_password_change_required;
+        }
+        else if (str == "ErrorPasswordExpired")
+        {
+            return response_code::error_password_expired;
+        }
+        else if (str == "ErrorPropertyUpdate")
+        {
+            return response_code::error_property_update;
+        }
+        else if (str == "ErrorPropertyValidationFailure")
+        {
+            return response_code::error_property_validation_failure;
+        }
+        else if (str == "ErrorProxyRequestNotAllowed")
+        {
+            return response_code::error_proxy_request_not_allowed;
+        }
+        else if (str == "ErrorPublicFolderRequestProcessingFailed")
+        {
+            return response_code::error_public_folder_request_processing_failed;
+        }
+        else if (str == "ErrorPublicFolderServerNotFound")
+        {
+            return response_code::error_public_folder_server_not_found;
+        }
+        else if (str == "ErrorQueryFilterTooLong")
+        {
+            return response_code::error_query_filter_too_long;
+        }
+        else if (str == "ErrorQuotaExceeded")
+        {
+            return response_code::error_quota_exceeded;
+        }
+        else if (str == "ErrorReadEventsFailed")
+        {
+            return response_code::error_read_events_failed;
+        }
+        else if (str == "ErrorReadReceiptNotPending")
+        {
+            return response_code::error_read_receipt_not_pending;
+        }
+        else if (str == "ErrorRecurrenceEndDateTooBig")
+        {
+            return response_code::error_recurrence_end_date_too_big;
+        }
+        else if (str == "ErrorRecurrenceHasNoOccurrence")
+        {
+            return response_code::error_recurrence_has_no_occurrence;
+        }
+        else if (str == "ErrorRequestAborted")
+        {
+            return response_code::error_request_aborted;
+        }
+        else if (str == "ErrorRequestStreamTooBig")
+        {
+            return response_code::error_request_stream_too_big;
+        }
+        else if (str == "ErrorRequiredPropertyMissing")
+        {
+            return response_code::error_required_property_missing;
+        }
+        else if (str == "ErrorResponseSchemaValidation")
+        {
+            return response_code::error_response_schema_validation;
+        }
+        else if (str == "ErrorRestrictionTooLong")
+        {
+            return response_code::error_restriction_too_long;
+        }
+        else if (str == "ErrorRestrictionTooComplex")
+        {
+            return response_code::error_restriction_too_complex;
+        }
+        else if (str == "ErrorResultSetTooBig")
+        {
+            return response_code::error_result_set_too_big;
+        }
+        else if (str == "ErrorSavedItemFolderNotFound")
+        {
+            return response_code::error_saved_item_folder_not_found;
+        }
+        else if (str == "ErrorSchemaValidation")
+        {
+            return response_code::error_schema_validation;
+        }
+        else if (str == "ErrorSearchFolderNotInitialized")
+        {
+            return response_code::error_search_folder_not_initialized;
+        }
+        else if (str == "ErrorSendAsDenied")
+        {
+            return response_code::error_send_as_denied;
+        }
+        else if (str == "ErrorSendMeetingCancellationsRequired")
+        {
+            return response_code::error_send_meeting_cancellations_required;
+        }
+        else if (str == "ErrorSendMeetingInvitationsOrCancellationsRequired")
+        {
+            return response_code::error_send_meeting_invitations_or_cancellations_required;
+        }
+        else if (str == "ErrorSendMeetingInvitationsRequired")
+        {
+            return response_code::error_send_meeting_invitations_required;
+        }
+        else if (str == "ErrorSentMeetingRequestUpdate")
+        {
+            return response_code::error_sent_meeting_request_update;
+        }
+        else if (str == "ErrorSentTaskRequestUpdate")
+        {
+            return response_code::error_sent_task_request_update;
+        }
+        else if (str == "ErrorServerBusy")
+        {
+            return response_code::error_server_busy;
+        }
+        else if (str == "ErrorStaleObject")
+        {
+            return response_code::error_stale_object;
+        }
+        else if (str == "ErrorSubscriptionAccessDenied")
+        {
+            return response_code::error_subscription_access_denied;
+        }
+        else if (str == "ErrorSubscriptionDelegateAccessNotSupported")
+        {
+            return response_code::error_subscription_delegate_access_not_supported;
+        }
+        else if (str == "ErrorSubscriptionNotFound")
+        {
+            return response_code::error_subscription_not_found;
+        }
+        else if (str == "ErrorSyncFolderNotFound")
+        {
+            return response_code::error_sync_folder_not_found;
+        }
+        else if (str == "ErrorTimeIntervalTooBig")
+        {
+            return response_code::error_time_interval_too_big;
+        }
+        else if (str == "ErrorToFolderNotFound")
+        {
+            return response_code::error_to_folder_not_found;
+        }
+        else if (str == "ErrorTokenSerializationDenied")
+        {
+            return response_code::error_token_serialization_denied;
+        }
+        else if (str == "ErrorUnableToGetUserOofSettings")
+        {
+            return response_code::error_unable_to_get_user_oof_settings;
+        }
+        else if (str == "ErrorUnsupportedCulture")
+        {
+            return response_code::error_unsupported_culture;
+        }
+        else if (str == "ErrorUnsupportedMapiPropertyType")
+        {
+            return response_code::error_unsupported_mapi_property_type;
+        }
+        else if (str == "ErrorUnsupportedMimeConversion")
+        {
+            return response_code::error_unsupported_mime_conversion;
+        }
+        else if (str == "ErrorUnsupportedPathForQuery")
+        {
+            return response_code::error_unsupported_path_for_query;
+        }
+        else if (str == "ErrorUnsupportedPathForSortGroup")
+        {
+            return response_code::error_unsupported_path_for_sort_group;
+        }
+        else if (str == "ErrorUnsupportedPropertyDefinition")
+        {
+            return response_code::error_unsupported_property_definition;
+        }
+        else if (str == "ErrorUnsupportedQueryFilter")
+        {
+            return response_code::error_unsupported_query_filter;
+        }
+        else if (str == "ErrorUnsupportedRecurrence")
+        {
+            return response_code::error_unsupported_recurrence;
+        }
+        else if (str == "ErrorUnsupportedSubFilter")
+        {
+            return response_code::error_unsupported_sub_filter;
+        }
+        else if (str == "ErrorUnsupportedTypeForConversion")
+        {
+            return response_code::error_unsupported_type_for_conversion;
+        }
+        else if (str == "ErrorUpdatePropertyMismatch")
+        {
+            return response_code::error_update_property_mismatch;
+        }
+        else if (str == "ErrorVirusDetected")
+        {
+            return response_code::error_virus_detected;
+        }
+        else if (str == "ErrorVirusMessageDeleted")
+        {
+            return response_code::error_virus_message_deleted;
+        }
+        else if (str == "ErrorVoiceMailNotImplemented")
+        {
+            return response_code::error_voice_mail_not_implemented;
+        }
+        else if (str == "ErrorWebRequestInInvalidState")
+        {
+            return response_code::error_web_request_in_invalid_state;
+        }
+        else if (str == "ErrorWin32InteropError")
+        {
+            return response_code::error_win32_interop_error;
+        }
+        else if (str == "ErrorWorkingHoursSaveFailed")
+        {
+            return response_code::error_working_hours_save_failed;
+        }
+        else if (str == "ErrorWorkingHoursXmlMalformed")
+        {
+            return response_code::error_working_hours_xml_malformed;
+        }
+        else
         {
             throw exception(std::string("Unrecognized response code: ") + str);
         }
-        return it->second;
     }
 
     // TODO: move to internal namespace
-    inline const std::string& response_code_to_str(response_code code)
+    inline std::string response_code_to_str(response_code code)
     {
-        static const std::unordered_map<response_code, std::string,
-                     internal::enum_class_hash> m{
-            { response_code::no_error, "NoError" },
-            { response_code::error_access_denied, "ErrorAccessDenied" },
-            { response_code::error_account_disabled, "ErrorAccountDisabled" },
-            { response_code::error_address_space_not_found, "ErrorAddressSpaceNotFound" },
-            { response_code::error_ad_operation, "ErrorADOperation" },
-            { response_code::error_ad_session_filter, "ErrorADSessionFilter" },
-            { response_code::error_ad_unavailable, "ErrorADUnavailable" },
-            { response_code::error_auto_discover_failed, "ErrorAutoDiscoverFailed" },
-            { response_code::error_affected_task_occurrences_required, "ErrorAffectedTaskOccurrencesRequired" },
-            { response_code::error_attachment_size_limit_exceeded, "ErrorAttachmentSizeLimitExceeded" },
-            { response_code::error_availability_config_not_found, "ErrorAvailabilityConfigNotFound" },
-            { response_code::error_batch_processing_stopped, "ErrorBatchProcessingStopped" },
-            { response_code::error_calendar_cannot_move_or_copy_occurrence, "ErrorCalendarCannotMoveOrCopyOccurrence" },
-            { response_code::error_calendar_cannot_update_deleted_item, "ErrorCalendarCannotUpdateDeletedItem" },
-            { response_code::error_calendar_cannot_use_id_for_occurrence_id, "ErrorCalendarCannotUseIdForOccurrenceId" },
-            { response_code::error_calendar_cannot_use_id_for_recurring_master_id, "ErrorCalendarCannotUseIdForRecurringMasterId" },
-            { response_code::error_calendar_duration_is_too_long, "ErrorCalendarDurationIsTooLong" },
-            { response_code::error_calendar_end_date_is_earlier_than_start_date, "ErrorCalendarEndDateIsEarlierThanStartDate" },
-            { response_code::error_calendar_folder_is_invalid_for_calendar_view, "ErrorCalendarFolderIsInvalidForCalendarView" },
-            { response_code::error_calendar_invalid_attribute_value, "ErrorCalendarInvalidAttributeValue" },
-            { response_code::error_calendar_invalid_day_for_time_change_pattern, "ErrorCalendarInvalidDayForTimeChangePattern" },
-            { response_code::error_calendar_invalid_day_for_weekly_recurrence, "ErrorCalendarInvalidDayForWeeklyRecurrence" },
-            { response_code::error_calendar_invalid_property_state, "ErrorCalendarInvalidPropertyState" },
-            { response_code::error_calendar_invalid_property_value, "ErrorCalendarInvalidPropertyValue" },
-            { response_code::error_calendar_invalid_recurrence, "ErrorCalendarInvalidRecurrence" },
-            { response_code::error_calendar_invalid_time_zone, "ErrorCalendarInvalidTimeZone" },
-            { response_code::error_calendar_is_delegated_for_accept, "ErrorCalendarIsDelegatedForAccept" },
-            { response_code::error_calendar_is_delegated_for_decline, "ErrorCalendarIsDelegatedForDecline" },
-            { response_code::error_calendar_is_delegated_for_remove, "ErrorCalendarIsDelegatedForRemove" },
-            { response_code::error_calendar_is_delegated_for_tentative, "ErrorCalendarIsDelegatedForTentative" },
-            { response_code::error_calendar_is_not_organizer, "ErrorCalendarIsNotOrganizer" },
-            { response_code::error_calendar_is_organizer_for_accept, "ErrorCalendarIsOrganizerForAccept" },
-            { response_code::error_calendar_is_organizer_for_decline, "ErrorCalendarIsOrganizerForDecline" },
-            { response_code::error_calendar_is_organizer_for_remove, "ErrorCalendarIsOrganizerForRemove" },
-            { response_code::error_calendar_is_organizer_for_tentative, "ErrorCalendarIsOrganizerForTentative" },
-            { response_code::error_calendar_occurrence_index_is_out_of_recurrence_range, "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange" },
-            { response_code::error_calendar_occurrence_is_deleted_from_recurrence, "ErrorCalendarOccurrenceIsDeletedFromRecurrence" },
-            { response_code::error_calendar_out_of_range, "ErrorCalendarOutOfRange" },
-            { response_code::error_calendar_view_range_too_big, "ErrorCalendarViewRangeTooBig" },
-            { response_code::error_cannot_create_calendar_item_in_non_calendar_folder, "ErrorCannotCreateCalendarItemInNonCalendarFolder" },
-            { response_code::error_cannot_create_contact_in_non_contacts_folder, "ErrorCannotCreateContactInNonContactsFolder" },
-            { response_code::error_cannot_create_task_in_non_task_folder, "ErrorCannotCreateTaskInNonTaskFolder" },
-            { response_code::error_cannot_delete_object, "ErrorCannotDeleteObject" },
-            { response_code::error_cannot_delete_task_occurrence, "ErrorCannotDeleteTaskOccurrence" },
-            { response_code::error_cannot_open_file_attachment, "ErrorCannotOpenFileAttachment" },
-            { response_code::error_cannot_use_folder_id_for_item_id, "ErrorCannotUseFolderIdForItemId" },
-            { response_code::error_cannot_user_item_id_for_folder_id, "ErrorCannotUserItemIdForFolderId" },
-            { response_code::error_change_key_required, "ErrorChangeKeyRequired" },
-            { response_code::error_change_key_required_for_write_operations, "ErrorChangeKeyRequiredForWriteOperations" },
-            { response_code::error_connection_failed, "ErrorConnectionFailed" },
-            { response_code::error_content_conversion_failed, "ErrorContentConversionFailed" },
-            { response_code::error_corrupt_data, "ErrorCorruptData" },
-            { response_code::error_create_item_access_denied, "ErrorCreateItemAccessDenied" },
-            { response_code::error_create_managed_folder_partial_completion, "ErrorCreateManagedFolderPartialCompletion" },
-            { response_code::error_create_subfolder_access_denied, "ErrorCreateSubfolderAccessDenied" },
-            { response_code::error_cross_mailbox_move_copy, "ErrorCrossMailboxMoveCopy" },
-            { response_code::error_data_size_limit_exceeded, "ErrorDataSizeLimitExceeded" },
-            { response_code::error_data_source_operation, "ErrorDataSourceOperation" },
-            { response_code::error_delete_distinguished_folder, "ErrorDeleteDistinguishedFolder" },
-            { response_code::error_delete_items_failed, "ErrorDeleteItemsFailed" },
-            { response_code::error_duplicate_input_folder_names, "ErrorDuplicateInputFolderNames" },
-            { response_code::error_email_address_mismatch, "ErrorEmailAddressMismatch" },
-            { response_code::error_event_not_found, "ErrorEventNotFound" },
-            { response_code::error_expired_subscription, "ErrorExpiredSubscription" },
-            { response_code::error_folder_corrupt, "ErrorFolderCorrupt" },
-            { response_code::error_folder_not_found, "ErrorFolderNotFound" },
-            { response_code::error_folder_property_request_failed, "ErrorFolderPropertyRequestFailed" },
-            { response_code::error_folder_save, "ErrorFolderSave" },
-            { response_code::error_folder_save_failed, "ErrorFolderSaveFailed" },
-            { response_code::error_folder_save_property_error, "ErrorFolderSavePropertyError" },
-            { response_code::error_folder_exists, "ErrorFolderExists" },
-            { response_code::error_free_busy_generation_failed, "ErrorFreeBusyGenerationFailed" },
-            { response_code::error_get_server_security_descriptor_failed, "ErrorGetServerSecurityDescriptorFailed" },
-            { response_code::error_impersonate_user_denied, "ErrorImpersonateUserDenied" },
-            { response_code::error_impersonation_denied, "ErrorImpersonationDenied" },
-            { response_code::error_impersonation_failed, "ErrorImpersonationFailed" },
-            { response_code::error_incorrect_update_property_count, "ErrorIncorrectUpdatePropertyCount" },
-            { response_code::error_individual_mailbox_limit_reached, "ErrorIndividualMailboxLimitReached" },
-            { response_code::error_insufficient_resources, "ErrorInsufficientResources" },
-            { response_code::error_internal_server_error, "ErrorInternalServerError" },
-            { response_code::error_internal_server_transient_error, "ErrorInternalServerTransientError" },
-            { response_code::error_invalid_access_level, "ErrorInvalidAccessLevel" },
-            { response_code::error_invalid_attachment_id, "ErrorInvalidAttachmentId" },
-            { response_code::error_invalid_attachment_subfilter, "ErrorInvalidAttachmentSubfilter" },
-            { response_code::error_invalid_attachment_subfilter_text_filter, "ErrorInvalidAttachmentSubfilterTextFilter" },
-            { response_code::error_invalid_authorization_context, "ErrorInvalidAuthorizationContext" },
-            { response_code::error_invalid_change_key, "ErrorInvalidChangeKey" },
-            { response_code::error_invalid_client_security_context, "ErrorInvalidClientSecurityContext" },
-            { response_code::error_invalid_complete_date, "ErrorInvalidCompleteDate" },
-            { response_code::error_invalid_cross_forest_credentials, "ErrorInvalidCrossForestCredentials" },
-            { response_code::error_invalid_exchange_impersonation_header_data, "ErrorInvalidExchangeImpersonationHeaderData" },
-            { response_code::error_invalid_excludes_restriction, "ErrorInvalidExcludesRestriction" },
-            { response_code::error_invalid_expression_type_for_sub_filter, "ErrorInvalidExpressionTypeForSubFilter" },
-            { response_code::error_invalid_extended_property, "ErrorInvalidExtendedProperty" },
-            { response_code::error_invalid_extended_property_value, "ErrorInvalidExtendedPropertyValue" },
-            { response_code::error_invalid_folder_id, "ErrorInvalidFolderId" },
-            { response_code::error_invalid_fractional_paging_parameters, "ErrorInvalidFractionalPagingParameters" },
-            { response_code::error_invalid_free_busy_view_type, "ErrorInvalidFreeBusyViewType" },
-            { response_code::error_invalid_id, "ErrorInvalidId" },
-            { response_code::error_invalid_id_empty, "ErrorInvalidIdEmpty" },
-            { response_code::error_invalid_id_malformed, "ErrorInvalidIdMalformed" },
-            { response_code::error_invalid_id_moniker_too_long, "ErrorInvalidIdMonikerTooLong" },
-            { response_code::error_invalid_id_not_an_item_attachment_id, "ErrorInvalidIdNotAnItemAttachmentId" },
-            { response_code::error_invalid_id_returned_by_resolve_names, "ErrorInvalidIdReturnedByResolveNames" },
-            { response_code::error_invalid_id_store_object_id_too_long, "ErrorInvalidIdStoreObjectIdTooLong" },
-            { response_code::error_invalid_id_too_many_attachment_levels, "ErrorInvalidIdTooManyAttachmentLevels" },
-            { response_code::error_invalid_id_xml, "ErrorInvalidIdXml" },
-            { response_code::error_invalid_indexed_paging_parameters, "ErrorInvalidIndexedPagingParameters" },
-            { response_code::error_invalid_internet_header_child_nodes, "ErrorInvalidInternetHeaderChildNodes" },
-            { response_code::error_invalid_item_for_operation_create_item_attachment, "ErrorInvalidItemForOperationCreateItemAttachment" },
-            { response_code::error_invalid_item_for_operation_create_item, "ErrorInvalidItemForOperationCreateItem" },
-            { response_code::error_invalid_item_for_operation_accept_item, "ErrorInvalidItemForOperationAcceptItem" },
-            { response_code::error_invalid_item_for_operation_cancel_item, "ErrorInvalidItemForOperationCancelItem" },
-            { response_code::error_invalid_item_for_operation_decline_item, "ErrorInvalidItemForOperationDeclineItem" },
-            { response_code::error_invalid_item_for_operation_expand_dl, "ErrorInvalidItemForOperationExpandDL" },
-            { response_code::error_invalid_item_for_operation_remove_item, "ErrorInvalidItemForOperationRemoveItem" },
-            { response_code::error_invalid_item_for_operation_send_item, "ErrorInvalidItemForOperationSendItem" },
-            { response_code::error_invalid_item_for_operation_tentative, "ErrorInvalidItemForOperationTentative" },
-            { response_code::error_invalid_managed_folder_property, "ErrorInvalidManagedFolderProperty" },
-            { response_code::error_invalid_managed_folder_quota, "ErrorInvalidManagedFolderQuota" },
-            { response_code::error_invalid_managed_folder_size, "ErrorInvalidManagedFolderSize" },
-            { response_code::error_invalid_merged_free_busy_interval, "ErrorInvalidMergedFreeBusyInterval" },
-            { response_code::error_invalid_name_for_name_resolution, "ErrorInvalidNameForNameResolution" },
-            { response_code::error_invalid_network_service_context, "ErrorInvalidNetworkServiceContext" },
-            { response_code::error_invalid_oof_parameter, "ErrorInvalidOofParameter" },
-            { response_code::error_invalid_paging_max_rows, "ErrorInvalidPagingMaxRows" },
-            { response_code::error_invalid_parent_folder, "ErrorInvalidParentFolder" },
-            { response_code::error_invalid_percent_complete_value, "ErrorInvalidPercentCompleteValue" },
-            { response_code::error_invalid_property_append, "ErrorInvalidPropertyAppend" },
-            { response_code::error_invalid_property_delete, "ErrorInvalidPropertyDelete" },
-            { response_code::error_invalid_property_for_exists, "ErrorInvalidPropertyForExists" },
-            { response_code::error_invalid_property_for_operation, "ErrorInvalidPropertyForOperation" },
-            { response_code::error_invalid_property_request, "ErrorInvalidPropertyRequest" },
-            { response_code::error_invalid_property_set, "ErrorInvalidPropertySet" },
-            { response_code::error_invalid_property_update_sent_message, "ErrorInvalidPropertyUpdateSentMessage" },
-            { response_code::error_invalid_pull_subscription_id, "ErrorInvalidPullSubscriptionId" },
-            { response_code::error_invalid_push_subscription_url, "ErrorInvalidPushSubscriptionUrl" },
-            { response_code::error_invalid_recipients, "ErrorInvalidRecipients" },
-            { response_code::error_invalid_recipient_subfilter, "ErrorInvalidRecipientSubfilter" },
-            { response_code::error_invalid_recipient_subfilter_comparison, "ErrorInvalidRecipientSubfilterComparison" },
-            { response_code::error_invalid_recipient_subfilter_order, "ErrorInvalidRecipientSubfilterOrder" },
-            { response_code::error_invalid_recipient_subfilter_text_filter, "ErrorInvalidRecipientSubfilterTextFilter" },
-            { response_code::error_invalid_reference_item, "ErrorInvalidReferenceItem" },
-            { response_code::error_invalid_request, "ErrorInvalidRequest" },
-            { response_code::error_invalid_restriction, "ErrorInvalidRestriction" },
-            { response_code::error_invalid_routing_type, "ErrorInvalidRoutingType" },
-            { response_code::error_invalid_scheduled_oof_duration, "ErrorInvalidScheduledOofDuration" },
-            { response_code::error_invalid_security_descriptor, "ErrorInvalidSecurityDescriptor" },
-            { response_code::error_invalid_send_item_save_settings, "ErrorInvalidSendItemSaveSettings" },
-            { response_code::error_invalid_serialized_access_token, "ErrorInvalidSerializedAccessToken" },
-            { response_code::error_invalid_sid, "ErrorInvalidSid" },
-            { response_code::error_invalid_smtp_address, "ErrorInvalidSmtpAddress" },
-            { response_code::error_invalid_subfilter_type, "ErrorInvalidSubfilterType" },
-            { response_code::error_invalid_subfilter_type_not_attendee_type, "ErrorInvalidSubfilterTypeNotAttendeeType" },
-            { response_code::error_invalid_subfilter_type_not_recipient_type, "ErrorInvalidSubfilterTypeNotRecipientType" },
-            { response_code::error_invalid_subscription, "ErrorInvalidSubscription" },
-            { response_code::error_invalid_sync_state_data, "ErrorInvalidSyncStateData" },
-            { response_code::error_invalid_time_interval, "ErrorInvalidTimeInterval" },
-            { response_code::error_invalid_user_oof_settings, "ErrorInvalidUserOofSettings" },
-            { response_code::error_invalid_user_principal_name, "ErrorInvalidUserPrincipalName" },
-            { response_code::error_invalid_user_sid, "ErrorInvalidUserSid" },
-            { response_code::error_invalid_user_sid_missing_upn, "ErrorInvalidUserSidMissingUPN" },
-            { response_code::error_invalid_value_for_property, "ErrorInvalidValueForProperty" },
-            { response_code::error_invalid_watermark, "ErrorInvalidWatermark" },
-            { response_code::error_irresolvable_conflict, "ErrorIrresolvableConflict" },
-            { response_code::error_item_corrupt, "ErrorItemCorrupt" },
-            { response_code::error_item_not_found, "ErrorItemNotFound" },
-            { response_code::error_item_property_request_failed, "ErrorItemPropertyRequestFailed" },
-            { response_code::error_item_save, "ErrorItemSave" },
-            { response_code::error_item_save_property_error, "ErrorItemSavePropertyError" },
-            { response_code::error_legacy_mailbox_free_busy_view_type_not_merged, "ErrorLegacyMailboxFreeBusyViewTypeNotMerged" },
-            { response_code::error_local_server_object_not_found, "ErrorLocalServerObjectNotFound" },
-            { response_code::error_logon_as_network_service_failed, "ErrorLogonAsNetworkServiceFailed" },
-            { response_code::error_mailbox_configuration, "ErrorMailboxConfiguration" },
-            { response_code::error_mailbox_data_array_empty, "ErrorMailboxDataArrayEmpty" },
-            { response_code::error_mailbox_data_array_too_big, "ErrorMailboxDataArrayTooBig" },
-            { response_code::error_mailbox_logon_failed, "ErrorMailboxLogonFailed" },
-            { response_code::error_mailbox_move_in_progress, "ErrorMailboxMoveInProgress" },
-            { response_code::error_mailbox_store_unavailable, "ErrorMailboxStoreUnavailable" },
-            { response_code::error_mail_recipient_not_found, "ErrorMailRecipientNotFound" },
-            { response_code::error_managed_folder_already_exists, "ErrorManagedFolderAlreadyExists" },
-            { response_code::error_managed_folder_not_found, "ErrorManagedFolderNotFound" },
-            { response_code::error_managed_folders_root_failure, "ErrorManagedFoldersRootFailure" },
-            { response_code::error_meeting_suggestion_generation_failed, "ErrorMeetingSuggestionGenerationFailed" },
-            { response_code::error_message_disposition_required, "ErrorMessageDispositionRequired" },
-            { response_code::error_message_size_exceeded, "ErrorMessageSizeExceeded" },
-            { response_code::error_mime_content_conversion_failed, "ErrorMimeContentConversionFailed" },
-            { response_code::error_mime_content_invalid, "ErrorMimeContentInvalid" },
-            { response_code::error_mime_content_invalid_base64_string, "ErrorMimeContentInvalidBase64String" },
-            { response_code::error_missing_argument, "ErrorMissingArgument" },
-            { response_code::error_missing_email_address, "ErrorMissingEmailAddress" },
-            { response_code::error_missing_email_address_for_managed_folder, "ErrorMissingEmailAddressForManagedFolder" },
-            { response_code::error_missing_information_email_address, "ErrorMissingInformationEmailAddress" },
-            { response_code::error_missing_information_reference_item_id, "ErrorMissingInformationReferenceItemId" },
-            { response_code::error_missing_item_for_create_item_attachment, "ErrorMissingItemForCreateItemAttachment" },
-            { response_code::error_missing_managed_folder_id, "ErrorMissingManagedFolderId" },
-            { response_code::error_missing_recipients, "ErrorMissingRecipients" },
-            { response_code::error_move_copy_failed, "ErrorMoveCopyFailed" },
-            { response_code::error_move_distinguished_folder, "ErrorMoveDistinguishedFolder" },
-            { response_code::error_name_resolution_multiple_results, "ErrorNameResolutionMultipleResults" },
-            { response_code::error_name_resolution_no_mailbox, "ErrorNameResolutionNoMailbox" },
-            { response_code::error_name_resolution_no_results, "ErrorNameResolutionNoResults" },
-            { response_code::error_no_calendar, "ErrorNoCalendar" },
-            { response_code::error_no_folder_class_override, "ErrorNoFolderClassOverride" },
-            { response_code::error_no_free_busy_access, "ErrorNoFreeBusyAccess" },
-            { response_code::error_non_existent_mailbox, "ErrorNonExistentMailbox" },
-            { response_code::error_non_primary_smtp_address, "ErrorNonPrimarySmtpAddress" },
-            { response_code::error_no_property_tag_for_custom_properties, "ErrorNoPropertyTagForCustomProperties" },
-            { response_code::error_not_enough_memory, "ErrorNotEnoughMemory" },
-            { response_code::error_object_type_changed, "ErrorObjectTypeChanged" },
-            { response_code::error_occurrence_crossing_boundary, "ErrorOccurrenceCrossingBoundary" },
-            { response_code::error_occurrence_time_span_too_big, "ErrorOccurrenceTimeSpanTooBig" },
-            { response_code::error_parent_folder_id_required, "ErrorParentFolderIdRequired" },
-            { response_code::error_parent_folder_not_found, "ErrorParentFolderNotFound" },
-            { response_code::error_password_change_required, "ErrorPasswordChangeRequired" },
-            { response_code::error_password_expired, "ErrorPasswordExpired" },
-            { response_code::error_property_update, "ErrorPropertyUpdate" },
-            { response_code::error_property_validation_failure, "ErrorPropertyValidationFailure" },
-            { response_code::error_proxy_request_not_allowed, "ErrorProxyRequestNotAllowed" },
-            { response_code::error_public_folder_request_processing_failed, "ErrorPublicFolderRequestProcessingFailed" },
-            { response_code::error_public_folder_server_not_found, "ErrorPublicFolderServerNotFound" },
-            { response_code::error_query_filter_too_long, "ErrorQueryFilterTooLong" },
-            { response_code::error_quota_exceeded, "ErrorQuotaExceeded" },
-            { response_code::error_read_events_failed, "ErrorReadEventsFailed" },
-            { response_code::error_read_receipt_not_pending, "ErrorReadReceiptNotPending" },
-            { response_code::error_recurrence_end_date_too_big, "ErrorRecurrenceEndDateTooBig" },
-            { response_code::error_recurrence_has_no_occurrence, "ErrorRecurrenceHasNoOccurrence" },
-            { response_code::error_request_aborted, "ErrorRequestAborted" },
-            { response_code::error_request_stream_too_big, "ErrorRequestStreamTooBig" },
-            { response_code::error_required_property_missing, "ErrorRequiredPropertyMissing" },
-            { response_code::error_response_schema_validation, "ErrorResponseSchemaValidation" },
-            { response_code::error_restriction_too_long, "ErrorRestrictionTooLong" },
-            { response_code::error_restriction_too_complex, "ErrorRestrictionTooComplex" },
-            { response_code::error_result_set_too_big, "ErrorResultSetTooBig" },
-            { response_code::error_saved_item_folder_not_found, "ErrorSavedItemFolderNotFound" },
-            { response_code::error_schema_validation, "ErrorSchemaValidation" },
-            { response_code::error_search_folder_not_initialized, "ErrorSearchFolderNotInitialized" },
-            { response_code::error_send_as_denied, "ErrorSendAsDenied" },
-            { response_code::error_send_meeting_cancellations_required, "ErrorSendMeetingCancellationsRequired" },
-            { response_code::error_send_meeting_invitations_or_cancellations_required, "ErrorSendMeetingInvitationsOrCancellationsRequired" },
-            { response_code::error_send_meeting_invitations_required, "ErrorSendMeetingInvitationsRequired" },
-            { response_code::error_sent_meeting_request_update, "ErrorSentMeetingRequestUpdate" },
-            { response_code::error_sent_task_request_update, "ErrorSentTaskRequestUpdate" },
-            { response_code::error_server_busy, "ErrorServerBusy" },
-            { response_code::error_stale_object, "ErrorStaleObject" },
-            { response_code::error_subscription_access_denied, "ErrorSubscriptionAccessDenied" },
-            { response_code::error_subscription_delegate_access_not_supported, "ErrorSubscriptionDelegateAccessNotSupported" },
-            { response_code::error_subscription_not_found, "ErrorSubscriptionNotFound" },
-            { response_code::error_sync_folder_not_found, "ErrorSyncFolderNotFound" },
-            { response_code::error_time_interval_too_big, "ErrorTimeIntervalTooBig" },
-            { response_code::error_to_folder_not_found, "ErrorToFolderNotFound" },
-            { response_code::error_token_serialization_denied, "ErrorTokenSerializationDenied" },
-            { response_code::error_unable_to_get_user_oof_settings, "ErrorUnableToGetUserOofSettings" },
-            { response_code::error_unsupported_culture, "ErrorUnsupportedCulture" },
-            { response_code::error_unsupported_mapi_property_type, "ErrorUnsupportedMapiPropertyType" },
-            { response_code::error_unsupported_mime_conversion, "ErrorUnsupportedMimeConversion" },
-            { response_code::error_unsupported_path_for_query, "ErrorUnsupportedPathForQuery" },
-            { response_code::error_unsupported_path_for_sort_group, "ErrorUnsupportedPathForSortGroup" },
-            { response_code::error_unsupported_property_definition, "ErrorUnsupportedPropertyDefinition" },
-            { response_code::error_unsupported_query_filter, "ErrorUnsupportedQueryFilter" },
-            { response_code::error_unsupported_recurrence, "ErrorUnsupportedRecurrence" },
-            { response_code::error_unsupported_sub_filter, "ErrorUnsupportedSubFilter" },
-            { response_code::error_unsupported_type_for_conversion, "ErrorUnsupportedTypeForConversion" },
-            { response_code::error_update_property_mismatch, "ErrorUpdatePropertyMismatch" },
-            { response_code::error_virus_detected, "ErrorVirusDetected" },
-            { response_code::error_virus_message_deleted, "ErrorVirusMessageDeleted" },
-            { response_code::error_voice_mail_not_implemented, "ErrorVoiceMailNotImplemented" },
-            { response_code::error_web_request_in_invalid_state, "ErrorWebRequestInInvalidState" },
-            { response_code::error_win32_interop_error, "ErrorWin32InteropError" },
-            { response_code::error_working_hours_save_failed, "ErrorWorkingHoursSaveFailed" },
-            { response_code::error_working_hours_xml_malformed, "ErrorWorkingHoursXmlMalformed" }
-        };
-        auto it = m.find(code);
-        if (it == m.end())
+        switch (code)
         {
-            throw exception("Unrecognized response code");
+            case response_code::no_error:
+                return "NoError";
+            case response_code::error_access_denied:
+                return "ErrorAccessDenied";
+            case response_code::error_account_disabled:
+                return "ErrorAccountDisabled";
+            case response_code::error_address_space_not_found:
+                return "ErrorAddressSpaceNotFound";
+            case response_code::error_ad_operation:
+                return "ErrorADOperation";
+            case response_code::error_ad_session_filter:
+                return "ErrorADSessionFilter";
+            case response_code::error_ad_unavailable:
+                return "ErrorADUnavailable";
+            case response_code::error_auto_discover_failed:
+                return "ErrorAutoDiscoverFailed";
+            case response_code::error_affected_task_occurrences_required:
+                return "ErrorAffectedTaskOccurrencesRequired";
+            case response_code::error_attachment_size_limit_exceeded:
+                return "ErrorAttachmentSizeLimitExceeded";
+            case response_code::error_availability_config_not_found:
+                return "ErrorAvailabilityConfigNotFound";
+            case response_code::error_batch_processing_stopped:
+                return "ErrorBatchProcessingStopped";
+            case response_code::error_calendar_cannot_move_or_copy_occurrence:
+                return "ErrorCalendarCannotMoveOrCopyOccurrence";
+            case response_code::error_calendar_cannot_update_deleted_item:
+                return "ErrorCalendarCannotUpdateDeletedItem";
+            case response_code::error_calendar_cannot_use_id_for_occurrence_id:
+                return "ErrorCalendarCannotUseIdForOccurrenceId";
+            case response_code::error_calendar_cannot_use_id_for_recurring_master_id:
+                return "ErrorCalendarCannotUseIdForRecurringMasterId";
+            case response_code::error_calendar_duration_is_too_long:
+                return "ErrorCalendarDurationIsTooLong";
+            case response_code::error_calendar_end_date_is_earlier_than_start_date:
+                return "ErrorCalendarEndDateIsEarlierThanStartDate";
+            case response_code::error_calendar_folder_is_invalid_for_calendar_view:
+                return "ErrorCalendarFolderIsInvalidForCalendarView";
+            case response_code::error_calendar_invalid_attribute_value:
+                return "ErrorCalendarInvalidAttributeValue";
+            case response_code::error_calendar_invalid_day_for_time_change_pattern:
+                return "ErrorCalendarInvalidDayForTimeChangePattern";
+            case response_code::error_calendar_invalid_day_for_weekly_recurrence:
+                return "ErrorCalendarInvalidDayForWeeklyRecurrence";
+            case response_code::error_calendar_invalid_property_state:
+                return "ErrorCalendarInvalidPropertyState";
+            case response_code::error_calendar_invalid_property_value:
+                return "ErrorCalendarInvalidPropertyValue";
+            case response_code::error_calendar_invalid_recurrence:
+                return "ErrorCalendarInvalidRecurrence";
+            case response_code::error_calendar_invalid_time_zone:
+                return "ErrorCalendarInvalidTimeZone";
+            case response_code::error_calendar_is_delegated_for_accept:
+                return "ErrorCalendarIsDelegatedForAccept";
+            case response_code::error_calendar_is_delegated_for_decline:
+                return "ErrorCalendarIsDelegatedForDecline";
+            case response_code::error_calendar_is_delegated_for_remove:
+                return "ErrorCalendarIsDelegatedForRemove";
+            case response_code::error_calendar_is_delegated_for_tentative:
+                return "ErrorCalendarIsDelegatedForTentative";
+            case response_code::error_calendar_is_not_organizer:
+                return "ErrorCalendarIsNotOrganizer";
+            case response_code::error_calendar_is_organizer_for_accept:
+                return "ErrorCalendarIsOrganizerForAccept";
+            case response_code::error_calendar_is_organizer_for_decline:
+                return "ErrorCalendarIsOrganizerForDecline";
+            case response_code::error_calendar_is_organizer_for_remove:
+                return "ErrorCalendarIsOrganizerForRemove";
+            case response_code::error_calendar_is_organizer_for_tentative:
+                return "ErrorCalendarIsOrganizerForTentative";
+            case response_code::error_calendar_occurrence_index_is_out_of_recurrence_range:
+                return "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange";
+            case response_code::error_calendar_occurrence_is_deleted_from_recurrence:
+                return "ErrorCalendarOccurrenceIsDeletedFromRecurrence";
+            case response_code::error_calendar_out_of_range:
+                return "ErrorCalendarOutOfRange";
+            case response_code::error_calendar_view_range_too_big:
+                return "ErrorCalendarViewRangeTooBig";
+            case response_code::error_cannot_create_calendar_item_in_non_calendar_folder:
+                return "ErrorCannotCreateCalendarItemInNonCalendarFolder";
+            case response_code::error_cannot_create_contact_in_non_contacts_folder:
+                return "ErrorCannotCreateContactInNonContactsFolder";
+            case response_code::error_cannot_create_task_in_non_task_folder:
+                return "ErrorCannotCreateTaskInNonTaskFolder";
+            case response_code::error_cannot_delete_object:
+                return "ErrorCannotDeleteObject";
+            case response_code::error_cannot_delete_task_occurrence:
+                return "ErrorCannotDeleteTaskOccurrence";
+            case response_code::error_cannot_open_file_attachment:
+                return "ErrorCannotOpenFileAttachment";
+            case response_code::error_cannot_use_folder_id_for_item_id:
+                return "ErrorCannotUseFolderIdForItemId";
+            case response_code::error_cannot_user_item_id_for_folder_id:
+                return "ErrorCannotUserItemIdForFolderId";
+            case response_code::error_change_key_required:
+                return "ErrorChangeKeyRequired";
+            case response_code::error_change_key_required_for_write_operations:
+                return "ErrorChangeKeyRequiredForWriteOperations";
+            case response_code::error_connection_failed:
+                return "ErrorConnectionFailed";
+            case response_code::error_content_conversion_failed:
+                return "ErrorContentConversionFailed";
+            case response_code::error_corrupt_data:
+                return "ErrorCorruptData";
+            case response_code::error_create_item_access_denied:
+                return "ErrorCreateItemAccessDenied";
+            case response_code::error_create_managed_folder_partial_completion:
+                return "ErrorCreateManagedFolderPartialCompletion";
+            case response_code::error_create_subfolder_access_denied:
+                return "ErrorCreateSubfolderAccessDenied";
+            case response_code::error_cross_mailbox_move_copy:
+                return "ErrorCrossMailboxMoveCopy";
+            case response_code::error_data_size_limit_exceeded:
+                return "ErrorDataSizeLimitExceeded";
+            case response_code::error_data_source_operation:
+                return "ErrorDataSourceOperation";
+            case response_code::error_delete_distinguished_folder:
+                return "ErrorDeleteDistinguishedFolder";
+            case response_code::error_delete_items_failed:
+                return "ErrorDeleteItemsFailed";
+            case response_code::error_duplicate_input_folder_names:
+                return "ErrorDuplicateInputFolderNames";
+            case response_code::error_email_address_mismatch:
+                return "ErrorEmailAddressMismatch";
+            case response_code::error_event_not_found:
+                return "ErrorEventNotFound";
+            case response_code::error_expired_subscription:
+                return "ErrorExpiredSubscription";
+            case response_code::error_folder_corrupt:
+                return "ErrorFolderCorrupt";
+            case response_code::error_folder_not_found:
+                return "ErrorFolderNotFound";
+            case response_code::error_folder_property_request_failed:
+                return "ErrorFolderPropertyRequestFailed";
+            case response_code::error_folder_save:
+                return "ErrorFolderSave";
+            case response_code::error_folder_save_failed:
+                return "ErrorFolderSaveFailed";
+            case response_code::error_folder_save_property_error:
+                return "ErrorFolderSavePropertyError";
+            case response_code::error_folder_exists:
+                return "ErrorFolderExists";
+            case response_code::error_free_busy_generation_failed:
+                return "ErrorFreeBusyGenerationFailed";
+            case response_code::error_get_server_security_descriptor_failed:
+                return "ErrorGetServerSecurityDescriptorFailed";
+            case response_code::error_impersonate_user_denied:
+                return "ErrorImpersonateUserDenied";
+            case response_code::error_impersonation_denied:
+                return "ErrorImpersonationDenied";
+            case response_code::error_impersonation_failed:
+                return "ErrorImpersonationFailed";
+            case response_code::error_incorrect_update_property_count:
+                return "ErrorIncorrectUpdatePropertyCount";
+            case response_code::error_individual_mailbox_limit_reached:
+                return "ErrorIndividualMailboxLimitReached";
+            case response_code::error_insufficient_resources:
+                return "ErrorInsufficientResources";
+            case response_code::error_internal_server_error:
+                return "ErrorInternalServerError";
+            case response_code::error_internal_server_transient_error:
+                return "ErrorInternalServerTransientError";
+            case response_code::error_invalid_access_level:
+                return "ErrorInvalidAccessLevel";
+            case response_code::error_invalid_attachment_id:
+                return "ErrorInvalidAttachmentId";
+            case response_code::error_invalid_attachment_subfilter:
+                return "ErrorInvalidAttachmentSubfilter";
+            case response_code::error_invalid_attachment_subfilter_text_filter:
+                return "ErrorInvalidAttachmentSubfilterTextFilter";
+            case response_code::error_invalid_authorization_context:
+                return "ErrorInvalidAuthorizationContext";
+            case response_code::error_invalid_change_key:
+                return "ErrorInvalidChangeKey";
+            case response_code::error_invalid_client_security_context:
+                return "ErrorInvalidClientSecurityContext";
+            case response_code::error_invalid_complete_date:
+                return "ErrorInvalidCompleteDate";
+            case response_code::error_invalid_cross_forest_credentials:
+                return "ErrorInvalidCrossForestCredentials";
+            case response_code::error_invalid_exchange_impersonation_header_data:
+                return "ErrorInvalidExchangeImpersonationHeaderData";
+            case response_code::error_invalid_excludes_restriction:
+                return "ErrorInvalidExcludesRestriction";
+            case response_code::error_invalid_expression_type_for_sub_filter:
+                return "ErrorInvalidExpressionTypeForSubFilter";
+            case response_code::error_invalid_extended_property:
+                return "ErrorInvalidExtendedProperty";
+            case response_code::error_invalid_extended_property_value:
+                return "ErrorInvalidExtendedPropertyValue";
+            case response_code::error_invalid_folder_id:
+                return "ErrorInvalidFolderId";
+            case response_code::error_invalid_fractional_paging_parameters:
+                return "ErrorInvalidFractionalPagingParameters";
+            case response_code::error_invalid_free_busy_view_type:
+                return "ErrorInvalidFreeBusyViewType";
+            case response_code::error_invalid_id:
+                return "ErrorInvalidId";
+            case response_code::error_invalid_id_empty:
+                return "ErrorInvalidIdEmpty";
+            case response_code::error_invalid_id_malformed:
+                return "ErrorInvalidIdMalformed";
+            case response_code::error_invalid_id_moniker_too_long:
+                return "ErrorInvalidIdMonikerTooLong";
+            case response_code::error_invalid_id_not_an_item_attachment_id:
+                return "ErrorInvalidIdNotAnItemAttachmentId";
+            case response_code::error_invalid_id_returned_by_resolve_names:
+                return "ErrorInvalidIdReturnedByResolveNames";
+            case response_code::error_invalid_id_store_object_id_too_long:
+                return "ErrorInvalidIdStoreObjectIdTooLong";
+            case response_code::error_invalid_id_too_many_attachment_levels:
+                return "ErrorInvalidIdTooManyAttachmentLevels";
+            case response_code::error_invalid_id_xml:
+                return "ErrorInvalidIdXml";
+            case response_code::error_invalid_indexed_paging_parameters:
+                return "ErrorInvalidIndexedPagingParameters";
+            case response_code::error_invalid_internet_header_child_nodes:
+                return "ErrorInvalidInternetHeaderChildNodes";
+            case response_code::error_invalid_item_for_operation_create_item_attachment:
+                return "ErrorInvalidItemForOperationCreateItemAttachment";
+            case response_code::error_invalid_item_for_operation_create_item:
+                return "ErrorInvalidItemForOperationCreateItem";
+            case response_code::error_invalid_item_for_operation_accept_item:
+                return "ErrorInvalidItemForOperationAcceptItem";
+            case response_code::error_invalid_item_for_operation_cancel_item:
+                return "ErrorInvalidItemForOperationCancelItem";
+            case response_code::error_invalid_item_for_operation_decline_item:
+                return "ErrorInvalidItemForOperationDeclineItem";
+            case response_code::error_invalid_item_for_operation_expand_dl:
+                return "ErrorInvalidItemForOperationExpandDL";
+            case response_code::error_invalid_item_for_operation_remove_item:
+                return "ErrorInvalidItemForOperationRemoveItem";
+            case response_code::error_invalid_item_for_operation_send_item:
+                return "ErrorInvalidItemForOperationSendItem";
+            case response_code::error_invalid_item_for_operation_tentative:
+                return "ErrorInvalidItemForOperationTentative";
+            case response_code::error_invalid_managed_folder_property:
+                return "ErrorInvalidManagedFolderProperty";
+            case response_code::error_invalid_managed_folder_quota:
+                return "ErrorInvalidManagedFolderQuota";
+            case response_code::error_invalid_managed_folder_size:
+                return "ErrorInvalidManagedFolderSize";
+            case response_code::error_invalid_merged_free_busy_interval:
+                return "ErrorInvalidMergedFreeBusyInterval";
+            case response_code::error_invalid_name_for_name_resolution:
+                return "ErrorInvalidNameForNameResolution";
+            case response_code::error_invalid_network_service_context:
+                return "ErrorInvalidNetworkServiceContext";
+            case response_code::error_invalid_oof_parameter:
+                return "ErrorInvalidOofParameter";
+            case response_code::error_invalid_paging_max_rows:
+                return "ErrorInvalidPagingMaxRows";
+            case response_code::error_invalid_parent_folder:
+                return "ErrorInvalidParentFolder";
+            case response_code::error_invalid_percent_complete_value:
+                return "ErrorInvalidPercentCompleteValue";
+            case response_code::error_invalid_property_append:
+                return "ErrorInvalidPropertyAppend";
+            case response_code::error_invalid_property_delete:
+                return "ErrorInvalidPropertyDelete";
+            case response_code::error_invalid_property_for_exists:
+                return "ErrorInvalidPropertyForExists";
+            case response_code::error_invalid_property_for_operation:
+                return "ErrorInvalidPropertyForOperation";
+            case response_code::error_invalid_property_request:
+                return "ErrorInvalidPropertyRequest";
+            case response_code::error_invalid_property_set:
+                return "ErrorInvalidPropertySet";
+            case response_code::error_invalid_property_update_sent_message:
+                return "ErrorInvalidPropertyUpdateSentMessage";
+            case response_code::error_invalid_pull_subscription_id:
+                return "ErrorInvalidPullSubscriptionId";
+            case response_code::error_invalid_push_subscription_url:
+                return "ErrorInvalidPushSubscriptionUrl";
+            case response_code::error_invalid_recipients:
+                return "ErrorInvalidRecipients";
+            case response_code::error_invalid_recipient_subfilter:
+                return "ErrorInvalidRecipientSubfilter";
+            case response_code::error_invalid_recipient_subfilter_comparison:
+                return "ErrorInvalidRecipientSubfilterComparison";
+            case response_code::error_invalid_recipient_subfilter_order:
+                return "ErrorInvalidRecipientSubfilterOrder";
+            case response_code::error_invalid_recipient_subfilter_text_filter:
+                return "ErrorInvalidRecipientSubfilterTextFilter";
+            case response_code::error_invalid_reference_item:
+                return "ErrorInvalidReferenceItem";
+            case response_code::error_invalid_request:
+                return "ErrorInvalidRequest";
+            case response_code::error_invalid_restriction:
+                return "ErrorInvalidRestriction";
+            case response_code::error_invalid_routing_type:
+                return "ErrorInvalidRoutingType";
+            case response_code::error_invalid_scheduled_oof_duration:
+                return "ErrorInvalidScheduledOofDuration";
+            case response_code::error_invalid_security_descriptor:
+                return "ErrorInvalidSecurityDescriptor";
+            case response_code::error_invalid_send_item_save_settings:
+                return "ErrorInvalidSendItemSaveSettings";
+            case response_code::error_invalid_serialized_access_token:
+                return "ErrorInvalidSerializedAccessToken";
+            case response_code::error_invalid_sid:
+                return "ErrorInvalidSid";
+            case response_code::error_invalid_smtp_address:
+                return "ErrorInvalidSmtpAddress";
+            case response_code::error_invalid_subfilter_type:
+                return "ErrorInvalidSubfilterType";
+            case response_code::error_invalid_subfilter_type_not_attendee_type:
+                return "ErrorInvalidSubfilterTypeNotAttendeeType";
+            case response_code::error_invalid_subfilter_type_not_recipient_type:
+                return "ErrorInvalidSubfilterTypeNotRecipientType";
+            case response_code::error_invalid_subscription:
+                return "ErrorInvalidSubscription";
+            case response_code::error_invalid_sync_state_data:
+                return "ErrorInvalidSyncStateData";
+            case response_code::error_invalid_time_interval:
+                return "ErrorInvalidTimeInterval";
+            case response_code::error_invalid_user_oof_settings:
+                return "ErrorInvalidUserOofSettings";
+            case response_code::error_invalid_user_principal_name:
+                return "ErrorInvalidUserPrincipalName";
+            case response_code::error_invalid_user_sid:
+                return "ErrorInvalidUserSid";
+            case response_code::error_invalid_user_sid_missing_upn:
+                return "ErrorInvalidUserSidMissingUPN";
+            case response_code::error_invalid_value_for_property:
+                return "ErrorInvalidValueForProperty";
+            case response_code::error_invalid_watermark:
+                return "ErrorInvalidWatermark";
+            case response_code::error_irresolvable_conflict:
+                return "ErrorIrresolvableConflict";
+            case response_code::error_item_corrupt:
+                return "ErrorItemCorrupt";
+            case response_code::error_item_not_found:
+                return "ErrorItemNotFound";
+            case response_code::error_item_property_request_failed:
+                return "ErrorItemPropertyRequestFailed";
+            case response_code::error_item_save:
+                return "ErrorItemSave";
+            case response_code::error_item_save_property_error:
+                return "ErrorItemSavePropertyError";
+            case response_code::error_legacy_mailbox_free_busy_view_type_not_merged:
+                return "ErrorLegacyMailboxFreeBusyViewTypeNotMerged";
+            case response_code::error_local_server_object_not_found:
+                return "ErrorLocalServerObjectNotFound";
+            case response_code::error_logon_as_network_service_failed:
+                return "ErrorLogonAsNetworkServiceFailed";
+            case response_code::error_mailbox_configuration:
+                return "ErrorMailboxConfiguration";
+            case response_code::error_mailbox_data_array_empty:
+                return "ErrorMailboxDataArrayEmpty";
+            case response_code::error_mailbox_data_array_too_big:
+                return "ErrorMailboxDataArrayTooBig";
+            case response_code::error_mailbox_logon_failed:
+                return "ErrorMailboxLogonFailed";
+            case response_code::error_mailbox_move_in_progress:
+                return "ErrorMailboxMoveInProgress";
+            case response_code::error_mailbox_store_unavailable:
+                return "ErrorMailboxStoreUnavailable";
+            case response_code::error_mail_recipient_not_found:
+                return "ErrorMailRecipientNotFound";
+            case response_code::error_managed_folder_already_exists:
+                return "ErrorManagedFolderAlreadyExists";
+            case response_code::error_managed_folder_not_found:
+                return "ErrorManagedFolderNotFound";
+            case response_code::error_managed_folders_root_failure:
+                return "ErrorManagedFoldersRootFailure";
+            case response_code::error_meeting_suggestion_generation_failed:
+                return "ErrorMeetingSuggestionGenerationFailed";
+            case response_code::error_message_disposition_required:
+                return "ErrorMessageDispositionRequired";
+            case response_code::error_message_size_exceeded:
+                return "ErrorMessageSizeExceeded";
+            case response_code::error_mime_content_conversion_failed:
+                return "ErrorMimeContentConversionFailed";
+            case response_code::error_mime_content_invalid:
+                return "ErrorMimeContentInvalid";
+            case response_code::error_mime_content_invalid_base64_string:
+                return "ErrorMimeContentInvalidBase64String";
+            case response_code::error_missing_argument:
+                return "ErrorMissingArgument";
+            case response_code::error_missing_email_address:
+                return "ErrorMissingEmailAddress";
+            case response_code::error_missing_email_address_for_managed_folder:
+                return "ErrorMissingEmailAddressForManagedFolder";
+            case response_code::error_missing_information_email_address:
+                return "ErrorMissingInformationEmailAddress";
+            case response_code::error_missing_information_reference_item_id:
+                return "ErrorMissingInformationReferenceItemId";
+            case response_code::error_missing_item_for_create_item_attachment:
+                return "ErrorMissingItemForCreateItemAttachment";
+            case response_code::error_missing_managed_folder_id:
+                return "ErrorMissingManagedFolderId";
+            case response_code::error_missing_recipients:
+                return "ErrorMissingRecipients";
+            case response_code::error_move_copy_failed:
+                return "ErrorMoveCopyFailed";
+            case response_code::error_move_distinguished_folder:
+                return "ErrorMoveDistinguishedFolder";
+            case response_code::error_name_resolution_multiple_results:
+                return "ErrorNameResolutionMultipleResults";
+            case response_code::error_name_resolution_no_mailbox:
+                return "ErrorNameResolutionNoMailbox";
+            case response_code::error_name_resolution_no_results:
+                return "ErrorNameResolutionNoResults";
+            case response_code::error_no_calendar:
+                return "ErrorNoCalendar";
+            case response_code::error_no_folder_class_override:
+                return "ErrorNoFolderClassOverride";
+            case response_code::error_no_free_busy_access:
+                return "ErrorNoFreeBusyAccess";
+            case response_code::error_non_existent_mailbox:
+                return "ErrorNonExistentMailbox";
+            case response_code::error_non_primary_smtp_address:
+                return "ErrorNonPrimarySmtpAddress";
+            case response_code::error_no_property_tag_for_custom_properties:
+                return "ErrorNoPropertyTagForCustomProperties";
+            case response_code::error_not_enough_memory:
+                return "ErrorNotEnoughMemory";
+            case response_code::error_object_type_changed:
+                return "ErrorObjectTypeChanged";
+            case response_code::error_occurrence_crossing_boundary:
+                return "ErrorOccurrenceCrossingBoundary";
+            case response_code::error_occurrence_time_span_too_big:
+                return "ErrorOccurrenceTimeSpanTooBig";
+            case response_code::error_parent_folder_id_required:
+                return "ErrorParentFolderIdRequired";
+            case response_code::error_parent_folder_not_found:
+                return "ErrorParentFolderNotFound";
+            case response_code::error_password_change_required:
+                return "ErrorPasswordChangeRequired";
+            case response_code::error_password_expired:
+                return "ErrorPasswordExpired";
+            case response_code::error_property_update:
+                return "ErrorPropertyUpdate";
+            case response_code::error_property_validation_failure:
+                return "ErrorPropertyValidationFailure";
+            case response_code::error_proxy_request_not_allowed:
+                return "ErrorProxyRequestNotAllowed";
+            case response_code::error_public_folder_request_processing_failed:
+                return "ErrorPublicFolderRequestProcessingFailed";
+            case response_code::error_public_folder_server_not_found:
+                return "ErrorPublicFolderServerNotFound";
+            case response_code::error_query_filter_too_long:
+                return "ErrorQueryFilterTooLong";
+            case response_code::error_quota_exceeded:
+                return "ErrorQuotaExceeded";
+            case response_code::error_read_events_failed:
+                return "ErrorReadEventsFailed";
+            case response_code::error_read_receipt_not_pending:
+                return "ErrorReadReceiptNotPending";
+            case response_code::error_recurrence_end_date_too_big:
+                return "ErrorRecurrenceEndDateTooBig";
+            case response_code::error_recurrence_has_no_occurrence:
+                return "ErrorRecurrenceHasNoOccurrence";
+            case response_code::error_request_aborted:
+                return "ErrorRequestAborted";
+            case response_code::error_request_stream_too_big:
+                return "ErrorRequestStreamTooBig";
+            case response_code::error_required_property_missing:
+                return "ErrorRequiredPropertyMissing";
+            case response_code::error_response_schema_validation:
+                return "ErrorResponseSchemaValidation";
+            case response_code::error_restriction_too_long:
+                return "ErrorRestrictionTooLong";
+            case response_code::error_restriction_too_complex:
+                return "ErrorRestrictionTooComplex";
+            case response_code::error_result_set_too_big:
+                return "ErrorResultSetTooBig";
+            case response_code::error_saved_item_folder_not_found:
+                return "ErrorSavedItemFolderNotFound";
+            case response_code::error_schema_validation:
+                return "ErrorSchemaValidation";
+            case response_code::error_search_folder_not_initialized:
+                return "ErrorSearchFolderNotInitialized";
+            case response_code::error_send_as_denied:
+                return "ErrorSendAsDenied";
+            case response_code::error_send_meeting_cancellations_required:
+                return "ErrorSendMeetingCancellationsRequired";
+            case response_code::error_send_meeting_invitations_or_cancellations_required:
+                return "ErrorSendMeetingInvitationsOrCancellationsRequired";
+            case response_code::error_send_meeting_invitations_required:
+                return "ErrorSendMeetingInvitationsRequired";
+            case response_code::error_sent_meeting_request_update:
+                return "ErrorSentMeetingRequestUpdate";
+            case response_code::error_sent_task_request_update:
+                return "ErrorSentTaskRequestUpdate";
+            case response_code::error_server_busy:
+                return "ErrorServerBusy";
+            case response_code::error_stale_object:
+                return "ErrorStaleObject";
+            case response_code::error_subscription_access_denied:
+                return "ErrorSubscriptionAccessDenied";
+            case response_code::error_subscription_delegate_access_not_supported:
+                return "ErrorSubscriptionDelegateAccessNotSupported";
+            case response_code::error_subscription_not_found:
+                return "ErrorSubscriptionNotFound";
+            case response_code::error_sync_folder_not_found:
+                return "ErrorSyncFolderNotFound";
+            case response_code::error_time_interval_too_big:
+                return "ErrorTimeIntervalTooBig";
+            case response_code::error_to_folder_not_found:
+                return "ErrorToFolderNotFound";
+            case response_code::error_token_serialization_denied:
+                return "ErrorTokenSerializationDenied";
+            case response_code::error_unable_to_get_user_oof_settings:
+                return "ErrorUnableToGetUserOofSettings";
+            case response_code::error_unsupported_culture:
+                return "ErrorUnsupportedCulture";
+            case response_code::error_unsupported_mapi_property_type:
+                return "ErrorUnsupportedMapiPropertyType";
+            case response_code::error_unsupported_mime_conversion:
+                return "ErrorUnsupportedMimeConversion";
+            case response_code::error_unsupported_path_for_query:
+                return "ErrorUnsupportedPathForQuery";
+            case response_code::error_unsupported_path_for_sort_group:
+                return "ErrorUnsupportedPathForSortGroup";
+            case response_code::error_unsupported_property_definition:
+                return "ErrorUnsupportedPropertyDefinition";
+            case response_code::error_unsupported_query_filter:
+                return "ErrorUnsupportedQueryFilter";
+            case response_code::error_unsupported_recurrence:
+                return "ErrorUnsupportedRecurrence";
+            case response_code::error_unsupported_sub_filter:
+                return "ErrorUnsupportedSubFilter";
+            case response_code::error_unsupported_type_for_conversion:
+                return "ErrorUnsupportedTypeForConversion";
+            case response_code::error_update_property_mismatch:
+                return "ErrorUpdatePropertyMismatch";
+            case response_code::error_virus_detected:
+                return "ErrorVirusDetected";
+            case response_code::error_virus_message_deleted:
+                return "ErrorVirusMessageDeleted";
+            case response_code::error_voice_mail_not_implemented:
+                return "ErrorVoiceMailNotImplemented";
+            case response_code::error_web_request_in_invalid_state:
+                return "ErrorWebRequestInInvalidState";
+            case response_code::error_win32_interop_error:
+                return "ErrorWin32InteropError";
+            case response_code::error_working_hours_save_failed:
+                return "ErrorWorkingHoursSaveFailed";
+            case response_code::error_working_hours_xml_malformed:
+                return "ErrorWorkingHoursXmlMalformed";
+            default:
+                throw exception("Unrecognized response code");
         }
-        return it->second;
     }
 
     enum class server_version
