@@ -1592,1090 +1592,1088 @@ namespace ews
         {
             return response_code::no_error;
         }
-        else if (str == "ErrorAccessDenied")
+        if (str == "ErrorAccessDenied")
         {
             return response_code::error_access_denied;
         }
-        else if (str == "ErrorAccountDisabled")
+        if (str == "ErrorAccountDisabled")
         {
             return response_code::error_account_disabled;
         }
-        else if (str == "ErrorAddressSpaceNotFound")
+        if (str == "ErrorAddressSpaceNotFound")
         {
             return response_code::error_address_space_not_found;
         }
-        else if (str == "ErrorADOperation")
+        if (str == "ErrorADOperation")
         {
             return response_code::error_ad_operation;
         }
-        else if (str == "ErrorADSessionFilter")
+        if (str == "ErrorADSessionFilter")
         {
             return response_code::error_ad_session_filter;
         }
-        else if (str == "ErrorADUnavailable")
+        if (str == "ErrorADUnavailable")
         {
             return response_code::error_ad_unavailable;
         }
-        else if (str == "ErrorAutoDiscoverFailed")
+        if (str == "ErrorAutoDiscoverFailed")
         {
             return response_code::error_auto_discover_failed;
         }
-        else if (str == "ErrorAffectedTaskOccurrencesRequired")
+        if (str == "ErrorAffectedTaskOccurrencesRequired")
         {
             return response_code::error_affected_task_occurrences_required;
         }
-        else if (str == "ErrorAttachmentSizeLimitExceeded")
+        if (str == "ErrorAttachmentSizeLimitExceeded")
         {
             return response_code::error_attachment_size_limit_exceeded;
         }
-        else if (str == "ErrorAvailabilityConfigNotFound")
+        if (str == "ErrorAvailabilityConfigNotFound")
         {
             return response_code::error_availability_config_not_found;
         }
-        else if (str == "ErrorBatchProcessingStopped")
+        if (str == "ErrorBatchProcessingStopped")
         {
             return response_code::error_batch_processing_stopped;
         }
-        else if (str == "ErrorCalendarCannotMoveOrCopyOccurrence")
+        if (str == "ErrorCalendarCannotMoveOrCopyOccurrence")
         {
             return response_code::error_calendar_cannot_move_or_copy_occurrence;
         }
-        else if (str == "ErrorCalendarCannotUpdateDeletedItem")
+        if (str == "ErrorCalendarCannotUpdateDeletedItem")
         {
             return response_code::error_calendar_cannot_update_deleted_item;
         }
-        else if (str == "ErrorCalendarCannotUseIdForOccurrenceId")
+        if (str == "ErrorCalendarCannotUseIdForOccurrenceId")
         {
             return response_code::error_calendar_cannot_use_id_for_occurrence_id;
         }
-        else if (str == "ErrorCalendarCannotUseIdForRecurringMasterId")
+        if (str == "ErrorCalendarCannotUseIdForRecurringMasterId")
         {
             return response_code::error_calendar_cannot_use_id_for_recurring_master_id;
         }
-        else if (str == "ErrorCalendarDurationIsTooLong")
+        if (str == "ErrorCalendarDurationIsTooLong")
         {
             return response_code::error_calendar_duration_is_too_long;
         }
-        else if (str == "ErrorCalendarEndDateIsEarlierThanStartDate")
+        if (str == "ErrorCalendarEndDateIsEarlierThanStartDate")
         {
             return response_code::error_calendar_end_date_is_earlier_than_start_date;
         }
-        else if (str == "ErrorCalendarFolderIsInvalidForCalendarView")
+        if (str == "ErrorCalendarFolderIsInvalidForCalendarView")
         {
             return response_code::error_calendar_folder_is_invalid_for_calendar_view;
         }
-        else if (str == "ErrorCalendarInvalidAttributeValue")
+        if (str == "ErrorCalendarInvalidAttributeValue")
         {
             return response_code::error_calendar_invalid_attribute_value;
         }
-        else if (str == "ErrorCalendarInvalidDayForTimeChangePattern")
+        if (str == "ErrorCalendarInvalidDayForTimeChangePattern")
         {
             return response_code::error_calendar_invalid_day_for_time_change_pattern;
         }
-        else if (str == "ErrorCalendarInvalidDayForWeeklyRecurrence")
+        if (str == "ErrorCalendarInvalidDayForWeeklyRecurrence")
         {
             return response_code::error_calendar_invalid_day_for_weekly_recurrence;
         }
-        else if (str == "ErrorCalendarInvalidPropertyState")
+        if (str == "ErrorCalendarInvalidPropertyState")
         {
             return response_code::error_calendar_invalid_property_state;
         }
-        else if (str == "ErrorCalendarInvalidPropertyValue")
+        if (str == "ErrorCalendarInvalidPropertyValue")
         {
             return response_code::error_calendar_invalid_property_value;
         }
-        else if (str == "ErrorCalendarInvalidRecurrence")
+        if (str == "ErrorCalendarInvalidRecurrence")
         {
             return response_code::error_calendar_invalid_recurrence;
         }
-        else if (str == "ErrorCalendarInvalidTimeZone")
+        if (str == "ErrorCalendarInvalidTimeZone")
         {
             return response_code::error_calendar_invalid_time_zone;
         }
-        else if (str == "ErrorCalendarIsDelegatedForAccept")
+        if (str == "ErrorCalendarIsDelegatedForAccept")
         {
             return response_code::error_calendar_is_delegated_for_accept;
         }
-        else if (str == "ErrorCalendarIsDelegatedForDecline")
+        if (str == "ErrorCalendarIsDelegatedForDecline")
         {
             return response_code::error_calendar_is_delegated_for_decline;
         }
-        else if (str == "ErrorCalendarIsDelegatedForRemove")
+        if (str == "ErrorCalendarIsDelegatedForRemove")
         {
             return response_code::error_calendar_is_delegated_for_remove;
         }
-        else if (str == "ErrorCalendarIsDelegatedForTentative")
+        if (str == "ErrorCalendarIsDelegatedForTentative")
         {
             return response_code::error_calendar_is_delegated_for_tentative;
         }
-        else if (str == "ErrorCalendarIsNotOrganizer")
+        if (str == "ErrorCalendarIsNotOrganizer")
         {
             return response_code::error_calendar_is_not_organizer;
         }
-        else if (str == "ErrorCalendarIsOrganizerForAccept")
+        if (str == "ErrorCalendarIsOrganizerForAccept")
         {
             return response_code::error_calendar_is_organizer_for_accept;
         }
-        else if (str == "ErrorCalendarIsOrganizerForDecline")
+        if (str == "ErrorCalendarIsOrganizerForDecline")
         {
             return response_code::error_calendar_is_organizer_for_decline;
         }
-        else if (str == "ErrorCalendarIsOrganizerForRemove")
+        if (str == "ErrorCalendarIsOrganizerForRemove")
         {
             return response_code::error_calendar_is_organizer_for_remove;
         }
-        else if (str == "ErrorCalendarIsOrganizerForTentative")
+        if (str == "ErrorCalendarIsOrganizerForTentative")
         {
             return response_code::error_calendar_is_organizer_for_tentative;
         }
-        else if (str == "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange")
+        if (str == "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange")
         {
             return response_code::error_calendar_occurrence_index_is_out_of_recurrence_range;
         }
-        else if (str == "ErrorCalendarOccurrenceIsDeletedFromRecurrence")
+        if (str == "ErrorCalendarOccurrenceIsDeletedFromRecurrence")
         {
             return response_code::error_calendar_occurrence_is_deleted_from_recurrence;
         }
-        else if (str == "ErrorCalendarOutOfRange")
+        if (str == "ErrorCalendarOutOfRange")
         {
             return response_code::error_calendar_out_of_range;
         }
-        else if (str == "ErrorCalendarViewRangeTooBig")
+        if (str == "ErrorCalendarViewRangeTooBig")
         {
             return response_code::error_calendar_view_range_too_big;
         }
-        else if (str == "ErrorCannotCreateCalendarItemInNonCalendarFolder")
+        if (str == "ErrorCannotCreateCalendarItemInNonCalendarFolder")
         {
             return response_code::error_cannot_create_calendar_item_in_non_calendar_folder;
         }
-        else if (str == "ErrorCannotCreateContactInNonContactsFolder")
+        if (str == "ErrorCannotCreateContactInNonContactsFolder")
         {
             return response_code::error_cannot_create_contact_in_non_contacts_folder;
         }
-        else if (str == "ErrorCannotCreateTaskInNonTaskFolder")
+        if (str == "ErrorCannotCreateTaskInNonTaskFolder")
         {
             return response_code::error_cannot_create_task_in_non_task_folder;
         }
-        else if (str == "ErrorCannotDeleteObject")
+        if (str == "ErrorCannotDeleteObject")
         {
             return response_code::error_cannot_delete_object;
         }
-        else if (str == "ErrorCannotDeleteTaskOccurrence")
+        if (str == "ErrorCannotDeleteTaskOccurrence")
         {
             return response_code::error_cannot_delete_task_occurrence;
         }
-        else if (str == "ErrorCannotOpenFileAttachment")
+        if (str == "ErrorCannotOpenFileAttachment")
         {
             return response_code::error_cannot_open_file_attachment;
         }
-        else if (str == "ErrorCannotUseFolderIdForItemId")
+        if (str == "ErrorCannotUseFolderIdForItemId")
         {
             return response_code::error_cannot_use_folder_id_for_item_id;
         }
-        else if (str == "ErrorCannotUserItemIdForFolderId")
+        if (str == "ErrorCannotUserItemIdForFolderId")
         {
             return response_code::error_cannot_user_item_id_for_folder_id;
         }
-        else if (str == "ErrorChangeKeyRequired")
+        if (str == "ErrorChangeKeyRequired")
         {
             return response_code::error_change_key_required;
         }
-        else if (str == "ErrorChangeKeyRequiredForWriteOperations")
+        if (str == "ErrorChangeKeyRequiredForWriteOperations")
         {
             return response_code::error_change_key_required_for_write_operations;
         }
-        else if (str == "ErrorConnectionFailed")
+        if (str == "ErrorConnectionFailed")
         {
             return response_code::error_connection_failed;
         }
-        else if (str == "ErrorContentConversionFailed")
+        if (str == "ErrorContentConversionFailed")
         {
             return response_code::error_content_conversion_failed;
         }
-        else if (str == "ErrorCorruptData")
+        if (str == "ErrorCorruptData")
         {
             return response_code::error_corrupt_data;
         }
-        else if (str == "ErrorCreateItemAccessDenied")
+        if (str == "ErrorCreateItemAccessDenied")
         {
             return response_code::error_create_item_access_denied;
         }
-        else if (str == "ErrorCreateManagedFolderPartialCompletion")
+        if (str == "ErrorCreateManagedFolderPartialCompletion")
         {
             return response_code::error_create_managed_folder_partial_completion;
         }
-        else if (str == "ErrorCreateSubfolderAccessDenied")
+        if (str == "ErrorCreateSubfolderAccessDenied")
         {
             return response_code::error_create_subfolder_access_denied;
         }
-        else if (str == "ErrorCrossMailboxMoveCopy")
+        if (str == "ErrorCrossMailboxMoveCopy")
         {
             return response_code::error_cross_mailbox_move_copy;
         }
-        else if (str == "ErrorDataSizeLimitExceeded")
+        if (str == "ErrorDataSizeLimitExceeded")
         {
             return response_code::error_data_size_limit_exceeded;
         }
-        else if (str == "ErrorDataSourceOperation")
+        if (str == "ErrorDataSourceOperation")
         {
             return response_code::error_data_source_operation;
         }
-        else if (str == "ErrorDeleteDistinguishedFolder")
+        if (str == "ErrorDeleteDistinguishedFolder")
         {
             return response_code::error_delete_distinguished_folder;
         }
-        else if (str == "ErrorDeleteItemsFailed")
+        if (str == "ErrorDeleteItemsFailed")
         {
             return response_code::error_delete_items_failed;
         }
-        else if (str == "ErrorDuplicateInputFolderNames")
+        if (str == "ErrorDuplicateInputFolderNames")
         {
             return response_code::error_duplicate_input_folder_names;
         }
-        else if (str == "ErrorEmailAddressMismatch")
+        if (str == "ErrorEmailAddressMismatch")
         {
             return response_code::error_email_address_mismatch;
         }
-        else if (str == "ErrorEventNotFound")
+        if (str == "ErrorEventNotFound")
         {
             return response_code::error_event_not_found;
         }
-        else if (str == "ErrorExpiredSubscription")
+        if (str == "ErrorExpiredSubscription")
         {
             return response_code::error_expired_subscription;
         }
-        else if (str == "ErrorFolderCorrupt")
+        if (str == "ErrorFolderCorrupt")
         {
             return response_code::error_folder_corrupt;
         }
-        else if (str == "ErrorFolderNotFound")
+        if (str == "ErrorFolderNotFound")
         {
             return response_code::error_folder_not_found;
         }
-        else if (str == "ErrorFolderPropertyRequestFailed")
+        if (str == "ErrorFolderPropertyRequestFailed")
         {
             return response_code::error_folder_property_request_failed;
         }
-        else if (str == "ErrorFolderSave")
+        if (str == "ErrorFolderSave")
         {
             return response_code::error_folder_save;
         }
-        else if (str == "ErrorFolderSaveFailed")
+        if (str == "ErrorFolderSaveFailed")
         {
             return response_code::error_folder_save_failed;
         }
-        else if (str == "ErrorFolderSavePropertyError")
+        if (str == "ErrorFolderSavePropertyError")
         {
             return response_code::error_folder_save_property_error;
         }
-        else if (str == "ErrorFolderExists")
+        if (str == "ErrorFolderExists")
         {
             return response_code::error_folder_exists;
         }
-        else if (str == "ErrorFreeBusyGenerationFailed")
+        if (str == "ErrorFreeBusyGenerationFailed")
         {
             return response_code::error_free_busy_generation_failed;
         }
-        else if (str == "ErrorGetServerSecurityDescriptorFailed")
+        if (str == "ErrorGetServerSecurityDescriptorFailed")
         {
             return response_code::error_get_server_security_descriptor_failed;
         }
-        else if (str == "ErrorImpersonateUserDenied")
+        if (str == "ErrorImpersonateUserDenied")
         {
             return response_code::error_impersonate_user_denied;
         }
-        else if (str == "ErrorImpersonationDenied")
+        if (str == "ErrorImpersonationDenied")
         {
             return response_code::error_impersonation_denied;
         }
-        else if (str == "ErrorImpersonationFailed")
+        if (str == "ErrorImpersonationFailed")
         {
             return response_code::error_impersonation_failed;
         }
-        else if (str == "ErrorIncorrectUpdatePropertyCount")
+        if (str == "ErrorIncorrectUpdatePropertyCount")
         {
             return response_code::error_incorrect_update_property_count;
         }
-        else if (str == "ErrorIndividualMailboxLimitReached")
+        if (str == "ErrorIndividualMailboxLimitReached")
         {
             return response_code::error_individual_mailbox_limit_reached;
         }
-        else if (str == "ErrorInsufficientResources")
+        if (str == "ErrorInsufficientResources")
         {
             return response_code::error_insufficient_resources;
         }
-        else if (str == "ErrorInternalServerError")
+        if (str == "ErrorInternalServerError")
         {
             return response_code::error_internal_server_error;
         }
-        else if (str == "ErrorInternalServerTransientError")
+        if (str == "ErrorInternalServerTransientError")
         {
             return response_code::error_internal_server_transient_error;
         }
-        else if (str == "ErrorInvalidAccessLevel")
+        if (str == "ErrorInvalidAccessLevel")
         {
             return response_code::error_invalid_access_level;
         }
-        else if (str == "ErrorInvalidAttachmentId")
+        if (str == "ErrorInvalidAttachmentId")
         {
             return response_code::error_invalid_attachment_id;
         }
-        else if (str == "ErrorInvalidAttachmentSubfilter")
+        if (str == "ErrorInvalidAttachmentSubfilter")
         {
             return response_code::error_invalid_attachment_subfilter;
         }
-        else if (str == "ErrorInvalidAttachmentSubfilterTextFilter")
+        if (str == "ErrorInvalidAttachmentSubfilterTextFilter")
         {
             return response_code::error_invalid_attachment_subfilter_text_filter;
         }
-        else if (str == "ErrorInvalidAuthorizationContext")
+        if (str == "ErrorInvalidAuthorizationContext")
         {
             return response_code::error_invalid_authorization_context;
         }
-        else if (str == "ErrorInvalidChangeKey")
+        if (str == "ErrorInvalidChangeKey")
         {
             return response_code::error_invalid_change_key;
         }
-        else if (str == "ErrorInvalidClientSecurityContext")
+        if (str == "ErrorInvalidClientSecurityContext")
         {
             return response_code::error_invalid_client_security_context;
         }
-        else if (str == "ErrorInvalidCompleteDate")
+        if (str == "ErrorInvalidCompleteDate")
         {
             return response_code::error_invalid_complete_date;
         }
-        else if (str == "ErrorInvalidCrossForestCredentials")
+        if (str == "ErrorInvalidCrossForestCredentials")
         {
             return response_code::error_invalid_cross_forest_credentials;
         }
-        else if (str == "ErrorInvalidExchangeImpersonationHeaderData")
+        if (str == "ErrorInvalidExchangeImpersonationHeaderData")
         {
             return response_code::error_invalid_exchange_impersonation_header_data;
         }
-        else if (str == "ErrorInvalidExcludesRestriction")
+        if (str == "ErrorInvalidExcludesRestriction")
         {
             return response_code::error_invalid_excludes_restriction;
         }
-        else if (str == "ErrorInvalidExpressionTypeForSubFilter")
+        if (str == "ErrorInvalidExpressionTypeForSubFilter")
         {
             return response_code::error_invalid_expression_type_for_sub_filter;
         }
-        else if (str == "ErrorInvalidExtendedProperty")
+        if (str == "ErrorInvalidExtendedProperty")
         {
             return response_code::error_invalid_extended_property;
         }
-        else if (str == "ErrorInvalidExtendedPropertyValue")
+        if (str == "ErrorInvalidExtendedPropertyValue")
         {
             return response_code::error_invalid_extended_property_value;
         }
-        else if (str == "ErrorInvalidFolderId")
+        if (str == "ErrorInvalidFolderId")
         {
             return response_code::error_invalid_folder_id;
         }
-        else if (str == "ErrorInvalidFractionalPagingParameters")
+        if (str == "ErrorInvalidFractionalPagingParameters")
         {
             return response_code::error_invalid_fractional_paging_parameters;
         }
-        else if (str == "ErrorInvalidFreeBusyViewType")
+        if (str == "ErrorInvalidFreeBusyViewType")
         {
             return response_code::error_invalid_free_busy_view_type;
         }
-        else if (str == "ErrorInvalidId")
+        if (str == "ErrorInvalidId")
         {
             return response_code::error_invalid_id;
         }
-        else if (str == "ErrorInvalidIdEmpty")
+        if (str == "ErrorInvalidIdEmpty")
         {
             return response_code::error_invalid_id_empty;
         }
-        else if (str == "ErrorInvalidIdMalformed")
+        if (str == "ErrorInvalidIdMalformed")
         {
             return response_code::error_invalid_id_malformed;
         }
-        else if (str == "ErrorInvalidIdMonikerTooLong")
+        if (str == "ErrorInvalidIdMonikerTooLong")
         {
             return response_code::error_invalid_id_moniker_too_long;
         }
-        else if (str == "ErrorInvalidIdNotAnItemAttachmentId")
+        if (str == "ErrorInvalidIdNotAnItemAttachmentId")
         {
             return response_code::error_invalid_id_not_an_item_attachment_id;
         }
-        else if (str == "ErrorInvalidIdReturnedByResolveNames")
+        if (str == "ErrorInvalidIdReturnedByResolveNames")
         {
             return response_code::error_invalid_id_returned_by_resolve_names;
         }
-        else if (str == "ErrorInvalidIdStoreObjectIdTooLong")
+        if (str == "ErrorInvalidIdStoreObjectIdTooLong")
         {
             return response_code::error_invalid_id_store_object_id_too_long;
         }
-        else if (str == "ErrorInvalidIdTooManyAttachmentLevels")
+        if (str == "ErrorInvalidIdTooManyAttachmentLevels")
         {
             return response_code::error_invalid_id_too_many_attachment_levels;
         }
-        else if (str == "ErrorInvalidIdXml")
+        if (str == "ErrorInvalidIdXml")
         {
             return response_code::error_invalid_id_xml;
         }
-        else if (str == "ErrorInvalidIndexedPagingParameters")
+        if (str == "ErrorInvalidIndexedPagingParameters")
         {
             return response_code::error_invalid_indexed_paging_parameters;
         }
-        else if (str == "ErrorInvalidInternetHeaderChildNodes")
+        if (str == "ErrorInvalidInternetHeaderChildNodes")
         {
             return response_code::error_invalid_internet_header_child_nodes;
         }
-        else if (str == "ErrorInvalidItemForOperationCreateItemAttachment")
+        if (str == "ErrorInvalidItemForOperationCreateItemAttachment")
         {
             return response_code::error_invalid_item_for_operation_create_item_attachment;
         }
-        else if (str == "ErrorInvalidItemForOperationCreateItem")
+        if (str == "ErrorInvalidItemForOperationCreateItem")
         {
             return response_code::error_invalid_item_for_operation_create_item;
         }
-        else if (str == "ErrorInvalidItemForOperationAcceptItem")
+        if (str == "ErrorInvalidItemForOperationAcceptItem")
         {
             return response_code::error_invalid_item_for_operation_accept_item;
         }
-        else if (str == "ErrorInvalidItemForOperationCancelItem")
+        if (str == "ErrorInvalidItemForOperationCancelItem")
         {
             return response_code::error_invalid_item_for_operation_cancel_item;
         }
-        else if (str == "ErrorInvalidItemForOperationDeclineItem")
+        if (str == "ErrorInvalidItemForOperationDeclineItem")
         {
             return response_code::error_invalid_item_for_operation_decline_item;
         }
-        else if (str == "ErrorInvalidItemForOperationExpandDL")
+        if (str == "ErrorInvalidItemForOperationExpandDL")
         {
             return response_code::error_invalid_item_for_operation_expand_dl;
         }
-        else if (str == "ErrorInvalidItemForOperationRemoveItem")
+        if (str == "ErrorInvalidItemForOperationRemoveItem")
         {
             return response_code::error_invalid_item_for_operation_remove_item;
         }
-        else if (str == "ErrorInvalidItemForOperationSendItem")
+        if (str == "ErrorInvalidItemForOperationSendItem")
         {
             return response_code::error_invalid_item_for_operation_send_item;
         }
-        else if (str == "ErrorInvalidItemForOperationTentative")
+        if (str == "ErrorInvalidItemForOperationTentative")
         {
             return response_code::error_invalid_item_for_operation_tentative;
         }
-        else if (str == "ErrorInvalidManagedFolderProperty")
+        if (str == "ErrorInvalidManagedFolderProperty")
         {
             return response_code::error_invalid_managed_folder_property;
         }
-        else if (str == "ErrorInvalidManagedFolderQuota")
+        if (str == "ErrorInvalidManagedFolderQuota")
         {
             return response_code::error_invalid_managed_folder_quota;
         }
-        else if (str == "ErrorInvalidManagedFolderSize")
+        if (str == "ErrorInvalidManagedFolderSize")
         {
             return response_code::error_invalid_managed_folder_size;
         }
-        else if (str == "ErrorInvalidMergedFreeBusyInterval")
+        if (str == "ErrorInvalidMergedFreeBusyInterval")
         {
             return response_code::error_invalid_merged_free_busy_interval;
         }
-        else if (str == "ErrorInvalidNameForNameResolution")
+        if (str == "ErrorInvalidNameForNameResolution")
         {
             return response_code::error_invalid_name_for_name_resolution;
         }
-        else if (str == "ErrorInvalidNetworkServiceContext")
+        if (str == "ErrorInvalidNetworkServiceContext")
         {
             return response_code::error_invalid_network_service_context;
         }
-        else if (str == "ErrorInvalidOofParameter")
+        if (str == "ErrorInvalidOofParameter")
         {
             return response_code::error_invalid_oof_parameter;
         }
-        else if (str == "ErrorInvalidPagingMaxRows")
+        if (str == "ErrorInvalidPagingMaxRows")
         {
             return response_code::error_invalid_paging_max_rows;
         }
-        else if (str == "ErrorInvalidParentFolder")
+        if (str == "ErrorInvalidParentFolder")
         {
             return response_code::error_invalid_parent_folder;
         }
-        else if (str == "ErrorInvalidPercentCompleteValue")
+        if (str == "ErrorInvalidPercentCompleteValue")
         {
             return response_code::error_invalid_percent_complete_value;
         }
-        else if (str == "ErrorInvalidPropertyAppend")
+        if (str == "ErrorInvalidPropertyAppend")
         {
             return response_code::error_invalid_property_append;
         }
-        else if (str == "ErrorInvalidPropertyDelete")
+        if (str == "ErrorInvalidPropertyDelete")
         {
             return response_code::error_invalid_property_delete;
         }
-        else if (str == "ErrorInvalidPropertyForExists")
+        if (str == "ErrorInvalidPropertyForExists")
         {
             return response_code::error_invalid_property_for_exists;
         }
-        else if (str == "ErrorInvalidPropertyForOperation")
+        if (str == "ErrorInvalidPropertyForOperation")
         {
             return response_code::error_invalid_property_for_operation;
         }
-        else if (str == "ErrorInvalidPropertyRequest")
+        if (str == "ErrorInvalidPropertyRequest")
         {
             return response_code::error_invalid_property_request;
         }
-        else if (str == "ErrorInvalidPropertySet")
+        if (str == "ErrorInvalidPropertySet")
         {
             return response_code::error_invalid_property_set;
         }
-        else if (str == "ErrorInvalidPropertyUpdateSentMessage")
+        if (str == "ErrorInvalidPropertyUpdateSentMessage")
         {
             return response_code::error_invalid_property_update_sent_message;
         }
-        else if (str == "ErrorInvalidPullSubscriptionId")
+        if (str == "ErrorInvalidPullSubscriptionId")
         {
             return response_code::error_invalid_pull_subscription_id;
         }
-        else if (str == "ErrorInvalidPushSubscriptionUrl")
+        if (str == "ErrorInvalidPushSubscriptionUrl")
         {
             return response_code::error_invalid_push_subscription_url;
         }
-        else if (str == "ErrorInvalidRecipients")
+        if (str == "ErrorInvalidRecipients")
         {
             return response_code::error_invalid_recipients;
         }
-        else if (str == "ErrorInvalidRecipientSubfilter")
+        if (str == "ErrorInvalidRecipientSubfilter")
         {
             return response_code::error_invalid_recipient_subfilter;
         }
-        else if (str == "ErrorInvalidRecipientSubfilterComparison")
+        if (str == "ErrorInvalidRecipientSubfilterComparison")
         {
             return response_code::error_invalid_recipient_subfilter_comparison;
         }
-        else if (str == "ErrorInvalidRecipientSubfilterOrder")
+        if (str == "ErrorInvalidRecipientSubfilterOrder")
         {
             return response_code::error_invalid_recipient_subfilter_order;
         }
-        else if (str == "ErrorInvalidRecipientSubfilterTextFilter")
+        if (str == "ErrorInvalidRecipientSubfilterTextFilter")
         {
             return response_code::error_invalid_recipient_subfilter_text_filter;
         }
-        else if (str == "ErrorInvalidReferenceItem")
+        if (str == "ErrorInvalidReferenceItem")
         {
             return response_code::error_invalid_reference_item;
         }
-        else if (str == "ErrorInvalidRequest")
+        if (str == "ErrorInvalidRequest")
         {
             return response_code::error_invalid_request;
         }
-        else if (str == "ErrorInvalidRestriction")
+        if (str == "ErrorInvalidRestriction")
         {
             return response_code::error_invalid_restriction;
         }
-        else if (str == "ErrorInvalidRoutingType")
+        if (str == "ErrorInvalidRoutingType")
         {
             return response_code::error_invalid_routing_type;
         }
-        else if (str == "ErrorInvalidScheduledOofDuration")
+        if (str == "ErrorInvalidScheduledOofDuration")
         {
             return response_code::error_invalid_scheduled_oof_duration;
         }
-        else if (str == "ErrorInvalidSecurityDescriptor")
+        if (str == "ErrorInvalidSecurityDescriptor")
         {
             return response_code::error_invalid_security_descriptor;
         }
-        else if (str == "ErrorInvalidSendItemSaveSettings")
+        if (str == "ErrorInvalidSendItemSaveSettings")
         {
             return response_code::error_invalid_send_item_save_settings;
         }
-        else if (str == "ErrorInvalidSerializedAccessToken")
+        if (str == "ErrorInvalidSerializedAccessToken")
         {
             return response_code::error_invalid_serialized_access_token;
         }
-        else if (str == "ErrorInvalidSid")
+        if (str == "ErrorInvalidSid")
         {
             return response_code::error_invalid_sid;
         }
-        else if (str == "ErrorInvalidSmtpAddress")
+        if (str == "ErrorInvalidSmtpAddress")
         {
             return response_code::error_invalid_smtp_address;
         }
-        else if (str == "ErrorInvalidSubfilterType")
+        if (str == "ErrorInvalidSubfilterType")
         {
             return response_code::error_invalid_subfilter_type;
         }
-        else if (str == "ErrorInvalidSubfilterTypeNotAttendeeType")
+        if (str == "ErrorInvalidSubfilterTypeNotAttendeeType")
         {
             return response_code::error_invalid_subfilter_type_not_attendee_type;
         }
-        else if (str == "ErrorInvalidSubfilterTypeNotRecipientType")
+        if (str == "ErrorInvalidSubfilterTypeNotRecipientType")
         {
             return response_code::error_invalid_subfilter_type_not_recipient_type;
         }
-        else if (str == "ErrorInvalidSubscription")
+        if (str == "ErrorInvalidSubscription")
         {
             return response_code::error_invalid_subscription;
         }
-        else if (str == "ErrorInvalidSyncStateData")
+        if (str == "ErrorInvalidSyncStateData")
         {
             return response_code::error_invalid_sync_state_data;
         }
-        else if (str == "ErrorInvalidTimeInterval")
+        if (str == "ErrorInvalidTimeInterval")
         {
             return response_code::error_invalid_time_interval;
         }
-        else if (str == "ErrorInvalidUserOofSettings")
+        if (str == "ErrorInvalidUserOofSettings")
         {
             return response_code::error_invalid_user_oof_settings;
         }
-        else if (str == "ErrorInvalidUserPrincipalName")
+        if (str == "ErrorInvalidUserPrincipalName")
         {
             return response_code::error_invalid_user_principal_name;
         }
-        else if (str == "ErrorInvalidUserSid")
+        if (str == "ErrorInvalidUserSid")
         {
             return response_code::error_invalid_user_sid;
         }
-        else if (str == "ErrorInvalidUserSidMissingUPN")
+        if (str == "ErrorInvalidUserSidMissingUPN")
         {
             return response_code::error_invalid_user_sid_missing_upn;
         }
-        else if (str == "ErrorInvalidValueForProperty")
+        if (str == "ErrorInvalidValueForProperty")
         {
             return response_code::error_invalid_value_for_property;
         }
-        else if (str == "ErrorInvalidWatermark")
+        if (str == "ErrorInvalidWatermark")
         {
             return response_code::error_invalid_watermark;
         }
-        else if (str == "ErrorIrresolvableConflict")
+        if (str == "ErrorIrresolvableConflict")
         {
             return response_code::error_irresolvable_conflict;
         }
-        else if (str == "ErrorItemCorrupt")
+        if (str == "ErrorItemCorrupt")
         {
             return response_code::error_item_corrupt;
         }
-        else if (str == "ErrorItemNotFound")
+        if (str == "ErrorItemNotFound")
         {
             return response_code::error_item_not_found;
         }
-        else if (str == "ErrorItemPropertyRequestFailed")
+        if (str == "ErrorItemPropertyRequestFailed")
         {
             return response_code::error_item_property_request_failed;
         }
-        else if (str == "ErrorItemSave")
+        if (str == "ErrorItemSave")
         {
             return response_code::error_item_save;
         }
-        else if (str == "ErrorItemSavePropertyError")
+        if (str == "ErrorItemSavePropertyError")
         {
             return response_code::error_item_save_property_error;
         }
-        else if (str == "ErrorLegacyMailboxFreeBusyViewTypeNotMerged")
+        if (str == "ErrorLegacyMailboxFreeBusyViewTypeNotMerged")
         {
             return response_code::error_legacy_mailbox_free_busy_view_type_not_merged;
         }
-        else if (str == "ErrorLocalServerObjectNotFound")
+        if (str == "ErrorLocalServerObjectNotFound")
         {
             return response_code::error_local_server_object_not_found;
         }
-        else if (str == "ErrorLogonAsNetworkServiceFailed")
+        if (str == "ErrorLogonAsNetworkServiceFailed")
         {
             return response_code::error_logon_as_network_service_failed;
         }
-        else if (str == "ErrorMailboxConfiguration")
+        if (str == "ErrorMailboxConfiguration")
         {
             return response_code::error_mailbox_configuration;
         }
-        else if (str == "ErrorMailboxDataArrayEmpty")
+        if (str == "ErrorMailboxDataArrayEmpty")
         {
             return response_code::error_mailbox_data_array_empty;
         }
-        else if (str == "ErrorMailboxDataArrayTooBig")
+        if (str == "ErrorMailboxDataArrayTooBig")
         {
             return response_code::error_mailbox_data_array_too_big;
         }
-        else if (str == "ErrorMailboxLogonFailed")
+        if (str == "ErrorMailboxLogonFailed")
         {
             return response_code::error_mailbox_logon_failed;
         }
-        else if (str == "ErrorMailboxMoveInProgress")
+        if (str == "ErrorMailboxMoveInProgress")
         {
             return response_code::error_mailbox_move_in_progress;
         }
-        else if (str == "ErrorMailboxStoreUnavailable")
+        if (str == "ErrorMailboxStoreUnavailable")
         {
             return response_code::error_mailbox_store_unavailable;
         }
-        else if (str == "ErrorMailRecipientNotFound")
+        if (str == "ErrorMailRecipientNotFound")
         {
             return response_code::error_mail_recipient_not_found;
         }
-        else if (str == "ErrorManagedFolderAlreadyExists")
+        if (str == "ErrorManagedFolderAlreadyExists")
         {
             return response_code::error_managed_folder_already_exists;
         }
-        else if (str == "ErrorManagedFolderNotFound")
+        if (str == "ErrorManagedFolderNotFound")
         {
             return response_code::error_managed_folder_not_found;
         }
-        else if (str == "ErrorManagedFoldersRootFailure")
+        if (str == "ErrorManagedFoldersRootFailure")
         {
             return response_code::error_managed_folders_root_failure;
         }
-        else if (str == "ErrorMeetingSuggestionGenerationFailed")
+        if (str == "ErrorMeetingSuggestionGenerationFailed")
         {
             return response_code::error_meeting_suggestion_generation_failed;
         }
-        else if (str == "ErrorMessageDispositionRequired")
+        if (str == "ErrorMessageDispositionRequired")
         {
             return response_code::error_message_disposition_required;
         }
-        else if (str == "ErrorMessageSizeExceeded")
+        if (str == "ErrorMessageSizeExceeded")
         {
             return response_code::error_message_size_exceeded;
         }
-        else if (str == "ErrorMimeContentConversionFailed")
+        if (str == "ErrorMimeContentConversionFailed")
         {
             return response_code::error_mime_content_conversion_failed;
         }
-        else if (str == "ErrorMimeContentInvalid")
+        if (str == "ErrorMimeContentInvalid")
         {
             return response_code::error_mime_content_invalid;
         }
-        else if (str == "ErrorMimeContentInvalidBase64String")
+        if (str == "ErrorMimeContentInvalidBase64String")
         {
             return response_code::error_mime_content_invalid_base64_string;
         }
-        else if (str == "ErrorMissingArgument")
+        if (str == "ErrorMissingArgument")
         {
             return response_code::error_missing_argument;
         }
-        else if (str == "ErrorMissingEmailAddress")
+        if (str == "ErrorMissingEmailAddress")
         {
             return response_code::error_missing_email_address;
         }
-        else if (str == "ErrorMissingEmailAddressForManagedFolder")
+        if (str == "ErrorMissingEmailAddressForManagedFolder")
         {
             return response_code::error_missing_email_address_for_managed_folder;
         }
-        else if (str == "ErrorMissingInformationEmailAddress")
+        if (str == "ErrorMissingInformationEmailAddress")
         {
             return response_code::error_missing_information_email_address;
         }
-        else if (str == "ErrorMissingInformationReferenceItemId")
+        if (str == "ErrorMissingInformationReferenceItemId")
         {
             return response_code::error_missing_information_reference_item_id;
         }
-        else if (str == "ErrorMissingItemForCreateItemAttachment")
+        if (str == "ErrorMissingItemForCreateItemAttachment")
         {
             return response_code::error_missing_item_for_create_item_attachment;
         }
-        else if (str == "ErrorMissingManagedFolderId")
+        if (str == "ErrorMissingManagedFolderId")
         {
             return response_code::error_missing_managed_folder_id;
         }
-        else if (str == "ErrorMissingRecipients")
+        if (str == "ErrorMissingRecipients")
         {
             return response_code::error_missing_recipients;
         }
-        else if (str == "ErrorMoveCopyFailed")
+        if (str == "ErrorMoveCopyFailed")
         {
             return response_code::error_move_copy_failed;
         }
-        else if (str == "ErrorMoveDistinguishedFolder")
+        if (str == "ErrorMoveDistinguishedFolder")
         {
             return response_code::error_move_distinguished_folder;
         }
-        else if (str == "ErrorNameResolutionMultipleResults")
+        if (str == "ErrorNameResolutionMultipleResults")
         {
             return response_code::error_name_resolution_multiple_results;
         }
-        else if (str == "ErrorNameResolutionNoMailbox")
+        if (str == "ErrorNameResolutionNoMailbox")
         {
             return response_code::error_name_resolution_no_mailbox;
         }
-        else if (str == "ErrorNameResolutionNoResults")
+        if (str == "ErrorNameResolutionNoResults")
         {
             return response_code::error_name_resolution_no_results;
         }
-        else if (str == "ErrorNoCalendar")
+        if (str == "ErrorNoCalendar")
         {
             return response_code::error_no_calendar;
         }
-        else if (str == "ErrorNoFolderClassOverride")
+        if (str == "ErrorNoFolderClassOverride")
         {
             return response_code::error_no_folder_class_override;
         }
-        else if (str == "ErrorNoFreeBusyAccess")
+        if (str == "ErrorNoFreeBusyAccess")
         {
             return response_code::error_no_free_busy_access;
         }
-        else if (str == "ErrorNonExistentMailbox")
+        if (str == "ErrorNonExistentMailbox")
         {
             return response_code::error_non_existent_mailbox;
         }
-        else if (str == "ErrorNonPrimarySmtpAddress")
+        if (str == "ErrorNonPrimarySmtpAddress")
         {
             return response_code::error_non_primary_smtp_address;
         }
-        else if (str == "ErrorNoPropertyTagForCustomProperties")
+        if (str == "ErrorNoPropertyTagForCustomProperties")
         {
             return response_code::error_no_property_tag_for_custom_properties;
         }
-        else if (str == "ErrorNotEnoughMemory")
+        if (str == "ErrorNotEnoughMemory")
         {
             return response_code::error_not_enough_memory;
         }
-        else if (str == "ErrorObjectTypeChanged")
+        if (str == "ErrorObjectTypeChanged")
         {
             return response_code::error_object_type_changed;
         }
-        else if (str == "ErrorOccurrenceCrossingBoundary")
+        if (str == "ErrorOccurrenceCrossingBoundary")
         {
             return response_code::error_occurrence_crossing_boundary;
         }
-        else if (str == "ErrorOccurrenceTimeSpanTooBig")
+        if (str == "ErrorOccurrenceTimeSpanTooBig")
         {
             return response_code::error_occurrence_time_span_too_big;
         }
-        else if (str == "ErrorParentFolderIdRequired")
+        if (str == "ErrorParentFolderIdRequired")
         {
             return response_code::error_parent_folder_id_required;
         }
-        else if (str == "ErrorParentFolderNotFound")
+        if (str == "ErrorParentFolderNotFound")
         {
             return response_code::error_parent_folder_not_found;
         }
-        else if (str == "ErrorPasswordChangeRequired")
+        if (str == "ErrorPasswordChangeRequired")
         {
             return response_code::error_password_change_required;
         }
-        else if (str == "ErrorPasswordExpired")
+        if (str == "ErrorPasswordExpired")
         {
             return response_code::error_password_expired;
         }
-        else if (str == "ErrorPropertyUpdate")
+        if (str == "ErrorPropertyUpdate")
         {
             return response_code::error_property_update;
         }
-        else if (str == "ErrorPropertyValidationFailure")
+        if (str == "ErrorPropertyValidationFailure")
         {
             return response_code::error_property_validation_failure;
         }
-        else if (str == "ErrorProxyRequestNotAllowed")
+        if (str == "ErrorProxyRequestNotAllowed")
         {
             return response_code::error_proxy_request_not_allowed;
         }
-        else if (str == "ErrorPublicFolderRequestProcessingFailed")
+        if (str == "ErrorPublicFolderRequestProcessingFailed")
         {
             return response_code::error_public_folder_request_processing_failed;
         }
-        else if (str == "ErrorPublicFolderServerNotFound")
+        if (str == "ErrorPublicFolderServerNotFound")
         {
             return response_code::error_public_folder_server_not_found;
         }
-        else if (str == "ErrorQueryFilterTooLong")
+        if (str == "ErrorQueryFilterTooLong")
         {
             return response_code::error_query_filter_too_long;
         }
-        else if (str == "ErrorQuotaExceeded")
+        if (str == "ErrorQuotaExceeded")
         {
             return response_code::error_quota_exceeded;
         }
-        else if (str == "ErrorReadEventsFailed")
+        if (str == "ErrorReadEventsFailed")
         {
             return response_code::error_read_events_failed;
         }
-        else if (str == "ErrorReadReceiptNotPending")
+        if (str == "ErrorReadReceiptNotPending")
         {
             return response_code::error_read_receipt_not_pending;
         }
-        else if (str == "ErrorRecurrenceEndDateTooBig")
+        if (str == "ErrorRecurrenceEndDateTooBig")
         {
             return response_code::error_recurrence_end_date_too_big;
         }
-        else if (str == "ErrorRecurrenceHasNoOccurrence")
+        if (str == "ErrorRecurrenceHasNoOccurrence")
         {
             return response_code::error_recurrence_has_no_occurrence;
         }
-        else if (str == "ErrorRequestAborted")
+        if (str == "ErrorRequestAborted")
         {
             return response_code::error_request_aborted;
         }
-        else if (str == "ErrorRequestStreamTooBig")
+        if (str == "ErrorRequestStreamTooBig")
         {
             return response_code::error_request_stream_too_big;
         }
-        else if (str == "ErrorRequiredPropertyMissing")
+        if (str == "ErrorRequiredPropertyMissing")
         {
             return response_code::error_required_property_missing;
         }
-        else if (str == "ErrorResponseSchemaValidation")
+        if (str == "ErrorResponseSchemaValidation")
         {
             return response_code::error_response_schema_validation;
         }
-        else if (str == "ErrorRestrictionTooLong")
+        if (str == "ErrorRestrictionTooLong")
         {
             return response_code::error_restriction_too_long;
         }
-        else if (str == "ErrorRestrictionTooComplex")
+        if (str == "ErrorRestrictionTooComplex")
         {
             return response_code::error_restriction_too_complex;
         }
-        else if (str == "ErrorResultSetTooBig")
+        if (str == "ErrorResultSetTooBig")
         {
             return response_code::error_result_set_too_big;
         }
-        else if (str == "ErrorSavedItemFolderNotFound")
+        if (str == "ErrorSavedItemFolderNotFound")
         {
             return response_code::error_saved_item_folder_not_found;
         }
-        else if (str == "ErrorSchemaValidation")
+        if (str == "ErrorSchemaValidation")
         {
             return response_code::error_schema_validation;
         }
-        else if (str == "ErrorSearchFolderNotInitialized")
+        if (str == "ErrorSearchFolderNotInitialized")
         {
             return response_code::error_search_folder_not_initialized;
         }
-        else if (str == "ErrorSendAsDenied")
+        if (str == "ErrorSendAsDenied")
         {
             return response_code::error_send_as_denied;
         }
-        else if (str == "ErrorSendMeetingCancellationsRequired")
+        if (str == "ErrorSendMeetingCancellationsRequired")
         {
             return response_code::error_send_meeting_cancellations_required;
         }
-        else if (str == "ErrorSendMeetingInvitationsOrCancellationsRequired")
+        if (str == "ErrorSendMeetingInvitationsOrCancellationsRequired")
         {
             return response_code::error_send_meeting_invitations_or_cancellations_required;
         }
-        else if (str == "ErrorSendMeetingInvitationsRequired")
+        if (str == "ErrorSendMeetingInvitationsRequired")
         {
             return response_code::error_send_meeting_invitations_required;
         }
-        else if (str == "ErrorSentMeetingRequestUpdate")
+        if (str == "ErrorSentMeetingRequestUpdate")
         {
             return response_code::error_sent_meeting_request_update;
         }
-        else if (str == "ErrorSentTaskRequestUpdate")
+        if (str == "ErrorSentTaskRequestUpdate")
         {
             return response_code::error_sent_task_request_update;
         }
-        else if (str == "ErrorServerBusy")
+        if (str == "ErrorServerBusy")
         {
             return response_code::error_server_busy;
         }
-        else if (str == "ErrorStaleObject")
+        if (str == "ErrorStaleObject")
         {
             return response_code::error_stale_object;
         }
-        else if (str == "ErrorSubscriptionAccessDenied")
+        if (str == "ErrorSubscriptionAccessDenied")
         {
             return response_code::error_subscription_access_denied;
         }
-        else if (str == "ErrorSubscriptionDelegateAccessNotSupported")
+        if (str == "ErrorSubscriptionDelegateAccessNotSupported")
         {
             return response_code::error_subscription_delegate_access_not_supported;
         }
-        else if (str == "ErrorSubscriptionNotFound")
+        if (str == "ErrorSubscriptionNotFound")
         {
             return response_code::error_subscription_not_found;
         }
-        else if (str == "ErrorSyncFolderNotFound")
+        if (str == "ErrorSyncFolderNotFound")
         {
             return response_code::error_sync_folder_not_found;
         }
-        else if (str == "ErrorTimeIntervalTooBig")
+        if (str == "ErrorTimeIntervalTooBig")
         {
             return response_code::error_time_interval_too_big;
         }
-        else if (str == "ErrorToFolderNotFound")
+        if (str == "ErrorToFolderNotFound")
         {
             return response_code::error_to_folder_not_found;
         }
-        else if (str == "ErrorTokenSerializationDenied")
+        if (str == "ErrorTokenSerializationDenied")
         {
             return response_code::error_token_serialization_denied;
         }
-        else if (str == "ErrorUnableToGetUserOofSettings")
+        if (str == "ErrorUnableToGetUserOofSettings")
         {
             return response_code::error_unable_to_get_user_oof_settings;
         }
-        else if (str == "ErrorUnsupportedCulture")
+        if (str == "ErrorUnsupportedCulture")
         {
             return response_code::error_unsupported_culture;
         }
-        else if (str == "ErrorUnsupportedMapiPropertyType")
+        if (str == "ErrorUnsupportedMapiPropertyType")
         {
             return response_code::error_unsupported_mapi_property_type;
         }
-        else if (str == "ErrorUnsupportedMimeConversion")
+        if (str == "ErrorUnsupportedMimeConversion")
         {
             return response_code::error_unsupported_mime_conversion;
         }
-        else if (str == "ErrorUnsupportedPathForQuery")
+        if (str == "ErrorUnsupportedPathForQuery")
         {
             return response_code::error_unsupported_path_for_query;
         }
-        else if (str == "ErrorUnsupportedPathForSortGroup")
+        if (str == "ErrorUnsupportedPathForSortGroup")
         {
             return response_code::error_unsupported_path_for_sort_group;
         }
-        else if (str == "ErrorUnsupportedPropertyDefinition")
+        if (str == "ErrorUnsupportedPropertyDefinition")
         {
             return response_code::error_unsupported_property_definition;
         }
-        else if (str == "ErrorUnsupportedQueryFilter")
+        if (str == "ErrorUnsupportedQueryFilter")
         {
             return response_code::error_unsupported_query_filter;
         }
-        else if (str == "ErrorUnsupportedRecurrence")
+        if (str == "ErrorUnsupportedRecurrence")
         {
             return response_code::error_unsupported_recurrence;
         }
-        else if (str == "ErrorUnsupportedSubFilter")
+        if (str == "ErrorUnsupportedSubFilter")
         {
             return response_code::error_unsupported_sub_filter;
         }
-        else if (str == "ErrorUnsupportedTypeForConversion")
+        if (str == "ErrorUnsupportedTypeForConversion")
         {
             return response_code::error_unsupported_type_for_conversion;
         }
-        else if (str == "ErrorUpdatePropertyMismatch")
+        if (str == "ErrorUpdatePropertyMismatch")
         {
             return response_code::error_update_property_mismatch;
         }
-        else if (str == "ErrorVirusDetected")
+        if (str == "ErrorVirusDetected")
         {
             return response_code::error_virus_detected;
         }
-        else if (str == "ErrorVirusMessageDeleted")
+        if (str == "ErrorVirusMessageDeleted")
         {
             return response_code::error_virus_message_deleted;
         }
-        else if (str == "ErrorVoiceMailNotImplemented")
+        if (str == "ErrorVoiceMailNotImplemented")
         {
             return response_code::error_voice_mail_not_implemented;
         }
-        else if (str == "ErrorWebRequestInInvalidState")
+        if (str == "ErrorWebRequestInInvalidState")
         {
             return response_code::error_web_request_in_invalid_state;
         }
-        else if (str == "ErrorWin32InteropError")
+        if (str == "ErrorWin32InteropError")
         {
             return response_code::error_win32_interop_error;
         }
-        else if (str == "ErrorWorkingHoursSaveFailed")
+        if (str == "ErrorWorkingHoursSaveFailed")
         {
             return response_code::error_working_hours_save_failed;
         }
-        else if (str == "ErrorWorkingHoursXmlMalformed")
+        if (str == "ErrorWorkingHoursXmlMalformed")
         {
             return response_code::error_working_hours_xml_malformed;
         }
-        else
-        {
-            throw exception(std::string("Unrecognized response code: ") + str);
-        }
+
+        throw exception(std::string("Unrecognized response code: ") + str);
     }
 
     // TODO: move to internal namespace
