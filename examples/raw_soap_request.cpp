@@ -10,8 +10,8 @@
 
 namespace
 {
-    std::string request{ R"(
-<m:GetFolder>
+    std::string request(
+R"(<m:GetFolder>
 <m:FolderShape>
     <t:BaseShape>IdOnly</t:BaseShape>
     <t:AdditionalProperties>
@@ -22,7 +22,7 @@ namespace
 <m:FolderIds>
     <t:DistinguishedFolderId Id="root" />
 </m:FolderIds>
-</m:GetFolder>)" };
+</m:GetFolder>)");
 
     const auto soap_headers = std::vector<std::string> {
         "<t:RequestServerVersion Version=\"Exchange2013_SP1\"/>"
@@ -48,7 +48,6 @@ int main()
 
         // hack hack ...
 
-        ews::internal::raise_exception_if_soap_fault(response);
     }
     catch (std::exception& exc)
     {

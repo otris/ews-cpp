@@ -2387,6 +2387,22 @@ namespace ews
         response_code code_;
     };
 
+    // Exception thrown when a HTTP request was not successful
+    class http_error final : public exception
+    {
+    public:
+        explicit http_error(long status_code)
+            : exception("HTTP status code: " + std::to_string(status_code)),
+              code_(status_code)
+        {
+        }
+
+        long code() const EWS_NOEXCEPT { return code_; }
+
+    private:
+        long code_;
+    };
+
     // A SOAP fault occurred due to a bad request
     class soap_fault : public exception
     {
@@ -2714,81 +2730,6 @@ namespace ews
             return element;
         }
 
-        // Does nothing if given response is not a SOAP fault
-        inline void raise_exception_if_soap_fault(http_response& response)
-        {
-            using rapidxml::internal::compare;
-
-            if (!response.is_soap_fault())
-            {
-                return;
-            }
-
-            try
-            {
-                // Try parsing, if not already done before
-                response.payload();
-            }
-            catch (parse_error& error)
-            {
-                throw soap_fault(
-                    "The request failed for unknown reason (could not parse response)"
-                );
-            }
-
-            // Parsing should be done by now
-            const auto& doc = response.payload();
-            auto elem = get_element_by_qname(doc,
-                                             "ResponseCode",
-                                             uri<>::microsoft::errors());
-            if (!elem)
-            {
-                throw soap_fault(
-                    "The request failed for unknown reason (unexpected XML in response)"
-                );
-            }
-
-            if (compare(elem->value(),
-                        elem->value_size(),
-                        "ErrorSchemaValidation",
-                        21))
-            {
-                // Get some more helpful details
-                elem = get_element_by_qname(doc,
-                                            "LineNumber",
-                                            uri<>::microsoft::types());
-                EWS_ASSERT(elem &&
-                        "Expected <LineNumber> element in response");
-                const auto line_number =
-                    std::stoul(std::string(elem->value(), elem->value_size()));
-
-                elem = get_element_by_qname(doc,
-                                            "LinePosition",
-                                            uri<>::microsoft::types());
-                EWS_ASSERT(elem &&
-                        "Expected <LinePosition> element in response");
-                const auto line_position =
-                    std::stoul(std::string(elem->value(), elem->value_size()));
-
-                elem = get_element_by_qname(doc,
-                                            "Violation",
-                                            uri<>::microsoft::types());
-                EWS_ASSERT(elem &&
-                        "Expected <Violation> element in response");
-                throw schema_validation_error(
-                        line_number,
-                        line_position,
-                        std::string(elem->value(), elem->value_size()));
-            }
-            else
-            {
-                elem = get_element_by_qname(doc, "faultstring", "");
-                EWS_ASSERT(elem &&
-                        "Expected <faultstring> element in response");
-                throw soap_fault(elem->value());
-            }
-        }
-
         class credentials
         {
         public:
@@ -2978,7 +2919,7 @@ namespace ews
             const std::string& soap_body,
             const std::vector<std::string>& soap_headers)
         {
-            RequestHandler request{url};
+            RequestHandler request(url);
             request.set_method(RequestHandler::method::POST);
             request.set_content_type("text/xml; charset=utf-8");
 
@@ -3244,7 +3185,8 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             {
                 std::cerr
                     << "Parsing DeleteItemResponseMessage failed, response code: "
-                    << response.code() << ", payload:\n" << doc << std::endl;
+                    << response.code() << ", payload:\n\'"
+                    << doc << "\'" << std::endl;
             }
 #endif
 
@@ -6498,6 +6440,10 @@ R"(
         // checks the response for faults.
         internal::http_response request(const std::string& request_string)
         {
+            using rapidxml::internal::compare;
+            using uri = internal::uri<>;
+            using internal::get_element_by_qname;
+
             const auto soap_headers = std::vector<std::string> {
                 "<t:RequestServerVersion Version=\"" + server_version_ + "\"/>"
             };
@@ -6508,8 +6454,84 @@ R"(
                                                                 domain_,
                                                                 request_string,
                                                                 soap_headers);
-            internal::raise_exception_if_soap_fault(response);
-            return response;
+
+            if (response.ok())
+            {
+                return response;
+            }
+
+            if (response.is_soap_fault())
+            {
+                // Try parsing, if not already done before
+                try
+                {
+                    response.payload();
+                }
+                catch (parse_error& error)
+                {
+                    throw soap_fault(
+                        "The request failed for unknown reason "
+                        "(could not parse response)");
+                }
+
+                // Parsing should be done by now
+                const auto& doc = response.payload();
+                auto elem = get_element_by_qname(doc,
+                                                 "ResponseCode",
+                                                 uri::microsoft::errors());
+                if (!elem)
+                {
+                    throw soap_fault(
+                        "The request failed for unknown reason "
+                        "(unexpected XML in response)");
+                }
+
+                if (compare(elem->value(),
+                            elem->value_size(),
+                            "ErrorSchemaValidation",
+                            21))
+                {
+                    // Get some more helpful details
+                    elem = get_element_by_qname(doc,
+                                                "LineNumber",
+                                                uri::microsoft::types());
+                    EWS_ASSERT(elem &&
+                            "Expected <LineNumber> element in response");
+                    const auto line_number =
+                        std::stoul(std::string(elem->value(),
+                                               elem->value_size()));
+
+                    elem = get_element_by_qname(doc,
+                                                "LinePosition",
+                                                uri::microsoft::types());
+                    EWS_ASSERT(elem &&
+                            "Expected <LinePosition> element in response");
+                    const auto line_position =
+                        std::stoul(std::string(elem->value(),
+                                               elem->value_size()));
+
+                    elem = get_element_by_qname(doc,
+                                                "Violation",
+                                                uri::microsoft::types());
+                    EWS_ASSERT(elem &&
+                            "Expected <Violation> element in response");
+                    throw schema_validation_error(
+                            line_number,
+                            line_position,
+                            std::string(elem->value(), elem->value_size()));
+                }
+                else
+                {
+                    elem = get_element_by_qname(doc, "faultstring", "");
+                    EWS_ASSERT(elem &&
+                            "Expected <faultstring> element in response");
+                    throw soap_fault(elem->value());
+                }
+            }
+            else
+            {
+                throw http_error(response.code());
+            }
         }
 
         // Gets an item from the server.
@@ -6637,7 +6659,8 @@ R"(
             {
                 std::cerr
                     << "Parsing CreateItemResponseMessage failed, response code: "
-                    << response.code() << ", payload:\n" << doc << std::endl;
+                    << response.code() << ", payload:\n\'"
+                    << doc << "\'" << std::endl;
             }
 #endif
 
@@ -6746,7 +6769,8 @@ R"(
             {
                 std::cerr
                     << "Parsing GetItemResponseMessage failed, response code: "
-                    << response.code() << ", payload:\n" << doc << std::endl;
+                    << response.code() << ", payload:\n\'"
+                    << doc << "\'" << std::endl;
             }
 #endif
             EWS_ASSERT(elem &&
