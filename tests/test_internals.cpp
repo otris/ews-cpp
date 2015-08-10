@@ -40,8 +40,7 @@ namespace tests
 {
     TEST(InternalTest, NamespaceURIs)
     {
-        using uri = ews::internal::uri<>;
-
+        typedef ews::internal::uri<> uri;
         EXPECT_EQ(uri::microsoft::errors_size,
                   std::strlen(uri::microsoft::errors()));
         EXPECT_EQ(uri::microsoft::types_size,
@@ -55,7 +54,7 @@ namespace tests
 
     TEST(InternalTest, MimeContentDefaultConstruction)
     {
-        using mime_content = ews::mime_content;
+        typedef ews::mime_content mime_content;
 
         auto m = mime_content();
         EXPECT_TRUE(m.none());
@@ -66,7 +65,7 @@ namespace tests
 
     TEST(InternalTest, MimeContentConstructionWithData)
     {
-        using mime_content = ews::mime_content;
+        using ews::mime_content;
         const char* content = "SGVsbG8sIHdvcmxkPw==";
 
         auto m = mime_content();

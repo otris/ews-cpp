@@ -31,9 +31,10 @@ namespace tests
 
         auto message = ews::message();
         message.set_subject("You are hiding again, aren't you?");
-        std::vector<ews::email_address> recipients{
+        std::vector<ews::email_address> recipients;
+        recipients.push_back(
             ews::email_address("darkwing.duck@duckburg.com")
-        };
+        );
         message.set_to_recipients(recipients);
         auto item_id = service().create_item(
                 message,

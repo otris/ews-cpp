@@ -4,7 +4,7 @@
 #include <cstring>
 
 using ews::item_id;
-using xml_document = rapidxml::xml_document<>;
+typedef rapidxml::xml_document<> xml_document;
 
 namespace tests
 {

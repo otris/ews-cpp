@@ -8,6 +8,8 @@
 #include <exception>
 #include <cstdlib>
 
+using namespace ews::internal;
+
 namespace
 {
     std::string request(
@@ -23,10 +25,6 @@ namespace
         "    <t:DistinguishedFolderId Id=\"root\" />\n"
         "</m:FolderIds>\n"
         "</m:GetFolder>\n");
-
-    const auto soap_headers = std::vector<std::string> {
-        "<t:RequestServerVersion Version=\"Exchange2013_SP1\"/>"
-    };
 }
 
 int main()
@@ -34,15 +32,20 @@ int main()
     int res = EXIT_SUCCESS;
     ews::set_up();
 
+    auto soap_headers = std::vector<std::string>();
+    soap_headers.emplace_back(
+        "<t:RequestServerVersion Version=\"Exchange2013_SP1\"/>"
+    );
+
     try
     {
         const auto env = ews::test::get_from_environment();
-        auto response = ews::internal::make_raw_soap_request(env.server_uri,
-                                                             env.username,
-                                                             env.password,
-                                                             env.domain,
-                                                             request,
-                                                             soap_headers);
+        auto response = make_raw_soap_request<http_request>(env.server_uri,
+                                                            env.username,
+                                                            env.password,
+                                                            env.domain,
+                                                            request,
+                                                            soap_headers);
         const auto& doc = response.payload();
         std::cout << doc << std::endl;
 

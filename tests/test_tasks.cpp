@@ -11,7 +11,7 @@ namespace tests
 #pragma warning(suppress: 6262)
     TEST(OfflineTaskTest, FromXMLElement)
     {
-        using xml_document = rapidxml::xml_document<>;
+        typedef rapidxml::xml_document<> xml_document;
 
         // slang: 2013 SP1, not all properties included
         const auto xml = std::string(

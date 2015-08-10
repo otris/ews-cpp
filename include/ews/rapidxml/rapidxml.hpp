@@ -561,8 +561,10 @@ namespace rapidxml
                 {
                 }
 
-                scope& operator=(const scope&) = delete;
+            private:
+                scope& operator=(const scope&); // Never defined
 
+            public:
                 ~scope()
                 {
                     m_processor.m_namespace_prefixes.resize(m_stack_position);
@@ -631,7 +633,7 @@ namespace rapidxml
             public:
                 explicit scope(xml_namespace_processor_stub&) {}
 
-                scope(const scope&) = default;
+                scope(const scope&) {}
 
                 void process_element(xml_node<Ch>*) const {}
             };
@@ -1470,9 +1472,11 @@ namespace rapidxml
         }
 
         // No copying
-        xml_node(const xml_node&) = delete;
-        void operator=(const xml_node&) = delete;
+    private:
+        xml_node(const xml_node&); // Never defined
+        void operator=(const xml_node&); // Never defined
 
+    public:
         ///////////////////////////////////////////////////////////////////////////
         // Node data access
 
@@ -2148,9 +2152,11 @@ namespace rapidxml
         // xml_document. See this gist for example:
         // https://gist.github.com/bkircher/dd401644a55651c4a878
 
-        xml_document(const xml_document&) = delete;
-        xml_document& operator=(const xml_document&) = delete;
+    private:
+        xml_document(const xml_document&); // Never defined
+        xml_document& operator=(const xml_document&); // Never defined
 
+    public:
         xml_document(xml_document&& other)
             : xml_node<Ch>(std::move(other))
         {}

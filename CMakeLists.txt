@@ -75,6 +75,10 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
     message(WARNING "Intel C++ not supported.")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 17.0)
+        message(FATAL_ERROR "Visual Studio must be at least 2012")
+    endif()
+
     if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
         string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS
             "${CMAKE_CXX_FLAGS}")
@@ -82,6 +86,11 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
     endif()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SCL_SECURE_NO_WARNINGS")
+
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0)
+        # Make Google Test compile with Visual Studio 2012
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_VARIADIC_MAX=10")
+    endif()
 endif()
 
 # Uncomment to print out compiler settings for different configuration types
@@ -149,6 +158,25 @@ int main() { std::unique_ptr<int> foo = std::make_unique<int>(4); }
 
 if(HAS_MAKE_UNIQUE)
     add_definitions(-DEWS_HAS_MAKE_UNIQUE)
+endif()
+
+# Default template arguments for function templates - negative: VS 2012
+CHECK_CXX_SOURCE_COMPILES("
+template <typename Fu = int> void func() { }
+int main() { }
+" HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS)
+
+if(HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS)
+    add_definitions(-DEWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS)
+endif()
+
+# Thread local storage - partial: VS 2012
+CHECK_CXX_SOURCE_COMPILES("
+int main() { thread_local int i; }
+" HAS_THREAD_LOCAL_STORAGE)
+
+if(HAS_THREAD_LOCAL_STORAGE)
+    add_definitions(-DEWS_HAS_THREAD_LOCAL_STORAGE)
 endif()
 
 # N2326 defaulted and deleted functions - negative: VS 2012 of course

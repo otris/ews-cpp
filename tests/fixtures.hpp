@@ -48,7 +48,11 @@ namespace tests
             {
                 static storage& instance()
                 {
+#ifdef EWS_HAS_THREAD_LOCAL_STORAGE
                     thread_local storage inst;
+#else
+                    static storage inst;
+#endif
                     return inst;
                 }
 
@@ -56,7 +60,11 @@ namespace tests
                 std::vector<char> fake_response;
             };
 
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
             http_request_mock() = default;
+#else
+            http_request_mock() {}
+#endif
 
             bool header_contains(const std::string& search_str) const
             {
@@ -90,7 +98,12 @@ namespace tests
                 (void)creds;
             }
 
+#ifdef EWS_HAS_VARIADIC_TEMPLATES
             template <typename... Args> void set_option(CURLoption, Args...) {}
+#else
+            template <typename T1> void set_option(CURLoption option, T1) {}
+            template <typename T1, typename T2> void set_option(CURLoption option, T1, T2) {}
+#endif
 
             ews::internal::http_response send(const std::string& request)
             {
@@ -102,7 +115,11 @@ namespace tests
             }
         };
 
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
         virtual ~FakeServiceFixture() = default;
+#else
+        virtual ~FakeServiceFixture() {}
+#endif
 
         ews::basic_service<http_request_mock>& service()
         {
@@ -157,7 +174,11 @@ namespace tests
     class ServiceFixture : public BaseFixture
     {
     public:
+#ifdef EWS_HAS_DEFAULT_AN_DELETE
         virtual ~ServiceFixture() = default;
+#else
+        virtual ~ServiceFixture() {}
+#endif
 
         ews::service& service()
         {
@@ -270,9 +291,10 @@ namespace tests
 
             auto msg = ews::message();
             msg.set_subject("Honorable Minister of Finance - Release Funds");
-            std::vector<ews::email_address> recipients{
+            std::vector<ews::email_address> recipients;
+            recipients.push_back(
                 ews::email_address("udom.emmanuel@zenith-bank.com.ng")
-            };
+            );
             msg.set_to_recipients(recipients);
             auto item_id = service().create_item(
                     msg,

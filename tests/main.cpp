@@ -9,9 +9,14 @@
 #include <cstdlib>
 #include <cstring>
 
-#include <unistd.h>
+#ifdef _WIN32
+# include <direct.h>
+# define getcwd _getcwd
+#else
+# include <unistd.h>
+#endif
 
-using argument_map = std::unordered_map<std::string, std::string>;
+typedef std::unordered_map<std::string, std::string> argument_map;
 
 namespace
 {
@@ -33,7 +38,7 @@ namespace
 
     std::string pwd()
     {
-        const std::size_t size{ 4096U };
+        enum { size = 4096U };
         char buf[size];
         auto ret = ::getcwd(buf, size);
         return ret != nullptr ?

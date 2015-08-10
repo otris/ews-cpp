@@ -66,9 +66,17 @@ namespace ews
                 destructor_function();
             }
 
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
             on_scope_exit() = delete;
             on_scope_exit(const on_scope_exit&) = delete;
             on_scope_exit& operator=(const on_scope_exit&) = delete;
+#else
+        private:
+            on_scope_exit(const on_scope_exit&); // Never defined
+            on_scope_exit& operator=(const on_scope_exit&); // Never defined
+
+        public:
+#endif
 
             ~on_scope_exit()
             {
@@ -220,7 +228,8 @@ namespace ews
                     {
                       for (i = 0; i < 4; i++)
                       {
-                          char_array_4[i] = base64_chars.find(char_array_4[i]);
+                          char_array_4[i] = static_cast<unsigned char>(
+                              base64_chars.find(char_array_4[i]));
                       }
 
                       char_array_3[0] =  (char_array_4[0] << 2)        + ((char_array_4[1] & 0x30) >> 4);
@@ -244,7 +253,8 @@ namespace ews
 
                     for (j = 0; j < 4; j++)
                     {
-                        char_array_4[j] = base64_chars.find(char_array_4[j]);
+                        char_array_4[j] = static_cast<unsigned char>(
+                            base64_chars.find(char_array_4[j]));
                     }
 
                     char_array_3[0] =  (char_array_4[0] << 2)        + ((char_array_4[1] & 0x30) >> 4);
@@ -3538,19 +3548,27 @@ namespace ews
         class curl_ptr final
         {
         public:
-            curl_ptr() : handle_{ curl_easy_init() }
+            curl_ptr() : handle_(curl_easy_init())
             {
                 if (!handle_)
                 {
-                    throw curl_error{ "Could not start libcurl session" };
+                    throw curl_error("Could not start libcurl session");
                 }
             }
 
             ~curl_ptr() { curl_easy_cleanup(handle_); }
 
             // Could use curl_easy_duphandle for copying
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
             curl_ptr(const curl_ptr&) = delete;
             curl_ptr& operator=(const curl_ptr&) = delete;
+#else
+        private:
+            curl_ptr(const curl_ptr&); // Never defined
+            curl_ptr& operator=(const curl_ptr&); // Never defined
+
+        public:
+#endif
 
             CURL* get() const EWS_NOEXCEPT { return handle_; }
 
@@ -3635,10 +3653,20 @@ namespace ews
                 EWS_ASSERT(!data_.empty());
             }
 
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
             ~http_response() = default;
 
             http_response(const http_response&) = delete;
             http_response& operator=(const http_response&) = delete;
+#else
+            http_response() {}
+
+        private:
+            http_response(const http_response&); // Never defined
+            http_response& operator=(const http_response&); // Never defined
+
+        public:
+#endif
 
             http_response(http_response&& other)
                 : data_(std::move(other.data_)),
@@ -3790,7 +3818,11 @@ namespace ews
         class credentials
         {
         public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
             virtual ~credentials() = default;
+#else
+            virtual ~credentials() {}
+#endif
             virtual void certify(http_request*) const = 0;
         };
 
@@ -3847,6 +3879,7 @@ namespace ews
                 creds.certify(this);
             }
 
+#ifdef EWS_HAS_VARIADIC_TEMPLATES
             // Small wrapper around curl_easy_setopt(3).
             //
             // Converts return codes to exceptions of type curl_error and allows
@@ -3875,6 +3908,56 @@ namespace ews
                 }
                 };
             }
+#else
+            template <typename T1>
+            void set_option(CURLoption option, T1 arg1)
+            {
+                auto retcode = curl_easy_setopt(handle_.get(), option, arg1);
+                switch (retcode)
+                {
+                case CURLE_OK:
+                    return;
+
+                case CURLE_FAILED_INIT:
+                {
+                    throw make_curl_error(
+                        "curl_easy_setopt: unsupported option", retcode);
+                }
+
+                default:
+                {
+                    throw make_curl_error(
+                        "curl_easy_setopt: failed setting option", retcode);
+                }
+                };
+            }
+
+            template <typename T1, typename T2>
+            void set_option(CURLoption option, T1 arg1, T2 arg2)
+            {
+                auto retcode = curl_easy_setopt(handle_.get(),
+                                                option,
+                                                arg1,
+                                                arg2);
+                switch (retcode)
+                {
+                case CURLE_OK:
+                    return;
+
+                case CURLE_FAILED_INIT:
+                {
+                    throw make_curl_error(
+                        "curl_easy_setopt: unsupported option", retcode);
+                }
+
+                default:
+                {
+                    throw make_curl_error(
+                        "curl_easy_setopt: failed setting option", retcode);
+                }
+                };
+            }
+#endif
 
             // Perform the HTTP request and returns the response. This function
             // blocks until the complete response is received or a timeout is
@@ -3967,7 +4050,11 @@ namespace ews
         // soap_headers: Any SOAP headers to add.
         //
         // Returns the response.
+#ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
         template <typename RequestHandler = http_request>
+#else
+        template <typename RequestHandler>
+#endif
         inline http_response make_raw_soap_request(
             const std::string& url,
             const std::string& username,
@@ -3980,7 +4067,7 @@ namespace ews
             request.set_method(RequestHandler::method::POST);
             request.set_content_type("text/xml; charset=utf-8");
 
-            ntlm_credentials creds{username, password, domain};
+            ntlm_credentials creds(username, password, domain);
             request.set_credentials(creds);
 
             std::stringstream request_stream;
@@ -4021,7 +4108,6 @@ namespace ews
         inline std::pair<response_class, response_code>
         parse_response_class_and_code(const rapidxml::xml_node<>& elem)
         {
-            using uri = internal::uri<>;
             using rapidxml::internal::compare;
 
             auto cls = response_class::success;
@@ -4050,8 +4136,8 @@ namespace ews
             if (cls != response_class::success)
             {
                 auto response_code_elem =
-                    elem.first_node_ns(uri::microsoft::messages(),
-                                        "ResponseCode");
+                    elem.first_node_ns(uri<>::microsoft::messages(),
+                                       "ResponseCode");
                 EWS_ASSERT(response_code_elem
                         && "Expected <ResponseCode> element");
                 code = str_to_response_code(response_code_elem->value());
@@ -4069,10 +4155,8 @@ namespace ews
         template <typename Func>
         inline void for_each_item(const rapidxml::xml_node<>& elem, Func func)
         {
-            using uri = internal::uri<>;
-
             auto items_elem =
-                elem.first_node_ns(uri::microsoft::messages(), "Items");
+                elem.first_node_ns(uri<>::microsoft::messages(), "Items");
             EWS_ASSERT(items_elem && "Expected <Items> element");
 
             for (auto item_elem = items_elem->first_node(); item_elem;
@@ -4228,13 +4312,10 @@ namespace ews
         public:
             static delete_item_response_message parse(http_response& response)
             {
-                using uri = internal::uri<>;
-                using internal::get_element_by_qname;
-
                 const auto& doc = response.payload();
                 auto elem = get_element_by_qname(doc,
                                                  "DeleteItemResponseMessage",
-                                                 uri::microsoft::messages());
+                                                 uri<>::microsoft::messages());
 
 #ifdef EWS_ENABLE_VERBOSE
             if (!elem)
@@ -4282,7 +4363,11 @@ namespace ews
     class item_id final
     {
     public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
         item_id() = default;
+#else
+        item_id() {}
+#endif
 
         explicit item_id(std::string id)
             : id_(std::move(id)),
@@ -4351,7 +4436,11 @@ namespace ews
     class attachment_id final
     {
     public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
         attachment_id() = default;
+#else
+        attachment_id() {}
+#endif
 
         explicit attachment_id(std::string id) : id_(std::move(id)) {}
 
@@ -4521,12 +4610,11 @@ namespace ews
 
             void set_or_update(std::string node_name, std::string node_value)
             {
-                using uri = internal::uri<>;
                 using rapidxml::internal::compare;
 
                 auto oldnode = get_element_by_qname(*doc_,
                                                     node_name.c_str(),
-                                                    uri::microsoft::types());
+                                                    uri<>::microsoft::types());
                 if (oldnode && compare(node_value.c_str(),
                                        node_value.length(),
                                        oldnode->value(),
@@ -4549,8 +4637,8 @@ namespace ews
                                node_qname.length(),
                                ptr_to_qname + 2);
                 newnode->value(ptr_to_value);
-                newnode->namespace_uri(uri::microsoft::types(),
-                                       uri::microsoft::types_size);
+                newnode->namespace_uri(uri<>::microsoft::types(),
+                                       uri<>::microsoft::types_size);
                 if (oldnode)
                 {
                     doc_->first_node()->insert_node(oldnode, newnode);
@@ -4797,7 +4885,11 @@ namespace ews
     class mime_content final
     {
     public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
         mime_content() = default;
+#else
+        mime_content() {}
+#endif
 
         // Copies len bytes from ptr into an internal buffer.
         mime_content(std::string charset,
@@ -4952,7 +5044,11 @@ namespace ews
     class item
     {
     public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
         item() = default;
+#else
+        item() {}
+#endif
 
         explicit item(item_id id) : item_id_(std::move(id)), properties_() {}
 
@@ -5005,8 +5101,6 @@ namespace ews
         // Set the body content of an item
         void set_body(const body& b)
         {
-            using uri = internal::uri<>;
-
             auto doc = properties().document();
 
             auto body_node = properties().get_node("Body");
@@ -5020,8 +5114,8 @@ namespace ews
             body_node->qname(ptr_to_qname,
                              std::strlen("t:Body"),
                              ptr_to_qname + 2);
-            body_node->namespace_uri(uri::microsoft::types(),
-                                     uri::microsoft::types_size);
+            body_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                     internal::uri<>::microsoft::types_size);
 
             auto ptr_to_value =
                 doc->allocate_string(b.content().c_str());
@@ -5240,7 +5334,11 @@ namespace ews
     class task final : public item
     {
     public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
         task() = default;
+#else
+        task() {}
+#endif
 
         explicit task(item_id id) : item(std::move(id)) {}
 
@@ -5355,8 +5453,7 @@ namespace ews
         // Makes a task instance from a <Task> XML element
         static task from_xml_element(const rapidxml::xml_node<>& elem)
         {
-            using uri = internal::uri<>;
-            auto id_node = elem.first_node_ns(uri::microsoft::types(),
+            auto id_node = elem.first_node_ns(internal::uri<>::microsoft::types(),
                                               "ItemId");
             EWS_ASSERT(id_node && "Expected <ItemId>");
             return task(item_id::from_xml_element(*id_node),
@@ -5394,7 +5491,11 @@ namespace ews
     class contact final : public item
     {
     public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
         contact() = default;
+#else
+        contact() {}
+#endif
 
         explicit contact(item_id id) : item(id) {}
 
@@ -5604,8 +5705,7 @@ namespace ews
         // Makes a contact instance from a <Contact> XML element
         static contact from_xml_element(const rapidxml::xml_node<>& elem)
         {
-            using uri = internal::uri<>;
-            auto id_node = elem.first_node_ns(uri::microsoft::types(),
+            auto id_node = elem.first_node_ns(internal::uri<>::microsoft::types(),
                                               "ItemId");
             EWS_ASSERT(id_node && "Expected <ItemId>");
             return contact(item_id::from_xml_element(*id_node),
@@ -5663,7 +5763,6 @@ namespace ews
         // Helper function for set_email_address_{1,2,3}
         void set_email_address_by_key(const char* key, email_address&& mail)
         {
-            using uri = internal::uri<>;
             using rapidxml::internal::compare;
 
             auto doc = properties().document();
@@ -5703,8 +5802,8 @@ namespace ews
                 addresses->qname(ptr_to_qname,
                                  std::strlen("t:EmailAddresses"),
                                  ptr_to_qname + 2);
-                addresses->namespace_uri(uri::microsoft::types(),
-                                         uri::microsoft::types_size);
+                addresses->namespace_uri(internal::uri<>::microsoft::types(),
+                                         internal::uri<>::microsoft::types_size);
                 doc->append_node(addresses);
             }
 
@@ -5715,8 +5814,8 @@ namespace ews
             new_entry->qname(new_entry_qname,
                              std::strlen("t:Entry"),
                              new_entry_qname + 2);
-            new_entry->namespace_uri(uri::microsoft::types(),
-                                     uri::microsoft::types_size);
+            new_entry->namespace_uri(internal::uri<>::microsoft::types(),
+                                     internal::uri<>::microsoft::types_size);
             new_entry->value(new_entry_value);
             auto ptr_to_key = doc->allocate_string("Key");
             auto ptr_to_value = doc->allocate_string(key);
@@ -5761,7 +5860,11 @@ namespace ews
     class message final : public item
     {
     public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
         message() = default;
+#else
+        message() {}
+#endif
 
         explicit message(item_id id) : item(id) {}
 
@@ -5773,8 +5876,6 @@ namespace ews
 
         void set_to_recipients(const std::vector<email_address>& recipients)
         {
-            using uri = internal::uri<>;
-
             auto doc = properties().document();
 
             auto to_recipients_node = properties().get_node("ToRecipients");
@@ -5788,8 +5889,8 @@ namespace ews
             to_recipients_node->qname(ptr_to_qname,
                                       std::strlen("t:ToRecipients"),
                                       ptr_to_qname + 2);
-            to_recipients_node->namespace_uri(uri::microsoft::types(),
-                                              uri::microsoft::types_size);
+            to_recipients_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                              internal::uri<>::microsoft::types_size);
 
             for (const auto& recipient : recipients)
             {
@@ -5798,8 +5899,8 @@ namespace ews
                 mailbox_node->qname(ptr_to_qname,
                                     std::strlen("t:Mailbox"),
                                     ptr_to_qname + 2);
-                mailbox_node->namespace_uri(uri::microsoft::types(),
-                                            uri::microsoft::types_size);
+                mailbox_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                            internal::uri<>::microsoft::types_size);
 
                 if (!recipient.id().valid())
                 {
@@ -5814,8 +5915,8 @@ namespace ews
                                 std::strlen("t:EmailAddress"),
                                 ptr_to_qname + 2);
                     node->value(ptr_to_value);
-                    node->namespace_uri(uri::microsoft::types(),
-                                        uri::microsoft::types_size);
+                    node->namespace_uri(internal::uri<>::microsoft::types(),
+                                        internal::uri<>::microsoft::types_size);
                     mailbox_node->append_node(node);
 
                     if (!recipient.name().empty())
@@ -5828,8 +5929,8 @@ namespace ews
                                     std::strlen("t:Name"),
                                     ptr_to_qname + 2);
                         node->value(ptr_to_value);
-                        node->namespace_uri(uri::microsoft::types(),
-                                            uri::microsoft::types_size);
+                        node->namespace_uri(internal::uri<>::microsoft::types(),
+                                            internal::uri<>::microsoft::types_size);
                         mailbox_node->append_node(node);
                     }
 
@@ -5843,8 +5944,8 @@ namespace ews
                                     std::strlen("t:RoutingType"),
                                     ptr_to_qname + 2);
                         node->value(ptr_to_value);
-                        node->namespace_uri(uri::microsoft::types(),
-                                            uri::microsoft::types_size);
+                        node->namespace_uri(internal::uri<>::microsoft::types(),
+                                            internal::uri<>::microsoft::types_size);
                         mailbox_node->append_node(node);
                     }
 
@@ -5858,8 +5959,8 @@ namespace ews
                                     std::strlen("t:MailboxType"),
                                     ptr_to_qname + 2);
                         node->value(ptr_to_value);
-                        node->namespace_uri(uri::microsoft::types(),
-                                            uri::microsoft::types_size);
+                        node->namespace_uri(internal::uri<>::microsoft::types(),
+                                            internal::uri<>::microsoft::types_size);
                         mailbox_node->append_node(node);
                     }
                 }
@@ -5871,8 +5972,8 @@ namespace ews
                     item_id_node->qname(ptr_to_qname,
                                         std::strlen("t:ItemId"),
                                         ptr_to_qname + 2);
-                    item_id_node->namespace_uri(uri::microsoft::types(),
-                                                uri::microsoft::types_size);
+                    item_id_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                                internal::uri<>::microsoft::types_size);
 
                     auto ptr_to_key = doc->allocate_string("Id");
                     auto ptr_to_value = doc->allocate_string(
@@ -6005,8 +6106,7 @@ namespace ews
         // Makes a message instance from a <Message> XML element
         static message from_xml_element(const rapidxml::xml_node<>& elem)
         {
-            using uri = internal::uri<>;
-            auto id_node = elem.first_node_ns(uri::microsoft::types(),
+            auto id_node = elem.first_node_ns(internal::uri<>::microsoft::types(),
                                               "ItemId");
             EWS_ASSERT(id_node && "Expected <ItemId>");
             return message(item_id::from_xml_element(*id_node),
@@ -6186,9 +6286,11 @@ namespace ews
     class folder_id
     {
     public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
         folder_id() = delete;
 
         ~folder_id() = default;
+#endif
 
         std::string to_xml(const char* xmlns=nullptr) const
         {
@@ -6218,7 +6320,9 @@ namespace ews
     class distinguished_folder_id final : public folder_id
     {
     public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
         distinguished_folder_id() = delete;
+#endif
 
         // Intentionally not explicit
         distinguished_folder_id(standard_folder folder)
@@ -6633,9 +6737,9 @@ namespace ews
         static const property_path directory_id = "contacts:DirectoryId";
         static const property_path direct_reports = "contacts:DirectReports";
         static const property_path email_addresses = "contacts:EmailAddresses";
-        static const indexed_property_path email_address_1{ "contacts:EmailAddress", "EmailAddress1" };
-        static const indexed_property_path email_address_2{ "contacts:EmailAddress", "EmailAddress2" };
-        static const indexed_property_path email_address_3{ "contacts:EmailAddress", "EmailAddress3" };
+        static const indexed_property_path email_address_1("contacts:EmailAddress", "EmailAddress1");
+        static const indexed_property_path email_address_2("contacts:EmailAddress", "EmailAddress2");
+        static const indexed_property_path email_address_3("contacts:EmailAddress", "EmailAddress3");
         static const property_path file_as = "contacts:FileAs";
         static const property_path file_as_mapping = "contacts:FileAsMapping";
         static const property_path generation = "contacts:Generation";
@@ -6879,7 +6983,9 @@ namespace ews
     class restriction
     {
     public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
         ~restriction() = default;
+#endif
 
         std::string to_xml(const char* xmlns=nullptr) const
         {
@@ -7007,7 +7113,11 @@ namespace ews
     public:
         enum class type { item, file };
 
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
         attachment() = default;
+#else
+        attachment() {}
+#endif
 
         attachment_id id() const
         {
@@ -7354,9 +7464,6 @@ namespace ews
 
         std::vector<item_id> find_item(const folder_id& parent_folder_id)
         {
-            using find_item_response_message =
-                internal::find_item_response_message;
-
             const std::string request_string =
 "<m:FindItem Traversal=\"Shallow\">\n"
 "  <m:ItemShape>\n"
@@ -7370,7 +7477,7 @@ namespace ews
             std::cerr << response.payload() << std::endl;
 #endif
             const auto response_message =
-                find_item_response_message::parse(response);
+                internal::find_item_response_message::parse(response);
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -7381,9 +7488,6 @@ namespace ews
         std::vector<item_id> find_item(const folder_id& parent_folder_id,
                                        restriction filter)
         {
-            using find_item_response_message =
-                internal::find_item_response_message;
-
             const std::string request_string =
 "<m:FindItem Traversal=\"Shallow\">\n"
 "  <m:ItemShape>\n"
@@ -7398,7 +7502,7 @@ namespace ews
             std::cerr << response.payload() << std::endl;
 #endif
             const auto response_message =
-                find_item_response_message::parse(response);
+                internal::find_item_response_message::parse(response);
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -7492,12 +7596,12 @@ namespace ews
         internal::http_response request(const std::string& request_string)
         {
             using rapidxml::internal::compare;
-            using uri = internal::uri<>;
             using internal::get_element_by_qname;
 
-            const auto soap_headers = std::vector<std::string> {
-                "<t:RequestServerVersion Version=\"" + server_version_ + "\"/>"
-            };
+            auto soap_headers = std::vector<std::string>();
+            soap_headers.emplace_back(
+                "<t:RequestServerVersion Version=\"" + server_version_ + "\"/>");
+
             auto response =
                 internal::make_raw_soap_request<RequestHandler>(server_uri_,
                                                                 username_,
@@ -7518,7 +7622,7 @@ namespace ews
                 {
                     response.payload();
                 }
-                catch (parse_error& error)
+                catch (parse_error&)
                 {
                     throw soap_fault(
                         "The request failed for unknown reason "
@@ -7529,7 +7633,7 @@ namespace ews
                 const auto& doc = response.payload();
                 auto elem = get_element_by_qname(doc,
                                                  "ResponseCode",
-                                                 uri::microsoft::errors());
+                                                 internal::uri<>::microsoft::errors());
                 if (!elem)
                 {
                     throw soap_fault(
@@ -7545,7 +7649,7 @@ namespace ews
                     // Get some more helpful details
                     elem = get_element_by_qname(doc,
                                                 "LineNumber",
-                                                uri::microsoft::types());
+                                                internal::uri<>::microsoft::types());
                     EWS_ASSERT(elem &&
                             "Expected <LineNumber> element in response");
                     const auto line_number =
@@ -7554,7 +7658,7 @@ namespace ews
 
                     elem = get_element_by_qname(doc,
                                                 "LinePosition",
-                                                uri::microsoft::types());
+                                                internal::uri<>::microsoft::types());
                     EWS_ASSERT(elem &&
                             "Expected <LinePosition> element in response");
                     const auto line_position =
@@ -7563,7 +7667,7 @@ namespace ews
 
                     elem = get_element_by_qname(doc,
                                                 "Violation",
-                                                uri::microsoft::types());
+                                                internal::uri<>::microsoft::types());
                     EWS_ASSERT(elem &&
                             "Expected <Violation> element in response");
                     throw schema_validation_error(
@@ -7589,9 +7693,6 @@ namespace ews
         template <typename ItemType>
         ItemType get_item_impl(const item_id& id, base_shape shape)
         {
-            using get_item_response_message =
-                internal::get_item_response_message<ItemType>;
-
             // TODO: remove <AdditionalProperties> below, add parameter(s) or
             // overload to allow users customization
             const std::string request_string =
@@ -7610,7 +7711,7 @@ namespace ews
             std::cerr << response.payload() << std::endl;
 #endif
             const auto response_message =
-                get_item_response_message::parse(response);
+                internal::get_item_response_message<ItemType>::parse(response);
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -7693,13 +7794,10 @@ namespace ews
         inline create_item_response_message
         create_item_response_message::parse(http_response& response)
         {
-            using uri = internal::uri<>;
-            using internal::get_element_by_qname;
-
             const auto& doc = response.payload();
             auto elem = get_element_by_qname(doc,
                                              "CreateItemResponseMessage",
-                                             uri::microsoft::messages());
+                                             uri<>::microsoft::messages());
 
 #ifdef EWS_ENABLE_VERBOSE
             // FIXME: sometimes assertion fails for reasons unknown to me,
@@ -7733,23 +7831,20 @@ namespace ews
         inline find_item_response_message
         find_item_response_message::parse(http_response& response)
         {
-            using uri = internal::uri<>;
-            using internal::get_element_by_qname;
-
             const auto& doc = response.payload();
             auto elem = get_element_by_qname(doc,
                                              "FindItemResponseMessage",
-                                             uri::microsoft::messages());
+                                             uri<>::microsoft::messages());
 
             EWS_ASSERT(elem &&
                 "Expected <FindItemResponseMessage>, got nullptr");
             const auto result = parse_response_class_and_code(*elem);
 
-            auto root_folder = elem->first_node_ns(uri::microsoft::messages(),
+            auto root_folder = elem->first_node_ns(uri<>::microsoft::messages(),
                                                    "RootFolder");
 
             auto items_elem =
-                root_folder->first_node_ns(uri::microsoft::types(), "Items");
+                root_folder->first_node_ns(uri<>::microsoft::types(), "Items");
             EWS_ASSERT(items_elem && "Expected <t:Items> element");
 
             auto items = std::vector<item_id>();
@@ -7770,20 +7865,17 @@ namespace ews
         inline update_item_response_message
         update_item_response_message::parse(http_response& response)
         {
-            using uri = internal::uri<>;
-            using internal::get_element_by_qname;
-
             const auto& doc = response.payload();
             auto elem = get_element_by_qname(doc,
                                              "UpdateItemResponseMessage",
-                                             uri::microsoft::messages());
+                                             uri<>::microsoft::messages());
 
             EWS_ASSERT(elem &&
                 "Expected <UpdateItemResponseMessage>, got nullptr");
             const auto result = parse_response_class_and_code(*elem);
 
             auto items_elem =
-                elem->first_node_ns(uri::microsoft::messages(), "Items");
+                elem->first_node_ns(uri<>::microsoft::messages(), "Items");
             EWS_ASSERT(items_elem && "Expected <m:Items> element");
 
             auto items = std::vector<item_id>();
@@ -7806,13 +7898,10 @@ namespace ews
         get_item_response_message<ItemType>
         get_item_response_message<ItemType>::parse(http_response& response)
         {
-            using uri = internal::uri<>;
-            using internal::get_element_by_qname;
-
             const auto& doc = response.payload();
             auto elem = get_element_by_qname(doc,
                                              "GetItemResponseMessage",
-                                             uri::microsoft::messages());
+                                             uri<>::microsoft::messages());
 #ifdef EWS_ENABLE_VERBOSE
             if (!elem)
             {
