@@ -18,7 +18,7 @@ namespace tests
         EXPECT_EQ(ews::body_type::plain_text, b.type());
         EXPECT_FALSE(b.is_truncated());
         const char* const expected =
-            R"(<Body BodyType="Text">Here is some plain text</Body>)";
+            "<Body BodyType=\"Text\">Here is some plain text</Body>";
         EXPECT_STREQ(expected, b.to_xml().c_str());
     }
 
@@ -28,7 +28,7 @@ namespace tests
         EXPECT_EQ(ews::body_type::html, b.type());
         EXPECT_FALSE(b.is_truncated());
         const char* const expected =
-R"(<x:Body BodyType="HTML"><![CDATA[<b>Here is some HTML</b>]]></x:Body>)";
+"<x:Body BodyType=\"HTML\"><![CDATA[<b>Here is some HTML</b>]]></x:Body>";
         EXPECT_STREQ(expected, b.to_xml("x").c_str());
     }
 

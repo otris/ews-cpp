@@ -14,53 +14,53 @@ namespace tests
         using xml_document = rapidxml::xml_document<>;
 
         // slang: 2013 SP1, not all properties included
-        const auto xml = std::string(R"(
-            <t:Task
-            xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
-                <t:ItemId Id="abcde" ChangeKey="edcba"/>
-                <t:ParentFolderId Id="qwertz" ChangeKey="ztrewq"/>
-                <t:ItemClass>IPM.Task</t:ItemClass>
-                <t:Subject>Write poem</t:Subject>
-                <t:Sensitivity>Normal</t:Sensitivity>
-                <t:Body BodyType="Text" IsTruncated="false"/>
-                <t:DateTimeReceived>2015-02-09T13:00:11Z</t:DateTimeReceived>
-                <t:Size>962</t:Size>
-                <t:Importance>Normal</t:Importance>
-                <t:IsSubmitted>false</t:IsSubmitted>
-                <t:IsDraft>false</t:IsDraft>
-                <t:IsFromMe>false</t:IsFromMe>
-                <t:IsResend>false</t:IsResend>
-                <t:IsUnmodified>false</t:IsUnmodified>
-                <t:DateTimeSent>2015-02-09T13:00:11Z</t:DateTimeSent>
-                <t:DateTimeCreated>2015-02-09T13:00:11Z</t:DateTimeCreated>
-                <t:DisplayCc/>
-                <t:DisplayTo/>
-                <t:HasAttachments>false</t:HasAttachments>
-                <t:Culture>en-US</t:Culture>
-                <t:EffectiveRights>
-                        <t:CreateAssociated>false</t:CreateAssociated>
-                        <t:CreateContents>false</t:CreateContents>
-                        <t:CreateHierarchy>false</t:CreateHierarchy>
-                        <t:Delete>true</t:Delete>
-                        <t:Modify>true</t:Modify>
-                        <t:Read>true</t:Read>
-                        <t:ViewPrivateItems>true</t:ViewPrivateItems>
-                </t:EffectiveRights>
-                <t:LastModifiedName>Kwaltz</t:LastModifiedName>
-                <t:LastModifiedTime>2015-02-09T13:00:11Z</t:LastModifiedTime>
-                <t:IsAssociated>false</t:IsAssociated>
-                <t:Flag>
-                        <t:FlagStatus>NotFlagged</t:FlagStatus>
-                </t:Flag>
-                <t:InstanceKey>AQAAAAAAARMBAAAAG4AqWQAAAAA=</t:InstanceKey>
-                <t:EntityExtractionResult/>
-                <t:ChangeCount>1</t:ChangeCount>
-                <t:IsComplete>false</t:IsComplete>
-                <t:IsRecurring>false</t:IsRecurring>
-                <t:PercentComplete>0</t:PercentComplete>
-                <t:Status>NotStarted</t:Status>
-                <t:StatusDescription>Not Started</t:StatusDescription>
-            </t:Task>)");
+        const auto xml = std::string(
+            "<t:Task\n"
+            "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\">\n"
+            "    <t:ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>\n"
+            "    <t:ParentFolderId Id=\"qwertz\" ChangeKey=\"ztrewq\"/>\n"
+            "    <t:ItemClass>IPM.Task</t:ItemClass>\n"
+            "    <t:Subject>Write poem</t:Subject>\n"
+            "    <t:Sensitivity>Normal</t:Sensitivity>\n"
+            "    <t:Body BodyType=\"Text\" IsTruncated=\"false\"/>\n"
+            "    <t:DateTimeReceived>2015-02-09T13:00:11Z</t:DateTimeReceived>\n"
+            "    <t:Size>962</t:Size>\n"
+            "    <t:Importance>Normal</t:Importance>\n"
+            "    <t:IsSubmitted>false</t:IsSubmitted>\n"
+            "    <t:IsDraft>false</t:IsDraft>\n"
+            "    <t:IsFromMe>false</t:IsFromMe>\n"
+            "    <t:IsResend>false</t:IsResend>\n"
+            "    <t:IsUnmodified>false</t:IsUnmodified>\n"
+            "    <t:DateTimeSent>2015-02-09T13:00:11Z</t:DateTimeSent>\n"
+            "    <t:DateTimeCreated>2015-02-09T13:00:11Z</t:DateTimeCreated>\n"
+            "    <t:DisplayCc/>\n"
+            "    <t:DisplayTo/>\n"
+            "    <t:HasAttachments>false</t:HasAttachments>\n"
+            "    <t:Culture>en-US</t:Culture>\n"
+            "    <t:EffectiveRights>\n"
+            "            <t:CreateAssociated>false</t:CreateAssociated>\n"
+            "            <t:CreateContents>false</t:CreateContents>\n"
+            "            <t:CreateHierarchy>false</t:CreateHierarchy>\n"
+            "            <t:Delete>true</t:Delete>\n"
+            "            <t:Modify>true</t:Modify>\n"
+            "            <t:Read>true</t:Read>\n"
+            "            <t:ViewPrivateItems>true</t:ViewPrivateItems>\n"
+            "    </t:EffectiveRights>\n"
+            "    <t:LastModifiedName>Kwaltz</t:LastModifiedName>\n"
+            "    <t:LastModifiedTime>2015-02-09T13:00:11Z</t:LastModifiedTime>\n"
+            "    <t:IsAssociated>false</t:IsAssociated>\n"
+            "    <t:Flag>\n"
+            "            <t:FlagStatus>NotFlagged</t:FlagStatus>\n"
+            "    </t:Flag>\n"
+            "    <t:InstanceKey>AQAAAAAAARMBAAAAG4AqWQAAAAA=</t:InstanceKey>\n"
+            "    <t:EntityExtractionResult/>\n"
+            "    <t:ChangeCount>1</t:ChangeCount>\n"
+            "    <t:IsComplete>false</t:IsComplete>\n"
+            "    <t:IsRecurring>false</t:IsRecurring>\n"
+            "    <t:PercentComplete>0</t:PercentComplete>\n"
+            "    <t:Status>NotStarted</t:Status>\n"
+            "    <t:StatusDescription>Not Started</t:StatusDescription>\n"
+            "</t:Task>");
         std::vector<char> buf;
         std::copy(begin(xml), end(xml), std::back_inserter(buf));
         buf.push_back('\0');

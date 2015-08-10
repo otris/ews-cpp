@@ -3992,14 +3992,13 @@ namespace ews
 
             std::stringstream request_stream;
             request_stream <<
-R"(<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
-    xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"
-    xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"
->)";
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+"<soap:Envelope\n"
+"    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+"    xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"\n"
+"    xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"\n"
+"    xmlns:m=\"http://schemas.microsoft.com/exchange/services/2006/messages\"\n"
+"    xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\">\n";
 
             // Add SOAP headers if present
             if (!soap_headers.empty())
@@ -7286,13 +7285,12 @@ R"(<?xml version="1.0" encoding="utf-8"?>
             using internal::delete_item_response_message;
 
             const std::string request_string =
-R"(
-    <m:DeleteItem
-      DeleteType=")" + delete_type_str(del_type) + R"("
-      AffectedTaskOccurrences=")" + affected_task_occurrences_str(affected) + R"(">
-      <m:ItemIds>)" + the_task.get_item_id().to_xml("t") + R"(</m:ItemIds>
-    </m:DeleteItem>
-)";
+"<m:DeleteItem\n"
+"  DeleteType=\"" + delete_type_str(del_type) + "\"\n"
+"  AffectedTaskOccurrences=\"" + affected_task_occurrences_str(affected) + "\">\n"
+"  <m:ItemIds>" + the_task.get_item_id().to_xml("t") + "</m:ItemIds>\n"
+"</m:DeleteItem>\n";
+
             auto response = request(request_string);
             const auto response_message =
                 delete_item_response_message::parse(response);
@@ -7367,14 +7365,13 @@ R"(
                 internal::find_item_response_message;
 
             const std::string request_string =
-R"(
-    <m:FindItem Traversal="Shallow">
-      <m:ItemShape>
-        <t:BaseShape>IdOnly</t:BaseShape>
-      </m:ItemShape>
-      <m:ParentFolderIds>)" + parent_folder_id.to_xml("t") + R"(</m:ParentFolderIds>
-    </m:FindItem>
-)";
+"<m:FindItem Traversal=\"Shallow\">\n"
+"  <m:ItemShape>\n"
+"    <t:BaseShape>IdOnly</t:BaseShape>\n"
+"  </m:ItemShape>\n"
+"  <m:ParentFolderIds>" + parent_folder_id.to_xml("t") + "</m:ParentFolderIds>\n"
+"</m:FindItem>\n";
+
             auto response = request(request_string);
 #ifdef EWS_ENABLE_VERBOSE
             std::cerr << response.payload() << std::endl;
@@ -7395,15 +7392,14 @@ R"(
                 internal::find_item_response_message;
 
             const std::string request_string =
-R"(
-    <m:FindItem Traversal="Shallow">
-      <m:ItemShape>
-        <t:BaseShape>IdOnly</t:BaseShape>
-      </m:ItemShape>
-      <m:Restriction>)" + filter.to_xml("t") + R"(</m:Restriction>
-      <m:ParentFolderIds>)" + parent_folder_id.to_xml("t") + R"(</m:ParentFolderIds>
-    </m:FindItem>
-)";
+"<m:FindItem Traversal=\"Shallow\">\n"
+"  <m:ItemShape>\n"
+"    <t:BaseShape>IdOnly</t:BaseShape>\n"
+"  </m:ItemShape>\n"
+"  <m:Restriction>" + filter.to_xml("t") + "</m:Restriction>\n"
+"  <m:ParentFolderIds>" + parent_folder_id.to_xml("t") + "</m:ParentFolderIds>\n"
+"</m:FindItem>\n";
+
             auto response = request(request_string);
 #ifdef EWS_ENABLE_VERBOSE
             std::cerr << response.payload() << std::endl;
@@ -7440,22 +7436,20 @@ R"(
             }
 
             const std::string request_string =
-R"(
-    <m:UpdateItem
-        MessageDisposition="SaveOnly"
-        ConflictResolution=")" + conflict_resolution_str(res) + R"(">
-      <m:ItemChanges>
-        <t:ItemChange>
-          )" + id.to_xml("t") + R"(
-          <t:Updates>
-            )" + item_change_open_tag + R"(
-              )" + prop.to_xml("t") + R"(
-            )" + item_change_close_tag + R"(
-          </t:Updates>
-        </t:ItemChange>
-      </m:ItemChanges>
-    </m:UpdateItem>
-)";
+        "<m:UpdateItem"
+        "    MessageDisposition=\"SaveOnly\"\n"
+        "    ConflictResolution=\"" + conflict_resolution_str(res) + "\">\n"
+        "  <m:ItemChanges>\n"
+        "    <t:ItemChange>\n"
+        "      " + id.to_xml("t") + "\n"
+        "      <t:Updates>\n"
+        "        " + item_change_open_tag + "\n"
+        "          " + prop.to_xml("t") + "\n"
+        "        " + item_change_close_tag + "\n"
+        "      </t:Updates>\n"
+        "    </t:ItemChange>\n"
+        "  </m:ItemChanges>\n"
+        "</m:UpdateItem>\n";
 
             auto response = request(request_string);
 #ifdef EWS_ENABLE_VERBOSE
@@ -7608,17 +7602,16 @@ R"(
             // TODO: remove <AdditionalProperties> below, add parameter(s) or
             // overload to allow users customization
             const std::string request_string =
-R"(
-    <m:GetItem>
-      <m:ItemShape>
-        <t:BaseShape>)" + base_shape_str(shape) + R"(</t:BaseShape>
-        <t:AdditionalProperties>
-          <t:FieldURI FieldURI="item:MimeContent"/>
-        </t:AdditionalProperties>
-      </m:ItemShape>
-      <m:ItemIds>)" + id.to_xml("t") + R"(</m:ItemIds>
-    </m:GetItem>
-)";
+        "<m:GetItem>\n"
+        "  <m:ItemShape>\n"
+        "    <t:BaseShape>" + base_shape_str(shape) + "</t:BaseShape>\n"
+        "    <t:AdditionalProperties>\n"
+        "      <t:FieldURI FieldURI=\"item:MimeContent\"/>\n"
+        "    </t:AdditionalProperties>\n"
+        "  </m:ItemShape>\n"
+        "  <m:ItemIds>" + id.to_xml("t") + "</m:ItemIds>\n"
+        "</m:GetItem>\n";
+
             auto response = request(request_string);
 #ifdef EWS_ENABLE_VERBOSE
             std::cerr << response.payload() << std::endl;
@@ -7661,11 +7654,10 @@ R"(
             using internal::delete_item_response_message;
 
             const std::string request_string =
-R"(
-    <m:DeleteItem>
-      <m:ItemIds>)" + the_item.get_item_id().to_xml("t") + R"(</m:ItemIds>
-    </m:DeleteItem>
-)";
+    "<m:DeleteItem>\n"
+    "  <m:ItemIds>" + the_item.get_item_id().to_xml("t") + "</m:ItemIds>\n"
+    "</m:DeleteItem>\n";
+
             auto response = request(request_string);
 #ifdef EWS_ENABLE_VERBOSE
             std::cerr << response.payload() << std::endl;

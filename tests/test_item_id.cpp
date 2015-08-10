@@ -52,7 +52,7 @@ namespace tests
 #pragma warning(suppress: 6262)
     TEST(ItemIdTest, FromAndToXMLRoundTrip)
     {
-        const char* xml = R"(<ItemId Id="abcde" ChangeKey="edcba"/>)";
+        const char* xml = "<ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>";
         std::vector<char> buf(xml, xml + std::strlen(xml));
         buf.push_back('\0');
         xml_document doc;

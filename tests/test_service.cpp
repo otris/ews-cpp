@@ -12,27 +12,25 @@ namespace tests
         {
             FakeServiceFixture::SetUp();
             set_next_fake_response(
-R"(
-<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
-    <s:Header>
-        <h:ServerVersionInfo MajorVersion="15" MinorVersion="0" MajorBuildNumber="847" MinorBuildNumber="31" Version="V2_8" xmlns:h="http://schemas.microsoft.com/exchange/services/2006/types" xmlns="http://schemas.microsoft.com/exchange/services/2006/types" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
-    </s:Header>
-    <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-        <m:CreateItemResponse xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
-            <m:ResponseMessages>
-                <m:CreateItemResponseMessage ResponseClass="Success">
-                    <m:ResponseCode>NoError</m:ResponseCode>
-                    <m:Items>
-                        <t:Message>
-                            <t:ItemId Id="AAMkAGRhYmQ5Njg0LTNhMjEtNDZkOS1hN2QyLTUzZTI3MjdhN2ZkYgBGAAAAAAC5LuzvcattTqJiAgNAfv18BwDKOL2xzF+1SL9YsnXMX2cZAAAAAAEQAADKOL2xzF+1SL9YsnXMX2cZAAADQIPPAAA=" ChangeKey="CQAAABYAAADKOL2xzF+1SL9YsnXMX2cZAAADQKty"/>
-                        </t:Message>
-                    </m:Items>
-                </m:CreateItemResponseMessage>
-            </m:ResponseMessages>
-        </m:CreateItemResponse>
-    </s:Body>
-</s:Envelope>
-)"
+"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n"
+"    <s:Header>\n"
+"        <h:ServerVersionInfo MajorVersion=\"15\" MinorVersion=\"0\" MajorBuildNumber=\"847\" MinorBuildNumber=\"31\" Version=\"V2_8\" xmlns:h=\"http://schemas.microsoft.com/exchange/services/2006/types\" xmlns=\"http://schemas.microsoft.com/exchange/services/2006/types\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"/>\n"
+"    </s:Header>\n"
+"    <s:Body xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n"
+"        <m:CreateItemResponse xmlns:m=\"http://schemas.microsoft.com/exchange/services/2006/messages\" xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\">\n"
+"            <m:ResponseMessages>\n"
+"                <m:CreateItemResponseMessage ResponseClass=\"Success\">\n"
+"                    <m:ResponseCode>NoError</m:ResponseCode>\n"
+"                    <m:Items>\n"
+"                        <t:Message>\n"
+"                            <t:ItemId Id=\"AAMkAGRhYmQ5Njg0LTNhMjEtNDZkOS1hN2QyLTUzZTI3MjdhN2ZkYgBGAAAAAAC5LuzvcattTqJiAgNAfv18BwDKOL2xzF+1SL9YsnXMX2cZAAAAAAEQAADKOL2xzF+1SL9YsnXMX2cZAAADQIPPAAA=\" ChangeKey=\"CQAAABYAAADKOL2xzF+1SL9YsnXMX2cZAAADQKty\"/>\n"
+"                        </t:Message>\n"
+"                    </m:Items>\n"
+"                </m:CreateItemResponseMessage>\n"
+"            </m:ResponseMessages>\n"
+"        </m:CreateItemResponse>\n"
+"    </s:Body>\n"
+"</s:Envelope>\n"
             );
         }
     };
@@ -46,7 +44,7 @@ R"(
         serv.create_item(task);
         auto request = get_last_request();
         EXPECT_TRUE(request.header_contains(
-                    R"(<t:RequestServerVersion Version="Exchange2007"/>)"));
+                    "<t:RequestServerVersion Version=\"Exchange2007\"/>"));
     }
 
     TEST_F(RequestServerVersionTest, SupportsExchange2007_SP1)
@@ -58,7 +56,7 @@ R"(
         serv.create_item(task);
         auto request = get_last_request();
         EXPECT_TRUE(request.header_contains(
-                    R"(<t:RequestServerVersion Version="Exchange2007_SP1"/>)"));
+                    "<t:RequestServerVersion Version=\"Exchange2007_SP1\"/>"));
     }
 
     TEST_F(RequestServerVersionTest, SupportsExchange2010)
@@ -70,7 +68,7 @@ R"(
         serv.create_item(task);
         auto request = get_last_request();
         EXPECT_TRUE(request.header_contains(
-                    R"(<t:RequestServerVersion Version="Exchange2010"/>)"));
+                    "<t:RequestServerVersion Version=\"Exchange2010\"/>"));
     }
 
     TEST_F(RequestServerVersionTest, SupportsExchange2010_SP1)
@@ -82,7 +80,7 @@ R"(
         serv.create_item(task);
         auto request = get_last_request();
         EXPECT_TRUE(request.header_contains(
-                    R"(<t:RequestServerVersion Version="Exchange2010_SP1"/>)"));
+                    "<t:RequestServerVersion Version=\"Exchange2010_SP1\"/>"));
     }
 
     TEST_F(RequestServerVersionTest, SupportsExchange2010_SP2)
@@ -94,7 +92,7 @@ R"(
         serv.create_item(task);
         auto request = get_last_request();
         EXPECT_TRUE(request.header_contains(
-                    R"(<t:RequestServerVersion Version="Exchange2010_SP2"/>)"));
+                    "<t:RequestServerVersion Version=\"Exchange2010_SP2\"/>"));
     }
 
     TEST_F(RequestServerVersionTest, SupportsExchange2013)
@@ -106,7 +104,7 @@ R"(
         serv.create_item(task);
         auto request = get_last_request();
         EXPECT_TRUE(request.header_contains(
-                    R"(<t:RequestServerVersion Version="Exchange2013"/>)"));
+                    "<t:RequestServerVersion Version=\"Exchange2013\"/>"));
     }
 
     TEST_F(RequestServerVersionTest, SupportsExchange2013_SP1)
@@ -118,7 +116,7 @@ R"(
         serv.create_item(task);
         auto request = get_last_request();
         EXPECT_TRUE(request.header_contains(
-                    R"(<t:RequestServerVersion Version="Exchange2013_SP1"/>)"));
+                    "<t:RequestServerVersion Version=\"Exchange2013_SP1\"/>"));
     }
 
     TEST_F(RequestServerVersionTest, DefaultServerVersionIs2013_SP1)

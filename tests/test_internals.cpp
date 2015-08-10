@@ -10,29 +10,29 @@
 namespace
 {
     const std::string contact_card =
-R"(<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
-    <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-        <m:GetItemResponse xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
-            <m:ResponseMessages>
-                <m:GetItemResponseMessage ResponseClass="Success">
-                    <m:ResponseCode>NoError</m:ResponseCode>
-                    <m:Items>
-                        <t:Contact>
-                            <t:DateTimeSent>2015-05-21T10:13:28Z</t:DateTimeSent>
-                            <t:DateTimeCreated>2015-05-21T10:13:28Z</t:DateTimeCreated>
-                            <t:EffectiveRights>
-                                <t:Delete>true</t:Delete>
-                                <t:Modify>true</t:Modify>
-                                <t:Read>true</t:Read>
-                            </t:EffectiveRights>
-                            <t:Culture>en-US</t:Culture>
-                        </t:Contact>
-                    </m:Items>
-                </m:GetItemResponseMessage>
-            </m:ResponseMessages>
-        </m:GetItemResponse>
-    </s:Body>
-</s:Envelope>)";
+"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n"
+"    <s:Body xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n"
+"        <m:GetItemResponse xmlns:m=\"http://schemas.microsoft.com/exchange/services/2006/messages\" xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\">\n"
+"            <m:ResponseMessages>\n"
+"                <m:GetItemResponseMessage ResponseClass=\"Success\">\n"
+"                    <m:ResponseCode>NoError</m:ResponseCode>\n"
+"                    <m:Items>\n"
+"                        <t:Contact>\n"
+"                            <t:DateTimeSent>2015-05-21T10:13:28Z</t:DateTimeSent>\n"
+"                            <t:DateTimeCreated>2015-05-21T10:13:28Z</t:DateTimeCreated>\n"
+"                            <t:EffectiveRights>\n"
+"                                <t:Delete>true</t:Delete>\n"
+"                                <t:Modify>true</t:Modify>\n"
+"                                <t:Read>true</t:Read>\n"
+"                            </t:EffectiveRights>\n"
+"                            <t:Culture>en-US</t:Culture>\n"
+"                        </t:Contact>\n"
+"                    </m:Items>\n"
+"                </m:GetItemResponseMessage>\n"
+"            </m:ResponseMessages>\n"
+"        </m:GetItemResponse>\n"
+"    </s:Body>\n"
+"</s:Envelope>\n";
 
 }
 
@@ -116,7 +116,7 @@ namespace tests
 
         rapidxml::xml_document<> doc;
         auto str = doc.allocate_string(
-            R"(<html lang="en"><head><meta charset="utf-8"/><title>Welcome</title></head><body><h1>Greetings</h1><p>Hello!</p></body></html>)");
+            "<html lang=\"en\"><head><meta charset=\"utf-8\"/><title>Welcome</title></head><body><h1>Greetings</h1><p>Hello!</p></body></html>");
         doc.parse<0>(str);
         auto body_element = get_element_by_qname(doc, "body", "");
         auto body = xml_subtree(*body_element);

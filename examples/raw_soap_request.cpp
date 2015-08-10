@@ -11,18 +11,18 @@
 namespace
 {
     std::string request(
-R"(<m:GetFolder>
-<m:FolderShape>
-    <t:BaseShape>IdOnly</t:BaseShape>
-    <t:AdditionalProperties>
-    <t:FieldURI FieldURI="folder:DisplayName" />
-    <t:FieldURI FieldURI="folder:ChildFolderCount" />
-    </t:AdditionalProperties>
-</m:FolderShape>
-<m:FolderIds>
-    <t:DistinguishedFolderId Id="root" />
-</m:FolderIds>
-</m:GetFolder>)");
+        "<m:GetFolder>\n"
+        "<m:FolderShape>\n"
+        "    <t:BaseShape>IdOnly</t:BaseShape>\n"
+        "    <t:AdditionalProperties>\n"
+        "    <t:FieldURI FieldURI=\"folder:DisplayName\" />\n"
+        "    <t:FieldURI FieldURI=\"folder:ChildFolderCount\" />\n"
+        "    </t:AdditionalProperties>\n"
+        "</m:FolderShape>\n"
+        "<m:FolderIds>\n"
+        "    <t:DistinguishedFolderId Id=\"root\" />\n"
+        "</m:FolderIds>\n"
+        "</m:GetFolder>\n");
 
     const auto soap_headers = std::vector<std::string> {
         "<t:RequestServerVersion Version=\"Exchange2013_SP1\"/>"

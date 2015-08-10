@@ -75,12 +75,12 @@ namespace
                     || arg == "/?")
             {
                 std::cout <<
-R"(usage: tests [--assets=PATH]
-
---assets=PATH  path to the test assets directory, default
-               $PWD/tests/assets
-
-invoke with --gtest_help to see Google Test flags)" << std::endl;
+"usage: tests [--assets=PATH]\n"
+"\n"
+"--assets=PATH  path to the test assets directory, default\n"
+"               $PWD/tests/assets\n"
+"\n"
+"invoke with --gtest_help to see Google Test flags" << std::endl;
 
                 std::exit(EXIT_FAILURE);
             }
