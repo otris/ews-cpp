@@ -11,6 +11,7 @@
 #include <vector>
 #include <memory>
 #include <utility>
+#include <stdexcept>
 
 namespace tests
 {
@@ -160,6 +161,11 @@ namespace tests
 
         ews::service& service()
         {
+            if (!service_ptr_)
+            {
+                throw std::runtime_error(
+                        "Cannot access service: no instance created");
+            }
             return *service_ptr_;
         }
 
