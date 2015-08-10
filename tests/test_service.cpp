@@ -130,10 +130,10 @@ namespace tests
 
     TEST_F(ServiceTest, UpdateItemOfReadOnlyPropertyThrows)
     {
-        ews::item_property_path item_property;
         auto minnie = test_contact();
         ASSERT_FALSE(minnie.has_attachments());
-        auto prop = ews::property(item_property.has_attachments, true);
+        auto prop = ews::property(ews::item_property_path::has_attachments,
+                                  true);
         EXPECT_THROW(
         {
             service().update_item(minnie.get_item_id(), prop);
@@ -142,10 +142,10 @@ namespace tests
 
     TEST_F(ServiceTest, UpdateItemOfReadOnlyPropertyThrowsWhatMessage)
     {
-        ews::item_property_path item_property;
         auto minnie = test_contact();
         ASSERT_FALSE(minnie.has_attachments());
-        auto prop = ews::property(item_property.has_attachments, true);
+        auto prop = ews::property(ews::item_property_path::has_attachments,
+                                  true);
         try
         {
             service().update_item(minnie.get_item_id(), prop);
@@ -165,9 +165,9 @@ namespace tests
         auto minnie = test_contact();
 
         EXPECT_STREQ("", minnie.get_spouse_name().c_str());
-        auto contact_property = ews::contact_property_path();
-        auto spouse_name_property = ews::property(contact_property.spouse_name,
-                                                  "Mickey");
+        auto spouse_name_property =
+            ews::property(ews::contact_property_path::spouse_name,
+                          "Mickey");
         auto new_id =
             service().update_item(minnie.get_item_id(),
                                   spouse_name_property,
@@ -175,8 +175,9 @@ namespace tests
         minnie = service().get_contact(new_id);
         EXPECT_STREQ("Mickey", minnie.get_spouse_name().c_str());
 
-        spouse_name_property = ews::property(contact_property.spouse_name,
-                                             "Peg-Leg Pedro");
+        spouse_name_property =
+            ews::property(ews::contact_property_path::spouse_name,
+                          "Peg-Leg Pedro");
         new_id =
             service().update_item(minnie.get_item_id(),
                                   spouse_name_property,
@@ -194,8 +195,7 @@ namespace tests
 
         auto minnie = test_contact();
         ASSERT_FALSE(minnie.get_given_name().empty());
-        auto contact_property = ews::contact_property_path();
-        auto prop = ews::property(contact_property.given_name);
+        auto prop = ews::property(ews::contact_property_path::given_name);
         auto new_id = service().update_item(minnie.get_item_id(), prop);
         minnie = service().get_contact(new_id);
         EXPECT_TRUE(minnie.get_given_name().empty());
@@ -219,8 +219,6 @@ namespace tests
         // - message:BccRecipients
         // - message:ReplyTo
 
-        auto message_property = ews::message_property_path();
-
         auto message = ews::message();
         message.set_subject("You are hiding again, aren't you?");
         std::vector<ews::email_address> recipients{
@@ -241,7 +239,7 @@ namespace tests
         std::vector<ews::email_address> additional_recipients{
             ews::email_address("gus.goose@duckburg.com")
         };
-        auto prop = ews::property(message_property.to_recipients,
+        auto prop = ews::property(ews::message_property_path::to_recipients,
                                   additional_recipients);
         auto new_id = service().update_item(message.get_item_id(), prop);
         message = service().get_message(item_id);

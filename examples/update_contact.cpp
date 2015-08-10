@@ -22,10 +22,9 @@ int main()
 
         ews::distinguished_folder_id contacts_folder =
             ews::standard_folder::contacts;
-        ews::contact_property_path contact_property;
         auto restriction =
-            ews::is_equal_to(contact_property.email_address_1,
-                    "superhero@ducktales.com");
+            ews::is_equal_to(ews::contact_property_path::email_address_1,
+                             "superhero@ducktales.com");
         auto item_ids = service.find_item(contacts_folder, restriction);
 
         std::cout << "Found " << item_ids.size() << " item(s)\n";
@@ -34,7 +33,8 @@ int main()
         {
             auto contact = service.get_contact(id);
             auto job_title_property =
-                ews::property(contact_property.job_title, "Superhero");
+                ews::property(ews::contact_property_path::job_title,
+                              "Superhero");
             auto new_id = service.update_item(id, job_title_property);
             (void)new_id;
 

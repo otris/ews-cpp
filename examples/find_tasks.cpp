@@ -21,9 +21,8 @@ int main()
                                     env.password);
 
         ews::distinguished_folder_id tasks_folder = ews::standard_folder::tasks;
-        ews::task_property_path task_property;
         auto item_ids = service.find_item(tasks_folder,
-                ews::is_equal_to(task_property.is_complete, false));
+                ews::is_equal_to(ews::task_property_path::is_complete, false));
 
         if (item_ids.empty())
         {

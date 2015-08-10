@@ -98,13 +98,6 @@ namespace ews
         static_assert(!std::is_default_constructible<on_scope_exit>::value, "");
 #endif
 
-        // Helper class; makes sub-classes not copy assignable. Prevents MSVC++
-        // from trying (and miserably failing) at generating those functions
-        struct no_assign
-        {
-            no_assign& operator=(const no_assign&) = delete;
-        };
-
         namespace base64
         {
             // Following code (everything in base64 namespace) is a slightly
@@ -6425,307 +6418,307 @@ namespace ews
     static_assert(std::is_move_assignable<indexed_property_path>::value, "");
 #endif
 
-    struct folder_property_path final : public internal::no_assign
+    namespace folder_property_path
     {
-        const property_path folder_id = "folder:FolderId";
-        const property_path parent_folder_id = "folder:ParentFolderId";
-        const property_path display_name = "folder:DisplayName";
-        const property_path unread_count = "folder:UnreadCount";
-        const property_path total_count = "folder:TotalCount";
-        const property_path child_folder_count = "folder:ChildFolderCount";
-        const property_path folder_class = "folder:FolderClass";
-        const property_path search_parameters = "folder:SearchParameters";
-        const property_path managed_folder_information = "folder:ManagedFolderInformation";
-        const property_path permission_set = "folder:PermissionSet";
-        const property_path effective_rights = "folder:EffectiveRights";
-        const property_path sharing_effective_rights = "folder:SharingEffectiveRights";
-    };
+        static const property_path folder_id = "folder:FolderId";
+        static const property_path parent_folder_id = "folder:ParentFolderId";
+        static const property_path display_name = "folder:DisplayName";
+        static const property_path unread_count = "folder:UnreadCount";
+        static const property_path total_count = "folder:TotalCount";
+        static const property_path child_folder_count = "folder:ChildFolderCount";
+        static const property_path folder_class = "folder:FolderClass";
+        static const property_path search_parameters = "folder:SearchParameters";
+        static const property_path managed_folder_information = "folder:ManagedFolderInformation";
+        static const property_path permission_set = "folder:PermissionSet";
+        static const property_path effective_rights = "folder:EffectiveRights";
+        static const property_path sharing_effective_rights = "folder:SharingEffectiveRights";
+    }
 
-    struct item_property_path final : public internal::no_assign
+    namespace item_property_path
     {
-        const property_path item_id = "item:ItemId";
-        const property_path parent_folder_id = "item:ParentFolderId";
-        const property_path item_class = "item:ItemClass";
-        const property_path mime_content = "item:MimeContent";
-        const property_path attachment = "item:Attachments";
-        const property_path subject = "item:Subject";
-        const property_path date_time_received = "item:DateTimeReceived";
-        const property_path size = "item:Size";
-        const property_path categories = "item:Categories";
-        const property_path has_attachments = "item:HasAttachments";
-        const property_path importance = "item:Importance";
-        const property_path in_reply_to = "item:InReplyTo";
-        const property_path internet_message_headers = "item:InternetMessageHeaders";
-        const property_path is_associated = "item:IsAssociated";
-        const property_path is_draft = "item:IsDraft";
-        const property_path is_from_me = "item:IsFromMe";
-        const property_path is_resend = "item:IsResend";
-        const property_path is_submitted = "item:IsSubmitted";
-        const property_path is_unmodified = "item:IsUnmodified";
-        const property_path date_time_sent = "item:DateTimeSent";
-        const property_path date_time_created = "item:DateTimeCreated";
-        const property_path body = "item:Body";
-        const property_path response_objects = "item:ResponseObjects";
-        const property_path sensitivity = "item:Sensitivity";
-        const property_path reminder_due_by = "item:ReminderDueBy";
-        const property_path reminder_is_set = "item:ReminderIsSet";
-        const property_path reminder_next_time = "item:ReminderNextTime";
-        const property_path reminder_minutes_before_start = "item:ReminderMinutesBeforeStart";
-        const property_path display_to = "item:DisplayTo";
-        const property_path display_cc = "item:DisplayCc";
-        const property_path culture = "item:Culture";
-        const property_path effective_rights = "item:EffectiveRights";
-        const property_path last_modified_name = "item:LastModifiedName";
-        const property_path last_modified_time = "item:LastModifiedTime";
-        const property_path conversation_id = "item:ConversationId";
-        const property_path unique_body = "item:UniqueBody";
-        const property_path flag = "item:Flag";
-        const property_path store_entry_id = "item:StoreEntryId";
-        const property_path instance_key = "item:InstanceKey";
-        const property_path normalized_body = "item:NormalizedBody";
-        const property_path entity_extraction_result = "item:EntityExtractionResult";
-        const property_path policy_tag = "item:PolicyTag";
-        const property_path archive_tag = "item:ArchiveTag";
-        const property_path retention_date = "item:RetentionDate";
-        const property_path preview = "item:Preview";
-        const property_path next_predicted_action = "item:NextPredictedAction";
-        const property_path grouping_action = "item:GroupingAction";
-        const property_path predicted_action_reasons = "item:PredictedActionReasons";
-        const property_path is_clutter = "item:IsClutter";
-        const property_path rights_management_license_data = "item:RightsManagementLicenseData";
-        const property_path block_status = "item:BlockStatus";
-        const property_path has_blocked_images = "item:HasBlockedImages";
-        const property_path web_client_read_from_query_string = "item:WebClientReadFormQueryString";
-        const property_path web_client_edit_from_query_string = "item:WebClientEditFormQueryString";
-        const property_path text_body = "item:TextBody";
-        const property_path icon_index = "item:IconIndex";
-        const property_path mime_content_utf8 = "item:MimeContentUTF8";
-    };
+        static const property_path item_id = "item:ItemId";
+        static const property_path parent_folder_id = "item:ParentFolderId";
+        static const property_path item_class = "item:ItemClass";
+        static const property_path mime_content = "item:MimeContent";
+        static const property_path attachment = "item:Attachments";
+        static const property_path subject = "item:Subject";
+        static const property_path date_time_received = "item:DateTimeReceived";
+        static const property_path size = "item:Size";
+        static const property_path categories = "item:Categories";
+        static const property_path has_attachments = "item:HasAttachments";
+        static const property_path importance = "item:Importance";
+        static const property_path in_reply_to = "item:InReplyTo";
+        static const property_path internet_message_headers = "item:InternetMessageHeaders";
+        static const property_path is_associated = "item:IsAssociated";
+        static const property_path is_draft = "item:IsDraft";
+        static const property_path is_from_me = "item:IsFromMe";
+        static const property_path is_resend = "item:IsResend";
+        static const property_path is_submitted = "item:IsSubmitted";
+        static const property_path is_unmodified = "item:IsUnmodified";
+        static const property_path date_time_sent = "item:DateTimeSent";
+        static const property_path date_time_created = "item:DateTimeCreated";
+        static const property_path body = "item:Body";
+        static const property_path response_objects = "item:ResponseObjects";
+        static const property_path sensitivity = "item:Sensitivity";
+        static const property_path reminder_due_by = "item:ReminderDueBy";
+        static const property_path reminder_is_set = "item:ReminderIsSet";
+        static const property_path reminder_next_time = "item:ReminderNextTime";
+        static const property_path reminder_minutes_before_start = "item:ReminderMinutesBeforeStart";
+        static const property_path display_to = "item:DisplayTo";
+        static const property_path display_cc = "item:DisplayCc";
+        static const property_path culture = "item:Culture";
+        static const property_path effective_rights = "item:EffectiveRights";
+        static const property_path last_modified_name = "item:LastModifiedName";
+        static const property_path last_modified_time = "item:LastModifiedTime";
+        static const property_path conversation_id = "item:ConversationId";
+        static const property_path unique_body = "item:UniqueBody";
+        static const property_path flag = "item:Flag";
+        static const property_path store_entry_id = "item:StoreEntryId";
+        static const property_path instance_key = "item:InstanceKey";
+        static const property_path normalized_body = "item:NormalizedBody";
+        static const property_path entity_extraction_result = "item:EntityExtractionResult";
+        static const property_path policy_tag = "item:PolicyTag";
+        static const property_path archive_tag = "item:ArchiveTag";
+        static const property_path retention_date = "item:RetentionDate";
+        static const property_path preview = "item:Preview";
+        static const property_path next_predicted_action = "item:NextPredictedAction";
+        static const property_path grouping_action = "item:GroupingAction";
+        static const property_path predicted_action_reasons = "item:PredictedActionReasons";
+        static const property_path is_clutter = "item:IsClutter";
+        static const property_path rights_management_license_data = "item:RightsManagementLicenseData";
+        static const property_path block_status = "item:BlockStatus";
+        static const property_path has_blocked_images = "item:HasBlockedImages";
+        static const property_path web_client_read_from_query_string = "item:WebClientReadFormQueryString";
+        static const property_path web_client_edit_from_query_string = "item:WebClientEditFormQueryString";
+        static const property_path text_body = "item:TextBody";
+        static const property_path icon_index = "item:IconIndex";
+        static const property_path mime_content_utf8 = "item:MimeContentUTF8";
+    }
 
-    struct message_property_path final : public internal::no_assign
+    namespace message_property_path
     {
-        const property_path conversation_index = "message:ConversationIndex";
-        const property_path conversation_topic = "message:ConversationTopic";
-        const property_path internet_message_id = "message:InternetMessageId";
-        const property_path is_read = "message:IsRead";
-        const property_path is_response_requested = "message:IsResponseRequested";
-        const property_path is_read_receipt_requested = "message:IsReadReceiptRequested";
-        const property_path is_delivery_receipt_requested = "message:IsDeliveryReceiptRequested";
-        const property_path received_by = "message:ReceivedBy";
-        const property_path received_representing = "message:ReceivedRepresenting";
-        const property_path references = "message:References";
-        const property_path reply_to = "message:ReplyTo";
-        const property_path from = "message:From";
-        const property_path sender = "message:Sender";
-        const property_path to_recipients = "message:ToRecipients";
-        const property_path cc_recipients = "message:CcRecipients";
-        const property_path bcc_recipients = "message:BccRecipients";
-        const property_path approval_request_data = "message:ApprovalRequestData";
-        const property_path voting_information = "message:VotingInformation";
-        const property_path reminder_message_data = "message:ReminderMessageData";
-    };
+        static const property_path conversation_index = "message:ConversationIndex";
+        static const property_path conversation_topic = "message:ConversationTopic";
+        static const property_path internet_message_id = "message:InternetMessageId";
+        static const property_path is_read = "message:IsRead";
+        static const property_path is_response_requested = "message:IsResponseRequested";
+        static const property_path is_read_receipt_requested = "message:IsReadReceiptRequested";
+        static const property_path is_delivery_receipt_requested = "message:IsDeliveryReceiptRequested";
+        static const property_path received_by = "message:ReceivedBy";
+        static const property_path received_representing = "message:ReceivedRepresenting";
+        static const property_path references = "message:References";
+        static const property_path reply_to = "message:ReplyTo";
+        static const property_path from = "message:From";
+        static const property_path sender = "message:Sender";
+        static const property_path to_recipients = "message:ToRecipients";
+        static const property_path cc_recipients = "message:CcRecipients";
+        static const property_path bcc_recipients = "message:BccRecipients";
+        static const property_path approval_request_data = "message:ApprovalRequestData";
+        static const property_path voting_information = "message:VotingInformation";
+        static const property_path reminder_message_data = "message:ReminderMessageData";
+    }
 
-    struct meeting_property_path final : public internal::no_assign
+    namespace meeting_property_path
     {
-        const property_path associated_calendar_item_id = "meeting:AssociatedCalendarItemId";
-        const property_path is_delegated = "meeting:IsDelegated";
-        const property_path is_out_of_date = "meeting:IsOutOfDate";
-        const property_path has_been_processed = "meeting:HasBeenProcessed";
-        const property_path response_type = "meeting:ResponseType";
-        const property_path proposed_start = "meeting:ProposedStart";
-        const property_path proposed_end = "meeting:PropsedEnd";
-    };
+        static const property_path associated_calendar_item_id = "meeting:AssociatedCalendarItemId";
+        static const property_path is_delegated = "meeting:IsDelegated";
+        static const property_path is_out_of_date = "meeting:IsOutOfDate";
+        static const property_path has_been_processed = "meeting:HasBeenProcessed";
+        static const property_path response_type = "meeting:ResponseType";
+        static const property_path proposed_start = "meeting:ProposedStart";
+        static const property_path proposed_end = "meeting:PropsedEnd";
+    }
 
-    struct meeting_request_property_path final : public internal::no_assign
+    namespace meeting_request_property_path
     {
-        const property_path meeting_request_type = "meetingRequest:MeetingRequestType";
-        const property_path intended_free_busy_status = "meetingRequest:IntendedFreeBusyStatus";
-        const property_path change_highlights = "meetingRequest:ChangeHighlights";
-    };
+        static const property_path meeting_request_type = "meetingRequest:MeetingRequestType";
+        static const property_path intended_free_busy_status = "meetingRequest:IntendedFreeBusyStatus";
+        static const property_path change_highlights = "meetingRequest:ChangeHighlights";
+    }
 
-    struct calendar_property_path final : public internal::no_assign
+    namespace calendar_property_path
     {
-        const property_path start = "calendar:Start";
-        const property_path end = "calendar:End";
-        const property_path original_start = "calendar:OriginalStart";
-        const property_path start_wall_clock = "calendar:StartWallClock";
-        const property_path end_wall_clock = "calendar:EndWallClock";
-        const property_path start_time_zone_id = "calendar:StartTimeZoneId";
-        const property_path end_time_zone_id = "calendar:EndTimeZoneId";
-        const property_path is_all_day_event = "calendar:IsAllDayEvent";
-        const property_path legacy_free_busy_status = "calendar:LegacyFreeBusyStatus";
-        const property_path location = "calendar:Location";
-        const property_path when = "calendar:When";
-        const property_path is_meeting = "calendar:IsMeeting";
-        const property_path is_cancelled = "calendar:IsCancelled";
-        const property_path is_recurring = "calendar:IsRecurring";
-        const property_path meeting_request_was_sent = "calendar:MeetingRequestWasSent";
-        const property_path is_response_requested = "calendar:IsResponseRequested";
-        const property_path calendar_item_type = "calendar:CalendarItemType";
-        const property_path my_response_type = "calendar:MyResponseType";
-        const property_path organizer = "calendar:Organizer";
-        const property_path required_attendees = "calendar:RequiredAttendees";
-        const property_path optional_attendees = "calendar:OptionalAttendees";
-        const property_path resources = "calendar:Resources";
-        const property_path conflicting_meeting_count = "calendar:ConflictingMeetingCount";
-        const property_path adjacent_meeting_count = "calendar:AdjacentMeetingCount";
-        const property_path conflicting_meetings = "calendar:ConflictingMeetings";
-        const property_path adjacent_meetings = "calendar:AdjacentMeetings";
-        const property_path duration = "calendar:Duration";
-        const property_path time_zone = "calendar:TimeZone";
-        const property_path appointment_reply_time = "calendar:AppointmentReplyTime";
-        const property_path appointment_sequence_number = "calendar:AppointmentSequenceNumber";
-        const property_path appointment_state = "calendar:AppointmentState";
-        const property_path recurrence = "calendar:Recurrence";
-        const property_path first_occurrence = "calendar:FirstOccurrence";
-        const property_path last_occurrence = "calendar:LastOccurrence";
-        const property_path modified_occurrences = "calendar:ModifiedOccurrences";
-        const property_path deleted_occurrences = "calendar:DeletedOccurrences";
-        const property_path meeting_time_zone = "calendar:MeetingTimeZone";
-        const property_path conference_type = "calendar:ConferenceType";
-        const property_path allow_new_time_proposal = "calendar:AllowNewTimeProposal";
-        const property_path is_online_meeting = "calendar:IsOnlineMeeting";
-        const property_path meeting_workspace_url = "calendar:MeetingWorkspaceUrl";
-        const property_path net_show_url = "calendar:NetShowUrl";
-        const property_path uid = "calendar:UID";
-        const property_path recurrence_id = "calendar:RecurrenceId";
-        const property_path date_time_stamp = "calendar:DateTimeStamp";
-        const property_path start_time_zone = "calendar:StartTimeZone";
-        const property_path end_time_zone = "calendar:EndTimeZone";
-        const property_path join_online_meeting_url = "calendar:JoinOnlineMeetingUrl";
-        const property_path online_meeting_settings = "calendar:OnlineMeetingSettings";
-        const property_path is_organizer = "calendar:IsOrganizer";
-    };
+        static const property_path start = "calendar:Start";
+        static const property_path end = "calendar:End";
+        static const property_path original_start = "calendar:OriginalStart";
+        static const property_path start_wall_clock = "calendar:StartWallClock";
+        static const property_path end_wall_clock = "calendar:EndWallClock";
+        static const property_path start_time_zone_id = "calendar:StartTimeZoneId";
+        static const property_path end_time_zone_id = "calendar:EndTimeZoneId";
+        static const property_path is_all_day_event = "calendar:IsAllDayEvent";
+        static const property_path legacy_free_busy_status = "calendar:LegacyFreeBusyStatus";
+        static const property_path location = "calendar:Location";
+        static const property_path when = "calendar:When";
+        static const property_path is_meeting = "calendar:IsMeeting";
+        static const property_path is_cancelled = "calendar:IsCancelled";
+        static const property_path is_recurring = "calendar:IsRecurring";
+        static const property_path meeting_request_was_sent = "calendar:MeetingRequestWasSent";
+        static const property_path is_response_requested = "calendar:IsResponseRequested";
+        static const property_path calendar_item_type = "calendar:CalendarItemType";
+        static const property_path my_response_type = "calendar:MyResponseType";
+        static const property_path organizer = "calendar:Organizer";
+        static const property_path required_attendees = "calendar:RequiredAttendees";
+        static const property_path optional_attendees = "calendar:OptionalAttendees";
+        static const property_path resources = "calendar:Resources";
+        static const property_path conflicting_meeting_count = "calendar:ConflictingMeetingCount";
+        static const property_path adjacent_meeting_count = "calendar:AdjacentMeetingCount";
+        static const property_path conflicting_meetings = "calendar:ConflictingMeetings";
+        static const property_path adjacent_meetings = "calendar:AdjacentMeetings";
+        static const property_path duration = "calendar:Duration";
+        static const property_path time_zone = "calendar:TimeZone";
+        static const property_path appointment_reply_time = "calendar:AppointmentReplyTime";
+        static const property_path appointment_sequence_number = "calendar:AppointmentSequenceNumber";
+        static const property_path appointment_state = "calendar:AppointmentState";
+        static const property_path recurrence = "calendar:Recurrence";
+        static const property_path first_occurrence = "calendar:FirstOccurrence";
+        static const property_path last_occurrence = "calendar:LastOccurrence";
+        static const property_path modified_occurrences = "calendar:ModifiedOccurrences";
+        static const property_path deleted_occurrences = "calendar:DeletedOccurrences";
+        static const property_path meeting_time_zone = "calendar:MeetingTimeZone";
+        static const property_path conference_type = "calendar:ConferenceType";
+        static const property_path allow_new_time_proposal = "calendar:AllowNewTimeProposal";
+        static const property_path is_online_meeting = "calendar:IsOnlineMeeting";
+        static const property_path meeting_workspace_url = "calendar:MeetingWorkspaceUrl";
+        static const property_path net_show_url = "calendar:NetShowUrl";
+        static const property_path uid = "calendar:UID";
+        static const property_path recurrence_id = "calendar:RecurrenceId";
+        static const property_path date_time_stamp = "calendar:DateTimeStamp";
+        static const property_path start_time_zone = "calendar:StartTimeZone";
+        static const property_path end_time_zone = "calendar:EndTimeZone";
+        static const property_path join_online_meeting_url = "calendar:JoinOnlineMeetingUrl";
+        static const property_path online_meeting_settings = "calendar:OnlineMeetingSettings";
+        static const property_path is_organizer = "calendar:IsOrganizer";
+    }
 
-    struct task_property_path final : public internal::no_assign
+    namespace task_property_path
     {
-        const property_path actual_work = "task:ActualWork";
-        const property_path assigned_time = "task:AssignedTime";
-        const property_path billing_information = "task:BillingInformation";
-        const property_path change_count = "task:ChangeCount";
-        const property_path companies = "task:Companies";
-        const property_path complete_date = "task:CompleteDate";
-        const property_path contacts = "task:Contacts";
-        const property_path delegation_state = "task:DelegationState";
-        const property_path delegator = "task:Delegator";
-        const property_path due_date = "task:DueDate";
-        const property_path is_assignment_editable = "task:IsAssignmentEditable";
-        const property_path is_complete = "task:IsComplete";
-        const property_path is_recurring = "task:IsRecurring";
-        const property_path is_team_task = "task:IsTeamTask";
-        const property_path mileage = "task:Mileage";
-        const property_path owner = "task:Owner";
-        const property_path percent_complete = "task:PercentComplete";
-        const property_path recurrence = "task:Recurrence";
-        const property_path start_date = "task:StartDate";
-        const property_path status = "task:Status";
-        const property_path status_description = "task:StatusDescription";
-        const property_path total_work = "task:TotalWork";
-    };
+        static const property_path actual_work = "task:ActualWork";
+        static const property_path assigned_time = "task:AssignedTime";
+        static const property_path billing_information = "task:BillingInformation";
+        static const property_path change_count = "task:ChangeCount";
+        static const property_path companies = "task:Companies";
+        static const property_path complete_date = "task:CompleteDate";
+        static const property_path contacts = "task:Contacts";
+        static const property_path delegation_state = "task:DelegationState";
+        static const property_path delegator = "task:Delegator";
+        static const property_path due_date = "task:DueDate";
+        static const property_path is_assignment_editable = "task:IsAssignmentEditable";
+        static const property_path is_complete = "task:IsComplete";
+        static const property_path is_recurring = "task:IsRecurring";
+        static const property_path is_team_task = "task:IsTeamTask";
+        static const property_path mileage = "task:Mileage";
+        static const property_path owner = "task:Owner";
+        static const property_path percent_complete = "task:PercentComplete";
+        static const property_path recurrence = "task:Recurrence";
+        static const property_path start_date = "task:StartDate";
+        static const property_path status = "task:Status";
+        static const property_path status_description = "task:StatusDescription";
+        static const property_path total_work = "task:TotalWork";
+    }
 
-    struct contact_property_path final : public internal::no_assign
+    namespace contact_property_path
     {
-        const property_path alias = "contacts:Alias";
-        const property_path assistant_name = "contacts:AssistantName";
-        const property_path birthday = "contacts:Birthday";
-        const property_path business_home_page = "contacts:BusinessHomePage";
-        const property_path children = "contacts:Children";
-        const property_path companies = "contacts:Companies";
-        const property_path company_name = "contacts:CompanyName";
-        const property_path complete_name = "contacts:CompleteName";
-        const property_path contact_source = "contacts:ContactSource";
-        const property_path culture = "contacts:Culture";
-        const property_path department = "contacts:Department";
-        const property_path display_name = "contacts:DisplayName";
-        const property_path directory_id = "contacts:DirectoryId";
-        const property_path direct_reports = "contacts:DirectReports";
-        const property_path email_addresses = "contacts:EmailAddresses";
-        const indexed_property_path email_address_1{ "contacts:EmailAddress", "EmailAddress1" };
-        const indexed_property_path email_address_2{ "contacts:EmailAddress", "EmailAddress2" };
-        const indexed_property_path email_address_3{ "contacts:EmailAddress", "EmailAddress3" };
-        const property_path file_as = "contacts:FileAs";
-        const property_path file_as_mapping = "contacts:FileAsMapping";
-        const property_path generation = "contacts:Generation";
-        const property_path given_name = "contacts:GivenName";
-        const property_path im_addresses = "contacts:ImAddresses";
-        const property_path initials = "contacts:Initials";
-        const property_path job_title = "contacts:JobTitle";
-        const property_path manager = "contacts:Manager";
-        const property_path manager_mailbox = "contacts:ManagerMailbox";
-        const property_path middle_name = "contacts:MiddleName";
-        const property_path mileage = "contacts:Mileage";
-        const property_path ms_exchange_certificate = "contacts:MSExchangeCertificate";
-        const property_path nickname = "contacts:Nickname";
-        const property_path notes = "contacts:Notes";
-        const property_path office_location = "contacts:OfficeLocation";
-        const property_path phone_numbers = "contacts:PhoneNumbers";
-        const property_path phonetic_full_name = "contacts:PhoneticFullName";
-        const property_path phonetic_first_name = "contacts:PhoneticFirstName";
-        const property_path phonetic_last_name = "contacts:PhoneticLastName";
-        const property_path photo = "contacts:Photo";
-        const property_path physical_address = "contacts:PhysicalAddresses";
-        const property_path postal_adress_index = "contacts:PostalAddressIndex";
-        const property_path profession = "contacts:Profession";
-        const property_path spouse_name = "contacts:SpouseName";
-        const property_path surname = "contacts:Surname";
-        const property_path wedding_anniversary = "contacts:WeddingAnniversary";
-        const property_path smime_certificate = "contacts:UserSMIMECertificate";
-        const property_path has_picture = "contacts:HasPicture";
-    };
+        static const property_path alias = "contacts:Alias";
+        static const property_path assistant_name = "contacts:AssistantName";
+        static const property_path birthday = "contacts:Birthday";
+        static const property_path business_home_page = "contacts:BusinessHomePage";
+        static const property_path children = "contacts:Children";
+        static const property_path companies = "contacts:Companies";
+        static const property_path company_name = "contacts:CompanyName";
+        static const property_path complete_name = "contacts:CompleteName";
+        static const property_path contact_source = "contacts:ContactSource";
+        static const property_path culture = "contacts:Culture";
+        static const property_path department = "contacts:Department";
+        static const property_path display_name = "contacts:DisplayName";
+        static const property_path directory_id = "contacts:DirectoryId";
+        static const property_path direct_reports = "contacts:DirectReports";
+        static const property_path email_addresses = "contacts:EmailAddresses";
+        static const indexed_property_path email_address_1{ "contacts:EmailAddress", "EmailAddress1" };
+        static const indexed_property_path email_address_2{ "contacts:EmailAddress", "EmailAddress2" };
+        static const indexed_property_path email_address_3{ "contacts:EmailAddress", "EmailAddress3" };
+        static const property_path file_as = "contacts:FileAs";
+        static const property_path file_as_mapping = "contacts:FileAsMapping";
+        static const property_path generation = "contacts:Generation";
+        static const property_path given_name = "contacts:GivenName";
+        static const property_path im_addresses = "contacts:ImAddresses";
+        static const property_path initials = "contacts:Initials";
+        static const property_path job_title = "contacts:JobTitle";
+        static const property_path manager = "contacts:Manager";
+        static const property_path manager_mailbox = "contacts:ManagerMailbox";
+        static const property_path middle_name = "contacts:MiddleName";
+        static const property_path mileage = "contacts:Mileage";
+        static const property_path ms_exchange_certificate = "contacts:MSExchangeCertificate";
+        static const property_path nickname = "contacts:Nickname";
+        static const property_path notes = "contacts:Notes";
+        static const property_path office_location = "contacts:OfficeLocation";
+        static const property_path phone_numbers = "contacts:PhoneNumbers";
+        static const property_path phonetic_full_name = "contacts:PhoneticFullName";
+        static const property_path phonetic_first_name = "contacts:PhoneticFirstName";
+        static const property_path phonetic_last_name = "contacts:PhoneticLastName";
+        static const property_path photo = "contacts:Photo";
+        static const property_path physical_address = "contacts:PhysicalAddresses";
+        static const property_path postal_adress_index = "contacts:PostalAddressIndex";
+        static const property_path profession = "contacts:Profession";
+        static const property_path spouse_name = "contacts:SpouseName";
+        static const property_path surname = "contacts:Surname";
+        static const property_path wedding_anniversary = "contacts:WeddingAnniversary";
+        static const property_path smime_certificate = "contacts:UserSMIMECertificate";
+        static const property_path has_picture = "contacts:HasPicture";
+    }
 
-    struct distribution_list_property_path final : public internal::no_assign
+    namespace distribution_list_property_path
     {
-        const property_path members = "distributionlist:Members";
-    };
+        static const property_path members = "distributionlist:Members";
+    }
 
-    struct post_item_property_path final : public internal::no_assign
+    namespace post_item_property_path
     {
-        const property_path posted_time = "postitem:PostedTime";
-    };
+        static const property_path posted_time = "postitem:PostedTime";
+    }
 
-    struct conversation_property_path final : public internal::no_assign
+    namespace conversation_property_path
     {
-        const property_path conversation_id = "conversation:ConversationId";
-        const property_path conversation_topic = "conversation:ConversationTopic";
-        const property_path unique_recipients = "conversation:UniqueRecipients";
-        const property_path global_unique_recipients = "conversation:GlobalUniqueRecipients";
-        const property_path unique_unread_senders = "conversation:UniqueUnreadSenders";
-        const property_path global_unique_unread_readers = "conversation:GlobalUniqueUnreadSenders";
-        const property_path unique_senders = "conversation:UniqueSenders";
-        const property_path global_unique_senders = "conversation:GlobalUniqueSenders";
-        const property_path last_delivery_time = "conversation:LastDeliveryTime";
-        const property_path global_last_delivery_time = "conversation:GlobalLastDeliveryTime";
-        const property_path categories = "conversation:Categories";
-        const property_path global_categories = "conversation:GlobalCategories";
-        const property_path flag_status = "conversation:FlagStatus";
-        const property_path global_flag_status = "conversation:GlobalFlagStatus";
-        const property_path has_attachments = "conversation:HasAttachments";
-        const property_path global_has_attachments = "conversation:GlobalHasAttachments";
-        const property_path has_irm = "conversation:HasIrm";
-        const property_path global_has_irm = "conversation:GlobalHasIrm";
-        const property_path message_count = "conversation:MessageCount";
-        const property_path global_message_count = "conversation:GlobalMessageCount";
-        const property_path unread_count = "conversation:UnreadCount";
-        const property_path global_unread_count = "conversation:GlobalUnreadCount";
-        const property_path size = "conversation:Size";
-        const property_path global_size = "conversation:GlobalSize";
-        const property_path item_classes = "conversation:ItemClasses";
-        const property_path global_item_classes = "conversation:GlobalItemClasses";
-        const property_path importance = "conversation:Importance";
-        const property_path global_importance = "conversation:GlobalImportance";
-        const property_path item_ids = "conversation:ItemIds";
-        const property_path global_item_ids = "conversation:GlobalItemIds";
-        const property_path last_modified_time = "conversation:LastModifiedTime";
-        const property_path instance_key = "conversation:InstanceKey";
-        const property_path preview = "conversation:Preview";
-        const property_path global_parent_folder_id = "conversation:GlobalParentFolderId";
-        const property_path next_predicted_action = "conversation:NextPredictedAction";
-        const property_path grouping_action = "conversation:GroupingAction";
-        const property_path icon_index = "conversation:IconIndex";
-        const property_path global_icon_index = "conversation:GlobalIconIndex";
-        const property_path draft_item_ids = "conversation:DraftItemIds";
-        const property_path has_clutter = "conversation:HasClutter";
-    };
+        static const property_path conversation_id = "conversation:ConversationId";
+        static const property_path conversation_topic = "conversation:ConversationTopic";
+        static const property_path unique_recipients = "conversation:UniqueRecipients";
+        static const property_path global_unique_recipients = "conversation:GlobalUniqueRecipients";
+        static const property_path unique_unread_senders = "conversation:UniqueUnreadSenders";
+        static const property_path global_unique_unread_readers = "conversation:GlobalUniqueUnreadSenders";
+        static const property_path unique_senders = "conversation:UniqueSenders";
+        static const property_path global_unique_senders = "conversation:GlobalUniqueSenders";
+        static const property_path last_delivery_time = "conversation:LastDeliveryTime";
+        static const property_path global_last_delivery_time = "conversation:GlobalLastDeliveryTime";
+        static const property_path categories = "conversation:Categories";
+        static const property_path global_categories = "conversation:GlobalCategories";
+        static const property_path flag_status = "conversation:FlagStatus";
+        static const property_path global_flag_status = "conversation:GlobalFlagStatus";
+        static const property_path has_attachments = "conversation:HasAttachments";
+        static const property_path global_has_attachments = "conversation:GlobalHasAttachments";
+        static const property_path has_irm = "conversation:HasIrm";
+        static const property_path global_has_irm = "conversation:GlobalHasIrm";
+        static const property_path message_count = "conversation:MessageCount";
+        static const property_path global_message_count = "conversation:GlobalMessageCount";
+        static const property_path unread_count = "conversation:UnreadCount";
+        static const property_path global_unread_count = "conversation:GlobalUnreadCount";
+        static const property_path size = "conversation:Size";
+        static const property_path global_size = "conversation:GlobalSize";
+        static const property_path item_classes = "conversation:ItemClasses";
+        static const property_path global_item_classes = "conversation:GlobalItemClasses";
+        static const property_path importance = "conversation:Importance";
+        static const property_path global_importance = "conversation:GlobalImportance";
+        static const property_path item_ids = "conversation:ItemIds";
+        static const property_path global_item_ids = "conversation:GlobalItemIds";
+        static const property_path last_modified_time = "conversation:LastModifiedTime";
+        static const property_path instance_key = "conversation:InstanceKey";
+        static const property_path preview = "conversation:Preview";
+        static const property_path global_parent_folder_id = "conversation:GlobalParentFolderId";
+        static const property_path next_predicted_action = "conversation:NextPredictedAction";
+        static const property_path grouping_action = "conversation:GroupingAction";
+        static const property_path icon_index = "conversation:IconIndex";
+        static const property_path global_icon_index = "conversation:GlobalIconIndex";
+        static const property_path draft_item_ids = "conversation:DraftItemIds";
+        static const property_path has_clutter = "conversation:HasClutter";
+    }
 
     // Represents a single property
     //

@@ -132,10 +132,10 @@ namespace tests
 
     TEST_F(TaskTest, FindTasks)
     {
-        ews::task_property_path task_property;
         ews::distinguished_folder_id folder = ews::standard_folder::tasks;
         const auto initial_count = service().find_item(folder,
-            ews::is_equal_to(task_property.is_complete, false)).size();
+            ews::is_equal_to(ews::task_property_path::is_complete,
+                             false)).size();
 
         auto start_time = ews::date_time("2015-05-29T17:00:00Z");
         auto end_time   = ews::date_time("2015-05-29T17:30:00Z");
@@ -152,16 +152,16 @@ namespace tests
         });
         auto ids = service().find_item(
                 folder,
-                ews::is_equal_to(task_property.is_complete, false));
+                ews::is_equal_to(ews::task_property_path::is_complete, false));
         EXPECT_EQ(initial_count + 1, ids.size());
     }
 
     TEST_F(TaskTest, UpdateIsCompleteProperty)
     {
-        ews::task_property_path task_property;
         auto get_milk = test_task();
         ASSERT_FALSE(get_milk.is_complete());
-        auto prop = ews::property(task_property.percent_complete, 100);
+        auto prop = ews::property(ews::task_property_path::percent_complete,
+                                  100);
         auto new_id = service().update_item(get_milk.get_item_id(), prop);
         get_milk = service().get_task(new_id);
         EXPECT_TRUE(get_milk.is_complete());
