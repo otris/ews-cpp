@@ -218,7 +218,7 @@ namespace tests
 #ifdef _MSC_VER
     TEST_F(FileAttachmentTest, DISABLED_WriteContentToFile)
 #else
-    TEST_F(FileAttachmentTest, DISABLED_WriteContentToFile)
+    TEST_F(FileAttachmentTest, WriteContentToFile)
 #endif
     {
         using uri = ews::internal::uri<>;
