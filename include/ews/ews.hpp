@@ -6353,49 +6353,172 @@ namespace ews
             std::string name;
             switch (enumeration)
             {
-                case standard_folder::calendar: name = "calendar"; break;
-                case standard_folder::contacts: name = "contacts"; break;
-                case standard_folder::deleted_items: name = "deleteditems"; break;
-                case standard_folder::drafts: name = "drafts"; break;
-                case standard_folder::inbox: name = "inbox"; break;
-                case standard_folder::journal: name = "journal"; break;
-                case standard_folder::notes: name = "notes"; break;
-                case standard_folder::outbox: name = "outbox"; break;
-                case standard_folder::sent_items: name = "sentitems"; break;
-                case standard_folder::tasks: name = "tasks"; break;
-                case standard_folder::msg_folder_root: name = "msgfolderroot"; break;
-                case standard_folder::root: name = "root"; break;
-                case standard_folder::junk_email: name = "junkemail"; break;
-                case standard_folder::search_folders: name = "searchfolders"; break;
-                case standard_folder::voice_mail: name = "voicemail"; break;
-                case standard_folder::recoverable_items_root: name = "recoverableitemsroot"; break;
-                case standard_folder::recoverable_items_deletions: name = "recoverableitemsdeletions"; break;
-                case standard_folder::recoverable_items_versions: name = "recoverableitemsversions"; break;
-                case standard_folder::recoverable_items_purges: name = "recoverableitemspurges"; break;
-                case standard_folder::archive_root: name = "archiveroot"; break;
-                case standard_folder::archive_msg_folder_root: name = "archivemsgfolderroot"; break;
-                case standard_folder::archive_deleted_items: name = "archivedeleteditems"; break;
-                case standard_folder::archive_inbox: name = "archiveinbox"; break;
-                case standard_folder::archive_recoverable_items_root: name = "archiverecoverableitemsroot"; break;
-                case standard_folder::archive_recoverable_items_deletions: name = "archiverecoverableitemsdeletions"; break;
-                case standard_folder::archive_recoverable_items_versions: name = "archiverecoverableitemsversions"; break;
-                case standard_folder::archive_recoverable_items_purges: name = "archiverecoverableitemspurges"; break;
-                case standard_folder::sync_issues: name = "syncissues"; break;
-                case standard_folder::conflicts: name = "conflicts"; break;
-                case standard_folder::local_failures: name = "localfailures"; break;
-                case standard_folder::server_failures: name = "serverfailures"; break;
-                case standard_folder::recipient_cache: name = "recipientcache"; break;
-                case standard_folder::quick_contacts: name = "quickcontacts"; break;
-                case standard_folder::conversation_history: name = "conversationhistory"; break;
-                case standard_folder::admin_audit_logs: name = "adminauditlogs"; break;
-                case standard_folder::todo_search: name = "todosearch"; break;
-                case standard_folder::my_contacts: name = "mycontacts"; break;
-                case standard_folder::directory: name = "directory"; break;
-                case standard_folder::im_contact_list: name = "imcontactlist"; break;
-                case standard_folder::people_connect: name = "peopleconnect"; break;
-                case standard_folder::favorites: name = "favorites"; break;
-                default:
-                    throw exception("Unrecognized folder name");
+            case standard_folder::calendar:
+                name = "calendar";
+                break;
+
+            case standard_folder::contacts:
+                name = "contacts";
+                break;
+
+            case standard_folder::deleted_items:
+                name = "deleteditems";
+                break;
+
+            case standard_folder::drafts:
+                name = "drafts";
+                break;
+
+            case standard_folder::inbox:
+                name = "inbox";
+                break;
+
+            case standard_folder::journal:
+                name = "journal";
+                break;
+
+            case standard_folder::notes:
+                name = "notes";
+                break;
+
+            case standard_folder::outbox:
+                name = "outbox";
+                break;
+
+            case standard_folder::sent_items:
+                name = "sentitems";
+                break;
+
+            case standard_folder::tasks:
+                name = "tasks";
+                break;
+
+            case standard_folder::msg_folder_root:
+                name = "msgfolderroot";
+                break;
+
+            case standard_folder::root:
+                name = "root";
+                break;
+
+            case standard_folder::junk_email:
+                name = "junkemail";
+                break;
+
+            case standard_folder::search_folders:
+                name = "searchfolders";
+                break;
+
+            case standard_folder::voice_mail:
+                name = "voicemail";
+                break;
+
+            case standard_folder::recoverable_items_root:
+                name = "recoverableitemsroot";
+                break;
+
+            case standard_folder::recoverable_items_deletions:
+                name = "recoverableitemsdeletions";
+                break;
+
+            case standard_folder::recoverable_items_versions:
+                name = "recoverableitemsversions";
+                break;
+
+            case standard_folder::recoverable_items_purges:
+                name = "recoverableitemspurges";
+                break;
+
+            case standard_folder::archive_root:
+                name = "archiveroot";
+                break;
+
+            case standard_folder::archive_msg_folder_root:
+                name = "archivemsgfolderroot";
+                break;
+
+            case standard_folder::archive_deleted_items:
+                name = "archivedeleteditems";
+                break;
+
+            case standard_folder::archive_inbox:
+                name = "archiveinbox";
+                break;
+
+            case standard_folder::archive_recoverable_items_root:
+                name = "archiverecoverableitemsroot";
+                break;
+
+            case standard_folder::archive_recoverable_items_deletions:
+                name = "archiverecoverableitemsdeletions";
+                break;
+
+            case standard_folder::archive_recoverable_items_versions:
+                name = "archiverecoverableitemsversions";
+                break;
+
+            case standard_folder::archive_recoverable_items_purges:
+                name = "archiverecoverableitemspurges";
+                break;
+
+            case standard_folder::sync_issues:
+                name = "syncissues";
+                break;
+
+            case standard_folder::conflicts:
+                name = "conflicts";
+                break;
+
+            case standard_folder::local_failures:
+                name = "localfailures";
+                break;
+
+            case standard_folder::server_failures:
+                name = "serverfailures";
+                break;
+
+            case standard_folder::recipient_cache:
+                name = "recipientcache";
+                break;
+
+            case standard_folder::quick_contacts:
+                name = "quickcontacts";
+                break;
+
+            case standard_folder::conversation_history:
+                name = "conversationhistory";
+                break;
+
+            case standard_folder::admin_audit_logs:
+                name = "adminauditlogs";
+                break;
+
+            case standard_folder::todo_search:
+                name = "todosearch";
+                break;
+
+            case standard_folder::my_contacts:
+                name = "mycontacts";
+                break;
+
+            case standard_folder::directory:
+                name = "directory";
+                break;
+
+            case standard_folder::im_contact_list:
+                name = "imcontactlist";
+                break;
+
+            case standard_folder::people_connect:
+                name = "peopleconnect";
+                break;
+
+            case standard_folder::favorites:
+                name = "favorites";
+                break;
+
+            default:
+                throw exception("Unrecognized folder name");
             };
             return name;
         }
@@ -7631,9 +7754,10 @@ namespace ews
 
                 // Parsing should be done by now
                 const auto& doc = response.payload();
-                auto elem = get_element_by_qname(doc,
-                                                 "ResponseCode",
-                                                 internal::uri<>::microsoft::errors());
+                auto elem =
+                    get_element_by_qname(doc,
+                                         "ResponseCode",
+                                         internal::uri<>::microsoft::errors());
                 if (!elem)
                 {
                     throw soap_fault(
@@ -7647,9 +7771,10 @@ namespace ews
                             21))
                 {
                     // Get some more helpful details
-                    elem = get_element_by_qname(doc,
-                                                "LineNumber",
-                                                internal::uri<>::microsoft::types());
+                    elem =
+                        get_element_by_qname(doc,
+                                             "LineNumber",
+                                             internal::uri<>::microsoft::types());
                     EWS_ASSERT(elem &&
                             "Expected <LineNumber> element in response");
                     const auto line_number =
@@ -7665,9 +7790,10 @@ namespace ews
                         std::stoul(std::string(elem->value(),
                                                elem->value_size()));
 
-                    elem = get_element_by_qname(doc,
-                                                "Violation",
-                                                internal::uri<>::microsoft::types());
+                    elem =
+                        get_element_by_qname(doc,
+                                             "Violation",
+                                             internal::uri<>::microsoft::types());
                     EWS_ASSERT(elem &&
                             "Expected <Violation> element in response");
                     throw schema_validation_error(

@@ -101,8 +101,11 @@ namespace tests
 #ifdef EWS_HAS_VARIADIC_TEMPLATES
             template <typename... Args> void set_option(CURLoption, Args...) {}
 #else
-            template <typename T1> void set_option(CURLoption option, T1) {}
-            template <typename T1, typename T2> void set_option(CURLoption option, T1, T2) {}
+            template <typename T1>
+            void set_option(CURLoption option, T1) {}
+
+            template <typename T1, typename T2>
+            void set_option(CURLoption option, T1, T2) {}
 #endif
 
             ews::internal::http_response send(const std::string& request)
@@ -151,12 +154,13 @@ namespace tests
                                     "fakeuser",
                                     "fakepassword");
 #else
-            service_ptr_ = std::unique_ptr<ews::basic_service<http_request_mock>>(
-                                new ews::basic_service<http_request_mock>(
-                                    "https://example.com/ews/Exchange.asmx",
-                                    "FAKEDOMAIN",
-                                    "fakeuser",
-                                    "fakepassword"));
+            service_ptr_ =
+                std::unique_ptr<ews::basic_service<http_request_mock>>(
+                        new ews::basic_service<http_request_mock>(
+                            "https://example.com/ews/Exchange.asmx",
+                            "FAKEDOMAIN",
+                            "fakeuser",
+                            "fakepassword"));
 #endif
         }
 
