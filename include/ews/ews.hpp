@@ -4041,9 +4041,14 @@ namespace ews
                 set_option(CURLOPT_WRITEDATA,
                         std::addressof(response_data));
 
-#ifndef NDEBUG
+#ifdef EWS_DISABLE_TLS_CERT_VERIFICATION
                 // Turn-off verification of the server's authenticity
                 set_option(CURLOPT_SSL_VERIFYPEER, 0);
+
+                // Warn in release builds
+# ifdef NDEBUG
+#  warning "TLS verification of the server's authenticity is disabled"
+# endif
 #endif
 
                 auto retcode = curl_easy_perform(handle_.get());

@@ -4,6 +4,8 @@ project(ews CXX)
 include(CheckCXXCompilerFlag)
 
 option(ENABLE_ASSERTS "Enable run-time checks." OFF)
+option(DISABLE_TLS_CERT_VERIFICATION
+    "Turn-off verification of the server's authenticity." OFF)
 option(ENABLE_ASAN "Enable address sanitizer." OFF)
 option(ENABLE_VERBOSE
     "Enable verbose output to stderr (You don't want this set in production)."
@@ -64,8 +66,11 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         set(CMAKE_CXX_FLAGS
             "${CMAKE_CXX_FLAGS} -std=${CXX_STANDARD_TAG}")
     endif()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
+    if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic")
+    endif()
 
     # Use colorized output on terminal if supported (GCC 4.9 onwards)
     CHECK_CXX_COMPILER_FLAG("-fdiagnostics-color=auto" GCC_HAS_COLOR)
@@ -131,6 +136,10 @@ endif()
 
 if(ENABLE_ASSERTS)
     add_definitions(-DEWS_ENABLE_ASSERTS)
+endif()
+
+if(DISABLE_TLS_CERT_VERIFICATION)
+    add_definitions(-DEWS_DISABLE_TLS_CERT_VERIFICATION)
 endif()
 
 if(ENABLE_VERBOSE)
