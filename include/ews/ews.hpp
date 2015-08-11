@@ -5338,6 +5338,7 @@ namespace ews
         //   <ConversationId/>
         //   <UniqueBody/>
 
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
     protected:
         internal::xml_subtree& properties() EWS_NOEXCEPT
         {
@@ -5348,6 +5349,7 @@ namespace ews
         {
             return properties_;
         }
+#endif
 
     private:
         item_id item_id_;
