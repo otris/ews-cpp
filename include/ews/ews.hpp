@@ -4047,7 +4047,11 @@ namespace ews
 
                 // Warn in release builds
 # ifdef NDEBUG
-#  warning "TLS verification of the server's authenticity is disabled"
+#  ifdef _MSC_VER
+#   pragma message("warning: TLS verification of the server's authenticity is disabled")
+#  else
+#   warning "TLS verification of the server's authenticity is disabled"
+#  endif
 # endif
 #endif
 
