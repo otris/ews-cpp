@@ -49,6 +49,7 @@
 # define EWS_NOEXCEPT
 #endif
 
+//! Contains all classes, functions, and enumerations of this library
 namespace ews
 {
     namespace internal
@@ -270,7 +271,7 @@ namespace ews
                 return ret;
             }
 
-        } // base64
+        }
 
         // Forward declarations
         class http_request;
@@ -279,9 +280,10 @@ namespace ews
     // Forward declarations
     class item_id;
 
+    //! The ResponseClass attibute of a ResponseMessage
     enum class response_class { error, success, warning };
 
-    // Base-class for all exceptions thrown by this library
+    //! Base-class for all exceptions thrown by this library
     class exception : public std::runtime_error
     {
     public:
@@ -292,7 +294,7 @@ namespace ews
         explicit exception(const char* what) : std::runtime_error(what) {}
     };
 
-    // Raised when a response from a server could not be parsed
+    //! Raised when a response from a server could not be parsed
     class parse_error final : public exception
     {
     public:
@@ -303,2959 +305,2962 @@ namespace ews
         explicit parse_error(const char* what) : exception(what) {}
     };
 
+    //! Response code enum describes status information about a request
     enum class response_code
     {
         no_error,
 
-        // Calling account does not have the rights to perform the action
-        // requested.
+        //! Calling account does not have the rights to perform the action
+        //! requested.
         error_access_denied,
 
-        // Returned when the account in question has been disabled.
+        //! Returned when the account in question has been disabled.
         error_account_disabled,
 
-        // The address space (Domain Name System [DNS] domain name) record for
-        // cross forest availability could not be found in the Microsoft Active
-        // Directory
+        //! The address space (Domain Name System [DNS] domain name) record for
+        //! cross forest availability could not be found in the Microsoft Active
+        //! Directory
         error_address_space_not_found,
 
-        // Operation failed due to issues talking with the Active Directory.
+        //! Operation failed due to issues talking with the Active Directory.
         error_ad_operation,
 
-        // You should never encounter this response code, which occurs only as a
-        // result of an issue in Exchange Web Services.
+        //! You should never encounter this response code, which occurs only as a
+        //! result of an issue in Exchange Web Services.
         error_ad_session_filter,
 
-        // The Active Directory is temporarily unavailable. Try your request
-        // again later.
+        //! The Active Directory is temporarily unavailable. Try your request
+        //! again later.
         error_ad_unavailable,
 
-        // Indicates that Exchange Web Services tried to determine the URL of a
-        // cross forest Client Access Server (CAS) by using the AutoDiscover
-        // service, but the call to AutoDiscover failed.
+        //! Indicates that Exchange Web Services tried to determine the URL of a
+        //! cross forest Client Access Server (CAS) by using the AutoDiscover
+        //! service, but the call to AutoDiscover failed.
         error_auto_discover_failed,
 
-        // The AffectedTaskOccurrences enumeration value is missing. It is
-        // required when deleting a task so that Exchange Web Services knows
-        // whether you want to delete a single task or all occurrences of a
-        // repeating task.
+        //! The AffectedTaskOccurrences enumeration value is missing. It is
+        //! required when deleting a task so that Exchange Web Services knows
+        //! whether you want to delete a single task or all occurrences of a
+        //! repeating task.
         error_affected_task_occurrences_required,
 
-        // You encounter this error only if the size of your attachment exceeds
-        // Int32. MaxValue (in bytes). Of course, you probably have bigger
-        // problems if that is the case.
+        //! You encounter this error only if the size of your attachment exceeds
+        //! Int32. MaxValue (in bytes). Of course, you probably have bigger
+        //! problems if that is the case.
         error_attachment_size_limit_exceeded,
 
-        // The availability configuration information for the local Active
-        // Directory forest is missing from the Active Directory.
+        //! The availability configuration information for the local Active
+        //! Directory forest is missing from the Active Directory.
         error_availability_config_not_found,
 
-        // Indicates that the previous item in the request failed in such a way
-        // that Exchange Web Services stopped processing the remaining items in
-        // the request. All remaining items are marked with
-        // ErrorBatchProcessingStopped.
+        //! Indicates that the previous item in the request failed in such a way
+        //! that Exchange Web Services stopped processing the remaining items in
+        //! the request. All remaining items are marked with
+        //! ErrorBatchProcessingStopped.
         error_batch_processing_stopped,
 
-        // You are not allowed to move or copy calendar item occurrences.
+        //! You are not allowed to move or copy calendar item occurrences.
         error_calendar_cannot_move_or_copy_occurrence,
 
-        // If the update in question would send out a meeting update, but the
-        // meeting is in the organizer's deleted items folder, then you
-        // encounter this error.
+        //! If the update in question would send out a meeting update, but the
+        //! meeting is in the organizer's deleted items folder, then you
+        //! encounter this error.
         error_calendar_cannot_update_deleted_item,
 
-        // When a RecurringMasterId is examined, the OccurrenceId attribute is
-        // examined to see if it refers to a valid occurrence. If it doesn't,
-        // then this response code is returned.
+        //! When a RecurringMasterId is examined, the OccurrenceId attribute is
+        //! examined to see if it refers to a valid occurrence. If it doesn't,
+        //! then this response code is returned.
         error_calendar_cannot_use_id_for_occurrence_id,
 
-        // When an OccurrenceId is examined, the RecurringMasterId attribute is
-        // examined to see if it refers to a valid recurring master. If it
-        // doesn't, then this response code is returned.
+        //! When an OccurrenceId is examined, the RecurringMasterId attribute is
+        //! examined to see if it refers to a valid recurring master. If it
+        //! doesn't, then this response code is returned.
         error_calendar_cannot_use_id_for_recurring_master_id,
 
-        // Returned if the suggested duration of a calendar item exceeds five
-        // years.
+        //! Returned if the suggested duration of a calendar item exceeds five
+        //! years.
         error_calendar_duration_is_too_long,
 
-        // The end date must be greater than the start date. Otherwise, it
-        // isn't worth having the meeting.
+        //! The end date must be greater than the start date. Otherwise, it
+        //! isn't worth having the meeting.
         error_calendar_end_date_is_earlier_than_start_date,
 
-        // You can apply calendar paging only on a CalendarFolder.
+        //! You can apply calendar paging only on a CalendarFolder.
         error_calendar_folder_is_invalid_for_calendar_view,
 
-        // You should never encounter this response code.
+        //! You should never encounter this response code.
         error_calendar_invalid_attribute_value,
 
-        // When defining a time change pattern, the values Day, WeekDay and
-        // WeekendDay are invalid.
+        //! When defining a time change pattern, the values Day, WeekDay and
+        //! WeekendDay are invalid.
         error_calendar_invalid_day_for_time_change_pattern,
 
-        // When defining a weekly recurring pattern, the values Day, Weekday,
-        // and WeekendDay are invalid.
+        //! When defining a weekly recurring pattern, the values Day, Weekday,
+        //! and WeekendDay are invalid.
         error_calendar_invalid_day_for_weekly_recurrence,
 
-        // Indicates that the state of the calendar item recurrence blob in the
-        // Exchange Store is invalid.
+        //! Indicates that the state of the calendar item recurrence blob in the
+        //! Exchange Store is invalid.
         error_calendar_invalid_property_state,
 
-        // You should never encounter this response code.
+        //! You should never encounter this response code.
         error_calendar_invalid_property_value,
 
-        // You should never encounter this response code. It indicates that the
-        // internal structure of the objects representing the recurrence is
-        // invalid.
+        //! You should never encounter this response code. It indicates that the
+        //! internal structure of the objects representing the recurrence is
+        //! invalid.
         error_calendar_invalid_recurrence,
 
-        // Occurs when an invalid time zone is encountered.
+        //! Occurs when an invalid time zone is encountered.
         error_calendar_invalid_time_zone,
 
-        // Accepting a meeting request by using delegate access is not supported
-        // in RTM.
+        //! Accepting a meeting request by using delegate access is not supported
+        //! in RTM.
         error_calendar_is_delegated_for_accept,
 
-        // Declining a meeting request by using delegate access is not supported
-        // in RTM.
+        //! Declining a meeting request by using delegate access is not supported
+        //! in RTM.
         error_calendar_is_delegated_for_decline,
 
-        // Removing an item from the calendar by using delegate access is not
-        // supported in RTM.
+        //! Removing an item from the calendar by using delegate access is not
+        //! supported in RTM.
         error_calendar_is_delegated_for_remove,
 
-        // Tentatively accepting a meeting request by using delegate access is
-        // not supported in RTM.
+        //! Tentatively accepting a meeting request by using delegate access is
+        //! not supported in RTM.
         error_calendar_is_delegated_for_tentative,
 
-        // Only the meeting organizer can cancel the meeting, no matter how much
-        // you are dreading it.
+        //! Only the meeting organizer can cancel the meeting, no matter how much
+        //! you are dreading it.
         error_calendar_is_not_organizer,
 
-        // The organizer cannot accept the meeting. Only attendees can accept a
-        // meeting request.
+        //! The organizer cannot accept the meeting. Only attendees can accept a
+        //! meeting request.
         error_calendar_is_organizer_for_accept,
 
-        // The organizer cannot decline the meeting. Only attendees can decline
-        // a meeting request.
+        //! The organizer cannot decline the meeting. Only attendees can decline
+        //! a meeting request.
         error_calendar_is_organizer_for_decline,
 
-        // The organizer cannot remove the meeting from the calendar by using
-        // RemoveItem. The organizer can do this only by cancelling the meeting
-        // request. Only attendees can remove a calendar item.
+        //! The organizer cannot remove the meeting from the calendar by using
+        //! RemoveItem. The organizer can do this only by cancelling the meeting
+        //! request. Only attendees can remove a calendar item.
         error_calendar_is_organizer_for_remove,
 
-        // The organizer cannot tentatively accept the meeting request. Only
-        // attendees can tentatively accept a meeting request.
+        //! The organizer cannot tentatively accept the meeting request. Only
+        //! attendees can tentatively accept a meeting request.
         error_calendar_is_organizer_for_tentative,
 
-        // Occurs when the occurrence index specified in the OccurenceId does
-        // not correspond to a valid occurrence. For instance, if your
-        // recurrence pattern defines a set of three meeting occurrences, and
-        // you try to access the fifth occurrence, well, there is no fifth
-        // occurrence. So instead, you get this response code.
+        //! Occurs when the occurrence index specified in the OccurenceId does
+        //! not correspond to a valid occurrence. For instance, if your
+        //! recurrence pattern defines a set of three meeting occurrences, and
+        //! you try to access the fifth occurrence, well, there is no fifth
+        //! occurrence. So instead, you get this response code.
         error_calendar_occurrence_index_is_out_of_recurrence_range,
 
-        // Occurs when the occurrence index specified in the OccurrenceId
-        // corresponds to a deleted occurrence.
+        //! Occurs when the occurrence index specified in the OccurrenceId
+        //! corresponds to a deleted occurrence.
         error_calendar_occurrence_is_deleted_from_recurrence,
 
-        // Occurs when a recurrence pattern is defined that contains values for
-        // month, day, week, and so on that are out of range. For example,
-        // specifying the fifteenth week of the month is both silly and an
-        // error.
+        //! Occurs when a recurrence pattern is defined that contains values for
+        //! month, day, week, and so on that are out of range. For example,
+        //! specifying the fifteenth week of the month is both silly and an
+        //! error.
         error_calendar_out_of_range,
 
-        // Calendar paging can span a maximum of two years.
+        //! Calendar paging can span a maximum of two years.
         error_calendar_view_range_too_big,
 
-        // Calendar items can be created only within calendar folders.
+        //! Calendar items can be created only within calendar folders.
         error_cannot_create_calendar_item_in_non_calendar_folder,
 
-        // Contacts can be created only within contact folders.
+        //! Contacts can be created only within contact folders.
         error_cannot_create_contact_in_non_contacts_folder,
 
-        // Tasks can be created only within Task folders.
+        //! Tasks can be created only within Task folders.
         error_cannot_create_task_in_non_task_folder,
 
-        // Occurs when Exchange Web Services fails to delete the item or folder
-        // in question for some unexpected reason.
+        //! Occurs when Exchange Web Services fails to delete the item or folder
+        //! in question for some unexpected reason.
         error_cannot_delete_object,
 
-        // This error indicates that you either tried to delete an occurrence of
-        // a nonrecurring task or tried to delete the last occurrence of a
-        // recurring task.
+        //! This error indicates that you either tried to delete an occurrence of
+        //! a nonrecurring task or tried to delete the last occurrence of a
+        //! recurring task.
         error_cannot_delete_task_occurrence,
 
-        // Exchange Web Services could not open the file attachment
+        //! Exchange Web Services could not open the file attachment
         error_cannot_open_file_attachment,
 
-        // The Id that was passed represents a folder rather than an item
+        //! The Id that was passed represents a folder rather than an item
         error_cannot_use_folder_id_for_item_id,
 
-        // The id that was passed in represents an item rather than a folder
+        //! The id that was passed in represents an item rather than a folder
         error_cannot_user_item_id_for_folder_id,
 
-        // You will never encounter this response code. Superseded by
-        // ErrorChangeKeyRequiredForWriteOperations.
+        //! You will never encounter this response code. Superseded by
+        //! ErrorChangeKeyRequiredForWriteOperations.
         error_change_key_required,
 
-        // When performing certain update operations, you must provide a valid
-        // change key.
+        //! When performing certain update operations, you must provide a valid
+        //! change key.
         error_change_key_required_for_write_operations,
 
-        // This response code is returned when Exchange Web Services is unable
-        // to connect to the Mailbox in question.
+        //! This response code is returned when Exchange Web Services is unable
+        //! to connect to the Mailbox in question.
         error_connection_failed,
 
-        // Occurs when Exchange Web Services is unable to retrieve the MIME
-        // content for the item in question (GetItem), or is unable to create
-        // the item from the supplied MIME content (CreateItem).
+        //! Occurs when Exchange Web Services is unable to retrieve the MIME
+        //! content for the item in question (GetItem), or is unable to create
+        //! the item from the supplied MIME content (CreateItem).
         error_content_conversion_failed,
 
-        // Indicates that the data in question is corrupt and cannot be acted
-        // upon.
+        //! Indicates that the data in question is corrupt and cannot be acted
+        //! upon.
         error_corrupt_data,
 
-        // Indicates that the caller does not have the right to create the item
-        // in question.
+        //! Indicates that the caller does not have the right to create the item
+        //! in question.
         error_create_item_access_denied,
 
-        // Indicates that one ore more of the managed folders passed to
-        // CreateManagedFolder failed to be created. The only way to determine
-        // which ones failed is to search for the folders and see which ones do
-        // not exist.
+        //! Indicates that one ore more of the managed folders passed to
+        //! CreateManagedFolder failed to be created. The only way to determine
+        //! which ones failed is to search for the folders and see which ones do
+        //! not exist.
         error_create_managed_folder_partial_completion,
 
-        // The calling account does not have the proper rights to create the
-        // subfolder in question.
+        //! The calling account does not have the proper rights to create the
+        //! subfolder in question.
         error_create_subfolder_access_denied,
 
-        // You cannot move an item or folder from one Mailbox to another.
+        //! You cannot move an item or folder from one Mailbox to another.
         error_cross_mailbox_move_copy,
 
-        // Either the data that you were trying to set exceeded the maximum size
-        // for the property, or the value is large enough to require streaming
-        // and the property does not support streaming (that is, folder
-        // properties).
+        //! Either the data that you were trying to set exceeded the maximum size
+        //! for the property, or the value is large enough to require streaming
+        //! and the property does not support streaming (that is, folder
+        //! properties).
         error_data_size_limit_exceeded,
 
-        // An Active Directory operation failed.
+        //! An Active Directory operation failed.
         error_data_source_operation,
 
-        // You cannot delete a distinguished folder
+        //! You cannot delete a distinguished folder
         error_delete_distinguished_folder,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_delete_items_failed,
 
-        // There are duplicate values in the folder names array that was passed
-        // into CreateManagedFolder.
+        //! There are duplicate values in the folder names array that was passed
+        //! into CreateManagedFolder.
         error_duplicate_input_folder_names,
 
-        // The Mailbox subelement of DistinguishedFolderId pointed to a
-        // different Mailbox than the one you are currently operating on. For
-        // example, you cannot create a search folder that exists in one Mailbox
-        // but considers distinguished folders from another Mailbox in its
-        // search criteria.
+        //! The Mailbox subelement of DistinguishedFolderId pointed to a
+        //! different Mailbox than the one you are currently operating on. For
+        //! example, you cannot create a search folder that exists in one Mailbox
+        //! but considers distinguished folders from another Mailbox in its
+        //! search criteria.
         error_email_address_mismatch,
 
-        // Indicates that the subscription that was created with a particular
-        // watermark is no longer valid.
+        //! Indicates that the subscription that was created with a particular
+        //! watermark is no longer valid.
         error_event_not_found,
 
-        // Indicates that the subscription referenced by GetEvents has expired.
+        //! Indicates that the subscription referenced by GetEvents has expired.
         error_expired_subscription,
 
-        // The folder is corrupt and cannot be saved. This means that you set
-        // some strange and invalid property on the folder, or possibly that the
-        // folder was already in some strange state before you tried to set
-        // values on it (UpdateFolder). In any case, this is not a common error.
+        //! The folder is corrupt and cannot be saved. This means that you set
+        //! some strange and invalid property on the folder, or possibly that the
+        //! folder was already in some strange state before you tried to set
+        //! values on it (UpdateFolder). In any case, this is not a common error.
         error_folder_corrupt,
 
-        // Indicates that the folder id passed in does not correspond to a valid
-        // folder, or in delegate access cases that the delegate does not have
-        // permissions to access the folder.
+        //! Indicates that the folder id passed in does not correspond to a valid
+        //! folder, or in delegate access cases that the delegate does not have
+        //! permissions to access the folder.
         error_folder_not_found,
 
-        // Indicates that the property that was requested could not be
-        // retrieved. Note that this does not mean that it just wasn't there.
-        // This means that the property was corrupt in some way such that
-        // retrieving it failed. This is not a common error.
+        //! Indicates that the property that was requested could not be
+        //! retrieved. Note that this does not mean that it just wasn't there.
+        //! This means that the property was corrupt in some way such that
+        //! retrieving it failed. This is not a common error.
         error_folder_property_request_failed,
 
-        // The folder could not be created or saved due to invalid state.
+        //! The folder could not be created or saved due to invalid state.
         error_folder_save,
 
-        // The folder could not be created or saved due to invalid state.
+        //! The folder could not be created or saved due to invalid state.
         error_folder_save_failed,
 
-        // The folder could not be created or updated due to invalid property
-        // values. The properties which caused the problem are listed in the
-        // MessageXml element..
+        //! The folder could not be created or updated due to invalid property
+        //! values. The properties which caused the problem are listed in the
+        //! MessageXml element..
         error_folder_save_property_error,
 
-        // A folder with that name already exists.
+        //! A folder with that name already exists.
         error_folder_exists,
 
-        // Unable to retrieve Free/Busy information.This should not be common.
+        //! Unable to retrieve Free/Busy information.This should not be common.
         error_free_busy_generation_failed,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_get_server_security_descriptor_failed,
 
-        // This response code is always returned within a SOAP fault. It
-        // indicates that the calling account does not have the ms-Exch-EPI-May-
-        // Impersonate right on either the user/contact they are try to
-        // impersonate or the Mailbox database containing the user Mailbox.
+        //! This response code is always returned within a SOAP fault. It
+        //! indicates that the calling account does not have the ms-Exch-EPI-May-
+        //! Impersonate right on either the user/contact they are try to
+        //! impersonate or the Mailbox database containing the user Mailbox.
         error_impersonate_user_denied,
 
-        // This response code is always returned within a SOAP fault. It
-        // indicates that the calling account does not have the ms-Exch-EPI-
-        // Impersonation right on the CAS it is calling.
+        //! This response code is always returned within a SOAP fault. It
+        //! indicates that the calling account does not have the ms-Exch-EPI-
+        //! Impersonation right on the CAS it is calling.
         error_impersonation_denied,
 
-        // There was an unexpected error trying to perform Server to Server
-        // authentication. This typically indicates that the service account
-        // running the Exchange Web Services application pool is misconfigured,
-        // that Exchange Web Services cannot talk to the Active Directory, or
-        // that a trust between Active Directory forests is not properly
-        // configured.
+        //! There was an unexpected error trying to perform Server to Server
+        //! authentication. This typically indicates that the service account
+        //! running the Exchange Web Services application pool is misconfigured,
+        //! that Exchange Web Services cannot talk to the Active Directory, or
+        //! that a trust between Active Directory forests is not properly
+        //! configured.
         error_impersonation_failed,
 
-        // Each change description within an UpdateItem or UpdateFolder call
-        // must list one and only one property to update.
+        //! Each change description within an UpdateItem or UpdateFolder call
+        //! must list one and only one property to update.
         error_incorrect_update_property_count,
 
-        // Your request contained too many attendees to resolve. The default
-        // mailbox count limit is 100.
+        //! Your request contained too many attendees to resolve. The default
+        //! mailbox count limit is 100.
         error_individual_mailbox_limit_reached,
 
-        // Indicates that the Mailbox server is overloaded You should try your
-        // request again later.
+        //! Indicates that the Mailbox server is overloaded You should try your
+        //! request again later.
         error_insufficient_resources,
 
-        // This response code means that the Exchange Web Services team members
-        // didn't anticipate all possible scenarios, and therefore Exchange
-        // Web Services encountered a condition that it couldn't recover from.
+        //! This response code means that the Exchange Web Services team members
+        //! didn't anticipate all possible scenarios, and therefore Exchange
+        //! Web Services encountered a condition that it couldn't recover from.
         error_internal_server_error,
 
-        // This response code is an interesting one. It essentially means that
-        // the Exchange Web Services team members didn't anticipate all
-        // possible scenarios, but the nature of the unexpected condition is
-        // such that it is likely temporary and so you should try again later.
+        //! This response code is an interesting one. It essentially means that
+        //! the Exchange Web Services team members didn't anticipate all
+        //! possible scenarios, but the nature of the unexpected condition is
+        //! such that it is likely temporary and so you should try again later.
         error_internal_server_transient_error,
 
-        // It is unlikely that you will encounter this response code. It means
-        // that Exchange Web Services tried to figure out what level of access
-        // the caller has on the Free/Busy information of another account, but
-        // the access that was returned didn't make sense.
+        //! It is unlikely that you will encounter this response code. It means
+        //! that Exchange Web Services tried to figure out what level of access
+        //! the caller has on the Free/Busy information of another account, but
+        //! the access that was returned didn't make sense.
         error_invalid_access_level,
 
-        // Indicates that the attachment was not found within the attachments
-        // collection on the item in question. You might encounter this if you
-        // have an attachment id, the attachment is deleted, and then you try to
-        // call GetAttachment on the old attachment id.
+        //! Indicates that the attachment was not found within the attachments
+        //! collection on the item in question. You might encounter this if you
+        //! have an attachment id, the attachment is deleted, and then you try to
+        //! call GetAttachment on the old attachment id.
         error_invalid_attachment_id,
 
-        // Exchange Web Services supports only simple contains filters against
-        // the attachment table. If you try to retrieve the search parameters on
-        // an existing search folder that has a more complex attachment table
-        // restriction (called a subfilter), then Exchange Web Services has no
-        // way of rendering the XML for that filter, and it returns this
-        // response code. Note that you can still call GetFolder on this folder,
-        // just don't request the SearchParameters property.
+        //! Exchange Web Services supports only simple contains filters against
+        //! the attachment table. If you try to retrieve the search parameters on
+        //! an existing search folder that has a more complex attachment table
+        //! restriction (called a subfilter), then Exchange Web Services has no
+        //! way of rendering the XML for that filter, and it returns this
+        //! response code. Note that you can still call GetFolder on this folder,
+        //! just don't request the SearchParameters property.
         error_invalid_attachment_subfilter,
 
-        // Exchange Web Services supports only simple contains filters against
-        // the attachment table. If you try to retrieve the search parameters on
-        // an existing search folder that has a more complex attachment table
-        // restriction, then Exchange Web Services has no way of rendering the
-        // XML for that filter. This specific case means that the attachment
-        // subfilter is a contains (text) filter, but the subfilter is not
-        // referring to the attachment display name.
+        //! Exchange Web Services supports only simple contains filters against
+        //! the attachment table. If you try to retrieve the search parameters on
+        //! an existing search folder that has a more complex attachment table
+        //! restriction, then Exchange Web Services has no way of rendering the
+        //! XML for that filter. This specific case means that the attachment
+        //! subfilter is a contains (text) filter, but the subfilter is not
+        //! referring to the attachment display name.
         error_invalid_attachment_subfilter_text_filter,
 
-        // You should not encounter this error, which has to do with a failure
-        // to proxy an availability request to another CAS
+        //! You should not encounter this error, which has to do with a failure
+        //! to proxy an availability request to another CAS
         error_invalid_authorization_context,
 
-        // Indicates that the passed in change key was invalid. Note that many
-        // methods do not require a change key to be passed. However, if you do
-        // provide one, it must be a valid, though not necessarily up-to-date,
-        // change key.
+        //! Indicates that the passed in change key was invalid. Note that many
+        //! methods do not require a change key to be passed. However, if you do
+        //! provide one, it must be a valid, though not necessarily up-to-date,
+        //! change key.
         error_invalid_change_key,
 
-        // Indicates that there was an internal error related to trying to
-        // resolve the caller's identity. This is not a common error.
+        //! Indicates that there was an internal error related to trying to
+        //! resolve the caller's identity. This is not a common error.
         error_invalid_client_security_context,
 
-        // Occurs when you try to set the CompleteDate of a task to a date in
-        // the past. When converted to the local time of the CAS, the
-        // CompleteDate cannot be set to a value less than the local time on the
-        // CAS.
+        //! Occurs when you try to set the CompleteDate of a task to a date in
+        //! the past. When converted to the local time of the CAS, the
+        //! CompleteDate cannot be set to a value less than the local time on the
+        //! CAS.
         error_invalid_complete_date,
 
-        // This response code can be returned with two different error messages:
-        // Unable to send cross-forest request for mailbox {mailbox identifier}
-        // because of invalid configuration. When UseServiceAccount is
-        // false, user name cannot be null or empty. You should never encounter
-        // this response code.
+        //! This response code can be returned with two different error messages:
+        //! Unable to send cross-forest request for mailbox {mailbox identifier}
+        //! because of invalid configuration. When UseServiceAccount is
+        //! false, user name cannot be null or empty. You should never encounter
+        //! this response code.
         error_invalid_cross_forest_credentials,
 
-        // An ExchangeImpersonation header was passed in but it did not contain
-        // a security identifier (SID), user principal name (UPN) or primary
-        // SMTP address. You must supply one of these identifiers and of course,
-        // they cannot be empty strings. Note that this response code is always
-        // returned within a SOAP fault.
+        //! An ExchangeImpersonation header was passed in but it did not contain
+        //! a security identifier (SID), user principal name (UPN) or primary
+        //! SMTP address. You must supply one of these identifiers and of course,
+        //! they cannot be empty strings. Note that this response code is always
+        //! returned within a SOAP fault.
         error_invalid_exchange_impersonation_header_data,
 
-        // The bitmask passed into the Excludes restriction was unparsable.
+        //! The bitmask passed into the Excludes restriction was unparsable.
         error_invalid_excludes_restriction,
 
-        // You should never encounter this response code.
+        //! You should never encounter this response code.
         error_invalid_expression_type_for_sub_filter,
 
-        // The combination of extended property values that were specified is
-        // invalid or results in a bad extended property URI.
+        //! The combination of extended property values that were specified is
+        //! invalid or results in a bad extended property URI.
         error_invalid_extended_property,
 
-        // The value offered for the extended property is inconsistent with the
-        // type specified in the associated extended field URI. For example, if
-        // the PropertyType on the extended field URI is set to String, but you
-        // set the value of the extended property as an array of integers, you
-        // will encounter this error.
+        //! The value offered for the extended property is inconsistent with the
+        //! type specified in the associated extended field URI. For example, if
+        //! the PropertyType on the extended field URI is set to String, but you
+        //! set the value of the extended property as an array of integers, you
+        //! will encounter this error.
         error_invalid_extended_property_value,
 
-        // You should never encounter this response code
+        //! You should never encounter this response code
         error_invalid_folder_id,
 
-        // This response code will occur if: Numerator > denominator Numerator <
-        // 0 Denominator <= 0
+        //! This response code will occur if: Numerator > denominator Numerator <
+        //! 0 Denominator <= 0
         error_invalid_fractional_paging_parameters,
 
-        // Returned if you call GetUserAvailability with a FreeBusyViewType of
-        // None
+        //! Returned if you call GetUserAvailability with a FreeBusyViewType of
+        //! None
         error_invalid_free_busy_view_type,
 
-        // Indicates that the Id and/or change key is malformed
+        //! Indicates that the Id and/or change key is malformed
         error_invalid_id,
 
-        // Occurs if you pass in an empty id (Id="")
+        //! Occurs if you pass in an empty id (Id="")
         error_invalid_id_empty,
 
-        // Indicates that the Id is malformed.
+        //! Indicates that the Id is malformed.
         error_invalid_id_malformed,
 
-        // Here is an example of over-engineering. Once again, this indicates
-        // that the structure of the id is malformed The moniker referred to in
-        // the name of this response code is contained within the id and
-        // indicates which Mailbox the id belongs to. Exchange Web Services
-        // checks the length of this moniker and fails it if the byte count is
-        // more than expected. The check is good, but there is no reason to have
-        // a separate response code for this condition.
+        //! Here is an example of over-engineering. Once again, this indicates
+        //! that the structure of the id is malformed The moniker referred to in
+        //! the name of this response code is contained within the id and
+        //! indicates which Mailbox the id belongs to. Exchange Web Services
+        //! checks the length of this moniker and fails it if the byte count is
+        //! more than expected. The check is good, but there is no reason to have
+        //! a separate response code for this condition.
         error_invalid_id_moniker_too_long,
 
-        // The AttachmentId specified does not refer to an item attachment.
+        //! The AttachmentId specified does not refer to an item attachment.
         error_invalid_id_not_an_item_attachment_id,
 
-        // You should never encounter this response code. If you do, it
-        // indicates that a contact in your Mailbox is so corrupt that Exchange
-        // Web Services really can't tell the difference between it and a
-        // waffle maker.
+        //! You should never encounter this response code. If you do, it
+        //! indicates that a contact in your Mailbox is so corrupt that Exchange
+        //! Web Services really can't tell the difference between it and a
+        //! waffle maker.
         error_invalid_id_returned_by_resolve_names,
 
-        // Treat this like ErrorInvalidIdMalformed. Indicates that the id was
-        // malformed
+        //! Treat this like ErrorInvalidIdMalformed. Indicates that the id was
+        //! malformed
         error_invalid_id_store_object_id_too_long,
 
-        // Exchange Web Services allows for attachment hierarchies to be a
-        // maximum of 255 levels deep. If the attachment hierarchy on an item
-        // exceeds 255 levels, you will get this response code.
+        //! Exchange Web Services allows for attachment hierarchies to be a
+        //! maximum of 255 levels deep. If the attachment hierarchy on an item
+        //! exceeds 255 levels, you will get this response code.
         error_invalid_id_too_many_attachment_levels,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_invalid_id_xml,
 
-        // Indicates that the offset was < 0.
+        //! Indicates that the offset was < 0.
         error_invalid_indexed_paging_parameters,
 
-        // You will never encounter this response code. At one point in the
-        // Exchange Web Services development cycle, you could update the
-        // Internet message headers via UpdateItem. Because that is no longer
-        // the case, this response code is unused.
+        //! You will never encounter this response code. At one point in the
+        //! Exchange Web Services development cycle, you could update the
+        //! Internet message headers via UpdateItem. Because that is no longer
+        //! the case, this response code is unused.
         error_invalid_internet_header_child_nodes,
 
-        // Indicates that you tried to create an item attachment by using an
-        // unsupported item type. Supported item types for item attachments are
-        // Item, Message, CalendarItem, Contact, and Task. For instance, if you
-        // try to create a MeetingMessage attachment, you encounter this
-        // response code. In fact, the schema indicates that MeetingMessage,
-        // MeetingRequest, MeetingResponse, and MeetingCancellation are all
-        // permissible. Don't believe it.
+        //! Indicates that you tried to create an item attachment by using an
+        //! unsupported item type. Supported item types for item attachments are
+        //! Item, Message, CalendarItem, Contact, and Task. For instance, if you
+        //! try to create a MeetingMessage attachment, you encounter this
+        //! response code. In fact, the schema indicates that MeetingMessage,
+        //! MeetingRequest, MeetingResponse, and MeetingCancellation are all
+        //! permissible. Don't believe it.
         error_invalid_item_for_operation_create_item_attachment,
 
-        // Indicates that you tried to create an unsupported item. In addition
-        // to response objects, Supported items include Item, Message,
-        // CalendarItem, Task, and Contact. For example, you cannot use
-        // CreateItem to create a DistributionList. In addition, certain types
-        // of items are created as a side effect of doing another action.
-        // Meeting messages, for instance, are created as a result of sending a
-        // calendar item to attendees. You never explicitly create a meeting
-        // message.
+        //! Indicates that you tried to create an unsupported item. In addition
+        //! to response objects, Supported items include Item, Message,
+        //! CalendarItem, Task, and Contact. For example, you cannot use
+        //! CreateItem to create a DistributionList. In addition, certain types
+        //! of items are created as a side effect of doing another action.
+        //! Meeting messages, for instance, are created as a result of sending a
+        //! calendar item to attendees. You never explicitly create a meeting
+        //! message.
         error_invalid_item_for_operation_create_item,
 
-        // This response code is returned if: You created an AcceptItem response
-        // object and referenced an item type other than a meeting request or a
-        // calendar item. You tried to accept a calendar item occurrence that is
-        // in the deleted items folder.
+        //! This response code is returned if: You created an AcceptItem response
+        //! object and referenced an item type other than a meeting request or a
+        //! calendar item. You tried to accept a calendar item occurrence that is
+        //! in the deleted items folder.
         error_invalid_item_for_operation_accept_item,
 
-        // You created a CancelItem response object and referenced an item type
-        // other than a calendar item.
+        //! You created a CancelItem response object and referenced an item type
+        //! other than a calendar item.
         error_invalid_item_for_operation_cancel_item,
 
-        // This response code is returned if: You created a DeclineItem response
-        // object referencing an item with a type other than a meeting request
-        // or a calendar item. You tried to decline a calendar item occurrence
-        // that is in the deleted items folder.
+        //! This response code is returned if: You created a DeclineItem response
+        //! object referencing an item with a type other than a meeting request
+        //! or a calendar item. You tried to decline a calendar item occurrence
+        //! that is in the deleted items folder.
         error_invalid_item_for_operation_decline_item,
 
-        // The ItemId passed to ExpandDL does not represent a distribution list.
-        // For example, you cannot expand a Message.
+        //! The ItemId passed to ExpandDL does not represent a distribution list.
+        //! For example, you cannot expand a Message.
         error_invalid_item_for_operation_expand_dl,
 
-        // You created a RemoveItem response object reference an item with a
-        // type other than a meeting cancellation.
+        //! You created a RemoveItem response object reference an item with a
+        //! type other than a meeting cancellation.
         error_invalid_item_for_operation_remove_item,
 
-        // You tried to send an item with a type that does not derive from
-        // MessageItem. Only items whose ItemClass begins with "IPM.Note"
-        // are sendable
+        //! You tried to send an item with a type that does not derive from
+        //! MessageItem. Only items whose ItemClass begins with "IPM.Note"
+        //! are sendable
         error_invalid_item_for_operation_send_item,
 
-        // This response code is returned if: You created a
-        // TentativelyAcceptItem response object referencing an item whose type
-        // is not a meeting request or a calendar item. You tried to tentatively
-        // accept a calendar item occurrence that is in the deleted items
-        // folder.
+        //! This response code is returned if: You created a
+        //! TentativelyAcceptItem response object referencing an item whose type
+        //! is not a meeting request or a calendar item. You tried to tentatively
+        //! accept a calendar item occurrence that is in the deleted items
+        //! folder.
         error_invalid_item_for_operation_tentative,
 
-        // Indicates that the structure of the managed folder is corrupt and
-        // cannot be rendered.
+        //! Indicates that the structure of the managed folder is corrupt and
+        //! cannot be rendered.
         error_invalid_managed_folder_property,
 
-        // Indicates that the quota that is set on the managed folder is less
-        // than zero, indicating a corrupt managed folder.
+        //! Indicates that the quota that is set on the managed folder is less
+        //! than zero, indicating a corrupt managed folder.
         error_invalid_managed_folder_quota,
 
-        // Indicates that the size that is set on the managed folder is less
-        // than zero, indicating a corrupt managed folder.
+        //! Indicates that the size that is set on the managed folder is less
+        //! than zero, indicating a corrupt managed folder.
         error_invalid_managed_folder_size,
 
-        // Indicates that the supplied merged free/busy internal value is
-        // invalid. Default minimum is 5 minutes. Default maximum is 1440
-        // minutes.
+        //! Indicates that the supplied merged free/busy internal value is
+        //! invalid. Default minimum is 5 minutes. Default maximum is 1440
+        //! minutes.
         error_invalid_merged_free_busy_interval,
 
-        // Indicates that the name passed into ResolveNames was invalid. For
-        // instance, a zero length string, a single space, a comma, and a dash
-        // are all invalid names. Vakue? Yes, that is part of the message text,
-        // although it should obviously be "value."
+        //! Indicates that the name passed into ResolveNames was invalid. For
+        //! instance, a zero length string, a single space, a comma, and a dash
+        //! are all invalid names. Vakue? Yes, that is part of the message text,
+        //! although it should obviously be "value."
         error_invalid_name_for_name_resolution,
 
-        // Indicates that there is a problem with the NetworkService account on
-        // the CAS. This response code is quite rare and has been seen only in
-        // the wild by the most vigilant of hunters.
+        //! Indicates that there is a problem with the NetworkService account on
+        //! the CAS. This response code is quite rare and has been seen only in
+        //! the wild by the most vigilant of hunters.
         error_invalid_network_service_context,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_invalid_oof_parameter,
 
-        // Indicates that you specified a MaxRows value that is <= 0.
+        //! Indicates that you specified a MaxRows value that is <= 0.
         error_invalid_paging_max_rows,
 
-        // You tried to create a folder within a search folder.
+        //! You tried to create a folder within a search folder.
         error_invalid_parent_folder,
 
-        // You tried to set the percentage complete property to an invalid value
-        // (must be between 0 and 100 inclusive).
+        //! You tried to set the percentage complete property to an invalid value
+        //! (must be between 0 and 100 inclusive).
         error_invalid_percent_complete_value,
 
-        // The property that you are trying to append to does not support
-        // appending. Currently, the only properties that support appending are:
-        // * Recipient collections (ToRecipients, CcRecipients, BccRecipients)
-        // * Attendee collections (RequiredAttendees, OptionalAttendees,
-        //   Resources)
-        // * Body
-        // * ReplyTo
+        //! The property that you are trying to append to does not support
+        //! appending. Currently, the only properties that support appending are:
+        //! * Recipient collections (ToRecipients, CcRecipients, BccRecipients)
+        //! * Attendee collections (RequiredAttendees, OptionalAttendees,
+        //!   Resources)
+        //! * Body
+        //! * ReplyTo
         error_invalid_property_append,
 
-        // The property that you are trying to delete does not support deleting.
-        // An example of this is trying to delete the ItemId of an item.
+        //! The property that you are trying to delete does not support deleting.
+        //! An example of this is trying to delete the ItemId of an item.
         error_invalid_property_delete,
 
-        // You cannot pass in a flags property to an Exists filter. The flags
-        // properties are IsDraft, IsSubmitted, IsUnmodified, IsResend,
-        // IsFromMe, and IsRead. Use IsEqualTo instead. The reason that flag
-        // don't make sense in an Exists filter is that each of these flags is
-        // actually a bit within a single property. So, calling Exists() on one
-        // of these flags is like asking if a given bit exists within a value,
-        // which is different than asking if that value exists or if the bit is
-        // set. Likely you really mean to see if the bit is set, and you should
-        // use the IsEqualTo filter expression instead.
+        //! You cannot pass in a flags property to an Exists filter. The flags
+        //! properties are IsDraft, IsSubmitted, IsUnmodified, IsResend,
+        //! IsFromMe, and IsRead. Use IsEqualTo instead. The reason that flag
+        //! don't make sense in an Exists filter is that each of these flags is
+        //! actually a bit within a single property. So, calling Exists() on one
+        //! of these flags is like asking if a given bit exists within a value,
+        //! which is different than asking if that value exists or if the bit is
+        //! set. Likely you really mean to see if the bit is set, and you should
+        //! use the IsEqualTo filter expression instead.
         error_invalid_property_for_exists,
 
-        // Indicates that the property you are trying to manipulate does not
-        // support whatever operation your are trying to perform on it.
+        //! Indicates that the property you are trying to manipulate does not
+        //! support whatever operation your are trying to perform on it.
         error_invalid_property_for_operation,
 
-        // Indicates that you requested a property in the response shape, and
-        // that property is not within the schema of the item type in question.
-        // For example, requesting calendar:OptionalAttendees in the response
-        // shape of GetItem when binding to a message would result in this
-        // error.
+        //! Indicates that you requested a property in the response shape, and
+        //! that property is not within the schema of the item type in question.
+        //! For example, requesting calendar:OptionalAttendees in the response
+        //! shape of GetItem when binding to a message would result in this
+        //! error.
         error_invalid_property_request,
 
-        // The property you are trying to set is read-only.
+        //! The property you are trying to set is read-only.
         error_invalid_property_set,
 
-        // You cannot update a Message that has already been sent.
+        //! You cannot update a Message that has already been sent.
         error_invalid_property_update_sent_message,
 
-        // You cannot call GetEvents or Unsubscribe on a push subscription id.
-        // To unsubscribe from a push subscription, you must respond to a push
-        // request with an unsubscribe response, or simply disconnect your Web
-        // service and wait for the push notifications to time out.
+        //! You cannot call GetEvents or Unsubscribe on a push subscription id.
+        //! To unsubscribe from a push subscription, you must respond to a push
+        //! request with an unsubscribe response, or simply disconnect your Web
+        //! service and wait for the push notifications to time out.
         error_invalid_pull_subscription_id,
 
-        // The URL provided as a callback for the push subscription has a bad
-        // format. The following conditions must be met for Exchange Web
-        // Services to accept the URL:
-        // * String length > 0 and < 2083
-        // * Protocol is HTTP or HTTPS
-        // * Must be parsable by the System.Uri.NET Framework class
+        //! The URL provided as a callback for the push subscription has a bad
+        //! format. The following conditions must be met for Exchange Web
+        //! Services to accept the URL:
+        //! * String length > 0 and < 2083
+        //! * Protocol is HTTP or HTTPS
+        //! * Must be parsable by the System.Uri.NET Framework class
         error_invalid_push_subscription_url,
 
-        // You should never encounter this response code. If you do, the
-        // recipient collection on your message or attendee collection on your
-        // calendar item is invalid.
+        //! You should never encounter this response code. If you do, the
+        //! recipient collection on your message or attendee collection on your
+        //! calendar item is invalid.
         error_invalid_recipients,
 
-        // Indicates that the search folder in question has a recipient table
-        // filter that Exchange Web Services cannot represent. The response code
-        // is a little misleading—there is nothing invalid about the search
-        // folder restriction. To get around this issue, call GetFolder without
-        // requesting the search parameters.
+        //! Indicates that the search folder in question has a recipient table
+        //! filter that Exchange Web Services cannot represent. The response code
+        //! is a little misleading—there is nothing invalid about the search
+        //! folder restriction. To get around this issue, call GetFolder without
+        //! requesting the search parameters.
         error_invalid_recipient_subfilter,
 
-        // Indicates that the search folder in question has a recipient table
-        // filter that Exchange Web Services cannot represent. The error code is
-        // a little misleading—there is nothing invalid about the search
-        // folder restriction.. To get around this, issue, call GetFolder
-        // without requesting the search parameters.
+        //! Indicates that the search folder in question has a recipient table
+        //! filter that Exchange Web Services cannot represent. The error code is
+        //! a little misleading—there is nothing invalid about the search
+        //! folder restriction.. To get around this, issue, call GetFolder
+        //! without requesting the search parameters.
         error_invalid_recipient_subfilter_comparison,
 
-        // Indicates that the search folder in question has a recipient table
-        // filter that Exchange Web Services cannot represent. The response code
-        // is a little misleading—there is nothing invalid about the search
-        // folder restriction To get around this,issue, call GetFolder without
-        // requesting the search parameters.
+        //! Indicates that the search folder in question has a recipient table
+        //! filter that Exchange Web Services cannot represent. The response code
+        //! is a little misleading—there is nothing invalid about the search
+        //! folder restriction To get around this,issue, call GetFolder without
+        //! requesting the search parameters.
         error_invalid_recipient_subfilter_order,
 
-        // Can you guess our comments on this one? Indicates that the search
-        // folder in question has a recipient table filter that Exchange Web
-        // Services cannot represent. The error code is a little
-        // misleading—there is nothing invalid about the search folder
-        // restriction. To get around this issue, call GetFolder without
-        // requesting the search parameters.
+        //! Can you guess our comments on this one? Indicates that the search
+        //! folder in question has a recipient table filter that Exchange Web
+        //! Services cannot represent. The error code is a little
+        //! misleading—there is nothing invalid about the search folder
+        //! restriction. To get around this issue, call GetFolder without
+        //! requesting the search parameters.
         error_invalid_recipient_subfilter_text_filter,
 
-        // You can only reply to/forward a Message, CalendarItem, or their
-        // descendants. If you are referencing a CalendarItem and you are the
-        // organizer, you can only forward the item. If you are referencing a
-        // draft message, you cannot reply to the item. For read receipt
-        // suppression, you can reference only a Message or descendant.
+        //! You can only reply to/forward a Message, CalendarItem, or their
+        //! descendants. If you are referencing a CalendarItem and you are the
+        //! organizer, you can only forward the item. If you are referencing a
+        //! draft message, you cannot reply to the item. For read receipt
+        //! suppression, you can reference only a Message or descendant.
         error_invalid_reference_item,
 
-        // Indicates that the SOAP request has a SOAP Action header, but nothing
-        // in the SOAP body. Note that the SOAP Action header is not required
-        // because Exchange Web Services can determine the method to call from
-        // the local name of the root element in the SOAP body. However, you
-        // must supply content in the SOAP body or else there is really nothing
-        // for Exchange Web Services to act on..
+        //! Indicates that the SOAP request has a SOAP Action header, but nothing
+        //! in the SOAP body. Note that the SOAP Action header is not required
+        //! because Exchange Web Services can determine the method to call from
+        //! the local name of the root element in the SOAP body. However, you
+        //! must supply content in the SOAP body or else there is really nothing
+        //! for Exchange Web Services to act on..
         error_invalid_request,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_invalid_restriction,
 
-        // Indicates that the RoutingType element that was passed for an
-        // EmailAddressType is not a valid routing type. Typically, routing type
-        // will be set to Simple Mail Transfer Protocol (SMTP).
+        //! Indicates that the RoutingType element that was passed for an
+        //! EmailAddressType is not a valid routing type. Typically, routing type
+        //! will be set to Simple Mail Transfer Protocol (SMTP).
         error_invalid_routing_type,
 
-        // The specified duration end time must be greater than the start time
-        // and must occur in the future.
+        //! The specified duration end time must be greater than the start time
+        //! and must occur in the future.
         error_invalid_scheduled_oof_duration,
 
-        // Indicates that the security descriptor on the calendar folder in the
-        // Store is corrupt.
+        //! Indicates that the security descriptor on the calendar folder in the
+        //! Store is corrupt.
         error_invalid_security_descriptor,
 
-        // The SaveItemToFolder attribute is false, but you included a
-        // SavedItemFolderId.
+        //! The SaveItemToFolder attribute is false, but you included a
+        //! SavedItemFolderId.
         error_invalid_send_item_save_settings,
 
-        // Because you never use token serialization in your application, you
-        // should never encounter this response code. The response code occurs
-        // if the token passed in the SOAP header is malformed, doesn't refer
-        // to a valid account in the Active Directory, or is missing the primary
-        // group SID.
+        //! Because you never use token serialization in your application, you
+        //! should never encounter this response code. The response code occurs
+        //! if the token passed in the SOAP header is malformed, doesn't refer
+        //! to a valid account in the Active Directory, or is missing the primary
+        //! group SID.
         error_invalid_serialized_access_token,
 
-        // ExchangeImpersonation element have an invalid structure.
+        //! ExchangeImpersonation element have an invalid structure.
         error_invalid_sid,
 
-        // The passed in SMTP address is not parsable.
+        //! The passed in SMTP address is not parsable.
         error_invalid_smtp_address,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_invalid_subfilter_type,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_invalid_subfilter_type_not_attendee_type,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_invalid_subfilter_type_not_recipient_type,
 
-        // Indicates that the subscription is no longer valid. This could be due
-        // to the CAS having been rebooted or because the subscription has
-        // expired.
+        //! Indicates that the subscription is no longer valid. This could be due
+        //! to the CAS having been rebooted or because the subscription has
+        //! expired.
         error_invalid_subscription,
 
-        // Indicates that the sync state data is corrupt. You need to resync
-        // without the sync state. Make sure that if you are persisting sync
-        // state somewhere, you are not accidentally altering the information.
+        //! Indicates that the sync state data is corrupt. You need to resync
+        //! without the sync state. Make sure that if you are persisting sync
+        //! state somewhere, you are not accidentally altering the information.
         error_invalid_sync_state_data,
 
-        // The specified time interval is invalid (schema type Duration). The
-        // start time must be greater than or equal to the end time.
+        //! The specified time interval is invalid (schema type Duration). The
+        //! start time must be greater than or equal to the end time.
         error_invalid_time_interval,
 
-        // The user OOF settings are invalid due to a missing internal or
-        // external reply.
+        //! The user OOF settings are invalid due to a missing internal or
+        //! external reply.
         error_invalid_user_oof_settings,
 
-        // Indicates that the UPN passed in the ExchangeImpersonation SOAP
-        // header did not map to a valid account.
+        //! Indicates that the UPN passed in the ExchangeImpersonation SOAP
+        //! header did not map to a valid account.
         error_invalid_user_principal_name,
 
-        // Indicates that the SID passed in the ExchangeImpersonation SOAP
-        // header was either invalid or did not map to a valid account.
+        //! Indicates that the SID passed in the ExchangeImpersonation SOAP
+        //! header was either invalid or did not map to a valid account.
         error_invalid_user_sid,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_invalid_user_sid_missing_upn,
 
-        // Indicates that the comparison value is invalid for the property your
-        // are comparing against. For instance, DateTimeCreated > "true"
-        // would cause this response code to be returned. You also encounter
-        // this response code if you specify an enumeration property in the
-        // comparison, but the value you are comparing against is not a valid
-        // value for that enumeration.
+        //! Indicates that the comparison value is invalid for the property your
+        //! are comparing against. For instance, DateTimeCreated > "true"
+        //! would cause this response code to be returned. You also encounter
+        //! this response code if you specify an enumeration property in the
+        //! comparison, but the value you are comparing against is not a valid
+        //! value for that enumeration.
         error_invalid_value_for_property,
 
-        // Indicates that the supplied watermark is corrupt.
+        //! Indicates that the supplied watermark is corrupt.
         error_invalid_watermark,
 
-        // Indicates that conflict resolution was unable to resolve changes for
-        // the properties in question. This typically means that someone changed
-        // the item in the Store, and you are dealing with a stale copy.
-        // Retrieve the updated change key and try again.
+        //! Indicates that conflict resolution was unable to resolve changes for
+        //! the properties in question. This typically means that someone changed
+        //! the item in the Store, and you are dealing with a stale copy.
+        //! Retrieve the updated change key and try again.
         error_irresolvable_conflict,
 
-        // Indicates that the state of the object is corrupt and cannot be
-        // retrieved. When retrieving an item, typically only certain properties
-        // will be in this state (i.e. Body, MimeContent). Try omitting those
-        // properties and retrying the operation.
+        //! Indicates that the state of the object is corrupt and cannot be
+        //! retrieved. When retrieving an item, typically only certain properties
+        //! will be in this state (i.e. Body, MimeContent). Try omitting those
+        //! properties and retrying the operation.
         error_item_corrupt,
 
-        // Indicates that the item in question was not found, or potentially
-        // that it really does exist, and you just don't have rights to access
-        // it.
+        //! Indicates that the item in question was not found, or potentially
+        //! that it really does exist, and you just don't have rights to access
+        //! it.
         error_item_not_found,
 
-        // Exchange Web Services tried to retrieve a given property on an item
-        // or folder but failed to do so. Note that this means that some value
-        // was there, but Exchange Web Services was unable to retrieve it.
+        //! Exchange Web Services tried to retrieve a given property on an item
+        //! or folder but failed to do so. Note that this means that some value
+        //! was there, but Exchange Web Services was unable to retrieve it.
         error_item_property_request_failed,
 
-        // Attempts to save the item/folder failed.
+        //! Attempts to save the item/folder failed.
         error_item_save,
 
-        // Attempts to save the item/folder failed because of invalid property
-        // values. The response includes the offending property paths.
+        //! Attempts to save the item/folder failed because of invalid property
+        //! values. The response includes the offending property paths.
         error_item_save_property_error,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_legacy_mailbox_free_busy_view_type_not_merged,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_local_server_object_not_found,
 
-        // Indicates that the availability service was unable to log on as
-        // Network Service to proxy requests to the appropriate sites/forests.
-        // This typically indicates a configuration error.
+        //! Indicates that the availability service was unable to log on as
+        //! Network Service to proxy requests to the appropriate sites/forests.
+        //! This typically indicates a configuration error.
         error_logon_as_network_service_failed,
 
-        // Indicates that the Mailbox information in the Active Directory is
-        // misconfigured.
+        //! Indicates that the Mailbox information in the Active Directory is
+        //! misconfigured.
         error_mailbox_configuration,
 
-        // Indicates that the MailboxData array in the request is empty. You
-        // must supply at least one Mailbox identifier.
+        //! Indicates that the MailboxData array in the request is empty. You
+        //! must supply at least one Mailbox identifier.
         error_mailbox_data_array_empty,
 
-        // You can supply a maximum of 100 entries in the MailboxData array.
+        //! You can supply a maximum of 100 entries in the MailboxData array.
         error_mailbox_data_array_too_big,
 
-        // Failed to connect to the Mailbox to get the calendar view
-        // information.
+        //! Failed to connect to the Mailbox to get the calendar view
+        //! information.
         error_mailbox_logon_failed,
 
-        // The Mailbox in question is currently being moved. Try your request
-        // again once the move is complete.
+        //! The Mailbox in question is currently being moved. Try your request
+        //! again once the move is complete.
         error_mailbox_move_in_progress,
 
-        // The Mailbox database is offline, corrupt, shutting down, or involved
-        // in a plethora of other conditions that make the Mailbox unavailable.
+        //! The Mailbox database is offline, corrupt, shutting down, or involved
+        //! in a plethora of other conditions that make the Mailbox unavailable.
         error_mailbox_store_unavailable,
 
-        // Could not map the MailboxData information to a valid Mailbox account.
+        //! Could not map the MailboxData information to a valid Mailbox account.
         error_mail_recipient_not_found,
 
-        // The managed folder that you are trying to create already exists in
-        // your Mailbox.
+        //! The managed folder that you are trying to create already exists in
+        //! your Mailbox.
         error_managed_folder_already_exists,
 
-        // The folder name specified in the request does not map to a managed
-        // folder definition in the Active Directory. You can create instances
-        // of managed folders only for folders defined in the Active Directory.
-        // Check the name and try again.
+        //! The folder name specified in the request does not map to a managed
+        //! folder definition in the Active Directory. You can create instances
+        //! of managed folders only for folders defined in the Active Directory.
+        //! Check the name and try again.
         error_managed_folder_not_found,
 
-        // Managed folders typically exist within the root managed folders
-        // folder. The root must be properly created and functional in order to
-        // deal with managed folders through Exchange Web Services. Typically,
-        // this configuration happens transparently when you start dealing with
-        // managed folders.
-        // This response code indicates that the managed folders root was
-        // deleted from the Mailbox or that there is already a folder in the
-        // same parent folder with the name of the managed folder root. This
-        // response code also occurs if the attempt to create the root managed
-        // folder fails.
+        //! Managed folders typically exist within the root managed folders
+        //! folder. The root must be properly created and functional in order to
+        //! deal with managed folders through Exchange Web Services. Typically,
+        //! this configuration happens transparently when you start dealing with
+        //! managed folders.
+        //! This response code indicates that the managed folders root was
+        //! deleted from the Mailbox or that there is already a folder in the
+        //! same parent folder with the name of the managed folder root. This
+        //! response code also occurs if the attempt to create the root managed
+        //! folder fails.
         error_managed_folders_root_failure,
 
-        // Indicates that the suggestions engine encountered a problem when it
-        // was trying to generate the suggestions.
+        //! Indicates that the suggestions engine encountered a problem when it
+        //! was trying to generate the suggestions.
         error_meeting_suggestion_generation_failed,
 
-        // When creating or updating an item that descends from MessageType, you
-        // must supply the MessageDisposition attribute on the request to
-        // indicate what operations should be performed on the message. Note
-        // that this attribute is not required for any other type of item.
+        //! When creating or updating an item that descends from MessageType, you
+        //! must supply the MessageDisposition attribute on the request to
+        //! indicate what operations should be performed on the message. Note
+        //! that this attribute is not required for any other type of item.
         error_message_disposition_required,
 
-        // Indicates that the message you are trying to send exceeds the
-        // allowable limits.
+        //! Indicates that the message you are trying to send exceeds the
+        //! allowable limits.
         error_message_size_exceeded,
 
-        // For CreateItem, the MIME content was not valid iCalendar content For
-        // GetItem, the MIME content could not be generated.
+        //! For CreateItem, the MIME content was not valid iCalendar content For
+        //! GetItem, the MIME content could not be generated.
         error_mime_content_conversion_failed,
 
-        // The MIME content to set is invalid.
+        //! The MIME content to set is invalid.
         error_mime_content_invalid,
 
-        // The MIME content in the request is not a valid Base64 string.
+        //! The MIME content in the request is not a valid Base64 string.
         error_mime_content_invalid_base64_string,
 
-        // A required argument was missing from the request. The response
-        // message text indicates which argument to check.
+        //! A required argument was missing from the request. The response
+        //! message text indicates which argument to check.
         error_missing_argument,
 
-        // Indicates that you specified a distinguished folder id in the
-        // request, but the account that made the request does not have a
-        // Mailbox on the system. In that case, you must supply a Mailbox
-        // subelement under DistinguishedFolderId.
+        //! Indicates that you specified a distinguished folder id in the
+        //! request, but the account that made the request does not have a
+        //! Mailbox on the system. In that case, you must supply a Mailbox
+        //! subelement under DistinguishedFolderId.
         error_missing_email_address,
 
-        // This is really the same failure as ErrorMissingEmailAddress except
-        // that ErrorMissingEmailAddressForManagedFolder is returned from
-        // CreateManagedFolder.
+        //! This is really the same failure as ErrorMissingEmailAddress except
+        //! that ErrorMissingEmailAddressForManagedFolder is returned from
+        //! CreateManagedFolder.
         error_missing_email_address_for_managed_folder,
 
-        // Indicates that the attendee or recipient does not have the
-        // EmailAddress element set. You must set this element when making
-        // requests. The other two elements within EmailAddressType are optional
-        // (name and routing type).
+        //! Indicates that the attendee or recipient does not have the
+        //! EmailAddress element set. You must set this element when making
+        //! requests. The other two elements within EmailAddressType are optional
+        //! (name and routing type).
         error_missing_information_email_address,
 
-        // When creating a response object such as ForwardItem, you must supply
-        // a reference item id.
+        //! When creating a response object such as ForwardItem, you must supply
+        //! a reference item id.
         error_missing_information_reference_item_id,
 
-        // When creating an item attachment, you must include a child element
-        // indicating the item that you want to create. This response code is
-        // returned if you omit this element.
+        //! When creating an item attachment, you must include a child element
+        //! indicating the item that you want to create. This response code is
+        //! returned if you omit this element.
         error_missing_item_for_create_item_attachment,
 
-        // The policy ids property (Property Tag: 0x6732, String) for the folder
-        // in question is missing. You should consider this a corrupt folder.
+        //! The policy ids property (Property Tag: 0x6732, String) for the folder
+        //! in question is missing. You should consider this a corrupt folder.
         error_missing_managed_folder_id,
 
-        // Indicates you tried to send an item with no recipients. Note that if
-        // you call CreateItem with a message disposition that causes the
-        // message to be sent, you get a different response code
-        // (ErrorInvalidRecipients).
+        //! Indicates you tried to send an item with no recipients. Note that if
+        //! you call CreateItem with a message disposition that causes the
+        //! message to be sent, you get a different response code
+        //! (ErrorInvalidRecipients).
         error_missing_recipients,
 
-        // Indicates that the move or copy operation failed. A move occurs in
-        // CreateItem when you accept a meeting request that is in the Deleted
-        // Items folder. In addition, if you decline a meeting request, cancel a
-        // calendar item, or remove a meeting from your calendar, it gets moved
-        // to the deleted items folder.
+        //! Indicates that the move or copy operation failed. A move occurs in
+        //! CreateItem when you accept a meeting request that is in the Deleted
+        //! Items folder. In addition, if you decline a meeting request, cancel a
+        //! calendar item, or remove a meeting from your calendar, it gets moved
+        //! to the deleted items folder.
         error_move_copy_failed,
 
-        // You cannot move a distinguished folder.
+        //! You cannot move a distinguished folder.
         error_move_distinguished_folder,
 
-        // This is not actually an error. It should be categorized as a warning.
-        // This response code indicates that the ambiguous name that you
-        // specified matched more than one contact or distribution list.. This
-        // is also the only "error" response code that includes response
-        // data (the matched names).
+        //! This is not actually an error. It should be categorized as a warning.
+        //! This response code indicates that the ambiguous name that you
+        //! specified matched more than one contact or distribution list.. This
+        //! is also the only "error" response code that includes response
+        //! data (the matched names).
         error_name_resolution_multiple_results,
 
-        // Indicates that the effective caller does not have a Mailbox on the
-        // system. Name resolution considers both the Active Directory as well
-        // as the Store Mailbox.
+        //! Indicates that the effective caller does not have a Mailbox on the
+        //! system. Name resolution considers both the Active Directory as well
+        //! as the Store Mailbox.
         error_name_resolution_no_mailbox,
 
-        // The ambiguous name did not match any contacts in either the Active
-        // Directory or the Mailbox.
+        //! The ambiguous name did not match any contacts in either the Active
+        //! Directory or the Mailbox.
         error_name_resolution_no_results,
 
-        // There was no calendar folder for the Mailbox in question.
+        //! There was no calendar folder for the Mailbox in question.
         error_no_calendar,
 
-        // You can set the FolderClass only when creating a generic folder. For
-        // typed folders (i.e. CalendarFolder and TaskFolder, the folder class
-        // is implied. Note that if you try to set the folder class to a
-        // different folder type via UpdateFolder, you get
-        // ErrorObjectTypeChanged—so don't even try it (we knew you were
-        // going there...). Exchange Web Services should enable you to create a
-        // more specialized— but consistent—folder class when creating a
-        // strongly typed folder. To get around this issue, use a generic folder
-        // type but set the folder class to the value you need. Exchange Web
-        // Services then creates the correct strongly typed folder.
+        //! You can set the FolderClass only when creating a generic folder. For
+        //! typed folders (i.e. CalendarFolder and TaskFolder, the folder class
+        //! is implied. Note that if you try to set the folder class to a
+        //! different folder type via UpdateFolder, you get
+        //! ErrorObjectTypeChanged—so don't even try it (we knew you were
+        //! going there...). Exchange Web Services should enable you to create a
+        //! more specialized— but consistent—folder class when creating a
+        //! strongly typed folder. To get around this issue, use a generic folder
+        //! type but set the folder class to the value you need. Exchange Web
+        //! Services then creates the correct strongly typed folder.
         error_no_folder_class_override,
 
-        // Indicates that the caller does not have free/busy viewing rights on
-        // the calendar folder in question.
+        //! Indicates that the caller does not have free/busy viewing rights on
+        //! the calendar folder in question.
         error_no_free_busy_access,
 
-        // This response code is returned in two cases:
+        //! This response code is returned in two cases:
         error_non_existent_mailbox,
 
-        // For requests that take an SMTP address, the address must be the
-        // primary SMTP address representing the Mailbox. Non-primary SMTP
-        // addresses are not permitted. The response includes the correct SMTP
-        // address to use. Because Exchange Web Services returns the primary
-        // SMTP address, it makes you wonder why Exchange Web Services didn't
-        // just use the proxy address you passed in… Note that this
-        // requirement may be removed in a future release.
+        //! For requests that take an SMTP address, the address must be the
+        //! primary SMTP address representing the Mailbox. Non-primary SMTP
+        //! addresses are not permitted. The response includes the correct SMTP
+        //! address to use. Because Exchange Web Services returns the primary
+        //! SMTP address, it makes you wonder why Exchange Web Services didn't
+        //! just use the proxy address you passed in… Note that this
+        //! requirement may be removed in a future release.
         error_non_primary_smtp_address,
 
-        // Messaging Application Programming Interface (MAPI) properties in the
-        // custom range (0x8000 and greater) cannot be referenced by property
-        // tags. You must use PropertySetId or DistinguishedPropertySetId along
-        // with PropertyName or PropertyId.
+        //! Messaging Application Programming Interface (MAPI) properties in the
+        //! custom range (0x8000 and greater) cannot be referenced by property
+        //! tags. You must use PropertySetId or DistinguishedPropertySetId along
+        //! with PropertyName or PropertyId.
         error_no_property_tag_for_custom_properties,
 
-        // The operation could not complete due to insufficient memory.
+        //! The operation could not complete due to insufficient memory.
         error_not_enough_memory,
 
-        // For CreateItem, you cannot set the ItemClass so that it is
-        // inconsistent with the strongly typed item (i.e. Message or Contact).
-        // It must be consistent. For UpdateItem/Folder, you cannot change the
-        // item or folder class such that the type of the item/folder will
-        // change. You can change the item/folder class to a more derived
-        // instance of the same type (for example, IPM.Note to IPM.Note.Foo).
-        // Note that with CreateFolder, if you try to override the folder class
-        // so that it is different than the strongly typed folder element, you
-        // get an ErrorNoFolderClassOverride. Treat ErrorObjectTypeChanged and
-        // ErrorNoFolderClassOverride in the same manner.
+        //! For CreateItem, you cannot set the ItemClass so that it is
+        //! inconsistent with the strongly typed item (i.e. Message or Contact).
+        //! It must be consistent. For UpdateItem/Folder, you cannot change the
+        //! item or folder class such that the type of the item/folder will
+        //! change. You can change the item/folder class to a more derived
+        //! instance of the same type (for example, IPM.Note to IPM.Note.Foo).
+        //! Note that with CreateFolder, if you try to override the folder class
+        //! so that it is different than the strongly typed folder element, you
+        //! get an ErrorNoFolderClassOverride. Treat ErrorObjectTypeChanged and
+        //! ErrorNoFolderClassOverride in the same manner.
         error_object_type_changed,
 
-        // Indicates that the time allotment for a given occurrence overlaps
-        // with one of its neighbors.
+        //! Indicates that the time allotment for a given occurrence overlaps
+        //! with one of its neighbors.
         error_occurrence_crossing_boundary,
 
-        // Indicates that the time allotment for a given occurrence is too long,
-        // which causes the occurrence to overlap with its neighbor. This
-        // response code also occurs if the length in minutes of a given
-        // occurrence is larger than Int32.MaxValue.
+        //! Indicates that the time allotment for a given occurrence is too long,
+        //! which causes the occurrence to overlap with its neighbor. This
+        //! response code also occurs if the length in minutes of a given
+        //! occurrence is larger than Int32.MaxValue.
         error_occurrence_time_span_too_big,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_parent_folder_id_required,
 
-        // The parent folder id that you specified does not exist.
+        //! The parent folder id that you specified does not exist.
         error_parent_folder_not_found,
 
-        // You must change your password before you can access this Mailbox.
-        // This occurs when a new account has been created, and the
-        // administrator indicated that the user must change the password at
-        // first logon. You cannot change a password through Exchange Web
-        // Services. You must use a user application such as Outlook Web Access
-        // (OWA) to change your password.
+        //! You must change your password before you can access this Mailbox.
+        //! This occurs when a new account has been created, and the
+        //! administrator indicated that the user must change the password at
+        //! first logon. You cannot change a password through Exchange Web
+        //! Services. You must use a user application such as Outlook Web Access
+        //! (OWA) to change your password.
         error_password_change_required,
 
-        // The password associated with the calling account has expired.. You
-        // need to change your password. You cannot change a password through
-        // Exchange Web Services. You must use a user application such as
-        // Outlook Web Access to change your password.
+        //! The password associated with the calling account has expired.. You
+        //! need to change your password. You cannot change a password through
+        //! Exchange Web Services. You must use a user application such as
+        //! Outlook Web Access to change your password.
         error_password_expired,
 
-        // Update failed due to invalid property values. The response message
-        // includes the offending property paths.
+        //! Update failed due to invalid property values. The response message
+        //! includes the offending property paths.
         error_property_update,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_property_validation_failure,
 
-        // You will likely never encounter this response code. This response
-        // code indicates that the request that Exchange Web Services sent to
-        // another CAS when trying to fulfill a GetUserAvailability request was
-        // invalid. This response code likely indicates a configuration or
-        // rights error, or someone trying unsuccessfully to mimic an
-        // availability proxy request.
+        //! You will likely never encounter this response code. This response
+        //! code indicates that the request that Exchange Web Services sent to
+        //! another CAS when trying to fulfill a GetUserAvailability request was
+        //! invalid. This response code likely indicates a configuration or
+        //! rights error, or someone trying unsuccessfully to mimic an
+        //! availability proxy request.
         error_proxy_request_not_allowed,
 
-        // The recipient passed to GetUserAvailability is located on a legacy
-        // Exchange server (prior to Exchange Server 2007). As such, Exchange
-        // Web Services needed to contact the public folder server to retrieve
-        // free/busy information for that recipient. Unfortunately, this call
-        // failed, resulting in Exchange Web Services returning a response code
-        // of ErrorPublicFolderRequestProcessingFailed.
+        //! The recipient passed to GetUserAvailability is located on a legacy
+        //! Exchange server (prior to Exchange Server 2007). As such, Exchange
+        //! Web Services needed to contact the public folder server to retrieve
+        //! free/busy information for that recipient. Unfortunately, this call
+        //! failed, resulting in Exchange Web Services returning a response code
+        //! of ErrorPublicFolderRequestProcessingFailed.
         error_public_folder_request_processing_failed,
 
-        // The recipient in question is located on a legacy Exchange server
-        // (prior to Exchange -2007). As such, Exchange Web Services needed to
-        // contact the public folder server to retrieve free/busy information
-        // for that recipient. However, the organizational unit in question did
-        // not have a public folder server associated with it.
+        //! The recipient in question is located on a legacy Exchange server
+        //! (prior to Exchange -2007). As such, Exchange Web Services needed to
+        //! contact the public folder server to retrieve free/busy information
+        //! for that recipient. However, the organizational unit in question did
+        //! not have a public folder server associated with it.
         error_public_folder_server_not_found,
 
-        // Restrictions can contain a maximum of 255 filter expressions. If you
-        // try to bind to an existing search folder that exceeds this limit, you
-        // encounter this response code.
+        //! Restrictions can contain a maximum of 255 filter expressions. If you
+        //! try to bind to an existing search folder that exceeds this limit, you
+        //! encounter this response code.
         error_query_filter_too_long,
 
-        // The Mailbox quota has been exceeded.
+        //! The Mailbox quota has been exceeded.
         error_quota_exceeded,
 
-        // The process for reading events was aborted due to an internal
-        // failure. You should recreate the subscription based on a last known
-        // watermark.
+        //! The process for reading events was aborted due to an internal
+        //! failure. You should recreate the subscription based on a last known
+        //! watermark.
         error_read_events_failed,
 
-        // You cannot suppress a read receipt if the message sender did not
-        // request a read receipt on the message.
+        //! You cannot suppress a read receipt if the message sender did not
+        //! request a read receipt on the message.
         error_read_receipt_not_pending,
 
-        // The end date for the recurrence was out of range (it is limited to
-        // September 1, 4500).
+        //! The end date for the recurrence was out of range (it is limited to
+        //! September 1, 4500).
         error_recurrence_end_date_too_big,
 
-        // The recurrence has no occurrence instances in the specified range.
+        //! The recurrence has no occurrence instances in the specified range.
         error_recurrence_has_no_occurrence,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_request_aborted,
 
-        // During GetUserAvailability processing, the request was deemed larger
-        // than it should be. You should not encounter this response code.
+        //! During GetUserAvailability processing, the request was deemed larger
+        //! than it should be. You should not encounter this response code.
         error_request_stream_too_big,
 
-        // Indicates that one or more of the required properties is missing
-        // during a CreateAttachment call. The response XML indicates which
-        // property path was not set.
+        //! Indicates that one or more of the required properties is missing
+        //! during a CreateAttachment call. The response XML indicates which
+        //! property path was not set.
         error_required_property_missing,
 
-        // You will never encounter this response code. Just as a piece of
-        // trivia, the Exchange Web Services design team used this response code
-        // for debug builds to ensure that their responses were schema
-        // compliant. If Exchange Web Services expects you to send schema-
-        // compliant XML, then the least Exchange Web Services can do is be
-        // compliant in return.
+        //! You will never encounter this response code. Just as a piece of
+        //! trivia, the Exchange Web Services design team used this response code
+        //! for debug builds to ensure that their responses were schema
+        //! compliant. If Exchange Web Services expects you to send schema-
+        //! compliant XML, then the least Exchange Web Services can do is be
+        //! compliant in return.
         error_response_schema_validation,
 
-        // A restriction can have a maximum of 255 filter elements.
+        //! A restriction can have a maximum of 255 filter elements.
         error_restriction_too_long,
 
-        // Exchange Web Services cannot evaluate the restriction you supplied.
-        // The restriction might appear simple, but Exchange Web Services does
-        // not agree with you.
+        //! Exchange Web Services cannot evaluate the restriction you supplied.
+        //! The restriction might appear simple, but Exchange Web Services does
+        //! not agree with you.
         error_restriction_too_complex,
 
-        // The number of calendar entries for a given recipient exceeds the
-        // allowable limit (1000). Reduce the window and try again.
+        //! The number of calendar entries for a given recipient exceeds the
+        //! allowable limit (1000). Reduce the window and try again.
         error_result_set_too_big,
 
-        // Indicates that the folder you want to save the item to does not
-        // exist.
+        //! Indicates that the folder you want to save the item to does not
+        //! exist.
         error_saved_item_folder_not_found,
 
-        // Exchange Web Services validates all incoming requests against the
-        // schema files (types.xsd, messages.xsd). Any instance documents that
-        // are not compliant are rejected, and this response code is returned.
-        // Note that this response code is always returned within a SOAP fault.
+        //! Exchange Web Services validates all incoming requests against the
+        //! schema files (types.xsd, messages.xsd). Any instance documents that
+        //! are not compliant are rejected, and this response code is returned.
+        //! Note that this response code is always returned within a SOAP fault.
         error_schema_validation,
 
-        // Indicates that the search folder has been created, but the search
-        // criteria was never set on the folder. This condition occurs only when
-        // you access corrupt search folders that were created with another
-        // application programming interface (API) or client. Exchange Web
-        // Services does not enable you to create search folders with this
-        // condition To fix a search folder that has not been initialized, call
-        // UpdateFolder and set the SearchParameters to include the restriction
-        // that should be on the folder.
+        //! Indicates that the search folder has been created, but the search
+        //! criteria was never set on the folder. This condition occurs only when
+        //! you access corrupt search folders that were created with another
+        //! application programming interface (API) or client. Exchange Web
+        //! Services does not enable you to create search folders with this
+        //! condition To fix a search folder that has not been initialized, call
+        //! UpdateFolder and set the SearchParameters to include the restriction
+        //! that should be on the folder.
         error_search_folder_not_initialized,
 
-        // The caller does not have Send As rights for the account in question.
+        //! The caller does not have Send As rights for the account in question.
         error_send_as_denied,
 
-        // When you are the organizer and are deleting a calendar item, you must
-        // set the SendMeetingCancellations attribute on the DeleteItem request
-        // to indicate whether meeting cancellations will be sent to the meeting
-        // attendees. If you are using the proxy classes don't forget to set
-        // the SendMeetingCancellationsSpecified property to true.
+        //! When you are the organizer and are deleting a calendar item, you must
+        //! set the SendMeetingCancellations attribute on the DeleteItem request
+        //! to indicate whether meeting cancellations will be sent to the meeting
+        //! attendees. If you are using the proxy classes don't forget to set
+        //! the SendMeetingCancellationsSpecified property to true.
         error_send_meeting_cancellations_required,
 
-        // When you are the organizer and are updating a calendar item, you must
-        // set the SendMeetingInvitationsOrCancellations attribute on the
-        // UpdateItem request. If you are using the proxy classes don't forget
-        // to set the SendMeetingInvitationsOrCancellationsSpecified attribute
-        // to true.
+        //! When you are the organizer and are updating a calendar item, you must
+        //! set the SendMeetingInvitationsOrCancellations attribute on the
+        //! UpdateItem request. If you are using the proxy classes don't forget
+        //! to set the SendMeetingInvitationsOrCancellationsSpecified attribute
+        //! to true.
         error_send_meeting_invitations_or_cancellations_required,
 
-        // When creating a calendar item, you must set the
-        // SendMeetingInvitiations attribute on the CreateItem request. If you
-        // are using the proxy classes don't forget to set the
-        // SendMeetingInvitationsSpecified attribute to true.
+        //! When creating a calendar item, you must set the
+        //! SendMeetingInvitiations attribute on the CreateItem request. If you
+        //! are using the proxy classes don't forget to set the
+        //! SendMeetingInvitationsSpecified attribute to true.
         error_send_meeting_invitations_required,
 
-        // After the organizer sends a meeting request, that request cannot be
-        // updated. If the organizer wants to modify the meeting, you need to
-        // modify the calendar item, not the meeting request.
+        //! After the organizer sends a meeting request, that request cannot be
+        //! updated. If the organizer wants to modify the meeting, you need to
+        //! modify the calendar item, not the meeting request.
         error_sent_meeting_request_update,
 
-        // After the task initiator sends a task request, that request cannot be
-        // updated. However, you should not encounter this response code because
-        // Exchange Web Services does not support task assignment at this point.
+        //! After the task initiator sends a task request, that request cannot be
+        //! updated. However, you should not encounter this response code because
+        //! Exchange Web Services does not support task assignment at this point.
         error_sent_task_request_update,
 
-        // The server is busy, potentially due to virus scan operations. It is
-        // unlikely that you will encounter this response code.
+        //! The server is busy, potentially due to virus scan operations. It is
+        //! unlikely that you will encounter this response code.
         error_server_busy,
 
-        // You must supply an up-to-date change key when calling the applicable
-        // methods. You either did not supply a change key, or the change key
-        // you supplied is stale. Call GetItem to retrieve an updated change key
-        // and then try your operation again.
+        //! You must supply an up-to-date change key when calling the applicable
+        //! methods. You either did not supply a change key, or the change key
+        //! you supplied is stale. Call GetItem to retrieve an updated change key
+        //! and then try your operation again.
         error_stale_object,
 
-        // You tried to access a subscription by using an account that did not
-        // create that subscription. Each subscription is tied to its creator.
-        // It does not matter which rights one account has on the Mailbox in
-        // question. Jane's subscriptions can only be accessed by Jane.
+        //! You tried to access a subscription by using an account that did not
+        //! create that subscription. Each subscription is tied to its creator.
+        //! It does not matter which rights one account has on the Mailbox in
+        //! question. Jane's subscriptions can only be accessed by Jane.
         error_subscription_access_denied,
 
-        // You can cannot create a subscription if you are not the owner or do
-        // not have owner access to the Mailbox in question.
+        //! You can cannot create a subscription if you are not the owner or do
+        //! not have owner access to the Mailbox in question.
         error_subscription_delegate_access_not_supported,
 
-        // The specified subscription does not exist which could mean that the
-        // subscription expired, the Exchange Web Services process was
-        // restarted, or you passed in an invalid subscription. If you encounter
-        // this response code, recreate the subscription by using the last
-        // watermark that you have.
+        //! The specified subscription does not exist which could mean that the
+        //! subscription expired, the Exchange Web Services process was
+        //! restarted, or you passed in an invalid subscription. If you encounter
+        //! this response code, recreate the subscription by using the last
+        //! watermark that you have.
         error_subscription_not_found,
 
-        // Indicates that the folder id you specified in your SyncFolderItems
-        // request does not exist.
+        //! Indicates that the folder id you specified in your SyncFolderItems
+        //! request does not exist.
         error_sync_folder_not_found,
 
-        // The time window specified is larger than the allowable limit (42 by
-        // default).
+        //! The time window specified is larger than the allowable limit (42 by
+        //! default).
         error_time_interval_too_big,
 
-        // The specified destination folder does not exist
+        //! The specified destination folder does not exist
         error_to_folder_not_found,
 
-        // The calling account does not have the ms-Exch-EPI-TokenSerialization
-        // right on the CAS that is being called. Of course, because you are not
-        // using token serialization in your application, you should never
-        // encounter this response code. Right?
+        //! The calling account does not have the ms-Exch-EPI-TokenSerialization
+        //! right on the CAS that is being called. Of course, because you are not
+        //! using token serialization in your application, you should never
+        //! encounter this response code. Right?
         error_token_serialization_denied,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_unable_to_get_user_oof_settings,
 
-        // You tried to set the Culture property to a value that is not parsable
-        // by the System.Globalization.CultureInfo class.
+        //! You tried to set the Culture property to a value that is not parsable
+        //! by the System.Globalization.CultureInfo class.
         error_unsupported_culture,
 
-        // MAPI property types Error, Null, Object and ObjectArray are
-        // unsupported.
+        //! MAPI property types Error, Null, Object and ObjectArray are
+        //! unsupported.
         error_unsupported_mapi_property_type,
 
-        // You can retrieve or set MIME content only for a post, message, or
-        // calendar item.
+        //! You can retrieve or set MIME content only for a post, message, or
+        //! calendar item.
         error_unsupported_mime_conversion,
 
-        // Indicates that the property path cannot be used within a restriction.
+        //! Indicates that the property path cannot be used within a restriction.
         error_unsupported_path_for_query,
 
-        // Indicates that the property path cannot be use for sorting or
-        // grouping operations.
+        //! Indicates that the property path cannot be use for sorting or
+        //! grouping operations.
         error_unsupported_path_for_sort_group,
 
-        // You should never encounter this response code.
+        //! You should never encounter this response code.
         error_unsupported_property_definition,
 
-        // Exchange Web Services cannot render the existing search folder
-        // restriction. This response code does not mean that anything is wrong
-        // with the search folder restriction. You can still call FindItem on
-        // the search folder to retrieve the items in the search folder; you
-        // just can't get the actual restriction clause.
+        //! Exchange Web Services cannot render the existing search folder
+        //! restriction. This response code does not mean that anything is wrong
+        //! with the search folder restriction. You can still call FindItem on
+        //! the search folder to retrieve the items in the search folder; you
+        //! just can't get the actual restriction clause.
         error_unsupported_query_filter,
 
-        // You supplied a recurrence pattern that is not supported for tasks.
+        //! You supplied a recurrence pattern that is not supported for tasks.
         error_unsupported_recurrence,
 
-        // You should never encounter this response code.
+        //! You should never encounter this response code.
         error_unsupported_sub_filter,
 
-        // You should never encounter this response code. It indicates that
-        // Exchange Web Services found a property type in the Store that it
-        // cannot generate XML for.
+        //! You should never encounter this response code. It indicates that
+        //! Exchange Web Services found a property type in the Store that it
+        //! cannot generate XML for.
         error_unsupported_type_for_conversion,
 
-        // The single property path listed in a change description must match
-        // the single property that is being set within the actual Item/Folder
-        // element.
+        //! The single property path listed in a change description must match
+        //! the single property that is being set within the actual Item/Folder
+        //! element.
         error_update_property_mismatch,
 
-        // The Exchange Store detected a virus in the message you are trying to
-        // deal with.
+        //! The Exchange Store detected a virus in the message you are trying to
+        //! deal with.
         error_virus_detected,
 
-        // The Exchange Store detected a virus in the message and deleted it.
+        //! The Exchange Store detected a virus in the message and deleted it.
         error_virus_message_deleted,
 
-        // You will never encounter this response code. This was left over from
-        // the development cycle before the Exchange Web Services team had
-        // implemented voice mail folder support. Yes, there was a time when all
-        // of this was not implemented.
+        //! You will never encounter this response code. This was left over from
+        //! the development cycle before the Exchange Web Services team had
+        //! implemented voice mail folder support. Yes, there was a time when all
+        //! of this was not implemented.
         error_voice_mail_not_implemented,
 
-        // You will never encounter this response code. It originally meant that
-        // you intended to send your Web request from Arizona, but it actually
-        // came from Minnesota instead.*
+        //! You will never encounter this response code. It originally meant that
+        //! you intended to send your Web request from Arizona, but it actually
+        //! came from Minnesota instead.*
         error_web_request_in_invalid_state,
 
-        // Indicates that there was a failure when Exchange Web Services was
-        // talking with unmanaged code. Of course, you cannot see the inner
-        // exception because this is a SOAP response.
+        //! Indicates that there was a failure when Exchange Web Services was
+        //! talking with unmanaged code. Of course, you cannot see the inner
+        //! exception because this is a SOAP response.
         error_win32_interop_error,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_working_hours_save_failed,
 
-        // You will never encounter this response code.
+        //! You will never encounter this response code.
         error_working_hours_xml_malformed
     };
 
-    // TODO: move to internal namespace
-    inline response_code str_to_response_code(const std::string& str)
+    namespace internal
     {
-        if (str == "NoError")
-        {
-            return response_code::no_error;
-        }
-        if (str == "ErrorAccessDenied")
-        {
-            return response_code::error_access_denied;
-        }
-        if (str == "ErrorAccountDisabled")
-        {
-            return response_code::error_account_disabled;
-        }
-        if (str == "ErrorAddressSpaceNotFound")
-        {
-            return response_code::error_address_space_not_found;
-        }
-        if (str == "ErrorADOperation")
-        {
-            return response_code::error_ad_operation;
-        }
-        if (str == "ErrorADSessionFilter")
-        {
-            return response_code::error_ad_session_filter;
-        }
-        if (str == "ErrorADUnavailable")
-        {
-            return response_code::error_ad_unavailable;
-        }
-        if (str == "ErrorAutoDiscoverFailed")
-        {
-            return response_code::error_auto_discover_failed;
-        }
-        if (str == "ErrorAffectedTaskOccurrencesRequired")
-        {
-            return response_code::error_affected_task_occurrences_required;
-        }
-        if (str == "ErrorAttachmentSizeLimitExceeded")
-        {
-            return response_code::error_attachment_size_limit_exceeded;
-        }
-        if (str == "ErrorAvailabilityConfigNotFound")
-        {
-            return response_code::error_availability_config_not_found;
-        }
-        if (str == "ErrorBatchProcessingStopped")
-        {
-            return response_code::error_batch_processing_stopped;
-        }
-        if (str == "ErrorCalendarCannotMoveOrCopyOccurrence")
-        {
-            return response_code::error_calendar_cannot_move_or_copy_occurrence;
-        }
-        if (str == "ErrorCalendarCannotUpdateDeletedItem")
-        {
-            return response_code::error_calendar_cannot_update_deleted_item;
-        }
-        if (str == "ErrorCalendarCannotUseIdForOccurrenceId")
-        {
-            return response_code::error_calendar_cannot_use_id_for_occurrence_id;
-        }
-        if (str == "ErrorCalendarCannotUseIdForRecurringMasterId")
-        {
-            return response_code::error_calendar_cannot_use_id_for_recurring_master_id;
-        }
-        if (str == "ErrorCalendarDurationIsTooLong")
-        {
-            return response_code::error_calendar_duration_is_too_long;
-        }
-        if (str == "ErrorCalendarEndDateIsEarlierThanStartDate")
-        {
-            return response_code::error_calendar_end_date_is_earlier_than_start_date;
-        }
-        if (str == "ErrorCalendarFolderIsInvalidForCalendarView")
-        {
-            return response_code::error_calendar_folder_is_invalid_for_calendar_view;
-        }
-        if (str == "ErrorCalendarInvalidAttributeValue")
-        {
-            return response_code::error_calendar_invalid_attribute_value;
-        }
-        if (str == "ErrorCalendarInvalidDayForTimeChangePattern")
-        {
-            return response_code::error_calendar_invalid_day_for_time_change_pattern;
-        }
-        if (str == "ErrorCalendarInvalidDayForWeeklyRecurrence")
-        {
-            return response_code::error_calendar_invalid_day_for_weekly_recurrence;
-        }
-        if (str == "ErrorCalendarInvalidPropertyState")
-        {
-            return response_code::error_calendar_invalid_property_state;
-        }
-        if (str == "ErrorCalendarInvalidPropertyValue")
-        {
-            return response_code::error_calendar_invalid_property_value;
-        }
-        if (str == "ErrorCalendarInvalidRecurrence")
-        {
-            return response_code::error_calendar_invalid_recurrence;
-        }
-        if (str == "ErrorCalendarInvalidTimeZone")
-        {
-            return response_code::error_calendar_invalid_time_zone;
-        }
-        if (str == "ErrorCalendarIsDelegatedForAccept")
-        {
-            return response_code::error_calendar_is_delegated_for_accept;
-        }
-        if (str == "ErrorCalendarIsDelegatedForDecline")
-        {
-            return response_code::error_calendar_is_delegated_for_decline;
-        }
-        if (str == "ErrorCalendarIsDelegatedForRemove")
-        {
-            return response_code::error_calendar_is_delegated_for_remove;
-        }
-        if (str == "ErrorCalendarIsDelegatedForTentative")
-        {
-            return response_code::error_calendar_is_delegated_for_tentative;
-        }
-        if (str == "ErrorCalendarIsNotOrganizer")
-        {
-            return response_code::error_calendar_is_not_organizer;
-        }
-        if (str == "ErrorCalendarIsOrganizerForAccept")
-        {
-            return response_code::error_calendar_is_organizer_for_accept;
-        }
-        if (str == "ErrorCalendarIsOrganizerForDecline")
-        {
-            return response_code::error_calendar_is_organizer_for_decline;
-        }
-        if (str == "ErrorCalendarIsOrganizerForRemove")
-        {
-            return response_code::error_calendar_is_organizer_for_remove;
-        }
-        if (str == "ErrorCalendarIsOrganizerForTentative")
-        {
-            return response_code::error_calendar_is_organizer_for_tentative;
-        }
-        if (str == "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange")
-        {
-            return response_code::error_calendar_occurrence_index_is_out_of_recurrence_range;
-        }
-        if (str == "ErrorCalendarOccurrenceIsDeletedFromRecurrence")
-        {
-            return response_code::error_calendar_occurrence_is_deleted_from_recurrence;
-        }
-        if (str == "ErrorCalendarOutOfRange")
-        {
-            return response_code::error_calendar_out_of_range;
-        }
-        if (str == "ErrorCalendarViewRangeTooBig")
-        {
-            return response_code::error_calendar_view_range_too_big;
-        }
-        if (str == "ErrorCannotCreateCalendarItemInNonCalendarFolder")
-        {
-            return response_code::error_cannot_create_calendar_item_in_non_calendar_folder;
-        }
-        if (str == "ErrorCannotCreateContactInNonContactsFolder")
-        {
-            return response_code::error_cannot_create_contact_in_non_contacts_folder;
-        }
-        if (str == "ErrorCannotCreateTaskInNonTaskFolder")
-        {
-            return response_code::error_cannot_create_task_in_non_task_folder;
-        }
-        if (str == "ErrorCannotDeleteObject")
-        {
-            return response_code::error_cannot_delete_object;
-        }
-        if (str == "ErrorCannotDeleteTaskOccurrence")
-        {
-            return response_code::error_cannot_delete_task_occurrence;
-        }
-        if (str == "ErrorCannotOpenFileAttachment")
-        {
-            return response_code::error_cannot_open_file_attachment;
-        }
-        if (str == "ErrorCannotUseFolderIdForItemId")
-        {
-            return response_code::error_cannot_use_folder_id_for_item_id;
-        }
-        if (str == "ErrorCannotUserItemIdForFolderId")
-        {
-            return response_code::error_cannot_user_item_id_for_folder_id;
-        }
-        if (str == "ErrorChangeKeyRequired")
-        {
-            return response_code::error_change_key_required;
-        }
-        if (str == "ErrorChangeKeyRequiredForWriteOperations")
-        {
-            return response_code::error_change_key_required_for_write_operations;
-        }
-        if (str == "ErrorConnectionFailed")
-        {
-            return response_code::error_connection_failed;
-        }
-        if (str == "ErrorContentConversionFailed")
-        {
-            return response_code::error_content_conversion_failed;
-        }
-        if (str == "ErrorCorruptData")
-        {
-            return response_code::error_corrupt_data;
-        }
-        if (str == "ErrorCreateItemAccessDenied")
-        {
-            return response_code::error_create_item_access_denied;
-        }
-        if (str == "ErrorCreateManagedFolderPartialCompletion")
-        {
-            return response_code::error_create_managed_folder_partial_completion;
-        }
-        if (str == "ErrorCreateSubfolderAccessDenied")
-        {
-            return response_code::error_create_subfolder_access_denied;
-        }
-        if (str == "ErrorCrossMailboxMoveCopy")
-        {
-            return response_code::error_cross_mailbox_move_copy;
-        }
-        if (str == "ErrorDataSizeLimitExceeded")
-        {
-            return response_code::error_data_size_limit_exceeded;
-        }
-        if (str == "ErrorDataSourceOperation")
-        {
-            return response_code::error_data_source_operation;
-        }
-        if (str == "ErrorDeleteDistinguishedFolder")
-        {
-            return response_code::error_delete_distinguished_folder;
-        }
-        if (str == "ErrorDeleteItemsFailed")
-        {
-            return response_code::error_delete_items_failed;
-        }
-        if (str == "ErrorDuplicateInputFolderNames")
-        {
-            return response_code::error_duplicate_input_folder_names;
-        }
-        if (str == "ErrorEmailAddressMismatch")
-        {
-            return response_code::error_email_address_mismatch;
-        }
-        if (str == "ErrorEventNotFound")
-        {
-            return response_code::error_event_not_found;
-        }
-        if (str == "ErrorExpiredSubscription")
-        {
-            return response_code::error_expired_subscription;
-        }
-        if (str == "ErrorFolderCorrupt")
-        {
-            return response_code::error_folder_corrupt;
-        }
-        if (str == "ErrorFolderNotFound")
-        {
-            return response_code::error_folder_not_found;
-        }
-        if (str == "ErrorFolderPropertyRequestFailed")
-        {
-            return response_code::error_folder_property_request_failed;
-        }
-        if (str == "ErrorFolderSave")
-        {
-            return response_code::error_folder_save;
-        }
-        if (str == "ErrorFolderSaveFailed")
-        {
-            return response_code::error_folder_save_failed;
-        }
-        if (str == "ErrorFolderSavePropertyError")
-        {
-            return response_code::error_folder_save_property_error;
-        }
-        if (str == "ErrorFolderExists")
-        {
-            return response_code::error_folder_exists;
-        }
-        if (str == "ErrorFreeBusyGenerationFailed")
-        {
-            return response_code::error_free_busy_generation_failed;
-        }
-        if (str == "ErrorGetServerSecurityDescriptorFailed")
-        {
-            return response_code::error_get_server_security_descriptor_failed;
-        }
-        if (str == "ErrorImpersonateUserDenied")
-        {
-            return response_code::error_impersonate_user_denied;
-        }
-        if (str == "ErrorImpersonationDenied")
-        {
-            return response_code::error_impersonation_denied;
-        }
-        if (str == "ErrorImpersonationFailed")
-        {
-            return response_code::error_impersonation_failed;
-        }
-        if (str == "ErrorIncorrectUpdatePropertyCount")
-        {
-            return response_code::error_incorrect_update_property_count;
-        }
-        if (str == "ErrorIndividualMailboxLimitReached")
-        {
-            return response_code::error_individual_mailbox_limit_reached;
-        }
-        if (str == "ErrorInsufficientResources")
-        {
-            return response_code::error_insufficient_resources;
-        }
-        if (str == "ErrorInternalServerError")
-        {
-            return response_code::error_internal_server_error;
-        }
-        if (str == "ErrorInternalServerTransientError")
-        {
-            return response_code::error_internal_server_transient_error;
-        }
-        if (str == "ErrorInvalidAccessLevel")
-        {
-            return response_code::error_invalid_access_level;
-        }
-        if (str == "ErrorInvalidAttachmentId")
-        {
-            return response_code::error_invalid_attachment_id;
-        }
-        if (str == "ErrorInvalidAttachmentSubfilter")
-        {
-            return response_code::error_invalid_attachment_subfilter;
-        }
-        if (str == "ErrorInvalidAttachmentSubfilterTextFilter")
-        {
-            return response_code::error_invalid_attachment_subfilter_text_filter;
-        }
-        if (str == "ErrorInvalidAuthorizationContext")
-        {
-            return response_code::error_invalid_authorization_context;
-        }
-        if (str == "ErrorInvalidChangeKey")
-        {
-            return response_code::error_invalid_change_key;
-        }
-        if (str == "ErrorInvalidClientSecurityContext")
-        {
-            return response_code::error_invalid_client_security_context;
-        }
-        if (str == "ErrorInvalidCompleteDate")
-        {
-            return response_code::error_invalid_complete_date;
-        }
-        if (str == "ErrorInvalidCrossForestCredentials")
-        {
-            return response_code::error_invalid_cross_forest_credentials;
-        }
-        if (str == "ErrorInvalidExchangeImpersonationHeaderData")
-        {
-            return response_code::error_invalid_exchange_impersonation_header_data;
-        }
-        if (str == "ErrorInvalidExcludesRestriction")
-        {
-            return response_code::error_invalid_excludes_restriction;
-        }
-        if (str == "ErrorInvalidExpressionTypeForSubFilter")
-        {
-            return response_code::error_invalid_expression_type_for_sub_filter;
-        }
-        if (str == "ErrorInvalidExtendedProperty")
-        {
-            return response_code::error_invalid_extended_property;
-        }
-        if (str == "ErrorInvalidExtendedPropertyValue")
-        {
-            return response_code::error_invalid_extended_property_value;
-        }
-        if (str == "ErrorInvalidFolderId")
-        {
-            return response_code::error_invalid_folder_id;
-        }
-        if (str == "ErrorInvalidFractionalPagingParameters")
-        {
-            return response_code::error_invalid_fractional_paging_parameters;
-        }
-        if (str == "ErrorInvalidFreeBusyViewType")
-        {
-            return response_code::error_invalid_free_busy_view_type;
-        }
-        if (str == "ErrorInvalidId")
-        {
-            return response_code::error_invalid_id;
-        }
-        if (str == "ErrorInvalidIdEmpty")
-        {
-            return response_code::error_invalid_id_empty;
-        }
-        if (str == "ErrorInvalidIdMalformed")
-        {
-            return response_code::error_invalid_id_malformed;
-        }
-        if (str == "ErrorInvalidIdMonikerTooLong")
-        {
-            return response_code::error_invalid_id_moniker_too_long;
-        }
-        if (str == "ErrorInvalidIdNotAnItemAttachmentId")
-        {
-            return response_code::error_invalid_id_not_an_item_attachment_id;
-        }
-        if (str == "ErrorInvalidIdReturnedByResolveNames")
-        {
-            return response_code::error_invalid_id_returned_by_resolve_names;
-        }
-        if (str == "ErrorInvalidIdStoreObjectIdTooLong")
-        {
-            return response_code::error_invalid_id_store_object_id_too_long;
-        }
-        if (str == "ErrorInvalidIdTooManyAttachmentLevels")
-        {
-            return response_code::error_invalid_id_too_many_attachment_levels;
-        }
-        if (str == "ErrorInvalidIdXml")
-        {
-            return response_code::error_invalid_id_xml;
-        }
-        if (str == "ErrorInvalidIndexedPagingParameters")
-        {
-            return response_code::error_invalid_indexed_paging_parameters;
-        }
-        if (str == "ErrorInvalidInternetHeaderChildNodes")
-        {
-            return response_code::error_invalid_internet_header_child_nodes;
-        }
-        if (str == "ErrorInvalidItemForOperationCreateItemAttachment")
-        {
-            return response_code::error_invalid_item_for_operation_create_item_attachment;
-        }
-        if (str == "ErrorInvalidItemForOperationCreateItem")
-        {
-            return response_code::error_invalid_item_for_operation_create_item;
-        }
-        if (str == "ErrorInvalidItemForOperationAcceptItem")
-        {
-            return response_code::error_invalid_item_for_operation_accept_item;
-        }
-        if (str == "ErrorInvalidItemForOperationCancelItem")
-        {
-            return response_code::error_invalid_item_for_operation_cancel_item;
-        }
-        if (str == "ErrorInvalidItemForOperationDeclineItem")
-        {
-            return response_code::error_invalid_item_for_operation_decline_item;
-        }
-        if (str == "ErrorInvalidItemForOperationExpandDL")
-        {
-            return response_code::error_invalid_item_for_operation_expand_dl;
-        }
-        if (str == "ErrorInvalidItemForOperationRemoveItem")
-        {
-            return response_code::error_invalid_item_for_operation_remove_item;
-        }
-        if (str == "ErrorInvalidItemForOperationSendItem")
-        {
-            return response_code::error_invalid_item_for_operation_send_item;
-        }
-        if (str == "ErrorInvalidItemForOperationTentative")
-        {
-            return response_code::error_invalid_item_for_operation_tentative;
-        }
-        if (str == "ErrorInvalidManagedFolderProperty")
-        {
-            return response_code::error_invalid_managed_folder_property;
-        }
-        if (str == "ErrorInvalidManagedFolderQuota")
-        {
-            return response_code::error_invalid_managed_folder_quota;
-        }
-        if (str == "ErrorInvalidManagedFolderSize")
-        {
-            return response_code::error_invalid_managed_folder_size;
-        }
-        if (str == "ErrorInvalidMergedFreeBusyInterval")
-        {
-            return response_code::error_invalid_merged_free_busy_interval;
-        }
-        if (str == "ErrorInvalidNameForNameResolution")
-        {
-            return response_code::error_invalid_name_for_name_resolution;
-        }
-        if (str == "ErrorInvalidNetworkServiceContext")
-        {
-            return response_code::error_invalid_network_service_context;
-        }
-        if (str == "ErrorInvalidOofParameter")
-        {
-            return response_code::error_invalid_oof_parameter;
-        }
-        if (str == "ErrorInvalidPagingMaxRows")
-        {
-            return response_code::error_invalid_paging_max_rows;
-        }
-        if (str == "ErrorInvalidParentFolder")
-        {
-            return response_code::error_invalid_parent_folder;
-        }
-        if (str == "ErrorInvalidPercentCompleteValue")
-        {
-            return response_code::error_invalid_percent_complete_value;
-        }
-        if (str == "ErrorInvalidPropertyAppend")
-        {
-            return response_code::error_invalid_property_append;
-        }
-        if (str == "ErrorInvalidPropertyDelete")
-        {
-            return response_code::error_invalid_property_delete;
-        }
-        if (str == "ErrorInvalidPropertyForExists")
-        {
-            return response_code::error_invalid_property_for_exists;
-        }
-        if (str == "ErrorInvalidPropertyForOperation")
-        {
-            return response_code::error_invalid_property_for_operation;
-        }
-        if (str == "ErrorInvalidPropertyRequest")
-        {
-            return response_code::error_invalid_property_request;
-        }
-        if (str == "ErrorInvalidPropertySet")
-        {
-            return response_code::error_invalid_property_set;
-        }
-        if (str == "ErrorInvalidPropertyUpdateSentMessage")
-        {
-            return response_code::error_invalid_property_update_sent_message;
-        }
-        if (str == "ErrorInvalidPullSubscriptionId")
-        {
-            return response_code::error_invalid_pull_subscription_id;
-        }
-        if (str == "ErrorInvalidPushSubscriptionUrl")
-        {
-            return response_code::error_invalid_push_subscription_url;
-        }
-        if (str == "ErrorInvalidRecipients")
-        {
-            return response_code::error_invalid_recipients;
-        }
-        if (str == "ErrorInvalidRecipientSubfilter")
-        {
-            return response_code::error_invalid_recipient_subfilter;
-        }
-        if (str == "ErrorInvalidRecipientSubfilterComparison")
-        {
-            return response_code::error_invalid_recipient_subfilter_comparison;
-        }
-        if (str == "ErrorInvalidRecipientSubfilterOrder")
-        {
-            return response_code::error_invalid_recipient_subfilter_order;
-        }
-        if (str == "ErrorInvalidRecipientSubfilterTextFilter")
-        {
-            return response_code::error_invalid_recipient_subfilter_text_filter;
-        }
-        if (str == "ErrorInvalidReferenceItem")
-        {
-            return response_code::error_invalid_reference_item;
-        }
-        if (str == "ErrorInvalidRequest")
-        {
-            return response_code::error_invalid_request;
-        }
-        if (str == "ErrorInvalidRestriction")
-        {
-            return response_code::error_invalid_restriction;
-        }
-        if (str == "ErrorInvalidRoutingType")
-        {
-            return response_code::error_invalid_routing_type;
-        }
-        if (str == "ErrorInvalidScheduledOofDuration")
-        {
-            return response_code::error_invalid_scheduled_oof_duration;
-        }
-        if (str == "ErrorInvalidSecurityDescriptor")
-        {
-            return response_code::error_invalid_security_descriptor;
-        }
-        if (str == "ErrorInvalidSendItemSaveSettings")
-        {
-            return response_code::error_invalid_send_item_save_settings;
-        }
-        if (str == "ErrorInvalidSerializedAccessToken")
-        {
-            return response_code::error_invalid_serialized_access_token;
-        }
-        if (str == "ErrorInvalidSid")
-        {
-            return response_code::error_invalid_sid;
-        }
-        if (str == "ErrorInvalidSmtpAddress")
-        {
-            return response_code::error_invalid_smtp_address;
-        }
-        if (str == "ErrorInvalidSubfilterType")
-        {
-            return response_code::error_invalid_subfilter_type;
-        }
-        if (str == "ErrorInvalidSubfilterTypeNotAttendeeType")
-        {
-            return response_code::error_invalid_subfilter_type_not_attendee_type;
-        }
-        if (str == "ErrorInvalidSubfilterTypeNotRecipientType")
-        {
-            return response_code::error_invalid_subfilter_type_not_recipient_type;
-        }
-        if (str == "ErrorInvalidSubscription")
-        {
-            return response_code::error_invalid_subscription;
-        }
-        if (str == "ErrorInvalidSyncStateData")
-        {
-            return response_code::error_invalid_sync_state_data;
-        }
-        if (str == "ErrorInvalidTimeInterval")
-        {
-            return response_code::error_invalid_time_interval;
-        }
-        if (str == "ErrorInvalidUserOofSettings")
-        {
-            return response_code::error_invalid_user_oof_settings;
-        }
-        if (str == "ErrorInvalidUserPrincipalName")
-        {
-            return response_code::error_invalid_user_principal_name;
-        }
-        if (str == "ErrorInvalidUserSid")
-        {
-            return response_code::error_invalid_user_sid;
-        }
-        if (str == "ErrorInvalidUserSidMissingUPN")
-        {
-            return response_code::error_invalid_user_sid_missing_upn;
-        }
-        if (str == "ErrorInvalidValueForProperty")
-        {
-            return response_code::error_invalid_value_for_property;
-        }
-        if (str == "ErrorInvalidWatermark")
-        {
-            return response_code::error_invalid_watermark;
-        }
-        if (str == "ErrorIrresolvableConflict")
-        {
-            return response_code::error_irresolvable_conflict;
-        }
-        if (str == "ErrorItemCorrupt")
-        {
-            return response_code::error_item_corrupt;
-        }
-        if (str == "ErrorItemNotFound")
-        {
-            return response_code::error_item_not_found;
-        }
-        if (str == "ErrorItemPropertyRequestFailed")
-        {
-            return response_code::error_item_property_request_failed;
-        }
-        if (str == "ErrorItemSave")
-        {
-            return response_code::error_item_save;
-        }
-        if (str == "ErrorItemSavePropertyError")
-        {
-            return response_code::error_item_save_property_error;
-        }
-        if (str == "ErrorLegacyMailboxFreeBusyViewTypeNotMerged")
-        {
-            return response_code::error_legacy_mailbox_free_busy_view_type_not_merged;
-        }
-        if (str == "ErrorLocalServerObjectNotFound")
-        {
-            return response_code::error_local_server_object_not_found;
-        }
-        if (str == "ErrorLogonAsNetworkServiceFailed")
-        {
-            return response_code::error_logon_as_network_service_failed;
-        }
-        if (str == "ErrorMailboxConfiguration")
-        {
-            return response_code::error_mailbox_configuration;
-        }
-        if (str == "ErrorMailboxDataArrayEmpty")
-        {
-            return response_code::error_mailbox_data_array_empty;
-        }
-        if (str == "ErrorMailboxDataArrayTooBig")
-        {
-            return response_code::error_mailbox_data_array_too_big;
-        }
-        if (str == "ErrorMailboxLogonFailed")
-        {
-            return response_code::error_mailbox_logon_failed;
-        }
-        if (str == "ErrorMailboxMoveInProgress")
-        {
-            return response_code::error_mailbox_move_in_progress;
-        }
-        if (str == "ErrorMailboxStoreUnavailable")
-        {
-            return response_code::error_mailbox_store_unavailable;
-        }
-        if (str == "ErrorMailRecipientNotFound")
-        {
-            return response_code::error_mail_recipient_not_found;
-        }
-        if (str == "ErrorManagedFolderAlreadyExists")
-        {
-            return response_code::error_managed_folder_already_exists;
-        }
-        if (str == "ErrorManagedFolderNotFound")
-        {
-            return response_code::error_managed_folder_not_found;
-        }
-        if (str == "ErrorManagedFoldersRootFailure")
-        {
-            return response_code::error_managed_folders_root_failure;
-        }
-        if (str == "ErrorMeetingSuggestionGenerationFailed")
-        {
-            return response_code::error_meeting_suggestion_generation_failed;
-        }
-        if (str == "ErrorMessageDispositionRequired")
-        {
-            return response_code::error_message_disposition_required;
-        }
-        if (str == "ErrorMessageSizeExceeded")
-        {
-            return response_code::error_message_size_exceeded;
-        }
-        if (str == "ErrorMimeContentConversionFailed")
-        {
-            return response_code::error_mime_content_conversion_failed;
-        }
-        if (str == "ErrorMimeContentInvalid")
-        {
-            return response_code::error_mime_content_invalid;
-        }
-        if (str == "ErrorMimeContentInvalidBase64String")
-        {
-            return response_code::error_mime_content_invalid_base64_string;
-        }
-        if (str == "ErrorMissingArgument")
-        {
-            return response_code::error_missing_argument;
-        }
-        if (str == "ErrorMissingEmailAddress")
-        {
-            return response_code::error_missing_email_address;
-        }
-        if (str == "ErrorMissingEmailAddressForManagedFolder")
-        {
-            return response_code::error_missing_email_address_for_managed_folder;
-        }
-        if (str == "ErrorMissingInformationEmailAddress")
-        {
-            return response_code::error_missing_information_email_address;
-        }
-        if (str == "ErrorMissingInformationReferenceItemId")
-        {
-            return response_code::error_missing_information_reference_item_id;
-        }
-        if (str == "ErrorMissingItemForCreateItemAttachment")
-        {
-            return response_code::error_missing_item_for_create_item_attachment;
-        }
-        if (str == "ErrorMissingManagedFolderId")
-        {
-            return response_code::error_missing_managed_folder_id;
-        }
-        if (str == "ErrorMissingRecipients")
-        {
-            return response_code::error_missing_recipients;
-        }
-        if (str == "ErrorMoveCopyFailed")
-        {
-            return response_code::error_move_copy_failed;
-        }
-        if (str == "ErrorMoveDistinguishedFolder")
-        {
-            return response_code::error_move_distinguished_folder;
-        }
-        if (str == "ErrorNameResolutionMultipleResults")
-        {
-            return response_code::error_name_resolution_multiple_results;
-        }
-        if (str == "ErrorNameResolutionNoMailbox")
-        {
-            return response_code::error_name_resolution_no_mailbox;
-        }
-        if (str == "ErrorNameResolutionNoResults")
-        {
-            return response_code::error_name_resolution_no_results;
-        }
-        if (str == "ErrorNoCalendar")
-        {
-            return response_code::error_no_calendar;
-        }
-        if (str == "ErrorNoFolderClassOverride")
-        {
-            return response_code::error_no_folder_class_override;
-        }
-        if (str == "ErrorNoFreeBusyAccess")
-        {
-            return response_code::error_no_free_busy_access;
-        }
-        if (str == "ErrorNonExistentMailbox")
-        {
-            return response_code::error_non_existent_mailbox;
-        }
-        if (str == "ErrorNonPrimarySmtpAddress")
-        {
-            return response_code::error_non_primary_smtp_address;
-        }
-        if (str == "ErrorNoPropertyTagForCustomProperties")
-        {
-            return response_code::error_no_property_tag_for_custom_properties;
-        }
-        if (str == "ErrorNotEnoughMemory")
-        {
-            return response_code::error_not_enough_memory;
-        }
-        if (str == "ErrorObjectTypeChanged")
-        {
-            return response_code::error_object_type_changed;
-        }
-        if (str == "ErrorOccurrenceCrossingBoundary")
-        {
-            return response_code::error_occurrence_crossing_boundary;
-        }
-        if (str == "ErrorOccurrenceTimeSpanTooBig")
-        {
-            return response_code::error_occurrence_time_span_too_big;
-        }
-        if (str == "ErrorParentFolderIdRequired")
-        {
-            return response_code::error_parent_folder_id_required;
-        }
-        if (str == "ErrorParentFolderNotFound")
-        {
-            return response_code::error_parent_folder_not_found;
-        }
-        if (str == "ErrorPasswordChangeRequired")
-        {
-            return response_code::error_password_change_required;
-        }
-        if (str == "ErrorPasswordExpired")
-        {
-            return response_code::error_password_expired;
-        }
-        if (str == "ErrorPropertyUpdate")
-        {
-            return response_code::error_property_update;
-        }
-        if (str == "ErrorPropertyValidationFailure")
-        {
-            return response_code::error_property_validation_failure;
-        }
-        if (str == "ErrorProxyRequestNotAllowed")
-        {
-            return response_code::error_proxy_request_not_allowed;
-        }
-        if (str == "ErrorPublicFolderRequestProcessingFailed")
-        {
-            return response_code::error_public_folder_request_processing_failed;
-        }
-        if (str == "ErrorPublicFolderServerNotFound")
-        {
-            return response_code::error_public_folder_server_not_found;
-        }
-        if (str == "ErrorQueryFilterTooLong")
-        {
-            return response_code::error_query_filter_too_long;
-        }
-        if (str == "ErrorQuotaExceeded")
-        {
-            return response_code::error_quota_exceeded;
-        }
-        if (str == "ErrorReadEventsFailed")
-        {
-            return response_code::error_read_events_failed;
-        }
-        if (str == "ErrorReadReceiptNotPending")
-        {
-            return response_code::error_read_receipt_not_pending;
-        }
-        if (str == "ErrorRecurrenceEndDateTooBig")
-        {
-            return response_code::error_recurrence_end_date_too_big;
-        }
-        if (str == "ErrorRecurrenceHasNoOccurrence")
-        {
-            return response_code::error_recurrence_has_no_occurrence;
-        }
-        if (str == "ErrorRequestAborted")
-        {
-            return response_code::error_request_aborted;
-        }
-        if (str == "ErrorRequestStreamTooBig")
-        {
-            return response_code::error_request_stream_too_big;
-        }
-        if (str == "ErrorRequiredPropertyMissing")
-        {
-            return response_code::error_required_property_missing;
-        }
-        if (str == "ErrorResponseSchemaValidation")
-        {
-            return response_code::error_response_schema_validation;
-        }
-        if (str == "ErrorRestrictionTooLong")
-        {
-            return response_code::error_restriction_too_long;
-        }
-        if (str == "ErrorRestrictionTooComplex")
-        {
-            return response_code::error_restriction_too_complex;
-        }
-        if (str == "ErrorResultSetTooBig")
-        {
-            return response_code::error_result_set_too_big;
-        }
-        if (str == "ErrorSavedItemFolderNotFound")
-        {
-            return response_code::error_saved_item_folder_not_found;
-        }
-        if (str == "ErrorSchemaValidation")
-        {
-            return response_code::error_schema_validation;
-        }
-        if (str == "ErrorSearchFolderNotInitialized")
-        {
-            return response_code::error_search_folder_not_initialized;
-        }
-        if (str == "ErrorSendAsDenied")
-        {
-            return response_code::error_send_as_denied;
-        }
-        if (str == "ErrorSendMeetingCancellationsRequired")
-        {
-            return response_code::error_send_meeting_cancellations_required;
-        }
-        if (str == "ErrorSendMeetingInvitationsOrCancellationsRequired")
-        {
-            return response_code::error_send_meeting_invitations_or_cancellations_required;
-        }
-        if (str == "ErrorSendMeetingInvitationsRequired")
-        {
-            return response_code::error_send_meeting_invitations_required;
-        }
-        if (str == "ErrorSentMeetingRequestUpdate")
-        {
-            return response_code::error_sent_meeting_request_update;
-        }
-        if (str == "ErrorSentTaskRequestUpdate")
-        {
-            return response_code::error_sent_task_request_update;
-        }
-        if (str == "ErrorServerBusy")
-        {
-            return response_code::error_server_busy;
-        }
-        if (str == "ErrorStaleObject")
-        {
-            return response_code::error_stale_object;
-        }
-        if (str == "ErrorSubscriptionAccessDenied")
-        {
-            return response_code::error_subscription_access_denied;
-        }
-        if (str == "ErrorSubscriptionDelegateAccessNotSupported")
-        {
-            return response_code::error_subscription_delegate_access_not_supported;
-        }
-        if (str == "ErrorSubscriptionNotFound")
-        {
-            return response_code::error_subscription_not_found;
-        }
-        if (str == "ErrorSyncFolderNotFound")
-        {
-            return response_code::error_sync_folder_not_found;
-        }
-        if (str == "ErrorTimeIntervalTooBig")
-        {
-            return response_code::error_time_interval_too_big;
-        }
-        if (str == "ErrorToFolderNotFound")
-        {
-            return response_code::error_to_folder_not_found;
-        }
-        if (str == "ErrorTokenSerializationDenied")
-        {
-            return response_code::error_token_serialization_denied;
-        }
-        if (str == "ErrorUnableToGetUserOofSettings")
-        {
-            return response_code::error_unable_to_get_user_oof_settings;
-        }
-        if (str == "ErrorUnsupportedCulture")
-        {
-            return response_code::error_unsupported_culture;
-        }
-        if (str == "ErrorUnsupportedMapiPropertyType")
-        {
-            return response_code::error_unsupported_mapi_property_type;
-        }
-        if (str == "ErrorUnsupportedMimeConversion")
-        {
-            return response_code::error_unsupported_mime_conversion;
-        }
-        if (str == "ErrorUnsupportedPathForQuery")
-        {
-            return response_code::error_unsupported_path_for_query;
-        }
-        if (str == "ErrorUnsupportedPathForSortGroup")
-        {
-            return response_code::error_unsupported_path_for_sort_group;
-        }
-        if (str == "ErrorUnsupportedPropertyDefinition")
-        {
-            return response_code::error_unsupported_property_definition;
-        }
-        if (str == "ErrorUnsupportedQueryFilter")
-        {
-            return response_code::error_unsupported_query_filter;
-        }
-        if (str == "ErrorUnsupportedRecurrence")
-        {
-            return response_code::error_unsupported_recurrence;
-        }
-        if (str == "ErrorUnsupportedSubFilter")
-        {
-            return response_code::error_unsupported_sub_filter;
-        }
-        if (str == "ErrorUnsupportedTypeForConversion")
-        {
-            return response_code::error_unsupported_type_for_conversion;
-        }
-        if (str == "ErrorUpdatePropertyMismatch")
-        {
-            return response_code::error_update_property_mismatch;
-        }
-        if (str == "ErrorVirusDetected")
-        {
-            return response_code::error_virus_detected;
-        }
-        if (str == "ErrorVirusMessageDeleted")
-        {
-            return response_code::error_virus_message_deleted;
-        }
-        if (str == "ErrorVoiceMailNotImplemented")
-        {
-            return response_code::error_voice_mail_not_implemented;
-        }
-        if (str == "ErrorWebRequestInInvalidState")
-        {
-            return response_code::error_web_request_in_invalid_state;
-        }
-        if (str == "ErrorWin32InteropError")
-        {
-            return response_code::error_win32_interop_error;
-        }
-        if (str == "ErrorWorkingHoursSaveFailed")
-        {
-            return response_code::error_working_hours_save_failed;
-        }
-        if (str == "ErrorWorkingHoursXmlMalformed")
-        {
-            return response_code::error_working_hours_xml_malformed;
+        inline response_code str_to_response_code(const std::string& str)
+        {
+            if (str == "NoError")
+            {
+                return response_code::no_error;
+            }
+            if (str == "ErrorAccessDenied")
+            {
+                return response_code::error_access_denied;
+            }
+            if (str == "ErrorAccountDisabled")
+            {
+                return response_code::error_account_disabled;
+            }
+            if (str == "ErrorAddressSpaceNotFound")
+            {
+                return response_code::error_address_space_not_found;
+            }
+            if (str == "ErrorADOperation")
+            {
+                return response_code::error_ad_operation;
+            }
+            if (str == "ErrorADSessionFilter")
+            {
+                return response_code::error_ad_session_filter;
+            }
+            if (str == "ErrorADUnavailable")
+            {
+                return response_code::error_ad_unavailable;
+            }
+            if (str == "ErrorAutoDiscoverFailed")
+            {
+                return response_code::error_auto_discover_failed;
+            }
+            if (str == "ErrorAffectedTaskOccurrencesRequired")
+            {
+                return response_code::error_affected_task_occurrences_required;
+            }
+            if (str == "ErrorAttachmentSizeLimitExceeded")
+            {
+                return response_code::error_attachment_size_limit_exceeded;
+            }
+            if (str == "ErrorAvailabilityConfigNotFound")
+            {
+                return response_code::error_availability_config_not_found;
+            }
+            if (str == "ErrorBatchProcessingStopped")
+            {
+                return response_code::error_batch_processing_stopped;
+            }
+            if (str == "ErrorCalendarCannotMoveOrCopyOccurrence")
+            {
+                return response_code::error_calendar_cannot_move_or_copy_occurrence;
+            }
+            if (str == "ErrorCalendarCannotUpdateDeletedItem")
+            {
+                return response_code::error_calendar_cannot_update_deleted_item;
+            }
+            if (str == "ErrorCalendarCannotUseIdForOccurrenceId")
+            {
+                return response_code::error_calendar_cannot_use_id_for_occurrence_id;
+            }
+            if (str == "ErrorCalendarCannotUseIdForRecurringMasterId")
+            {
+                return response_code::error_calendar_cannot_use_id_for_recurring_master_id;
+            }
+            if (str == "ErrorCalendarDurationIsTooLong")
+            {
+                return response_code::error_calendar_duration_is_too_long;
+            }
+            if (str == "ErrorCalendarEndDateIsEarlierThanStartDate")
+            {
+                return response_code::error_calendar_end_date_is_earlier_than_start_date;
+            }
+            if (str == "ErrorCalendarFolderIsInvalidForCalendarView")
+            {
+                return response_code::error_calendar_folder_is_invalid_for_calendar_view;
+            }
+            if (str == "ErrorCalendarInvalidAttributeValue")
+            {
+                return response_code::error_calendar_invalid_attribute_value;
+            }
+            if (str == "ErrorCalendarInvalidDayForTimeChangePattern")
+            {
+                return response_code::error_calendar_invalid_day_for_time_change_pattern;
+            }
+            if (str == "ErrorCalendarInvalidDayForWeeklyRecurrence")
+            {
+                return response_code::error_calendar_invalid_day_for_weekly_recurrence;
+            }
+            if (str == "ErrorCalendarInvalidPropertyState")
+            {
+                return response_code::error_calendar_invalid_property_state;
+            }
+            if (str == "ErrorCalendarInvalidPropertyValue")
+            {
+                return response_code::error_calendar_invalid_property_value;
+            }
+            if (str == "ErrorCalendarInvalidRecurrence")
+            {
+                return response_code::error_calendar_invalid_recurrence;
+            }
+            if (str == "ErrorCalendarInvalidTimeZone")
+            {
+                return response_code::error_calendar_invalid_time_zone;
+            }
+            if (str == "ErrorCalendarIsDelegatedForAccept")
+            {
+                return response_code::error_calendar_is_delegated_for_accept;
+            }
+            if (str == "ErrorCalendarIsDelegatedForDecline")
+            {
+                return response_code::error_calendar_is_delegated_for_decline;
+            }
+            if (str == "ErrorCalendarIsDelegatedForRemove")
+            {
+                return response_code::error_calendar_is_delegated_for_remove;
+            }
+            if (str == "ErrorCalendarIsDelegatedForTentative")
+            {
+                return response_code::error_calendar_is_delegated_for_tentative;
+            }
+            if (str == "ErrorCalendarIsNotOrganizer")
+            {
+                return response_code::error_calendar_is_not_organizer;
+            }
+            if (str == "ErrorCalendarIsOrganizerForAccept")
+            {
+                return response_code::error_calendar_is_organizer_for_accept;
+            }
+            if (str == "ErrorCalendarIsOrganizerForDecline")
+            {
+                return response_code::error_calendar_is_organizer_for_decline;
+            }
+            if (str == "ErrorCalendarIsOrganizerForRemove")
+            {
+                return response_code::error_calendar_is_organizer_for_remove;
+            }
+            if (str == "ErrorCalendarIsOrganizerForTentative")
+            {
+                return response_code::error_calendar_is_organizer_for_tentative;
+            }
+            if (str == "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange")
+            {
+                return response_code::error_calendar_occurrence_index_is_out_of_recurrence_range;
+            }
+            if (str == "ErrorCalendarOccurrenceIsDeletedFromRecurrence")
+            {
+                return response_code::error_calendar_occurrence_is_deleted_from_recurrence;
+            }
+            if (str == "ErrorCalendarOutOfRange")
+            {
+                return response_code::error_calendar_out_of_range;
+            }
+            if (str == "ErrorCalendarViewRangeTooBig")
+            {
+                return response_code::error_calendar_view_range_too_big;
+            }
+            if (str == "ErrorCannotCreateCalendarItemInNonCalendarFolder")
+            {
+                return response_code::error_cannot_create_calendar_item_in_non_calendar_folder;
+            }
+            if (str == "ErrorCannotCreateContactInNonContactsFolder")
+            {
+                return response_code::error_cannot_create_contact_in_non_contacts_folder;
+            }
+            if (str == "ErrorCannotCreateTaskInNonTaskFolder")
+            {
+                return response_code::error_cannot_create_task_in_non_task_folder;
+            }
+            if (str == "ErrorCannotDeleteObject")
+            {
+                return response_code::error_cannot_delete_object;
+            }
+            if (str == "ErrorCannotDeleteTaskOccurrence")
+            {
+                return response_code::error_cannot_delete_task_occurrence;
+            }
+            if (str == "ErrorCannotOpenFileAttachment")
+            {
+                return response_code::error_cannot_open_file_attachment;
+            }
+            if (str == "ErrorCannotUseFolderIdForItemId")
+            {
+                return response_code::error_cannot_use_folder_id_for_item_id;
+            }
+            if (str == "ErrorCannotUserItemIdForFolderId")
+            {
+                return response_code::error_cannot_user_item_id_for_folder_id;
+            }
+            if (str == "ErrorChangeKeyRequired")
+            {
+                return response_code::error_change_key_required;
+            }
+            if (str == "ErrorChangeKeyRequiredForWriteOperations")
+            {
+                return response_code::error_change_key_required_for_write_operations;
+            }
+            if (str == "ErrorConnectionFailed")
+            {
+                return response_code::error_connection_failed;
+            }
+            if (str == "ErrorContentConversionFailed")
+            {
+                return response_code::error_content_conversion_failed;
+            }
+            if (str == "ErrorCorruptData")
+            {
+                return response_code::error_corrupt_data;
+            }
+            if (str == "ErrorCreateItemAccessDenied")
+            {
+                return response_code::error_create_item_access_denied;
+            }
+            if (str == "ErrorCreateManagedFolderPartialCompletion")
+            {
+                return response_code::error_create_managed_folder_partial_completion;
+            }
+            if (str == "ErrorCreateSubfolderAccessDenied")
+            {
+                return response_code::error_create_subfolder_access_denied;
+            }
+            if (str == "ErrorCrossMailboxMoveCopy")
+            {
+                return response_code::error_cross_mailbox_move_copy;
+            }
+            if (str == "ErrorDataSizeLimitExceeded")
+            {
+                return response_code::error_data_size_limit_exceeded;
+            }
+            if (str == "ErrorDataSourceOperation")
+            {
+                return response_code::error_data_source_operation;
+            }
+            if (str == "ErrorDeleteDistinguishedFolder")
+            {
+                return response_code::error_delete_distinguished_folder;
+            }
+            if (str == "ErrorDeleteItemsFailed")
+            {
+                return response_code::error_delete_items_failed;
+            }
+            if (str == "ErrorDuplicateInputFolderNames")
+            {
+                return response_code::error_duplicate_input_folder_names;
+            }
+            if (str == "ErrorEmailAddressMismatch")
+            {
+                return response_code::error_email_address_mismatch;
+            }
+            if (str == "ErrorEventNotFound")
+            {
+                return response_code::error_event_not_found;
+            }
+            if (str == "ErrorExpiredSubscription")
+            {
+                return response_code::error_expired_subscription;
+            }
+            if (str == "ErrorFolderCorrupt")
+            {
+                return response_code::error_folder_corrupt;
+            }
+            if (str == "ErrorFolderNotFound")
+            {
+                return response_code::error_folder_not_found;
+            }
+            if (str == "ErrorFolderPropertyRequestFailed")
+            {
+                return response_code::error_folder_property_request_failed;
+            }
+            if (str == "ErrorFolderSave")
+            {
+                return response_code::error_folder_save;
+            }
+            if (str == "ErrorFolderSaveFailed")
+            {
+                return response_code::error_folder_save_failed;
+            }
+            if (str == "ErrorFolderSavePropertyError")
+            {
+                return response_code::error_folder_save_property_error;
+            }
+            if (str == "ErrorFolderExists")
+            {
+                return response_code::error_folder_exists;
+            }
+            if (str == "ErrorFreeBusyGenerationFailed")
+            {
+                return response_code::error_free_busy_generation_failed;
+            }
+            if (str == "ErrorGetServerSecurityDescriptorFailed")
+            {
+                return response_code::error_get_server_security_descriptor_failed;
+            }
+            if (str == "ErrorImpersonateUserDenied")
+            {
+                return response_code::error_impersonate_user_denied;
+            }
+            if (str == "ErrorImpersonationDenied")
+            {
+                return response_code::error_impersonation_denied;
+            }
+            if (str == "ErrorImpersonationFailed")
+            {
+                return response_code::error_impersonation_failed;
+            }
+            if (str == "ErrorIncorrectUpdatePropertyCount")
+            {
+                return response_code::error_incorrect_update_property_count;
+            }
+            if (str == "ErrorIndividualMailboxLimitReached")
+            {
+                return response_code::error_individual_mailbox_limit_reached;
+            }
+            if (str == "ErrorInsufficientResources")
+            {
+                return response_code::error_insufficient_resources;
+            }
+            if (str == "ErrorInternalServerError")
+            {
+                return response_code::error_internal_server_error;
+            }
+            if (str == "ErrorInternalServerTransientError")
+            {
+                return response_code::error_internal_server_transient_error;
+            }
+            if (str == "ErrorInvalidAccessLevel")
+            {
+                return response_code::error_invalid_access_level;
+            }
+            if (str == "ErrorInvalidAttachmentId")
+            {
+                return response_code::error_invalid_attachment_id;
+            }
+            if (str == "ErrorInvalidAttachmentSubfilter")
+            {
+                return response_code::error_invalid_attachment_subfilter;
+            }
+            if (str == "ErrorInvalidAttachmentSubfilterTextFilter")
+            {
+                return response_code::error_invalid_attachment_subfilter_text_filter;
+            }
+            if (str == "ErrorInvalidAuthorizationContext")
+            {
+                return response_code::error_invalid_authorization_context;
+            }
+            if (str == "ErrorInvalidChangeKey")
+            {
+                return response_code::error_invalid_change_key;
+            }
+            if (str == "ErrorInvalidClientSecurityContext")
+            {
+                return response_code::error_invalid_client_security_context;
+            }
+            if (str == "ErrorInvalidCompleteDate")
+            {
+                return response_code::error_invalid_complete_date;
+            }
+            if (str == "ErrorInvalidCrossForestCredentials")
+            {
+                return response_code::error_invalid_cross_forest_credentials;
+            }
+            if (str == "ErrorInvalidExchangeImpersonationHeaderData")
+            {
+                return response_code::error_invalid_exchange_impersonation_header_data;
+            }
+            if (str == "ErrorInvalidExcludesRestriction")
+            {
+                return response_code::error_invalid_excludes_restriction;
+            }
+            if (str == "ErrorInvalidExpressionTypeForSubFilter")
+            {
+                return response_code::error_invalid_expression_type_for_sub_filter;
+            }
+            if (str == "ErrorInvalidExtendedProperty")
+            {
+                return response_code::error_invalid_extended_property;
+            }
+            if (str == "ErrorInvalidExtendedPropertyValue")
+            {
+                return response_code::error_invalid_extended_property_value;
+            }
+            if (str == "ErrorInvalidFolderId")
+            {
+                return response_code::error_invalid_folder_id;
+            }
+            if (str == "ErrorInvalidFractionalPagingParameters")
+            {
+                return response_code::error_invalid_fractional_paging_parameters;
+            }
+            if (str == "ErrorInvalidFreeBusyViewType")
+            {
+                return response_code::error_invalid_free_busy_view_type;
+            }
+            if (str == "ErrorInvalidId")
+            {
+                return response_code::error_invalid_id;
+            }
+            if (str == "ErrorInvalidIdEmpty")
+            {
+                return response_code::error_invalid_id_empty;
+            }
+            if (str == "ErrorInvalidIdMalformed")
+            {
+                return response_code::error_invalid_id_malformed;
+            }
+            if (str == "ErrorInvalidIdMonikerTooLong")
+            {
+                return response_code::error_invalid_id_moniker_too_long;
+            }
+            if (str == "ErrorInvalidIdNotAnItemAttachmentId")
+            {
+                return response_code::error_invalid_id_not_an_item_attachment_id;
+            }
+            if (str == "ErrorInvalidIdReturnedByResolveNames")
+            {
+                return response_code::error_invalid_id_returned_by_resolve_names;
+            }
+            if (str == "ErrorInvalidIdStoreObjectIdTooLong")
+            {
+                return response_code::error_invalid_id_store_object_id_too_long;
+            }
+            if (str == "ErrorInvalidIdTooManyAttachmentLevels")
+            {
+                return response_code::error_invalid_id_too_many_attachment_levels;
+            }
+            if (str == "ErrorInvalidIdXml")
+            {
+                return response_code::error_invalid_id_xml;
+            }
+            if (str == "ErrorInvalidIndexedPagingParameters")
+            {
+                return response_code::error_invalid_indexed_paging_parameters;
+            }
+            if (str == "ErrorInvalidInternetHeaderChildNodes")
+            {
+                return response_code::error_invalid_internet_header_child_nodes;
+            }
+            if (str == "ErrorInvalidItemForOperationCreateItemAttachment")
+            {
+                return response_code::error_invalid_item_for_operation_create_item_attachment;
+            }
+            if (str == "ErrorInvalidItemForOperationCreateItem")
+            {
+                return response_code::error_invalid_item_for_operation_create_item;
+            }
+            if (str == "ErrorInvalidItemForOperationAcceptItem")
+            {
+                return response_code::error_invalid_item_for_operation_accept_item;
+            }
+            if (str == "ErrorInvalidItemForOperationCancelItem")
+            {
+                return response_code::error_invalid_item_for_operation_cancel_item;
+            }
+            if (str == "ErrorInvalidItemForOperationDeclineItem")
+            {
+                return response_code::error_invalid_item_for_operation_decline_item;
+            }
+            if (str == "ErrorInvalidItemForOperationExpandDL")
+            {
+                return response_code::error_invalid_item_for_operation_expand_dl;
+            }
+            if (str == "ErrorInvalidItemForOperationRemoveItem")
+            {
+                return response_code::error_invalid_item_for_operation_remove_item;
+            }
+            if (str == "ErrorInvalidItemForOperationSendItem")
+            {
+                return response_code::error_invalid_item_for_operation_send_item;
+            }
+            if (str == "ErrorInvalidItemForOperationTentative")
+            {
+                return response_code::error_invalid_item_for_operation_tentative;
+            }
+            if (str == "ErrorInvalidManagedFolderProperty")
+            {
+                return response_code::error_invalid_managed_folder_property;
+            }
+            if (str == "ErrorInvalidManagedFolderQuota")
+            {
+                return response_code::error_invalid_managed_folder_quota;
+            }
+            if (str == "ErrorInvalidManagedFolderSize")
+            {
+                return response_code::error_invalid_managed_folder_size;
+            }
+            if (str == "ErrorInvalidMergedFreeBusyInterval")
+            {
+                return response_code::error_invalid_merged_free_busy_interval;
+            }
+            if (str == "ErrorInvalidNameForNameResolution")
+            {
+                return response_code::error_invalid_name_for_name_resolution;
+            }
+            if (str == "ErrorInvalidNetworkServiceContext")
+            {
+                return response_code::error_invalid_network_service_context;
+            }
+            if (str == "ErrorInvalidOofParameter")
+            {
+                return response_code::error_invalid_oof_parameter;
+            }
+            if (str == "ErrorInvalidPagingMaxRows")
+            {
+                return response_code::error_invalid_paging_max_rows;
+            }
+            if (str == "ErrorInvalidParentFolder")
+            {
+                return response_code::error_invalid_parent_folder;
+            }
+            if (str == "ErrorInvalidPercentCompleteValue")
+            {
+                return response_code::error_invalid_percent_complete_value;
+            }
+            if (str == "ErrorInvalidPropertyAppend")
+            {
+                return response_code::error_invalid_property_append;
+            }
+            if (str == "ErrorInvalidPropertyDelete")
+            {
+                return response_code::error_invalid_property_delete;
+            }
+            if (str == "ErrorInvalidPropertyForExists")
+            {
+                return response_code::error_invalid_property_for_exists;
+            }
+            if (str == "ErrorInvalidPropertyForOperation")
+            {
+                return response_code::error_invalid_property_for_operation;
+            }
+            if (str == "ErrorInvalidPropertyRequest")
+            {
+                return response_code::error_invalid_property_request;
+            }
+            if (str == "ErrorInvalidPropertySet")
+            {
+                return response_code::error_invalid_property_set;
+            }
+            if (str == "ErrorInvalidPropertyUpdateSentMessage")
+            {
+                return response_code::error_invalid_property_update_sent_message;
+            }
+            if (str == "ErrorInvalidPullSubscriptionId")
+            {
+                return response_code::error_invalid_pull_subscription_id;
+            }
+            if (str == "ErrorInvalidPushSubscriptionUrl")
+            {
+                return response_code::error_invalid_push_subscription_url;
+            }
+            if (str == "ErrorInvalidRecipients")
+            {
+                return response_code::error_invalid_recipients;
+            }
+            if (str == "ErrorInvalidRecipientSubfilter")
+            {
+                return response_code::error_invalid_recipient_subfilter;
+            }
+            if (str == "ErrorInvalidRecipientSubfilterComparison")
+            {
+                return response_code::error_invalid_recipient_subfilter_comparison;
+            }
+            if (str == "ErrorInvalidRecipientSubfilterOrder")
+            {
+                return response_code::error_invalid_recipient_subfilter_order;
+            }
+            if (str == "ErrorInvalidRecipientSubfilterTextFilter")
+            {
+                return response_code::error_invalid_recipient_subfilter_text_filter;
+            }
+            if (str == "ErrorInvalidReferenceItem")
+            {
+                return response_code::error_invalid_reference_item;
+            }
+            if (str == "ErrorInvalidRequest")
+            {
+                return response_code::error_invalid_request;
+            }
+            if (str == "ErrorInvalidRestriction")
+            {
+                return response_code::error_invalid_restriction;
+            }
+            if (str == "ErrorInvalidRoutingType")
+            {
+                return response_code::error_invalid_routing_type;
+            }
+            if (str == "ErrorInvalidScheduledOofDuration")
+            {
+                return response_code::error_invalid_scheduled_oof_duration;
+            }
+            if (str == "ErrorInvalidSecurityDescriptor")
+            {
+                return response_code::error_invalid_security_descriptor;
+            }
+            if (str == "ErrorInvalidSendItemSaveSettings")
+            {
+                return response_code::error_invalid_send_item_save_settings;
+            }
+            if (str == "ErrorInvalidSerializedAccessToken")
+            {
+                return response_code::error_invalid_serialized_access_token;
+            }
+            if (str == "ErrorInvalidSid")
+            {
+                return response_code::error_invalid_sid;
+            }
+            if (str == "ErrorInvalidSmtpAddress")
+            {
+                return response_code::error_invalid_smtp_address;
+            }
+            if (str == "ErrorInvalidSubfilterType")
+            {
+                return response_code::error_invalid_subfilter_type;
+            }
+            if (str == "ErrorInvalidSubfilterTypeNotAttendeeType")
+            {
+                return response_code::error_invalid_subfilter_type_not_attendee_type;
+            }
+            if (str == "ErrorInvalidSubfilterTypeNotRecipientType")
+            {
+                return response_code::error_invalid_subfilter_type_not_recipient_type;
+            }
+            if (str == "ErrorInvalidSubscription")
+            {
+                return response_code::error_invalid_subscription;
+            }
+            if (str == "ErrorInvalidSyncStateData")
+            {
+                return response_code::error_invalid_sync_state_data;
+            }
+            if (str == "ErrorInvalidTimeInterval")
+            {
+                return response_code::error_invalid_time_interval;
+            }
+            if (str == "ErrorInvalidUserOofSettings")
+            {
+                return response_code::error_invalid_user_oof_settings;
+            }
+            if (str == "ErrorInvalidUserPrincipalName")
+            {
+                return response_code::error_invalid_user_principal_name;
+            }
+            if (str == "ErrorInvalidUserSid")
+            {
+                return response_code::error_invalid_user_sid;
+            }
+            if (str == "ErrorInvalidUserSidMissingUPN")
+            {
+                return response_code::error_invalid_user_sid_missing_upn;
+            }
+            if (str == "ErrorInvalidValueForProperty")
+            {
+                return response_code::error_invalid_value_for_property;
+            }
+            if (str == "ErrorInvalidWatermark")
+            {
+                return response_code::error_invalid_watermark;
+            }
+            if (str == "ErrorIrresolvableConflict")
+            {
+                return response_code::error_irresolvable_conflict;
+            }
+            if (str == "ErrorItemCorrupt")
+            {
+                return response_code::error_item_corrupt;
+            }
+            if (str == "ErrorItemNotFound")
+            {
+                return response_code::error_item_not_found;
+            }
+            if (str == "ErrorItemPropertyRequestFailed")
+            {
+                return response_code::error_item_property_request_failed;
+            }
+            if (str == "ErrorItemSave")
+            {
+                return response_code::error_item_save;
+            }
+            if (str == "ErrorItemSavePropertyError")
+            {
+                return response_code::error_item_save_property_error;
+            }
+            if (str == "ErrorLegacyMailboxFreeBusyViewTypeNotMerged")
+            {
+                return response_code::error_legacy_mailbox_free_busy_view_type_not_merged;
+            }
+            if (str == "ErrorLocalServerObjectNotFound")
+            {
+                return response_code::error_local_server_object_not_found;
+            }
+            if (str == "ErrorLogonAsNetworkServiceFailed")
+            {
+                return response_code::error_logon_as_network_service_failed;
+            }
+            if (str == "ErrorMailboxConfiguration")
+            {
+                return response_code::error_mailbox_configuration;
+            }
+            if (str == "ErrorMailboxDataArrayEmpty")
+            {
+                return response_code::error_mailbox_data_array_empty;
+            }
+            if (str == "ErrorMailboxDataArrayTooBig")
+            {
+                return response_code::error_mailbox_data_array_too_big;
+            }
+            if (str == "ErrorMailboxLogonFailed")
+            {
+                return response_code::error_mailbox_logon_failed;
+            }
+            if (str == "ErrorMailboxMoveInProgress")
+            {
+                return response_code::error_mailbox_move_in_progress;
+            }
+            if (str == "ErrorMailboxStoreUnavailable")
+            {
+                return response_code::error_mailbox_store_unavailable;
+            }
+            if (str == "ErrorMailRecipientNotFound")
+            {
+                return response_code::error_mail_recipient_not_found;
+            }
+            if (str == "ErrorManagedFolderAlreadyExists")
+            {
+                return response_code::error_managed_folder_already_exists;
+            }
+            if (str == "ErrorManagedFolderNotFound")
+            {
+                return response_code::error_managed_folder_not_found;
+            }
+            if (str == "ErrorManagedFoldersRootFailure")
+            {
+                return response_code::error_managed_folders_root_failure;
+            }
+            if (str == "ErrorMeetingSuggestionGenerationFailed")
+            {
+                return response_code::error_meeting_suggestion_generation_failed;
+            }
+            if (str == "ErrorMessageDispositionRequired")
+            {
+                return response_code::error_message_disposition_required;
+            }
+            if (str == "ErrorMessageSizeExceeded")
+            {
+                return response_code::error_message_size_exceeded;
+            }
+            if (str == "ErrorMimeContentConversionFailed")
+            {
+                return response_code::error_mime_content_conversion_failed;
+            }
+            if (str == "ErrorMimeContentInvalid")
+            {
+                return response_code::error_mime_content_invalid;
+            }
+            if (str == "ErrorMimeContentInvalidBase64String")
+            {
+                return response_code::error_mime_content_invalid_base64_string;
+            }
+            if (str == "ErrorMissingArgument")
+            {
+                return response_code::error_missing_argument;
+            }
+            if (str == "ErrorMissingEmailAddress")
+            {
+                return response_code::error_missing_email_address;
+            }
+            if (str == "ErrorMissingEmailAddressForManagedFolder")
+            {
+                return response_code::error_missing_email_address_for_managed_folder;
+            }
+            if (str == "ErrorMissingInformationEmailAddress")
+            {
+                return response_code::error_missing_information_email_address;
+            }
+            if (str == "ErrorMissingInformationReferenceItemId")
+            {
+                return response_code::error_missing_information_reference_item_id;
+            }
+            if (str == "ErrorMissingItemForCreateItemAttachment")
+            {
+                return response_code::error_missing_item_for_create_item_attachment;
+            }
+            if (str == "ErrorMissingManagedFolderId")
+            {
+                return response_code::error_missing_managed_folder_id;
+            }
+            if (str == "ErrorMissingRecipients")
+            {
+                return response_code::error_missing_recipients;
+            }
+            if (str == "ErrorMoveCopyFailed")
+            {
+                return response_code::error_move_copy_failed;
+            }
+            if (str == "ErrorMoveDistinguishedFolder")
+            {
+                return response_code::error_move_distinguished_folder;
+            }
+            if (str == "ErrorNameResolutionMultipleResults")
+            {
+                return response_code::error_name_resolution_multiple_results;
+            }
+            if (str == "ErrorNameResolutionNoMailbox")
+            {
+                return response_code::error_name_resolution_no_mailbox;
+            }
+            if (str == "ErrorNameResolutionNoResults")
+            {
+                return response_code::error_name_resolution_no_results;
+            }
+            if (str == "ErrorNoCalendar")
+            {
+                return response_code::error_no_calendar;
+            }
+            if (str == "ErrorNoFolderClassOverride")
+            {
+                return response_code::error_no_folder_class_override;
+            }
+            if (str == "ErrorNoFreeBusyAccess")
+            {
+                return response_code::error_no_free_busy_access;
+            }
+            if (str == "ErrorNonExistentMailbox")
+            {
+                return response_code::error_non_existent_mailbox;
+            }
+            if (str == "ErrorNonPrimarySmtpAddress")
+            {
+                return response_code::error_non_primary_smtp_address;
+            }
+            if (str == "ErrorNoPropertyTagForCustomProperties")
+            {
+                return response_code::error_no_property_tag_for_custom_properties;
+            }
+            if (str == "ErrorNotEnoughMemory")
+            {
+                return response_code::error_not_enough_memory;
+            }
+            if (str == "ErrorObjectTypeChanged")
+            {
+                return response_code::error_object_type_changed;
+            }
+            if (str == "ErrorOccurrenceCrossingBoundary")
+            {
+                return response_code::error_occurrence_crossing_boundary;
+            }
+            if (str == "ErrorOccurrenceTimeSpanTooBig")
+            {
+                return response_code::error_occurrence_time_span_too_big;
+            }
+            if (str == "ErrorParentFolderIdRequired")
+            {
+                return response_code::error_parent_folder_id_required;
+            }
+            if (str == "ErrorParentFolderNotFound")
+            {
+                return response_code::error_parent_folder_not_found;
+            }
+            if (str == "ErrorPasswordChangeRequired")
+            {
+                return response_code::error_password_change_required;
+            }
+            if (str == "ErrorPasswordExpired")
+            {
+                return response_code::error_password_expired;
+            }
+            if (str == "ErrorPropertyUpdate")
+            {
+                return response_code::error_property_update;
+            }
+            if (str == "ErrorPropertyValidationFailure")
+            {
+                return response_code::error_property_validation_failure;
+            }
+            if (str == "ErrorProxyRequestNotAllowed")
+            {
+                return response_code::error_proxy_request_not_allowed;
+            }
+            if (str == "ErrorPublicFolderRequestProcessingFailed")
+            {
+                return response_code::error_public_folder_request_processing_failed;
+            }
+            if (str == "ErrorPublicFolderServerNotFound")
+            {
+                return response_code::error_public_folder_server_not_found;
+            }
+            if (str == "ErrorQueryFilterTooLong")
+            {
+                return response_code::error_query_filter_too_long;
+            }
+            if (str == "ErrorQuotaExceeded")
+            {
+                return response_code::error_quota_exceeded;
+            }
+            if (str == "ErrorReadEventsFailed")
+            {
+                return response_code::error_read_events_failed;
+            }
+            if (str == "ErrorReadReceiptNotPending")
+            {
+                return response_code::error_read_receipt_not_pending;
+            }
+            if (str == "ErrorRecurrenceEndDateTooBig")
+            {
+                return response_code::error_recurrence_end_date_too_big;
+            }
+            if (str == "ErrorRecurrenceHasNoOccurrence")
+            {
+                return response_code::error_recurrence_has_no_occurrence;
+            }
+            if (str == "ErrorRequestAborted")
+            {
+                return response_code::error_request_aborted;
+            }
+            if (str == "ErrorRequestStreamTooBig")
+            {
+                return response_code::error_request_stream_too_big;
+            }
+            if (str == "ErrorRequiredPropertyMissing")
+            {
+                return response_code::error_required_property_missing;
+            }
+            if (str == "ErrorResponseSchemaValidation")
+            {
+                return response_code::error_response_schema_validation;
+            }
+            if (str == "ErrorRestrictionTooLong")
+            {
+                return response_code::error_restriction_too_long;
+            }
+            if (str == "ErrorRestrictionTooComplex")
+            {
+                return response_code::error_restriction_too_complex;
+            }
+            if (str == "ErrorResultSetTooBig")
+            {
+                return response_code::error_result_set_too_big;
+            }
+            if (str == "ErrorSavedItemFolderNotFound")
+            {
+                return response_code::error_saved_item_folder_not_found;
+            }
+            if (str == "ErrorSchemaValidation")
+            {
+                return response_code::error_schema_validation;
+            }
+            if (str == "ErrorSearchFolderNotInitialized")
+            {
+                return response_code::error_search_folder_not_initialized;
+            }
+            if (str == "ErrorSendAsDenied")
+            {
+                return response_code::error_send_as_denied;
+            }
+            if (str == "ErrorSendMeetingCancellationsRequired")
+            {
+                return response_code::error_send_meeting_cancellations_required;
+            }
+            if (str == "ErrorSendMeetingInvitationsOrCancellationsRequired")
+            {
+                return response_code::error_send_meeting_invitations_or_cancellations_required;
+            }
+            if (str == "ErrorSendMeetingInvitationsRequired")
+            {
+                return response_code::error_send_meeting_invitations_required;
+            }
+            if (str == "ErrorSentMeetingRequestUpdate")
+            {
+                return response_code::error_sent_meeting_request_update;
+            }
+            if (str == "ErrorSentTaskRequestUpdate")
+            {
+                return response_code::error_sent_task_request_update;
+            }
+            if (str == "ErrorServerBusy")
+            {
+                return response_code::error_server_busy;
+            }
+            if (str == "ErrorStaleObject")
+            {
+                return response_code::error_stale_object;
+            }
+            if (str == "ErrorSubscriptionAccessDenied")
+            {
+                return response_code::error_subscription_access_denied;
+            }
+            if (str == "ErrorSubscriptionDelegateAccessNotSupported")
+            {
+                return response_code::error_subscription_delegate_access_not_supported;
+            }
+            if (str == "ErrorSubscriptionNotFound")
+            {
+                return response_code::error_subscription_not_found;
+            }
+            if (str == "ErrorSyncFolderNotFound")
+            {
+                return response_code::error_sync_folder_not_found;
+            }
+            if (str == "ErrorTimeIntervalTooBig")
+            {
+                return response_code::error_time_interval_too_big;
+            }
+            if (str == "ErrorToFolderNotFound")
+            {
+                return response_code::error_to_folder_not_found;
+            }
+            if (str == "ErrorTokenSerializationDenied")
+            {
+                return response_code::error_token_serialization_denied;
+            }
+            if (str == "ErrorUnableToGetUserOofSettings")
+            {
+                return response_code::error_unable_to_get_user_oof_settings;
+            }
+            if (str == "ErrorUnsupportedCulture")
+            {
+                return response_code::error_unsupported_culture;
+            }
+            if (str == "ErrorUnsupportedMapiPropertyType")
+            {
+                return response_code::error_unsupported_mapi_property_type;
+            }
+            if (str == "ErrorUnsupportedMimeConversion")
+            {
+                return response_code::error_unsupported_mime_conversion;
+            }
+            if (str == "ErrorUnsupportedPathForQuery")
+            {
+                return response_code::error_unsupported_path_for_query;
+            }
+            if (str == "ErrorUnsupportedPathForSortGroup")
+            {
+                return response_code::error_unsupported_path_for_sort_group;
+            }
+            if (str == "ErrorUnsupportedPropertyDefinition")
+            {
+                return response_code::error_unsupported_property_definition;
+            }
+            if (str == "ErrorUnsupportedQueryFilter")
+            {
+                return response_code::error_unsupported_query_filter;
+            }
+            if (str == "ErrorUnsupportedRecurrence")
+            {
+                return response_code::error_unsupported_recurrence;
+            }
+            if (str == "ErrorUnsupportedSubFilter")
+            {
+                return response_code::error_unsupported_sub_filter;
+            }
+            if (str == "ErrorUnsupportedTypeForConversion")
+            {
+                return response_code::error_unsupported_type_for_conversion;
+            }
+            if (str == "ErrorUpdatePropertyMismatch")
+            {
+                return response_code::error_update_property_mismatch;
+            }
+            if (str == "ErrorVirusDetected")
+            {
+                return response_code::error_virus_detected;
+            }
+            if (str == "ErrorVirusMessageDeleted")
+            {
+                return response_code::error_virus_message_deleted;
+            }
+            if (str == "ErrorVoiceMailNotImplemented")
+            {
+                return response_code::error_voice_mail_not_implemented;
+            }
+            if (str == "ErrorWebRequestInInvalidState")
+            {
+                return response_code::error_web_request_in_invalid_state;
+            }
+            if (str == "ErrorWin32InteropError")
+            {
+                return response_code::error_win32_interop_error;
+            }
+            if (str == "ErrorWorkingHoursSaveFailed")
+            {
+                return response_code::error_working_hours_save_failed;
+            }
+            if (str == "ErrorWorkingHoursXmlMalformed")
+            {
+                return response_code::error_working_hours_xml_malformed;
+            }
+
+            throw exception(std::string("Unrecognized response code: ") + str);
         }
 
-        throw exception(std::string("Unrecognized response code: ") + str);
+        inline std::string response_code_to_str(response_code code)
+        {
+            switch (code)
+            {
+                case response_code::no_error:
+                    return "NoError";
+                case response_code::error_access_denied:
+                    return "ErrorAccessDenied";
+                case response_code::error_account_disabled:
+                    return "ErrorAccountDisabled";
+                case response_code::error_address_space_not_found:
+                    return "ErrorAddressSpaceNotFound";
+                case response_code::error_ad_operation:
+                    return "ErrorADOperation";
+                case response_code::error_ad_session_filter:
+                    return "ErrorADSessionFilter";
+                case response_code::error_ad_unavailable:
+                    return "ErrorADUnavailable";
+                case response_code::error_auto_discover_failed:
+                    return "ErrorAutoDiscoverFailed";
+                case response_code::error_affected_task_occurrences_required:
+                    return "ErrorAffectedTaskOccurrencesRequired";
+                case response_code::error_attachment_size_limit_exceeded:
+                    return "ErrorAttachmentSizeLimitExceeded";
+                case response_code::error_availability_config_not_found:
+                    return "ErrorAvailabilityConfigNotFound";
+                case response_code::error_batch_processing_stopped:
+                    return "ErrorBatchProcessingStopped";
+                case response_code::error_calendar_cannot_move_or_copy_occurrence:
+                    return "ErrorCalendarCannotMoveOrCopyOccurrence";
+                case response_code::error_calendar_cannot_update_deleted_item:
+                    return "ErrorCalendarCannotUpdateDeletedItem";
+                case response_code::error_calendar_cannot_use_id_for_occurrence_id:
+                    return "ErrorCalendarCannotUseIdForOccurrenceId";
+                case response_code::error_calendar_cannot_use_id_for_recurring_master_id:
+                    return "ErrorCalendarCannotUseIdForRecurringMasterId";
+                case response_code::error_calendar_duration_is_too_long:
+                    return "ErrorCalendarDurationIsTooLong";
+                case response_code::error_calendar_end_date_is_earlier_than_start_date:
+                    return "ErrorCalendarEndDateIsEarlierThanStartDate";
+                case response_code::error_calendar_folder_is_invalid_for_calendar_view:
+                    return "ErrorCalendarFolderIsInvalidForCalendarView";
+                case response_code::error_calendar_invalid_attribute_value:
+                    return "ErrorCalendarInvalidAttributeValue";
+                case response_code::error_calendar_invalid_day_for_time_change_pattern:
+                    return "ErrorCalendarInvalidDayForTimeChangePattern";
+                case response_code::error_calendar_invalid_day_for_weekly_recurrence:
+                    return "ErrorCalendarInvalidDayForWeeklyRecurrence";
+                case response_code::error_calendar_invalid_property_state:
+                    return "ErrorCalendarInvalidPropertyState";
+                case response_code::error_calendar_invalid_property_value:
+                    return "ErrorCalendarInvalidPropertyValue";
+                case response_code::error_calendar_invalid_recurrence:
+                    return "ErrorCalendarInvalidRecurrence";
+                case response_code::error_calendar_invalid_time_zone:
+                    return "ErrorCalendarInvalidTimeZone";
+                case response_code::error_calendar_is_delegated_for_accept:
+                    return "ErrorCalendarIsDelegatedForAccept";
+                case response_code::error_calendar_is_delegated_for_decline:
+                    return "ErrorCalendarIsDelegatedForDecline";
+                case response_code::error_calendar_is_delegated_for_remove:
+                    return "ErrorCalendarIsDelegatedForRemove";
+                case response_code::error_calendar_is_delegated_for_tentative:
+                    return "ErrorCalendarIsDelegatedForTentative";
+                case response_code::error_calendar_is_not_organizer:
+                    return "ErrorCalendarIsNotOrganizer";
+                case response_code::error_calendar_is_organizer_for_accept:
+                    return "ErrorCalendarIsOrganizerForAccept";
+                case response_code::error_calendar_is_organizer_for_decline:
+                    return "ErrorCalendarIsOrganizerForDecline";
+                case response_code::error_calendar_is_organizer_for_remove:
+                    return "ErrorCalendarIsOrganizerForRemove";
+                case response_code::error_calendar_is_organizer_for_tentative:
+                    return "ErrorCalendarIsOrganizerForTentative";
+                case response_code::error_calendar_occurrence_index_is_out_of_recurrence_range:
+                    return "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange";
+                case response_code::error_calendar_occurrence_is_deleted_from_recurrence:
+                    return "ErrorCalendarOccurrenceIsDeletedFromRecurrence";
+                case response_code::error_calendar_out_of_range:
+                    return "ErrorCalendarOutOfRange";
+                case response_code::error_calendar_view_range_too_big:
+                    return "ErrorCalendarViewRangeTooBig";
+                case response_code::error_cannot_create_calendar_item_in_non_calendar_folder:
+                    return "ErrorCannotCreateCalendarItemInNonCalendarFolder";
+                case response_code::error_cannot_create_contact_in_non_contacts_folder:
+                    return "ErrorCannotCreateContactInNonContactsFolder";
+                case response_code::error_cannot_create_task_in_non_task_folder:
+                    return "ErrorCannotCreateTaskInNonTaskFolder";
+                case response_code::error_cannot_delete_object:
+                    return "ErrorCannotDeleteObject";
+                case response_code::error_cannot_delete_task_occurrence:
+                    return "ErrorCannotDeleteTaskOccurrence";
+                case response_code::error_cannot_open_file_attachment:
+                    return "ErrorCannotOpenFileAttachment";
+                case response_code::error_cannot_use_folder_id_for_item_id:
+                    return "ErrorCannotUseFolderIdForItemId";
+                case response_code::error_cannot_user_item_id_for_folder_id:
+                    return "ErrorCannotUserItemIdForFolderId";
+                case response_code::error_change_key_required:
+                    return "ErrorChangeKeyRequired";
+                case response_code::error_change_key_required_for_write_operations:
+                    return "ErrorChangeKeyRequiredForWriteOperations";
+                case response_code::error_connection_failed:
+                    return "ErrorConnectionFailed";
+                case response_code::error_content_conversion_failed:
+                    return "ErrorContentConversionFailed";
+                case response_code::error_corrupt_data:
+                    return "ErrorCorruptData";
+                case response_code::error_create_item_access_denied:
+                    return "ErrorCreateItemAccessDenied";
+                case response_code::error_create_managed_folder_partial_completion:
+                    return "ErrorCreateManagedFolderPartialCompletion";
+                case response_code::error_create_subfolder_access_denied:
+                    return "ErrorCreateSubfolderAccessDenied";
+                case response_code::error_cross_mailbox_move_copy:
+                    return "ErrorCrossMailboxMoveCopy";
+                case response_code::error_data_size_limit_exceeded:
+                    return "ErrorDataSizeLimitExceeded";
+                case response_code::error_data_source_operation:
+                    return "ErrorDataSourceOperation";
+                case response_code::error_delete_distinguished_folder:
+                    return "ErrorDeleteDistinguishedFolder";
+                case response_code::error_delete_items_failed:
+                    return "ErrorDeleteItemsFailed";
+                case response_code::error_duplicate_input_folder_names:
+                    return "ErrorDuplicateInputFolderNames";
+                case response_code::error_email_address_mismatch:
+                    return "ErrorEmailAddressMismatch";
+                case response_code::error_event_not_found:
+                    return "ErrorEventNotFound";
+                case response_code::error_expired_subscription:
+                    return "ErrorExpiredSubscription";
+                case response_code::error_folder_corrupt:
+                    return "ErrorFolderCorrupt";
+                case response_code::error_folder_not_found:
+                    return "ErrorFolderNotFound";
+                case response_code::error_folder_property_request_failed:
+                    return "ErrorFolderPropertyRequestFailed";
+                case response_code::error_folder_save:
+                    return "ErrorFolderSave";
+                case response_code::error_folder_save_failed:
+                    return "ErrorFolderSaveFailed";
+                case response_code::error_folder_save_property_error:
+                    return "ErrorFolderSavePropertyError";
+                case response_code::error_folder_exists:
+                    return "ErrorFolderExists";
+                case response_code::error_free_busy_generation_failed:
+                    return "ErrorFreeBusyGenerationFailed";
+                case response_code::error_get_server_security_descriptor_failed:
+                    return "ErrorGetServerSecurityDescriptorFailed";
+                case response_code::error_impersonate_user_denied:
+                    return "ErrorImpersonateUserDenied";
+                case response_code::error_impersonation_denied:
+                    return "ErrorImpersonationDenied";
+                case response_code::error_impersonation_failed:
+                    return "ErrorImpersonationFailed";
+                case response_code::error_incorrect_update_property_count:
+                    return "ErrorIncorrectUpdatePropertyCount";
+                case response_code::error_individual_mailbox_limit_reached:
+                    return "ErrorIndividualMailboxLimitReached";
+                case response_code::error_insufficient_resources:
+                    return "ErrorInsufficientResources";
+                case response_code::error_internal_server_error:
+                    return "ErrorInternalServerError";
+                case response_code::error_internal_server_transient_error:
+                    return "ErrorInternalServerTransientError";
+                case response_code::error_invalid_access_level:
+                    return "ErrorInvalidAccessLevel";
+                case response_code::error_invalid_attachment_id:
+                    return "ErrorInvalidAttachmentId";
+                case response_code::error_invalid_attachment_subfilter:
+                    return "ErrorInvalidAttachmentSubfilter";
+                case response_code::error_invalid_attachment_subfilter_text_filter:
+                    return "ErrorInvalidAttachmentSubfilterTextFilter";
+                case response_code::error_invalid_authorization_context:
+                    return "ErrorInvalidAuthorizationContext";
+                case response_code::error_invalid_change_key:
+                    return "ErrorInvalidChangeKey";
+                case response_code::error_invalid_client_security_context:
+                    return "ErrorInvalidClientSecurityContext";
+                case response_code::error_invalid_complete_date:
+                    return "ErrorInvalidCompleteDate";
+                case response_code::error_invalid_cross_forest_credentials:
+                    return "ErrorInvalidCrossForestCredentials";
+                case response_code::error_invalid_exchange_impersonation_header_data:
+                    return "ErrorInvalidExchangeImpersonationHeaderData";
+                case response_code::error_invalid_excludes_restriction:
+                    return "ErrorInvalidExcludesRestriction";
+                case response_code::error_invalid_expression_type_for_sub_filter:
+                    return "ErrorInvalidExpressionTypeForSubFilter";
+                case response_code::error_invalid_extended_property:
+                    return "ErrorInvalidExtendedProperty";
+                case response_code::error_invalid_extended_property_value:
+                    return "ErrorInvalidExtendedPropertyValue";
+                case response_code::error_invalid_folder_id:
+                    return "ErrorInvalidFolderId";
+                case response_code::error_invalid_fractional_paging_parameters:
+                    return "ErrorInvalidFractionalPagingParameters";
+                case response_code::error_invalid_free_busy_view_type:
+                    return "ErrorInvalidFreeBusyViewType";
+                case response_code::error_invalid_id:
+                    return "ErrorInvalidId";
+                case response_code::error_invalid_id_empty:
+                    return "ErrorInvalidIdEmpty";
+                case response_code::error_invalid_id_malformed:
+                    return "ErrorInvalidIdMalformed";
+                case response_code::error_invalid_id_moniker_too_long:
+                    return "ErrorInvalidIdMonikerTooLong";
+                case response_code::error_invalid_id_not_an_item_attachment_id:
+                    return "ErrorInvalidIdNotAnItemAttachmentId";
+                case response_code::error_invalid_id_returned_by_resolve_names:
+                    return "ErrorInvalidIdReturnedByResolveNames";
+                case response_code::error_invalid_id_store_object_id_too_long:
+                    return "ErrorInvalidIdStoreObjectIdTooLong";
+                case response_code::error_invalid_id_too_many_attachment_levels:
+                    return "ErrorInvalidIdTooManyAttachmentLevels";
+                case response_code::error_invalid_id_xml:
+                    return "ErrorInvalidIdXml";
+                case response_code::error_invalid_indexed_paging_parameters:
+                    return "ErrorInvalidIndexedPagingParameters";
+                case response_code::error_invalid_internet_header_child_nodes:
+                    return "ErrorInvalidInternetHeaderChildNodes";
+                case response_code::error_invalid_item_for_operation_create_item_attachment:
+                    return "ErrorInvalidItemForOperationCreateItemAttachment";
+                case response_code::error_invalid_item_for_operation_create_item:
+                    return "ErrorInvalidItemForOperationCreateItem";
+                case response_code::error_invalid_item_for_operation_accept_item:
+                    return "ErrorInvalidItemForOperationAcceptItem";
+                case response_code::error_invalid_item_for_operation_cancel_item:
+                    return "ErrorInvalidItemForOperationCancelItem";
+                case response_code::error_invalid_item_for_operation_decline_item:
+                    return "ErrorInvalidItemForOperationDeclineItem";
+                case response_code::error_invalid_item_for_operation_expand_dl:
+                    return "ErrorInvalidItemForOperationExpandDL";
+                case response_code::error_invalid_item_for_operation_remove_item:
+                    return "ErrorInvalidItemForOperationRemoveItem";
+                case response_code::error_invalid_item_for_operation_send_item:
+                    return "ErrorInvalidItemForOperationSendItem";
+                case response_code::error_invalid_item_for_operation_tentative:
+                    return "ErrorInvalidItemForOperationTentative";
+                case response_code::error_invalid_managed_folder_property:
+                    return "ErrorInvalidManagedFolderProperty";
+                case response_code::error_invalid_managed_folder_quota:
+                    return "ErrorInvalidManagedFolderQuota";
+                case response_code::error_invalid_managed_folder_size:
+                    return "ErrorInvalidManagedFolderSize";
+                case response_code::error_invalid_merged_free_busy_interval:
+                    return "ErrorInvalidMergedFreeBusyInterval";
+                case response_code::error_invalid_name_for_name_resolution:
+                    return "ErrorInvalidNameForNameResolution";
+                case response_code::error_invalid_network_service_context:
+                    return "ErrorInvalidNetworkServiceContext";
+                case response_code::error_invalid_oof_parameter:
+                    return "ErrorInvalidOofParameter";
+                case response_code::error_invalid_paging_max_rows:
+                    return "ErrorInvalidPagingMaxRows";
+                case response_code::error_invalid_parent_folder:
+                    return "ErrorInvalidParentFolder";
+                case response_code::error_invalid_percent_complete_value:
+                    return "ErrorInvalidPercentCompleteValue";
+                case response_code::error_invalid_property_append:
+                    return "ErrorInvalidPropertyAppend";
+                case response_code::error_invalid_property_delete:
+                    return "ErrorInvalidPropertyDelete";
+                case response_code::error_invalid_property_for_exists:
+                    return "ErrorInvalidPropertyForExists";
+                case response_code::error_invalid_property_for_operation:
+                    return "ErrorInvalidPropertyForOperation";
+                case response_code::error_invalid_property_request:
+                    return "ErrorInvalidPropertyRequest";
+                case response_code::error_invalid_property_set:
+                    return "ErrorInvalidPropertySet";
+                case response_code::error_invalid_property_update_sent_message:
+                    return "ErrorInvalidPropertyUpdateSentMessage";
+                case response_code::error_invalid_pull_subscription_id:
+                    return "ErrorInvalidPullSubscriptionId";
+                case response_code::error_invalid_push_subscription_url:
+                    return "ErrorInvalidPushSubscriptionUrl";
+                case response_code::error_invalid_recipients:
+                    return "ErrorInvalidRecipients";
+                case response_code::error_invalid_recipient_subfilter:
+                    return "ErrorInvalidRecipientSubfilter";
+                case response_code::error_invalid_recipient_subfilter_comparison:
+                    return "ErrorInvalidRecipientSubfilterComparison";
+                case response_code::error_invalid_recipient_subfilter_order:
+                    return "ErrorInvalidRecipientSubfilterOrder";
+                case response_code::error_invalid_recipient_subfilter_text_filter:
+                    return "ErrorInvalidRecipientSubfilterTextFilter";
+                case response_code::error_invalid_reference_item:
+                    return "ErrorInvalidReferenceItem";
+                case response_code::error_invalid_request:
+                    return "ErrorInvalidRequest";
+                case response_code::error_invalid_restriction:
+                    return "ErrorInvalidRestriction";
+                case response_code::error_invalid_routing_type:
+                    return "ErrorInvalidRoutingType";
+                case response_code::error_invalid_scheduled_oof_duration:
+                    return "ErrorInvalidScheduledOofDuration";
+                case response_code::error_invalid_security_descriptor:
+                    return "ErrorInvalidSecurityDescriptor";
+                case response_code::error_invalid_send_item_save_settings:
+                    return "ErrorInvalidSendItemSaveSettings";
+                case response_code::error_invalid_serialized_access_token:
+                    return "ErrorInvalidSerializedAccessToken";
+                case response_code::error_invalid_sid:
+                    return "ErrorInvalidSid";
+                case response_code::error_invalid_smtp_address:
+                    return "ErrorInvalidSmtpAddress";
+                case response_code::error_invalid_subfilter_type:
+                    return "ErrorInvalidSubfilterType";
+                case response_code::error_invalid_subfilter_type_not_attendee_type:
+                    return "ErrorInvalidSubfilterTypeNotAttendeeType";
+                case response_code::error_invalid_subfilter_type_not_recipient_type:
+                    return "ErrorInvalidSubfilterTypeNotRecipientType";
+                case response_code::error_invalid_subscription:
+                    return "ErrorInvalidSubscription";
+                case response_code::error_invalid_sync_state_data:
+                    return "ErrorInvalidSyncStateData";
+                case response_code::error_invalid_time_interval:
+                    return "ErrorInvalidTimeInterval";
+                case response_code::error_invalid_user_oof_settings:
+                    return "ErrorInvalidUserOofSettings";
+                case response_code::error_invalid_user_principal_name:
+                    return "ErrorInvalidUserPrincipalName";
+                case response_code::error_invalid_user_sid:
+                    return "ErrorInvalidUserSid";
+                case response_code::error_invalid_user_sid_missing_upn:
+                    return "ErrorInvalidUserSidMissingUPN";
+                case response_code::error_invalid_value_for_property:
+                    return "ErrorInvalidValueForProperty";
+                case response_code::error_invalid_watermark:
+                    return "ErrorInvalidWatermark";
+                case response_code::error_irresolvable_conflict:
+                    return "ErrorIrresolvableConflict";
+                case response_code::error_item_corrupt:
+                    return "ErrorItemCorrupt";
+                case response_code::error_item_not_found:
+                    return "ErrorItemNotFound";
+                case response_code::error_item_property_request_failed:
+                    return "ErrorItemPropertyRequestFailed";
+                case response_code::error_item_save:
+                    return "ErrorItemSave";
+                case response_code::error_item_save_property_error:
+                    return "ErrorItemSavePropertyError";
+                case response_code::error_legacy_mailbox_free_busy_view_type_not_merged:
+                    return "ErrorLegacyMailboxFreeBusyViewTypeNotMerged";
+                case response_code::error_local_server_object_not_found:
+                    return "ErrorLocalServerObjectNotFound";
+                case response_code::error_logon_as_network_service_failed:
+                    return "ErrorLogonAsNetworkServiceFailed";
+                case response_code::error_mailbox_configuration:
+                    return "ErrorMailboxConfiguration";
+                case response_code::error_mailbox_data_array_empty:
+                    return "ErrorMailboxDataArrayEmpty";
+                case response_code::error_mailbox_data_array_too_big:
+                    return "ErrorMailboxDataArrayTooBig";
+                case response_code::error_mailbox_logon_failed:
+                    return "ErrorMailboxLogonFailed";
+                case response_code::error_mailbox_move_in_progress:
+                    return "ErrorMailboxMoveInProgress";
+                case response_code::error_mailbox_store_unavailable:
+                    return "ErrorMailboxStoreUnavailable";
+                case response_code::error_mail_recipient_not_found:
+                    return "ErrorMailRecipientNotFound";
+                case response_code::error_managed_folder_already_exists:
+                    return "ErrorManagedFolderAlreadyExists";
+                case response_code::error_managed_folder_not_found:
+                    return "ErrorManagedFolderNotFound";
+                case response_code::error_managed_folders_root_failure:
+                    return "ErrorManagedFoldersRootFailure";
+                case response_code::error_meeting_suggestion_generation_failed:
+                    return "ErrorMeetingSuggestionGenerationFailed";
+                case response_code::error_message_disposition_required:
+                    return "ErrorMessageDispositionRequired";
+                case response_code::error_message_size_exceeded:
+                    return "ErrorMessageSizeExceeded";
+                case response_code::error_mime_content_conversion_failed:
+                    return "ErrorMimeContentConversionFailed";
+                case response_code::error_mime_content_invalid:
+                    return "ErrorMimeContentInvalid";
+                case response_code::error_mime_content_invalid_base64_string:
+                    return "ErrorMimeContentInvalidBase64String";
+                case response_code::error_missing_argument:
+                    return "ErrorMissingArgument";
+                case response_code::error_missing_email_address:
+                    return "ErrorMissingEmailAddress";
+                case response_code::error_missing_email_address_for_managed_folder:
+                    return "ErrorMissingEmailAddressForManagedFolder";
+                case response_code::error_missing_information_email_address:
+                    return "ErrorMissingInformationEmailAddress";
+                case response_code::error_missing_information_reference_item_id:
+                    return "ErrorMissingInformationReferenceItemId";
+                case response_code::error_missing_item_for_create_item_attachment:
+                    return "ErrorMissingItemForCreateItemAttachment";
+                case response_code::error_missing_managed_folder_id:
+                    return "ErrorMissingManagedFolderId";
+                case response_code::error_missing_recipients:
+                    return "ErrorMissingRecipients";
+                case response_code::error_move_copy_failed:
+                    return "ErrorMoveCopyFailed";
+                case response_code::error_move_distinguished_folder:
+                    return "ErrorMoveDistinguishedFolder";
+                case response_code::error_name_resolution_multiple_results:
+                    return "ErrorNameResolutionMultipleResults";
+                case response_code::error_name_resolution_no_mailbox:
+                    return "ErrorNameResolutionNoMailbox";
+                case response_code::error_name_resolution_no_results:
+                    return "ErrorNameResolutionNoResults";
+                case response_code::error_no_calendar:
+                    return "ErrorNoCalendar";
+                case response_code::error_no_folder_class_override:
+                    return "ErrorNoFolderClassOverride";
+                case response_code::error_no_free_busy_access:
+                    return "ErrorNoFreeBusyAccess";
+                case response_code::error_non_existent_mailbox:
+                    return "ErrorNonExistentMailbox";
+                case response_code::error_non_primary_smtp_address:
+                    return "ErrorNonPrimarySmtpAddress";
+                case response_code::error_no_property_tag_for_custom_properties:
+                    return "ErrorNoPropertyTagForCustomProperties";
+                case response_code::error_not_enough_memory:
+                    return "ErrorNotEnoughMemory";
+                case response_code::error_object_type_changed:
+                    return "ErrorObjectTypeChanged";
+                case response_code::error_occurrence_crossing_boundary:
+                    return "ErrorOccurrenceCrossingBoundary";
+                case response_code::error_occurrence_time_span_too_big:
+                    return "ErrorOccurrenceTimeSpanTooBig";
+                case response_code::error_parent_folder_id_required:
+                    return "ErrorParentFolderIdRequired";
+                case response_code::error_parent_folder_not_found:
+                    return "ErrorParentFolderNotFound";
+                case response_code::error_password_change_required:
+                    return "ErrorPasswordChangeRequired";
+                case response_code::error_password_expired:
+                    return "ErrorPasswordExpired";
+                case response_code::error_property_update:
+                    return "ErrorPropertyUpdate";
+                case response_code::error_property_validation_failure:
+                    return "ErrorPropertyValidationFailure";
+                case response_code::error_proxy_request_not_allowed:
+                    return "ErrorProxyRequestNotAllowed";
+                case response_code::error_public_folder_request_processing_failed:
+                    return "ErrorPublicFolderRequestProcessingFailed";
+                case response_code::error_public_folder_server_not_found:
+                    return "ErrorPublicFolderServerNotFound";
+                case response_code::error_query_filter_too_long:
+                    return "ErrorQueryFilterTooLong";
+                case response_code::error_quota_exceeded:
+                    return "ErrorQuotaExceeded";
+                case response_code::error_read_events_failed:
+                    return "ErrorReadEventsFailed";
+                case response_code::error_read_receipt_not_pending:
+                    return "ErrorReadReceiptNotPending";
+                case response_code::error_recurrence_end_date_too_big:
+                    return "ErrorRecurrenceEndDateTooBig";
+                case response_code::error_recurrence_has_no_occurrence:
+                    return "ErrorRecurrenceHasNoOccurrence";
+                case response_code::error_request_aborted:
+                    return "ErrorRequestAborted";
+                case response_code::error_request_stream_too_big:
+                    return "ErrorRequestStreamTooBig";
+                case response_code::error_required_property_missing:
+                    return "ErrorRequiredPropertyMissing";
+                case response_code::error_response_schema_validation:
+                    return "ErrorResponseSchemaValidation";
+                case response_code::error_restriction_too_long:
+                    return "ErrorRestrictionTooLong";
+                case response_code::error_restriction_too_complex:
+                    return "ErrorRestrictionTooComplex";
+                case response_code::error_result_set_too_big:
+                    return "ErrorResultSetTooBig";
+                case response_code::error_saved_item_folder_not_found:
+                    return "ErrorSavedItemFolderNotFound";
+                case response_code::error_schema_validation:
+                    return "ErrorSchemaValidation";
+                case response_code::error_search_folder_not_initialized:
+                    return "ErrorSearchFolderNotInitialized";
+                case response_code::error_send_as_denied:
+                    return "ErrorSendAsDenied";
+                case response_code::error_send_meeting_cancellations_required:
+                    return "ErrorSendMeetingCancellationsRequired";
+                case response_code::error_send_meeting_invitations_or_cancellations_required:
+                    return "ErrorSendMeetingInvitationsOrCancellationsRequired";
+                case response_code::error_send_meeting_invitations_required:
+                    return "ErrorSendMeetingInvitationsRequired";
+                case response_code::error_sent_meeting_request_update:
+                    return "ErrorSentMeetingRequestUpdate";
+                case response_code::error_sent_task_request_update:
+                    return "ErrorSentTaskRequestUpdate";
+                case response_code::error_server_busy:
+                    return "ErrorServerBusy";
+                case response_code::error_stale_object:
+                    return "ErrorStaleObject";
+                case response_code::error_subscription_access_denied:
+                    return "ErrorSubscriptionAccessDenied";
+                case response_code::error_subscription_delegate_access_not_supported:
+                    return "ErrorSubscriptionDelegateAccessNotSupported";
+                case response_code::error_subscription_not_found:
+                    return "ErrorSubscriptionNotFound";
+                case response_code::error_sync_folder_not_found:
+                    return "ErrorSyncFolderNotFound";
+                case response_code::error_time_interval_too_big:
+                    return "ErrorTimeIntervalTooBig";
+                case response_code::error_to_folder_not_found:
+                    return "ErrorToFolderNotFound";
+                case response_code::error_token_serialization_denied:
+                    return "ErrorTokenSerializationDenied";
+                case response_code::error_unable_to_get_user_oof_settings:
+                    return "ErrorUnableToGetUserOofSettings";
+                case response_code::error_unsupported_culture:
+                    return "ErrorUnsupportedCulture";
+                case response_code::error_unsupported_mapi_property_type:
+                    return "ErrorUnsupportedMapiPropertyType";
+                case response_code::error_unsupported_mime_conversion:
+                    return "ErrorUnsupportedMimeConversion";
+                case response_code::error_unsupported_path_for_query:
+                    return "ErrorUnsupportedPathForQuery";
+                case response_code::error_unsupported_path_for_sort_group:
+                    return "ErrorUnsupportedPathForSortGroup";
+                case response_code::error_unsupported_property_definition:
+                    return "ErrorUnsupportedPropertyDefinition";
+                case response_code::error_unsupported_query_filter:
+                    return "ErrorUnsupportedQueryFilter";
+                case response_code::error_unsupported_recurrence:
+                    return "ErrorUnsupportedRecurrence";
+                case response_code::error_unsupported_sub_filter:
+                    return "ErrorUnsupportedSubFilter";
+                case response_code::error_unsupported_type_for_conversion:
+                    return "ErrorUnsupportedTypeForConversion";
+                case response_code::error_update_property_mismatch:
+                    return "ErrorUpdatePropertyMismatch";
+                case response_code::error_virus_detected:
+                    return "ErrorVirusDetected";
+                case response_code::error_virus_message_deleted:
+                    return "ErrorVirusMessageDeleted";
+                case response_code::error_voice_mail_not_implemented:
+                    return "ErrorVoiceMailNotImplemented";
+                case response_code::error_web_request_in_invalid_state:
+                    return "ErrorWebRequestInInvalidState";
+                case response_code::error_win32_interop_error:
+                    return "ErrorWin32InteropError";
+                case response_code::error_working_hours_save_failed:
+                    return "ErrorWorkingHoursSaveFailed";
+                case response_code::error_working_hours_xml_malformed:
+                    return "ErrorWorkingHoursXmlMalformed";
+                default:
+                    throw exception("Unrecognized response code");
+            }
+        }
     }
 
-    // TODO: move to internal namespace
-    inline std::string response_code_to_str(response_code code)
-    {
-        switch (code)
-        {
-            case response_code::no_error:
-                return "NoError";
-            case response_code::error_access_denied:
-                return "ErrorAccessDenied";
-            case response_code::error_account_disabled:
-                return "ErrorAccountDisabled";
-            case response_code::error_address_space_not_found:
-                return "ErrorAddressSpaceNotFound";
-            case response_code::error_ad_operation:
-                return "ErrorADOperation";
-            case response_code::error_ad_session_filter:
-                return "ErrorADSessionFilter";
-            case response_code::error_ad_unavailable:
-                return "ErrorADUnavailable";
-            case response_code::error_auto_discover_failed:
-                return "ErrorAutoDiscoverFailed";
-            case response_code::error_affected_task_occurrences_required:
-                return "ErrorAffectedTaskOccurrencesRequired";
-            case response_code::error_attachment_size_limit_exceeded:
-                return "ErrorAttachmentSizeLimitExceeded";
-            case response_code::error_availability_config_not_found:
-                return "ErrorAvailabilityConfigNotFound";
-            case response_code::error_batch_processing_stopped:
-                return "ErrorBatchProcessingStopped";
-            case response_code::error_calendar_cannot_move_or_copy_occurrence:
-                return "ErrorCalendarCannotMoveOrCopyOccurrence";
-            case response_code::error_calendar_cannot_update_deleted_item:
-                return "ErrorCalendarCannotUpdateDeletedItem";
-            case response_code::error_calendar_cannot_use_id_for_occurrence_id:
-                return "ErrorCalendarCannotUseIdForOccurrenceId";
-            case response_code::error_calendar_cannot_use_id_for_recurring_master_id:
-                return "ErrorCalendarCannotUseIdForRecurringMasterId";
-            case response_code::error_calendar_duration_is_too_long:
-                return "ErrorCalendarDurationIsTooLong";
-            case response_code::error_calendar_end_date_is_earlier_than_start_date:
-                return "ErrorCalendarEndDateIsEarlierThanStartDate";
-            case response_code::error_calendar_folder_is_invalid_for_calendar_view:
-                return "ErrorCalendarFolderIsInvalidForCalendarView";
-            case response_code::error_calendar_invalid_attribute_value:
-                return "ErrorCalendarInvalidAttributeValue";
-            case response_code::error_calendar_invalid_day_for_time_change_pattern:
-                return "ErrorCalendarInvalidDayForTimeChangePattern";
-            case response_code::error_calendar_invalid_day_for_weekly_recurrence:
-                return "ErrorCalendarInvalidDayForWeeklyRecurrence";
-            case response_code::error_calendar_invalid_property_state:
-                return "ErrorCalendarInvalidPropertyState";
-            case response_code::error_calendar_invalid_property_value:
-                return "ErrorCalendarInvalidPropertyValue";
-            case response_code::error_calendar_invalid_recurrence:
-                return "ErrorCalendarInvalidRecurrence";
-            case response_code::error_calendar_invalid_time_zone:
-                return "ErrorCalendarInvalidTimeZone";
-            case response_code::error_calendar_is_delegated_for_accept:
-                return "ErrorCalendarIsDelegatedForAccept";
-            case response_code::error_calendar_is_delegated_for_decline:
-                return "ErrorCalendarIsDelegatedForDecline";
-            case response_code::error_calendar_is_delegated_for_remove:
-                return "ErrorCalendarIsDelegatedForRemove";
-            case response_code::error_calendar_is_delegated_for_tentative:
-                return "ErrorCalendarIsDelegatedForTentative";
-            case response_code::error_calendar_is_not_organizer:
-                return "ErrorCalendarIsNotOrganizer";
-            case response_code::error_calendar_is_organizer_for_accept:
-                return "ErrorCalendarIsOrganizerForAccept";
-            case response_code::error_calendar_is_organizer_for_decline:
-                return "ErrorCalendarIsOrganizerForDecline";
-            case response_code::error_calendar_is_organizer_for_remove:
-                return "ErrorCalendarIsOrganizerForRemove";
-            case response_code::error_calendar_is_organizer_for_tentative:
-                return "ErrorCalendarIsOrganizerForTentative";
-            case response_code::error_calendar_occurrence_index_is_out_of_recurrence_range:
-                return "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange";
-            case response_code::error_calendar_occurrence_is_deleted_from_recurrence:
-                return "ErrorCalendarOccurrenceIsDeletedFromRecurrence";
-            case response_code::error_calendar_out_of_range:
-                return "ErrorCalendarOutOfRange";
-            case response_code::error_calendar_view_range_too_big:
-                return "ErrorCalendarViewRangeTooBig";
-            case response_code::error_cannot_create_calendar_item_in_non_calendar_folder:
-                return "ErrorCannotCreateCalendarItemInNonCalendarFolder";
-            case response_code::error_cannot_create_contact_in_non_contacts_folder:
-                return "ErrorCannotCreateContactInNonContactsFolder";
-            case response_code::error_cannot_create_task_in_non_task_folder:
-                return "ErrorCannotCreateTaskInNonTaskFolder";
-            case response_code::error_cannot_delete_object:
-                return "ErrorCannotDeleteObject";
-            case response_code::error_cannot_delete_task_occurrence:
-                return "ErrorCannotDeleteTaskOccurrence";
-            case response_code::error_cannot_open_file_attachment:
-                return "ErrorCannotOpenFileAttachment";
-            case response_code::error_cannot_use_folder_id_for_item_id:
-                return "ErrorCannotUseFolderIdForItemId";
-            case response_code::error_cannot_user_item_id_for_folder_id:
-                return "ErrorCannotUserItemIdForFolderId";
-            case response_code::error_change_key_required:
-                return "ErrorChangeKeyRequired";
-            case response_code::error_change_key_required_for_write_operations:
-                return "ErrorChangeKeyRequiredForWriteOperations";
-            case response_code::error_connection_failed:
-                return "ErrorConnectionFailed";
-            case response_code::error_content_conversion_failed:
-                return "ErrorContentConversionFailed";
-            case response_code::error_corrupt_data:
-                return "ErrorCorruptData";
-            case response_code::error_create_item_access_denied:
-                return "ErrorCreateItemAccessDenied";
-            case response_code::error_create_managed_folder_partial_completion:
-                return "ErrorCreateManagedFolderPartialCompletion";
-            case response_code::error_create_subfolder_access_denied:
-                return "ErrorCreateSubfolderAccessDenied";
-            case response_code::error_cross_mailbox_move_copy:
-                return "ErrorCrossMailboxMoveCopy";
-            case response_code::error_data_size_limit_exceeded:
-                return "ErrorDataSizeLimitExceeded";
-            case response_code::error_data_source_operation:
-                return "ErrorDataSourceOperation";
-            case response_code::error_delete_distinguished_folder:
-                return "ErrorDeleteDistinguishedFolder";
-            case response_code::error_delete_items_failed:
-                return "ErrorDeleteItemsFailed";
-            case response_code::error_duplicate_input_folder_names:
-                return "ErrorDuplicateInputFolderNames";
-            case response_code::error_email_address_mismatch:
-                return "ErrorEmailAddressMismatch";
-            case response_code::error_event_not_found:
-                return "ErrorEventNotFound";
-            case response_code::error_expired_subscription:
-                return "ErrorExpiredSubscription";
-            case response_code::error_folder_corrupt:
-                return "ErrorFolderCorrupt";
-            case response_code::error_folder_not_found:
-                return "ErrorFolderNotFound";
-            case response_code::error_folder_property_request_failed:
-                return "ErrorFolderPropertyRequestFailed";
-            case response_code::error_folder_save:
-                return "ErrorFolderSave";
-            case response_code::error_folder_save_failed:
-                return "ErrorFolderSaveFailed";
-            case response_code::error_folder_save_property_error:
-                return "ErrorFolderSavePropertyError";
-            case response_code::error_folder_exists:
-                return "ErrorFolderExists";
-            case response_code::error_free_busy_generation_failed:
-                return "ErrorFreeBusyGenerationFailed";
-            case response_code::error_get_server_security_descriptor_failed:
-                return "ErrorGetServerSecurityDescriptorFailed";
-            case response_code::error_impersonate_user_denied:
-                return "ErrorImpersonateUserDenied";
-            case response_code::error_impersonation_denied:
-                return "ErrorImpersonationDenied";
-            case response_code::error_impersonation_failed:
-                return "ErrorImpersonationFailed";
-            case response_code::error_incorrect_update_property_count:
-                return "ErrorIncorrectUpdatePropertyCount";
-            case response_code::error_individual_mailbox_limit_reached:
-                return "ErrorIndividualMailboxLimitReached";
-            case response_code::error_insufficient_resources:
-                return "ErrorInsufficientResources";
-            case response_code::error_internal_server_error:
-                return "ErrorInternalServerError";
-            case response_code::error_internal_server_transient_error:
-                return "ErrorInternalServerTransientError";
-            case response_code::error_invalid_access_level:
-                return "ErrorInvalidAccessLevel";
-            case response_code::error_invalid_attachment_id:
-                return "ErrorInvalidAttachmentId";
-            case response_code::error_invalid_attachment_subfilter:
-                return "ErrorInvalidAttachmentSubfilter";
-            case response_code::error_invalid_attachment_subfilter_text_filter:
-                return "ErrorInvalidAttachmentSubfilterTextFilter";
-            case response_code::error_invalid_authorization_context:
-                return "ErrorInvalidAuthorizationContext";
-            case response_code::error_invalid_change_key:
-                return "ErrorInvalidChangeKey";
-            case response_code::error_invalid_client_security_context:
-                return "ErrorInvalidClientSecurityContext";
-            case response_code::error_invalid_complete_date:
-                return "ErrorInvalidCompleteDate";
-            case response_code::error_invalid_cross_forest_credentials:
-                return "ErrorInvalidCrossForestCredentials";
-            case response_code::error_invalid_exchange_impersonation_header_data:
-                return "ErrorInvalidExchangeImpersonationHeaderData";
-            case response_code::error_invalid_excludes_restriction:
-                return "ErrorInvalidExcludesRestriction";
-            case response_code::error_invalid_expression_type_for_sub_filter:
-                return "ErrorInvalidExpressionTypeForSubFilter";
-            case response_code::error_invalid_extended_property:
-                return "ErrorInvalidExtendedProperty";
-            case response_code::error_invalid_extended_property_value:
-                return "ErrorInvalidExtendedPropertyValue";
-            case response_code::error_invalid_folder_id:
-                return "ErrorInvalidFolderId";
-            case response_code::error_invalid_fractional_paging_parameters:
-                return "ErrorInvalidFractionalPagingParameters";
-            case response_code::error_invalid_free_busy_view_type:
-                return "ErrorInvalidFreeBusyViewType";
-            case response_code::error_invalid_id:
-                return "ErrorInvalidId";
-            case response_code::error_invalid_id_empty:
-                return "ErrorInvalidIdEmpty";
-            case response_code::error_invalid_id_malformed:
-                return "ErrorInvalidIdMalformed";
-            case response_code::error_invalid_id_moniker_too_long:
-                return "ErrorInvalidIdMonikerTooLong";
-            case response_code::error_invalid_id_not_an_item_attachment_id:
-                return "ErrorInvalidIdNotAnItemAttachmentId";
-            case response_code::error_invalid_id_returned_by_resolve_names:
-                return "ErrorInvalidIdReturnedByResolveNames";
-            case response_code::error_invalid_id_store_object_id_too_long:
-                return "ErrorInvalidIdStoreObjectIdTooLong";
-            case response_code::error_invalid_id_too_many_attachment_levels:
-                return "ErrorInvalidIdTooManyAttachmentLevels";
-            case response_code::error_invalid_id_xml:
-                return "ErrorInvalidIdXml";
-            case response_code::error_invalid_indexed_paging_parameters:
-                return "ErrorInvalidIndexedPagingParameters";
-            case response_code::error_invalid_internet_header_child_nodes:
-                return "ErrorInvalidInternetHeaderChildNodes";
-            case response_code::error_invalid_item_for_operation_create_item_attachment:
-                return "ErrorInvalidItemForOperationCreateItemAttachment";
-            case response_code::error_invalid_item_for_operation_create_item:
-                return "ErrorInvalidItemForOperationCreateItem";
-            case response_code::error_invalid_item_for_operation_accept_item:
-                return "ErrorInvalidItemForOperationAcceptItem";
-            case response_code::error_invalid_item_for_operation_cancel_item:
-                return "ErrorInvalidItemForOperationCancelItem";
-            case response_code::error_invalid_item_for_operation_decline_item:
-                return "ErrorInvalidItemForOperationDeclineItem";
-            case response_code::error_invalid_item_for_operation_expand_dl:
-                return "ErrorInvalidItemForOperationExpandDL";
-            case response_code::error_invalid_item_for_operation_remove_item:
-                return "ErrorInvalidItemForOperationRemoveItem";
-            case response_code::error_invalid_item_for_operation_send_item:
-                return "ErrorInvalidItemForOperationSendItem";
-            case response_code::error_invalid_item_for_operation_tentative:
-                return "ErrorInvalidItemForOperationTentative";
-            case response_code::error_invalid_managed_folder_property:
-                return "ErrorInvalidManagedFolderProperty";
-            case response_code::error_invalid_managed_folder_quota:
-                return "ErrorInvalidManagedFolderQuota";
-            case response_code::error_invalid_managed_folder_size:
-                return "ErrorInvalidManagedFolderSize";
-            case response_code::error_invalid_merged_free_busy_interval:
-                return "ErrorInvalidMergedFreeBusyInterval";
-            case response_code::error_invalid_name_for_name_resolution:
-                return "ErrorInvalidNameForNameResolution";
-            case response_code::error_invalid_network_service_context:
-                return "ErrorInvalidNetworkServiceContext";
-            case response_code::error_invalid_oof_parameter:
-                return "ErrorInvalidOofParameter";
-            case response_code::error_invalid_paging_max_rows:
-                return "ErrorInvalidPagingMaxRows";
-            case response_code::error_invalid_parent_folder:
-                return "ErrorInvalidParentFolder";
-            case response_code::error_invalid_percent_complete_value:
-                return "ErrorInvalidPercentCompleteValue";
-            case response_code::error_invalid_property_append:
-                return "ErrorInvalidPropertyAppend";
-            case response_code::error_invalid_property_delete:
-                return "ErrorInvalidPropertyDelete";
-            case response_code::error_invalid_property_for_exists:
-                return "ErrorInvalidPropertyForExists";
-            case response_code::error_invalid_property_for_operation:
-                return "ErrorInvalidPropertyForOperation";
-            case response_code::error_invalid_property_request:
-                return "ErrorInvalidPropertyRequest";
-            case response_code::error_invalid_property_set:
-                return "ErrorInvalidPropertySet";
-            case response_code::error_invalid_property_update_sent_message:
-                return "ErrorInvalidPropertyUpdateSentMessage";
-            case response_code::error_invalid_pull_subscription_id:
-                return "ErrorInvalidPullSubscriptionId";
-            case response_code::error_invalid_push_subscription_url:
-                return "ErrorInvalidPushSubscriptionUrl";
-            case response_code::error_invalid_recipients:
-                return "ErrorInvalidRecipients";
-            case response_code::error_invalid_recipient_subfilter:
-                return "ErrorInvalidRecipientSubfilter";
-            case response_code::error_invalid_recipient_subfilter_comparison:
-                return "ErrorInvalidRecipientSubfilterComparison";
-            case response_code::error_invalid_recipient_subfilter_order:
-                return "ErrorInvalidRecipientSubfilterOrder";
-            case response_code::error_invalid_recipient_subfilter_text_filter:
-                return "ErrorInvalidRecipientSubfilterTextFilter";
-            case response_code::error_invalid_reference_item:
-                return "ErrorInvalidReferenceItem";
-            case response_code::error_invalid_request:
-                return "ErrorInvalidRequest";
-            case response_code::error_invalid_restriction:
-                return "ErrorInvalidRestriction";
-            case response_code::error_invalid_routing_type:
-                return "ErrorInvalidRoutingType";
-            case response_code::error_invalid_scheduled_oof_duration:
-                return "ErrorInvalidScheduledOofDuration";
-            case response_code::error_invalid_security_descriptor:
-                return "ErrorInvalidSecurityDescriptor";
-            case response_code::error_invalid_send_item_save_settings:
-                return "ErrorInvalidSendItemSaveSettings";
-            case response_code::error_invalid_serialized_access_token:
-                return "ErrorInvalidSerializedAccessToken";
-            case response_code::error_invalid_sid:
-                return "ErrorInvalidSid";
-            case response_code::error_invalid_smtp_address:
-                return "ErrorInvalidSmtpAddress";
-            case response_code::error_invalid_subfilter_type:
-                return "ErrorInvalidSubfilterType";
-            case response_code::error_invalid_subfilter_type_not_attendee_type:
-                return "ErrorInvalidSubfilterTypeNotAttendeeType";
-            case response_code::error_invalid_subfilter_type_not_recipient_type:
-                return "ErrorInvalidSubfilterTypeNotRecipientType";
-            case response_code::error_invalid_subscription:
-                return "ErrorInvalidSubscription";
-            case response_code::error_invalid_sync_state_data:
-                return "ErrorInvalidSyncStateData";
-            case response_code::error_invalid_time_interval:
-                return "ErrorInvalidTimeInterval";
-            case response_code::error_invalid_user_oof_settings:
-                return "ErrorInvalidUserOofSettings";
-            case response_code::error_invalid_user_principal_name:
-                return "ErrorInvalidUserPrincipalName";
-            case response_code::error_invalid_user_sid:
-                return "ErrorInvalidUserSid";
-            case response_code::error_invalid_user_sid_missing_upn:
-                return "ErrorInvalidUserSidMissingUPN";
-            case response_code::error_invalid_value_for_property:
-                return "ErrorInvalidValueForProperty";
-            case response_code::error_invalid_watermark:
-                return "ErrorInvalidWatermark";
-            case response_code::error_irresolvable_conflict:
-                return "ErrorIrresolvableConflict";
-            case response_code::error_item_corrupt:
-                return "ErrorItemCorrupt";
-            case response_code::error_item_not_found:
-                return "ErrorItemNotFound";
-            case response_code::error_item_property_request_failed:
-                return "ErrorItemPropertyRequestFailed";
-            case response_code::error_item_save:
-                return "ErrorItemSave";
-            case response_code::error_item_save_property_error:
-                return "ErrorItemSavePropertyError";
-            case response_code::error_legacy_mailbox_free_busy_view_type_not_merged:
-                return "ErrorLegacyMailboxFreeBusyViewTypeNotMerged";
-            case response_code::error_local_server_object_not_found:
-                return "ErrorLocalServerObjectNotFound";
-            case response_code::error_logon_as_network_service_failed:
-                return "ErrorLogonAsNetworkServiceFailed";
-            case response_code::error_mailbox_configuration:
-                return "ErrorMailboxConfiguration";
-            case response_code::error_mailbox_data_array_empty:
-                return "ErrorMailboxDataArrayEmpty";
-            case response_code::error_mailbox_data_array_too_big:
-                return "ErrorMailboxDataArrayTooBig";
-            case response_code::error_mailbox_logon_failed:
-                return "ErrorMailboxLogonFailed";
-            case response_code::error_mailbox_move_in_progress:
-                return "ErrorMailboxMoveInProgress";
-            case response_code::error_mailbox_store_unavailable:
-                return "ErrorMailboxStoreUnavailable";
-            case response_code::error_mail_recipient_not_found:
-                return "ErrorMailRecipientNotFound";
-            case response_code::error_managed_folder_already_exists:
-                return "ErrorManagedFolderAlreadyExists";
-            case response_code::error_managed_folder_not_found:
-                return "ErrorManagedFolderNotFound";
-            case response_code::error_managed_folders_root_failure:
-                return "ErrorManagedFoldersRootFailure";
-            case response_code::error_meeting_suggestion_generation_failed:
-                return "ErrorMeetingSuggestionGenerationFailed";
-            case response_code::error_message_disposition_required:
-                return "ErrorMessageDispositionRequired";
-            case response_code::error_message_size_exceeded:
-                return "ErrorMessageSizeExceeded";
-            case response_code::error_mime_content_conversion_failed:
-                return "ErrorMimeContentConversionFailed";
-            case response_code::error_mime_content_invalid:
-                return "ErrorMimeContentInvalid";
-            case response_code::error_mime_content_invalid_base64_string:
-                return "ErrorMimeContentInvalidBase64String";
-            case response_code::error_missing_argument:
-                return "ErrorMissingArgument";
-            case response_code::error_missing_email_address:
-                return "ErrorMissingEmailAddress";
-            case response_code::error_missing_email_address_for_managed_folder:
-                return "ErrorMissingEmailAddressForManagedFolder";
-            case response_code::error_missing_information_email_address:
-                return "ErrorMissingInformationEmailAddress";
-            case response_code::error_missing_information_reference_item_id:
-                return "ErrorMissingInformationReferenceItemId";
-            case response_code::error_missing_item_for_create_item_attachment:
-                return "ErrorMissingItemForCreateItemAttachment";
-            case response_code::error_missing_managed_folder_id:
-                return "ErrorMissingManagedFolderId";
-            case response_code::error_missing_recipients:
-                return "ErrorMissingRecipients";
-            case response_code::error_move_copy_failed:
-                return "ErrorMoveCopyFailed";
-            case response_code::error_move_distinguished_folder:
-                return "ErrorMoveDistinguishedFolder";
-            case response_code::error_name_resolution_multiple_results:
-                return "ErrorNameResolutionMultipleResults";
-            case response_code::error_name_resolution_no_mailbox:
-                return "ErrorNameResolutionNoMailbox";
-            case response_code::error_name_resolution_no_results:
-                return "ErrorNameResolutionNoResults";
-            case response_code::error_no_calendar:
-                return "ErrorNoCalendar";
-            case response_code::error_no_folder_class_override:
-                return "ErrorNoFolderClassOverride";
-            case response_code::error_no_free_busy_access:
-                return "ErrorNoFreeBusyAccess";
-            case response_code::error_non_existent_mailbox:
-                return "ErrorNonExistentMailbox";
-            case response_code::error_non_primary_smtp_address:
-                return "ErrorNonPrimarySmtpAddress";
-            case response_code::error_no_property_tag_for_custom_properties:
-                return "ErrorNoPropertyTagForCustomProperties";
-            case response_code::error_not_enough_memory:
-                return "ErrorNotEnoughMemory";
-            case response_code::error_object_type_changed:
-                return "ErrorObjectTypeChanged";
-            case response_code::error_occurrence_crossing_boundary:
-                return "ErrorOccurrenceCrossingBoundary";
-            case response_code::error_occurrence_time_span_too_big:
-                return "ErrorOccurrenceTimeSpanTooBig";
-            case response_code::error_parent_folder_id_required:
-                return "ErrorParentFolderIdRequired";
-            case response_code::error_parent_folder_not_found:
-                return "ErrorParentFolderNotFound";
-            case response_code::error_password_change_required:
-                return "ErrorPasswordChangeRequired";
-            case response_code::error_password_expired:
-                return "ErrorPasswordExpired";
-            case response_code::error_property_update:
-                return "ErrorPropertyUpdate";
-            case response_code::error_property_validation_failure:
-                return "ErrorPropertyValidationFailure";
-            case response_code::error_proxy_request_not_allowed:
-                return "ErrorProxyRequestNotAllowed";
-            case response_code::error_public_folder_request_processing_failed:
-                return "ErrorPublicFolderRequestProcessingFailed";
-            case response_code::error_public_folder_server_not_found:
-                return "ErrorPublicFolderServerNotFound";
-            case response_code::error_query_filter_too_long:
-                return "ErrorQueryFilterTooLong";
-            case response_code::error_quota_exceeded:
-                return "ErrorQuotaExceeded";
-            case response_code::error_read_events_failed:
-                return "ErrorReadEventsFailed";
-            case response_code::error_read_receipt_not_pending:
-                return "ErrorReadReceiptNotPending";
-            case response_code::error_recurrence_end_date_too_big:
-                return "ErrorRecurrenceEndDateTooBig";
-            case response_code::error_recurrence_has_no_occurrence:
-                return "ErrorRecurrenceHasNoOccurrence";
-            case response_code::error_request_aborted:
-                return "ErrorRequestAborted";
-            case response_code::error_request_stream_too_big:
-                return "ErrorRequestStreamTooBig";
-            case response_code::error_required_property_missing:
-                return "ErrorRequiredPropertyMissing";
-            case response_code::error_response_schema_validation:
-                return "ErrorResponseSchemaValidation";
-            case response_code::error_restriction_too_long:
-                return "ErrorRestrictionTooLong";
-            case response_code::error_restriction_too_complex:
-                return "ErrorRestrictionTooComplex";
-            case response_code::error_result_set_too_big:
-                return "ErrorResultSetTooBig";
-            case response_code::error_saved_item_folder_not_found:
-                return "ErrorSavedItemFolderNotFound";
-            case response_code::error_schema_validation:
-                return "ErrorSchemaValidation";
-            case response_code::error_search_folder_not_initialized:
-                return "ErrorSearchFolderNotInitialized";
-            case response_code::error_send_as_denied:
-                return "ErrorSendAsDenied";
-            case response_code::error_send_meeting_cancellations_required:
-                return "ErrorSendMeetingCancellationsRequired";
-            case response_code::error_send_meeting_invitations_or_cancellations_required:
-                return "ErrorSendMeetingInvitationsOrCancellationsRequired";
-            case response_code::error_send_meeting_invitations_required:
-                return "ErrorSendMeetingInvitationsRequired";
-            case response_code::error_sent_meeting_request_update:
-                return "ErrorSentMeetingRequestUpdate";
-            case response_code::error_sent_task_request_update:
-                return "ErrorSentTaskRequestUpdate";
-            case response_code::error_server_busy:
-                return "ErrorServerBusy";
-            case response_code::error_stale_object:
-                return "ErrorStaleObject";
-            case response_code::error_subscription_access_denied:
-                return "ErrorSubscriptionAccessDenied";
-            case response_code::error_subscription_delegate_access_not_supported:
-                return "ErrorSubscriptionDelegateAccessNotSupported";
-            case response_code::error_subscription_not_found:
-                return "ErrorSubscriptionNotFound";
-            case response_code::error_sync_folder_not_found:
-                return "ErrorSyncFolderNotFound";
-            case response_code::error_time_interval_too_big:
-                return "ErrorTimeIntervalTooBig";
-            case response_code::error_to_folder_not_found:
-                return "ErrorToFolderNotFound";
-            case response_code::error_token_serialization_denied:
-                return "ErrorTokenSerializationDenied";
-            case response_code::error_unable_to_get_user_oof_settings:
-                return "ErrorUnableToGetUserOofSettings";
-            case response_code::error_unsupported_culture:
-                return "ErrorUnsupportedCulture";
-            case response_code::error_unsupported_mapi_property_type:
-                return "ErrorUnsupportedMapiPropertyType";
-            case response_code::error_unsupported_mime_conversion:
-                return "ErrorUnsupportedMimeConversion";
-            case response_code::error_unsupported_path_for_query:
-                return "ErrorUnsupportedPathForQuery";
-            case response_code::error_unsupported_path_for_sort_group:
-                return "ErrorUnsupportedPathForSortGroup";
-            case response_code::error_unsupported_property_definition:
-                return "ErrorUnsupportedPropertyDefinition";
-            case response_code::error_unsupported_query_filter:
-                return "ErrorUnsupportedQueryFilter";
-            case response_code::error_unsupported_recurrence:
-                return "ErrorUnsupportedRecurrence";
-            case response_code::error_unsupported_sub_filter:
-                return "ErrorUnsupportedSubFilter";
-            case response_code::error_unsupported_type_for_conversion:
-                return "ErrorUnsupportedTypeForConversion";
-            case response_code::error_update_property_mismatch:
-                return "ErrorUpdatePropertyMismatch";
-            case response_code::error_virus_detected:
-                return "ErrorVirusDetected";
-            case response_code::error_virus_message_deleted:
-                return "ErrorVirusMessageDeleted";
-            case response_code::error_voice_mail_not_implemented:
-                return "ErrorVoiceMailNotImplemented";
-            case response_code::error_web_request_in_invalid_state:
-                return "ErrorWebRequestInInvalidState";
-            case response_code::error_win32_interop_error:
-                return "ErrorWin32InteropError";
-            case response_code::error_working_hours_save_failed:
-                return "ErrorWorkingHoursSaveFailed";
-            case response_code::error_working_hours_xml_malformed:
-                return "ErrorWorkingHoursXmlMalformed";
-            default:
-                throw exception("Unrecognized response code");
-        }
-    }
-
+    //! Represents the RequestServerVersion element
     enum class server_version
     {
-        // Target the schema files for the initial release version of
-        // Exchange 2007
+        //! Target the schema files for the initial release version of
+        //! Exchange 2007
         exchange_2007,
 
-        // Target the schema files for Exchange 2007 Service Pack 1 (SP1),
-        // Exchange 2007 Service Pack 2 (SP2), and
-        // Exchange 2007 Service Pack 3 (SP3)
+        //! Target the schema files for Exchange 2007 Service Pack 1 (SP1),
+        //! Exchange 2007 Service Pack 2 (SP2), and
+        //! Exchange 2007 Service Pack 3 (SP3)
         exchange_2007_sp1,
 
-        // Target the schema files for Exchange 2010
+        //! Target the schema files for Exchange 2010
         exchange_2010,
 
-        // Target the schema files for Exchange 2010 Service Pack 1 (SP1)
+        //! Target the schema files for Exchange 2010 Service Pack 1 (SP1)
         exchange_2010_sp1,
 
-        // Target the schema files for Exchange 2010 Service Pack 2 (SP2)
-        // and Exchange 2010 Service Pack 3 (SP3)
+        //! Target the schema files for Exchange 2010 Service Pack 2 (SP2)
+        //! and Exchange 2010 Service Pack 3 (SP3)
         exchange_2010_sp2,
 
-        // Target the schema files for Exchange 2013
+        //! Target the schema files for Exchange 2013
         exchange_2013,
 
-        // Target the schema files for Exchange 2013 Service Pack 1 (SP1)
+        //! Target the schema files for Exchange 2013 Service Pack 1 (SP1)
         exchange_2013_sp1
     };
 
@@ -3321,35 +3326,43 @@ namespace ews
         }
     }
 
+    //! Identifies the set of properties that a GetItem or GetFolder method
+    //! call should return
     enum class base_shape { id_only, default_shape, all_properties };
 
-    // TODO: move to internal namespace
-    inline std::string base_shape_str(base_shape shape)
+    namespace internal
     {
-        switch (shape)
+        inline std::string base_shape_str(base_shape shape)
         {
-            case base_shape::id_only:        return "IdOnly";
-            case base_shape::default_shape:  return "Default";
-            case base_shape::all_properties: return "AllProperties";
-            default: throw exception("Bad enum value");
+            switch (shape)
+            {
+                case base_shape::id_only:        return "IdOnly";
+                case base_shape::default_shape:  return "Default";
+                case base_shape::all_properties: return "AllProperties";
+                default: throw exception("Bad enum value");
+            }
         }
     }
 
-    // Side note: we do not provide SoftDelete because that does not make much
-    // sense from an EWS perspective
+    //! Describes how items are deleted from the Exchange store.
+    //!
+    //! Side note: we do not provide SoftDelete because that does not make much
+    //! sense from an EWS perspective
     enum class delete_type { hard_delete, move_to_deleted_items };
 
-    // TODO: move to internal namespace
-    inline std::string delete_type_str(delete_type d)
+    namespace internal
     {
-        switch (d)
+        inline std::string delete_type_str(delete_type d)
         {
-            case delete_type::hard_delete:
-                return "HardDelete";
-            case delete_type::move_to_deleted_items:
-                return "MoveToDeletedItems";
-            default:
-                throw exception("Bad enum value");
+            switch (d)
+            {
+                case delete_type::hard_delete:
+                    return "HardDelete";
+                case delete_type::move_to_deleted_items:
+                    return "MoveToDeletedItems";
+                default:
+                    throw exception("Bad enum value");
+            }
         }
     }
 
@@ -3359,92 +3372,102 @@ namespace ews
         specified_occurrence_only
     };
 
-    // TODO: move to internal namespace
-    inline std::string
-    affected_task_occurrences_str(affected_task_occurrences o)
+    namespace internal
     {
-        switch (o)
+        inline std::string
+        affected_task_occurrences_str(affected_task_occurrences o)
         {
-            case affected_task_occurrences::all_occurrences:
-                return "AllOccurrences";
-            case affected_task_occurrences::specified_occurrence_only:
-                return "SpecifiedOccurrenceOnly";
-            default:
-                throw exception("Bad enum value");
+            switch (o)
+            {
+                case affected_task_occurrences::all_occurrences:
+                    return "AllOccurrences";
+                case affected_task_occurrences::specified_occurrence_only:
+                    return "SpecifiedOccurrenceOnly";
+                default:
+                    throw exception("Bad enum value");
+            }
         }
     }
 
+    //! The type of conflict resolution to try during an UpdateItem method call.
+    //!
+    //! The default value is AutoResolve.
     enum class conflict_resolution
     {
-        // If there is a conflict, the update operation fails and an error is
-        // returned. The call to update_item never overwrites data that has
-        // changed underneath you!
+        //! If there is a conflict, the update operation fails and an error is
+        //! returned. The call to update_item never overwrites data that has
+        //! changed underneath you!
         never_overwrite,
 
-        // The update operation automatically resolves any conflict (if it can,
-        // otherwise the request fails)
+        //! The update operation automatically resolves any conflict (if it can,
+        //! otherwise the request fails)
         auto_resolve,
 
-        // If there is a conflict, the update operation will overwrite
-        // information. Ignores changes that occurred underneath you; last
-        // writer wins!
+        //! If there is a conflict, the update operation will overwrite
+        //! information. Ignores changes that occurred underneath you; last
+        //! writer wins!
         always_overwrite
     };
 
-    // TODO: move to internal namespace
-    inline std::string conflict_resolution_str(conflict_resolution val)
+    namespace internal
     {
-        switch (val)
+        inline std::string conflict_resolution_str(conflict_resolution val)
         {
-            case conflict_resolution::never_overwrite:
-                return "NeverOverwrite";
-            case conflict_resolution::auto_resolve:
-                return "AutoResolve";
-            case conflict_resolution::always_overwrite:
-                return "AlwaysOverwrite";
-            default:
-                throw exception("Bad enum value");
+            switch (val)
+            {
+                case conflict_resolution::never_overwrite:
+                    return "NeverOverwrite";
+                case conflict_resolution::auto_resolve:
+                    return "AutoResolve";
+                case conflict_resolution::always_overwrite:
+                    return "AlwaysOverwrite";
+                default:
+                    throw exception("Bad enum value");
+            }
         }
     }
 
-    // <CreateItem> and <UpdateItem> methods use this attribute. Only applicable
-    // to e-mail messages
+    //! <CreateItem> and <UpdateItem> methods use this attribute. Only
+    //! applicable to e-mail messages
     enum class message_disposition
     {
-        // Save the message in a specified folder or in the Drafts folder if
-        // none is given
+        //! Save the message in a specified folder or in the Drafts folder if
+        //! none is given
         save_only,
 
-        // Send the message and do not save a copy in the sender's mailbox
+        //! Send the message and do not save a copy in the sender's mailbox
         send_only,
 
-        // Send the message and save a copy in a specified folder or in the
-        // mailbox owner's Sent Items folder if none is given
+        //! Send the message and save a copy in a specified folder or in the
+        //! mailbox owner's Sent Items folder if none is given
         send_and_save_copy
     };
 
-    // TODO: move to internal namespace
-    inline std::string message_disposition_str(message_disposition val)
+    namespace internal
     {
-        switch (val)
+        inline std::string message_disposition_str(message_disposition val)
         {
-            case message_disposition::save_only:
-                return "SaveOnly";
-            case message_disposition::send_only:
-                return "SendOnly";
-            case message_disposition::send_and_save_copy:
-                return "SendAndSaveCopy";
-            default:
-                throw exception("Bad enum value");
+            switch (val)
+            {
+                case message_disposition::save_only:
+                    return "SaveOnly";
+                case message_disposition::send_only:
+                    return "SendOnly";
+                case message_disposition::send_and_save_copy:
+                    return "SendAndSaveCopy";
+                default:
+                    throw exception("Bad enum value");
+            }
         }
     }
 
-    // Exception thrown when a request was not successful
+    //! Exception thrown when a request was not successful
     class exchange_error final : public exception
     {
     public:
         explicit exchange_error(response_code code)
-            : exception(response_code_to_str(code)), code_(code)
+            : exception(internal::response_code_to_str(code)),
+              code_(code)
         {
         }
 
@@ -3454,7 +3477,7 @@ namespace ews
         response_code code_;
     };
 
-    // Exception thrown when a HTTP request was not successful
+    //! Exception thrown when a HTTP request was not successful
     class http_error final : public exception
     {
     public:
@@ -3470,7 +3493,7 @@ namespace ews
         long code_;
     };
 
-    // A SOAP fault occurred due to a bad request
+    //! A SOAP fault occurred due to a bad request
     class soap_fault : public exception
     {
     public:
@@ -3478,14 +3501,15 @@ namespace ews
         explicit soap_fault(const char* what) : exception(what) {}
     };
 
-    // A SOAP fault that is raised when we sent invalid XML.
-    //
-    // This is an internal error and indicates a bug in this library, thus
-    // should never happen.
-    //
-    // Note: because this exception is due to a SOAP fault (sometimes recognized
-    // before any server-side XML parsing finished) any included failure message
-    // is likely not localized according to any MailboxCulture SOAP header.
+    //! \brief A SOAP fault that is raised when we sent invalid XML.
+    //!
+    //! This is an internal error and indicates a bug in this library, thus
+    //! should never happen.
+    //!
+    //! Note: because this exception is due to a SOAP fault (sometimes
+    //! recognized before any server-side XML parsing finished) any included
+    //! failure message is likely not localized according to any MailboxCulture
+    //! SOAP header.
     class schema_validation_error final : public soap_fault
     {
     public:
@@ -3499,13 +3523,13 @@ namespace ews
         {
         }
 
-        // Line number in request string where the error was found
+        //! Line number in request string where the error was found
         unsigned long line_number() const EWS_NOEXCEPT { return line_no_; }
 
-        // Column number in request string where the error was found
+        //! Column number in request string where the error was found
         unsigned long line_position() const EWS_NOEXCEPT { return line_pos_; }
 
-        // A more detailed explanation of what went wrong
+        //! A more detailed explanation of what went wrong
         const std::string& violation() const EWS_NOEXCEPT { return violation_; }
 
     private:
@@ -4342,24 +4366,30 @@ namespace ews
         };
     }
 
-    // Function is not thread-safe; should be set-up when application is still
-    // in single-threaded context. Calling this function more than once does no
-    // harm.
-    inline void set_up() { curl_global_init(CURL_GLOBAL_DEFAULT); }
+    //! Set-up EWS library.
+    //
+    //! Should be called when application is still in single-threaded context.
+    //! Calling this function more than once does no harm.
+    //!
+    //! Note: Function is not thread-safe
+    inline void set_up() EWS_NOEXCEPT { curl_global_init(CURL_GLOBAL_DEFAULT); }
 
-    // Function is not thread-safe; you should call this function only when no
-    // other thread is running (see libcurl(3) man-page or
-    // http://curl.haxx.se/libcurl/c/libcurl.html)
+    //! Clean-up EWS library.
+    //!
+    //! You should call this function only when no other thread is running.
+    //! See libcurl(3) man-page or http://curl.haxx.se/libcurl/c/libcurl.html
+    //!
+    //! Note: Function is not thread-safe
     inline void tear_down() EWS_NOEXCEPT { curl_global_cleanup(); }
 
-    // Contains the unique identifier and change key of an item in the Exchange
-    // store.
-    //
-    // Instances of this class are somewhat immutable. You can default construct
-    // an item_id in which case valid() will always return false. (Default
-    // construction is needed because we need item and it's sub-classes to be
-    // default constructible.) Only item_ids that come from an Exchange store
-    // are considered to be valid.
+    //! \brief Contains the unique identifier and change key of an item in the
+    //! Exchange store.
+    //!
+    //! Instances of this class are somewhat immutable. You can default construct
+    //! an item_id in which case valid() will always return false. (Default
+    //! construction is needed because we need item and it's sub-classes to be
+    //! default constructible.) Only item_ids that come from an Exchange store
+    //! are considered to be valid.
     class item_id final
     {
     public:
@@ -4432,7 +4462,7 @@ namespace ews
     static_assert(std::is_move_assignable<item_id>::value, "");
 #endif
 
-    // Contains the unique identifier of an attachment.
+    //! Contains the unique identifier of an attachment.
     class attachment_id final
     {
     public:
@@ -4720,38 +4750,38 @@ namespace ews
 
     }
 
-    // Note About Dates in EWS
-    //
-    // Microsoft EWS uses date and date/time string representations as described
-    // in http://www.w3.org/TR/xmlschema-2/, notably xs:dateTime (or
-    // http://www.w3.org/2001/XMLSchema:dateTime) and xs:date (also known as
-    // http://www.w3.org/2001/XMLSchema:date).
-    //
-    // For example, the lexical representation of xs:date is
-    //
-    //     '-'? yyyy '-' mm '-' dd zzzzzz?
-    //
-    // whereas the z represents the timezone. Two examples of date strings are:
-    // 2000-01-16Z and 1981-07-02 (the Z means Zulu time which is the same as
-    // UTC). xs:dateTime is formatted accordingly, just with a time component;
-    // you get the idea.
-    //
-    // This library does not interpret, parse, or in any way touch date nor
-    // date/time strings in any circumstance. This library provides two classes,
-    // date and date_type. Both classes, date and date_time, act solely as thin
-    // wrapper to make the signatures of public API functions more type-rich and
-    // easier to understand. Both types are implicitly convertible from
-    // std::string.
-    //
-    // If your date or date/time strings are not formatted properly, Microsoft
-    // EWS will likely give you a SOAP fault which this library transports to
-    // you as an exception of type ews::soap_fault.
-    // TODO: we don't really need date class, date_time class is sufficient if
-    // xs:date and xs:dateTime are interchangeable.
+    //! \brief A date/time string wrapper class for xs:dateTime formatted
+    //! strings.
+    //!
+    //! Note About Dates in EWS
+    //!
+    //! Microsoft EWS uses date and date/time string representations as described
+    //! in http://www.w3.org/TR/xmlschema-2/, notably xs:dateTime (or
+    //! http://www.w3.org/2001/XMLSchema:dateTime) and xs:date (also known as
+    //! http://www.w3.org/2001/XMLSchema:date).
+    //!
+    //! For example, the lexical representation of xs:date is
+    //!
+    //!     '-'? yyyy '-' mm '-' dd zzzzzz?
+    //!
+    //! whereas the z represents the timezone. Two examples of date strings are:
+    //! 2000-01-16Z and 1981-07-02 (the Z means Zulu time which is the same as
+    //! UTC). xs:dateTime is formatted accordingly, just with a time component;
+    //! you get the idea.
+    //!
+    //! This library does not interpret, parse, or in any way touch date nor
+    //! date/time strings in any circumstance. This library provides two classes,
+    //! date and date_type. Both classes, date and date_time, act solely as thin
+    //! wrapper to make the signatures of public API functions more type-rich and
+    //! easier to understand. Both types are implicitly convertible from
+    //! std::string.
+    //!
+    //! If your date or date/time strings are not formatted properly, Microsoft
+    //! EWS will likely give you a SOAP fault which this library transports to
+    //! you as an exception of type ews::soap_fault.
+    //! TODO: we don't really need date class, date_time class is sufficient if
+    //! xs:date and xs:dateTime are interchangeable.
 
-    // A date/time string wrapper class for xs:dateTime formatted strings.
-    //
-    // See Note About Dates in EWS above.
     class date_time final
     {
     public:
@@ -4771,9 +4801,7 @@ namespace ews
         return lhs.val_ == rhs.val_;
     }
 
-    // A date string wrapper class for xs:date formatted strings.
-    //
-    // See Note About Dates in EWS above.
+    // TODO: remove?
     class date final
     {
     public:
@@ -4786,25 +4814,27 @@ namespace ews
         std::string date_string_;
     };
 
-    // Specifies the type of a <Body> element
+    //! Specifies the type of a <Body> element
     enum class body_type { best, plain_text, html };
 
-    // TODO: move to internal namespace
-    inline std::string body_type_str(body_type type)
+    namespace internal
     {
-        switch (type)
+        inline std::string body_type_str(body_type type)
         {
-            case body_type::best: return "Best";
-            case body_type::plain_text: return "Text";
-            case body_type::html: return "HTML";
-            default: throw exception("Bad enum value");
+            switch (type)
+            {
+                case body_type::best: return "Best";
+                case body_type::plain_text: return "Text";
+                case body_type::html: return "HTML";
+                default: throw exception("Bad enum value");
+            }
         }
     }
 
-    // Represents the actual body content of a message.
-    //
-    // This can be of type Best, HTML, or plain-text. See EWS XML elements
-    // documentation on MSDN.
+    //! \brief Represents the actual body content of a message.
+    //!
+    //! This can be of type Best, HTML, or plain-text. See EWS XML elements
+    //! documentation on MSDN.
     class body final
     {
     public:
@@ -4849,7 +4879,8 @@ namespace ews
                 pref = std::string(xmlns) + ":";
             }
             std::stringstream sstr;
-            sstr << "<" << pref << "Body BodyType=\"" << body_type_str(type());
+            sstr << "<" << pref << "Body BodyType=\""
+                 << internal::body_type_str(type());
             sstr << "\">";
             if (   type() == body_type::html
                 && !(content_.compare(0, cdata_beg.length(), cdata_beg) == 0))
@@ -4878,10 +4909,11 @@ namespace ews
     static_assert(std::is_move_assignable<body>::value, "");
 #endif
 
-    // Represents an item's <MimeContent CharacterSet="" /> element.
-    //
-    // Contains the ASCII MIME stream of an object that is represented in
-    // base64Binary format (as in RFC 2045).
+    //! \brief Represents an item's <tt>\<MimeContent CharacterSet="" /></tt>
+    //! element.
+    //!
+    //! Contains the ASCII MIME stream of an object that is represented in
+    //! base64Binary format (as in RFC 2045).
     class mime_content final
     {
     public:
@@ -4891,7 +4923,7 @@ namespace ews
         mime_content() {}
 #endif
 
-        // Copies len bytes from ptr into an internal buffer.
+        //! Copies \p len bytes from \p ptr into an internal buffer.
         mime_content(std::string charset,
                      const char* const ptr,
                      std::size_t len)
@@ -4899,21 +4931,22 @@ namespace ews
               bytearray_(ptr, ptr + len)
         {}
 
-        // Returns how the string is encoded, e.g., "UTF-8"
+        //! Returns how the string is encoded, e.g., "UTF-8"
         const std::string& character_set() const EWS_NOEXCEPT
         {
             return charset_;
         }
 
-        // Note: the pointer to the data is not 0-terminated
+        //! Note: the pointer to the data is not 0-terminated
         const char* bytes() const EWS_NOEXCEPT { return bytearray_.data(); }
 
         std::size_t len_bytes() const EWS_NOEXCEPT { return bytearray_.size(); }
 
-        // Returns true if no MIME content is available.  Note that a
-        // <MimeContent> property is only included in a GetItem response when
-        // explicitly requested using additional properties. This function lets
-        // you test whether MIME content is available.
+        //! Returns true if no MIME content is available.
+        //!
+        //! Note that a <MimeContent> property is only included in a GetItem
+        //! response when explicitly requested using additional properties. This
+        //! function lets you test whether MIME content is available.
         bool none() const EWS_NOEXCEPT { return len_bytes() == 0U; }
 
     private:
@@ -4929,8 +4962,8 @@ namespace ews
     static_assert(std::is_move_assignable<mime_content>::value, "");
 #endif
 
-    // Represents a contact's email address
     // TODO: maybe rename to mailbox
+    // Represents a contact's email address
     class email_address final
     {
     public:
@@ -5032,15 +5065,7 @@ namespace ews
 #endif
 
 
-    // Represents a generic item in the Exchange store.
-    //
-    // Basically:
-    //
-    //      item
-    //      ├── appointment
-    //      ├── contact
-    //      ├── message
-    //      └── task
+    //! Represents a generic item in the Exchange store.
     class item
     {
     public:
@@ -5052,14 +5077,16 @@ namespace ews
 
         explicit item(item_id id) : item_id_(std::move(id)), properties_() {}
 
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
         item(item_id&& id, internal::xml_subtree&& properties)
             : item_id_(std::move(id)),
               properties_(std::move(properties))
         {}
+#endif
 
         const item_id& get_item_id() const EWS_NOEXCEPT { return item_id_; }
 
-        // Base64-encoded contents of the MIME stream for an item
+        //! Base64-encoded contents of the MIME stream for an item
         mime_content get_mime_content() const
         {
             const auto node = properties().get_node("MimeContent");
@@ -5098,7 +5125,7 @@ namespace ews
         // values are Normal, Personal, Private, and Confidential
         // TODO: get_sensitivity
 
-        // Set the body content of an item
+        //! Set the body content of an item
         void set_body(const body& b)
         {
             auto doc = properties().document();
@@ -5123,7 +5150,7 @@ namespace ews
 
             auto ptr_to_key = doc->allocate_string("BodyType");
             ptr_to_value = doc->allocate_string(
-                    body_type_str(b.type()).c_str());
+                    internal::body_type_str(b.type()).c_str());
             body_node->append_attribute(
                     doc->allocate_attribute(ptr_to_key, ptr_to_value));
 
@@ -5140,7 +5167,7 @@ namespace ews
             doc->append_node(body_node);
         }
 
-        // Returns the body contents of an item
+        //! Returns the body contents of an item
         body get_body() const
         {
             using rapidxml::internal::compare;
@@ -5245,26 +5272,26 @@ namespace ews
         // (NonEmptyArrayOfResponseObjectsType)
         // TODO: get_response_objects
 
-        // Set due date of an item; used for reminders
+        //! Set due date of an item; used for reminders
         void set_reminder_due_by(const date_time& due_by)
         {
             properties().set_or_update("ReminderDueBy", due_by.to_string());
         }
 
-        // Returns the due date of an item; used for reminders
+        //! Returns the due date of an item; used for reminders
         date_time get_reminder_due_by() const
         {
             return date_time(properties().get_value_as_string("ReminderDueBy"));
         }
 
-        // Set a reminder on an item
+        //! Set a reminder on an item
         void set_reminder_enabled(bool enabled)
         {
             properties().set_or_update("ReminderIsSet",
                                        enabled ? "true" : "false");
         }
 
-        // True if a reminder has been set on an item
+        //! True if a reminder has been set on an item
         bool is_reminder_enabled() const
         {
             return properties().get_value_as_string("ReminderIsSet") == "true";
@@ -5330,7 +5357,7 @@ namespace ews
     static_assert(std::is_move_assignable<item>::value, "");
 #endif
 
-    // Represents a concrete task in the Exchange store.
+    //! Represents a concrete task in the Exchange store.
     class task final : public item
     {
     public:
@@ -5342,9 +5369,11 @@ namespace ews
 
         explicit task(item_id id) : item(std::move(id)) {}
 
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
         task(item_id&& id, internal::xml_subtree&& properties)
             : item(std::move(id), std::move(properties))
         {}
+#endif
 
         // Represents the actual amount of work expended on the task. Measured
         // in minutes
@@ -5377,13 +5406,13 @@ namespace ews
         // Display name of the user that delegated the task
         // TODO: get_delegator
 
-        // Sets the date that the task is due
+        //! Sets the date that the task is due
         void set_due_date(const date_time& due_date)
         {
             properties().set_or_update("DueDate", due_date.to_string());
         }
 
-        // Returns the date that the task is due
+        //! Returns the date that the task is due
         date_time get_due_date() const
         {
             return date_time(properties().get_value_as_string("DueDate"));
@@ -5391,8 +5420,10 @@ namespace ews
 
         // TODO: is_assignment_editable, possible values 0-5, 2007 dialect?
 
-        // True if the task is marked as complete. This is a read-only property
-        // See also set_percent_complete
+        //! \brief True if the task is marked as complete.
+        //!
+        //! This is a read-only property.  See also
+        //! task_property_path::percent_complete
         bool is_complete() const
         {
             return properties().get_value_as_string("IsComplete") == "true";
@@ -5424,13 +5455,13 @@ namespace ews
         // Used for recurring tasks
         // TODO: get_recurrence
 
-        // Set the date that work on the task should start
+        //! Set the date that work on the task should start
         void set_start_date(const date_time& start_date)
         {
             properties().set_or_update("StartDate", start_date.to_string());
         }
 
-        // Returns the date that work on the task should start
+        //! Returns the date that work on the task should start
         date_time get_start_date() const
         {
             return date_time(properties().get_value_as_string("StartDate"));
@@ -5450,7 +5481,7 @@ namespace ews
 
         // TODO: add remaining properties
 
-        // Makes a task instance from a <Task> XML element
+        //! Makes a task instance from a <Task> XML element
         static task from_xml_element(const rapidxml::xml_node<>& elem)
         {
             auto id_node = elem.first_node_ns(internal::uri<>::microsoft::types(),
@@ -5487,7 +5518,7 @@ namespace ews
     static_assert(std::is_move_assignable<task>::value, "");
 #endif
 
-    // A contact item in the Exchange store.
+    //! A contact item in the Exchange store.
     class contact final : public item
     {
     public:
@@ -5499,9 +5530,11 @@ namespace ews
 
         explicit contact(item_id id) : item(id) {}
 
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
         contact(item_id&& id, internal::xml_subtree&& properties)
             : item(std::move(id), std::move(properties))
         {}
+#endif
 
         // How the name should be filed for display/sorting purposes
         // TODO: file_as
@@ -5520,7 +5553,7 @@ namespace ews
             properties().set_or_update("GivenName", given_name);
         }
 
-        // Returns the person's first name
+        //! Returns the person's first name
         std::string get_given_name() const
         {
             return properties().get_value_as_string("GivenName");
@@ -5542,7 +5575,7 @@ namespace ews
         // The company that the contact is affiliated with
         // TODO: get_company_name
 
-        // A collection of e-mail addresses for the contact
+        //! A collection of e-mail addresses for the contact
         std::vector<email_address> get_email_addresses() const
         {
             const auto addresses = properties().get_node("EmailAddresses");
@@ -5631,13 +5664,13 @@ namespace ews
         // A collection of instant messaging addresses for the contact
         // TODO: get_im_addresses
 
-        // Sets this contact's job title.
+        //! Sets this contact's job title.
         void set_job_title(const std::string& title)
         {
             properties().set_or_update("JobTitle", title);
         }
 
-        // Returns the job title for the contact
+        //! Returns the job title for the contact
         std::string get_job_title() const
         {
             return properties().get_value_as_string("JobTitle");
@@ -5659,26 +5692,26 @@ namespace ews
         // Occupation or discipline of the contact
         // TODO: get_profession
 
-        // Set name of the contact's significant other
+        //! Set name of the contact's significant other
         void set_spouse_name(const std::string& spouse_name)
         {
             properties().set_or_update("SpouseName", spouse_name);
         }
 
-        // Get name of the contact's significant other
+        //! Get name of the contact's significant other
         std::string get_spouse_name() const
         {
             return properties().get_value_as_string("SpouseName");
         }
 
-        // Sets the family name of the contact; usually considered the last name
+        //! Sets the family name of the contact; usually considered the last name
         void set_surname(const std::string& surname)
         {
             properties().set_or_update("Surname", surname);
         }
 
-        // Returns the family name of the contact; usually considered the last
-        // name
+        //! Returns the family name of the contact; usually considered the last
+        //! name
         std::string get_surname() const
         {
             return properties().get_value_as_string("Surname");
@@ -5702,7 +5735,7 @@ namespace ews
         // manager_mailbox
         // direct_reports
 
-        // Makes a contact instance from a <Contact> XML element
+        //! Makes a contact instance from a <Contact> XML element
         static contact from_xml_element(const rapidxml::xml_node<>& elem)
         {
             auto id_node = elem.first_node_ns(internal::uri<>::microsoft::types(),
@@ -5856,7 +5889,7 @@ namespace ews
     static_assert(std::is_move_assignable<contact>::value, "");
 #endif
 
-    // A message item in the Exchange store.
+    //! A message item in the Exchange store.
     class message final : public item
     {
     public:
@@ -5868,9 +5901,11 @@ namespace ews
 
         explicit message(item_id id) : item(id) {}
 
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
         message(item_id&& id, internal::xml_subtree&& properties)
             : item(std::move(id), std::move(properties))
         {}
+#endif
 
         // <Sender/>
 
@@ -6103,7 +6138,7 @@ namespace ews
         // <References/>
         // <ReplyTo/>
 
-        // Makes a message instance from a <Message> XML element
+        //! Makes a message instance from a <Message> XML element
         static message from_xml_element(const rapidxml::xml_node<>& elem)
         {
             auto id_node = elem.first_node_ns(internal::uri<>::microsoft::types(),
@@ -6120,7 +6155,7 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << "<m:CreateItem MessageDisposition=\""
-                 << message_disposition_str(disposition) << "\">";
+                 << internal::message_disposition_str(disposition) << "\">";
             sstr << "<m:Items>";
             sstr << "<t:Message>";
             sstr << properties().to_string() << "\n";
@@ -6139,150 +6174,150 @@ namespace ews
     static_assert(std::is_move_assignable<message>::value, "");
 #endif
 
-    // Well known folder names enumeration. Usually rendered to XML as
-    // <DistinguishedFolderId> element.
+    //! Well known folder names enumeration. Usually rendered to XML as
+    //! <tt>\<DistinguishedFolderId></tt> element.
     enum class standard_folder
     {
-        // The Calendar folder
+        //! The Calendar folder
         calendar,
 
-        // The Contacts folder
+        //! The Contacts folder
         contacts,
 
-        // The Deleted Items folder
+        //! The Deleted Items folder
         deleted_items,
 
-        // The Drafts folder
+        //! The Drafts folder
         drafts,
 
-        // The Inbox folder
+        //! The Inbox folder
         inbox,
 
-        // The Journal folder
+        //! The Journal folder
         journal,
 
-        // The Notes folder
+        //! The Notes folder
         notes,
 
-        // The Outbox folder
+        //! The Outbox folder
         outbox,
 
-        // The Sent Items folder
+        //! The Sent Items folder
         sent_items,
 
-        // The Tasks folder
+        //! The Tasks folder
         tasks,
 
-        // The root of the message folder hierarchy
+        //! The root of the message folder hierarchy
         msg_folder_root,
 
-        // The root of the mailbox
+        //! The root of the mailbox
         root,
 
-        // The Junk E-mail folder
+        //! The Junk E-mail folder
         junk_email,
 
-        // The Search Folders folder, also known as the Finder folder
+        //! The Search Folders folder, also known as the Finder folder
         search_folders,
 
-        // The Voicemail folder
+        //! The Voicemail folder
         voice_mail,
 
-        // Following are folders containing recoverable items:
+        //! Following are folders containing recoverable items:
 
-        // The root of the Recoverable Items folder hierarchy
+        //! The root of the Recoverable Items folder hierarchy
         recoverable_items_root,
 
-        // The root of the folder hierarchy of recoverable items that have been
-        // soft-deleted from the Deleted Items folder
+        //! The root of the folder hierarchy of recoverable items that have been
+        //! soft-deleted from the Deleted Items folder
         recoverable_items_deletions,
 
-        // The root of the Recoverable Items versions folder hierarchy in the
-        // archive mailbox
+        //! The root of the Recoverable Items versions folder hierarchy in the
+        //! archive mailbox
         recoverable_items_versions,
 
-        // The root of the folder hierarchy of recoverable items that have been
-        // hard-deleted from the Deleted Items folder
+        //! The root of the folder hierarchy of recoverable items that have been
+        //! hard-deleted from the Deleted Items folder
         recoverable_items_purges,
 
-        // The root of the folder hierarchy in the archive mailbox
+        //! The root of the folder hierarchy in the archive mailbox
         archive_root,
 
-        // The root of the message folder hierarchy in the archive mailbox
+        //! The root of the message folder hierarchy in the archive mailbox
         archive_msg_folder_root,
 
-        // The Deleted Items folder in the archive mailbox
+        //! The Deleted Items folder in the archive mailbox
         archive_deleted_items,
 
-        // Represents the archive Inbox folder. Caution: only versions of
-        // Exchange starting with build number 15.00.0913.09 include this folder
+        //! Represents the archive Inbox folder. Caution: only versions of
+        //! Exchange starting with build number 15.00.0913.09 include this folder
         archive_inbox,
 
-        // The root of the Recoverable Items folder hierarchy in the archive
-        // mailbox
+        //! The root of the Recoverable Items folder hierarchy in the archive
+        //! mailbox
         archive_recoverable_items_root,
 
-        // The root of the folder hierarchy of recoverable items that have been
-        // soft-deleted from the Deleted Items folder of the archive mailbox
+        //! The root of the folder hierarchy of recoverable items that have been
+        //! soft-deleted from the Deleted Items folder of the archive mailbox
         archive_recoverable_items_deletions,
 
-        // The root of the Recoverable Items versions folder hierarchy in the
-        // archive mailbox
+        //! The root of the Recoverable Items versions folder hierarchy in the
+        //! archive mailbox
         archive_recoverable_items_versions,
 
-        // The root of the hierarchy of recoverable items that have been
-        // hard-deleted from the Deleted Items folder of the archive mailbox
+        //! The root of the hierarchy of recoverable items that have been
+        //! hard-deleted from the Deleted Items folder of the archive mailbox
         archive_recoverable_items_purges,
 
         // Following are folders that came with EWS 2013 and Exchange Online:
 
-        // The Sync Issues folder
+        //! The Sync Issues folder
         sync_issues,
 
-        // The Conflicts folder
+        //! The Conflicts folder
         conflicts,
 
-        // The Local Failures folder
+        //! The Local Failures folder
         local_failures,
 
-        // Represents the Server Failures folder
+        //! Represents the Server Failures folder
         server_failures,
 
-        // The recipient cache folder
+        //! The recipient cache folder
         recipient_cache,
 
-        // The quick contacts folder
+        //! The quick contacts folder
         quick_contacts,
 
-        // The conversation history folder
+        //! The conversation history folder
         conversation_history,
 
-        // Represents the admin audit logs folder
+        //! Represents the admin audit logs folder
         admin_audit_logs,
 
-        // The todo search folder
+        //! The todo search folder
         todo_search,
 
-        // Represents the My Contacts folder
+        //! Represents the My Contacts folder
         my_contacts,
 
-        // Represents the directory folder
+        //! Represents the directory folder
         directory,
 
-        // Represents the IM contact list folder
+        //! Represents the IM contact list folder
         im_contact_list,
 
-        // Represents the people connect folder
+        //! Represents the people connect folder
         people_connect,
 
-        // Represents the Favorites folder
+        //! Represents the Favorites folder
         favorites,
     };
 
-    // Identifies a foler.
+    //! Identifies a foler.
     //
-    // Renders a <FolderId> element. Contains the identifier and change key of a
-    // folder.
+    //! Renders a <tt>\<FolderId></tt> element. Contains the identifier and
+    //! change key of a folder.
     class folder_id
     {
     public:
@@ -6315,8 +6350,9 @@ namespace ews
     static_assert(std::is_move_assignable<folder_id>::value, "");
 #endif
 
-    // Renders a <DistinguishedFolderId> element. Implicitly convertible from
-    // standard_folder.
+    //! Renders a <tt>\<DistinguishedFolderId></tt> element.
+    //!
+    //! Implicitly convertible from \ref standard_folder.
     class distinguished_folder_id final : public folder_id
     {
     public:
@@ -6532,14 +6568,16 @@ namespace ews
     static_assert(std::is_move_assignable<distinguished_folder_id>::value, "");
 #endif
 
+    //! The XPath for a property
     class property_path
     {
     public:
         // Intentionally not explicit
         property_path(const char* uri) : uri_(std::string(uri)) {}
 
-        // Returns the <FieldURI> element for this property. Identifies
-        // frequently referenced properties by URI
+        //! Returns the <FieldURI> element for this property.
+        //!
+        //! Identifies frequently referenced properties by URI
         const std::string& field_uri() const EWS_NOEXCEPT { return uri_; }
 
         std::string property_name() const
@@ -6947,13 +6985,13 @@ namespace ews
         static const property_path has_clutter = "conversation:HasClutter";
     }
 
-    // Represents a single property
-    //
-    // Used in ews::service::update_item method call
+    //! \brief Represents a single property
+    //!
+    //! Used in ews::service::update_item method call
     class property final
     {
     public:
-        // Use this constructor if you want to delete a property from an item
+        //! Use this constructor if you want to delete a property from an item
         explicit property(property_path path)
             : path_(std::move(path)),
               value_()
@@ -7087,22 +7125,22 @@ namespace ews
     static_assert(std::is_move_assignable<property>::value, "");
 #endif
 
-    // Base-class for
-    //
-    //   - exists
-    //   - excludes
-    //   - is_equal_to
-    //   - is_not_equal_to
-    //   - is_greater_than
-    //   - is_greater_than_or_equal_to
-    //   - is_less_than
-    //   - is_less_than_or_equal_to
-    //   - contains
-    //   - not
-    //   - and
-    //   - or
-    //
-    // search expressions.
+    //! \brief Base-class for search expressions.
+    //!
+    //! E.g.
+    //!
+    //!   - exists
+    //!   - excludes
+    //!   - is_equal_to
+    //!   - is_not_equal_to
+    //!   - is_greater_than
+    //!   - is_greater_than_or_equal_to
+    //!   - is_less_than
+    //!   - is_less_than_or_equal_to
+    //!   - contains
+    //!   - not
+    //!   - and
+    //!   - or
     class restriction
     {
     public:
@@ -7133,8 +7171,10 @@ namespace ews
     static_assert(std::is_move_assignable<restriction>::value, "");
 #endif
 
-    // A search expression that compares a property with either a constant value
-    // or another property and evaluates to true if they are equal.
+    //! \brief Compare two properties
+    //!
+    //! A search expression that compares a property with either a constant
+    //! value or another property and evaluates to true if they are equal.
     class is_equal_to final : public restriction
     {
     public:
@@ -7230,11 +7270,19 @@ namespace ews
         // TODO: is_equal_to(property_path, property_path) {}
     };
 
-    // Represents a <FileAttachment> or a <ItemAttachment>
+    //! Represents a <tt>\<FileAttachment></tt> or a <tt>\<ItemAttachment></tt>
     class attachment final
     {
     public:
-        enum class type { item, file };
+        //! Describes whether an attachment contains a file or another item.
+        enum class type
+        {
+            //! An <tt>\<ItemAttachment></tt>
+            item,
+
+            //! A <tt>\<FileAttachment></tt>
+            file
+        };
 
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
         attachment() = default;
@@ -7242,6 +7290,7 @@ namespace ews
         attachment() {}
 #endif
 
+        //! Returns this attachment's attachment_id
         attachment_id id() const
         {
             auto node = xml_.get_node("AttachmentId");
@@ -7252,38 +7301,46 @@ namespace ews
             return attachment_id::from_xml_element(*node);
         }
 
+        //! Returns the attachment's name
         std::string name() const
         {
             return xml_.get_value_as_string("Name");
         }
 
+        //! Returns the attachment's content type
         std::string content_type() const
         {
             return xml_.get_value_as_string("ContentType");
         }
 
-        // If this is a <FileAttachment>, returns the Base64-encoded contents
-        // of the file attachment. If this is an <ItemAttachment>, the empty
-        // string.
+        //! \brief Returns the attachment's contents
+        //!
+        //! If this is a <tt>\<FileAttachment></tt>, returns the Base64-encoded
+        //! contents of the file attachment. If this is an <ItemAttachment>, the
+        //! empty string.
         std::string content() const
         {
             return xml_.get_value_as_string("Content");
         }
 
-        // If this is a <FileAttachment>, returns the size in bytes of the file
-        // attachment; otherwise 0.
+        //! \brief Returns the attachment's size in bytes
+        //!
+        //! If this is a <tt>\<FileAttachment></tt>, returns the size in bytes
+        //! of the file attachment; otherwise 0.
         std::size_t content_size() const
         {
             auto size = xml_.get_value_as_string("Size");
             return size.empty() ? 0U : std::stoul(size);
         }
 
-        // Returns either type::file or type::item
+        //! Returns either type::file or type::item
         type get_type() const EWS_NOEXCEPT { return type_; }
 
-        // If this is a <FileAttachment>, writes content to file.  Does nothing
-        // if this is an <ItemAttachment>.  Returns the number of bytes
-        // written.
+        //! \brief Write contents to a file
+        //!
+        //! If this is a <tt>\<FileAttachment></tt>, writes content to file.
+        //! Does nothing if this is an <tt>\<ItemAttachment></tt>.  Returns the
+        //! number of bytes written.
         std::size_t write_content_to_file(const std::string& file_path) const
         {
             if (get_type() == type::item)
@@ -7313,6 +7370,7 @@ namespace ews
             return raw_bytes.size();
         }
 
+        //! Returns this attachment serialized to XML
         std::string to_xml() const
         {
             auto elem = std::string(get_type() == type::item ?
@@ -7324,6 +7382,7 @@ namespace ews
             return sstr.str();
         }
 
+        //! Constructs an attachment from a given XML element \p elem.
         static attachment from_xml_element(const rapidxml::xml_node<>& elem)
         {
             const auto elem_name = std::string(elem.local_name(),
@@ -7335,11 +7394,11 @@ namespace ews
                     type::file : type::item, internal::xml_subtree(elem));
         }
 
-        // Creates a new <FileAttachment> from a given file.
-        //
-        // Returns a new <FileAttachment> that you can pass to
-        // ews::service::create_attachment in order to create the attachment on
-        // the server.
+        //! \brief Creates a new <tt>\<FileAttachment></tt> from a given file.
+        //!
+        //! Returns a new <tt>\<FileAttachment></tt> that you can pass to
+        //! ews::service::create_attachment in order to create the attachment on
+        //! the server.
         static attachment from_file(const std::string& file_path,
                                     std::string content_type,
                                     std::string name)
@@ -7383,10 +7442,10 @@ namespace ews
             return obj;
         }
 
-        // Creates a new <ItemAttachment> from a given item.
+        //! Creates a new <tt>\<ItemAttachment></tt> from a given item.
         //
-        // It is not necessary for the item to already exist in the Exchange
-        // store. If it doesn't, it will be automatically created.
+        //! It is not necessary for the item to already exist in the Exchange
+        //! store. If it doesn't, it will be automatically created.
         static attachment from_item(const item& the_item, std::string name)
         {
             (void)the_item;
@@ -7431,20 +7490,22 @@ namespace ews
     static_assert(std::is_move_assignable<attachment>::value, "");
 #endif
 
-    // The service class contains all methods that can be performed on an
-    // Exchange server.
+    //! \brief Contains the methods to perfom operations on an Exchange server
+    //!
+    //! The service class contains all methods that can be performed on an
+    //! Exchange server.
+    //!
+    //! Will get a *huge* public interface over time, e.g.,
+    //!
+    //! - create_item
+    //! - find_conversation
+    //! - find_folder
+    //! - find_item
+    //! - find_people
+    //! - get_contact
+    //! - get_task
     //
-    // Will get a *huge* public interface over time, e.g.,
-    //
-    // - create_item
-    // - find_conversation
-    // - find_folder
-    // - find_item
-    // - find_people
-    // - get_contact
-    // - get_task
-    //
-    // and so on and so on.
+    //! and so on and so on.
     template <typename RequestHandler = internal::http_request>
     class basic_service final
     {
@@ -7456,6 +7517,9 @@ namespace ews
         // crashed and some automatic mechanism sent a minidump over the wire.
         // What are our options? Security-by-obscurity: we could hash
         // credentials with a hash of the process-id or something.
+
+        //! \brief Constructs a new service with given credentials to a server
+        //! specified by \p server_uri
         basic_service(std::string server_uri,
                       std::string domain,
                       std::string username,
@@ -7478,31 +7542,31 @@ namespace ews
             return internal::str_to_server_version(server_version_);
         }
 
-        // Gets a task from the Exchange store
+        //! Gets a task from the Exchange store
         task get_task(const item_id& id)
         {
             return get_item_impl<task>(id, base_shape::all_properties);
         }
 
-        // Gets a contact from the Exchange store
+        //! Gets a contact from the Exchange store
         contact get_contact(const item_id& id)
         {
             return get_item_impl<contact>(id, base_shape::all_properties);
         }
 
-        // Gets a message item from the Exchange store
+        //! Gets a message item from the Exchange store
         message get_message(const item_id& id)
         {
             return get_item_impl<message>(id, base_shape::all_properties);
         }
 
-        // Delete an arbitrary item from the Exchange store
+        //! Delete an arbitrary item from the Exchange store
         void delete_item(item&& the_item)
         {
             delete_item_impl<item>(std::move(the_item));
         }
 
-        // Delete a task item from the Exchange store
+        //! Delete a task item from the Exchange store
         void delete_task(task&& the_task,
                          delete_type del_type = delete_type::hard_delete,
                          affected_task_occurrences affected =
@@ -7512,8 +7576,9 @@ namespace ews
 
             const std::string request_string =
 "<m:DeleteItem\n"
-"  DeleteType=\"" + delete_type_str(del_type) + "\"\n"
-"  AffectedTaskOccurrences=\"" + affected_task_occurrences_str(affected) + "\">\n"
+"  DeleteType=\"" + internal::delete_type_str(del_type) + "\"\n"
+"  AffectedTaskOccurrences=\""
+            + internal::affected_task_occurrences_str(affected) + "\">\n"
 "  <m:ItemIds>" + the_task.get_item_id().to_xml("t") + "</m:ItemIds>\n"
 "</m:DeleteItem>\n";
 
@@ -7527,13 +7592,13 @@ namespace ews
             the_task = task();
         }
 
-        // Delete a contact from the Exchange store
+        //! Delete a contact from the Exchange store
         void delete_contact(contact&& the_contact)
         {
             delete_item_impl(std::move(the_contact));
         }
 
-        // Delete a message item from the Exchange store
+        //! Delete a message item from the Exchange store
         void delete_message(message&& the_message)
         {
             delete_item_impl(std::move(the_message));
@@ -7550,20 +7615,25 @@ namespace ews
         // Only purpose of this overload-set is to prevent exploding template
         // code in errors messages in caller's code
 
-        // Creates a new task item from the given object in the Exchange store
-        // and returns it's item_id if successful
+        //! \brief Creates a new task item from the given object in the
+        //! Exchange store.
+        //
+        //! Returns it's item_id if successful.
         item_id create_item(const task& the_task)
         {
             return create_item_impl(the_task);
         }
 
-        // Creates a new contact item from the given object in the Exchange
-        // store and returns it's item_id if successful
+        //! \brief Creates a new contact item from the given object in the Exchange
+        //! store
+        //!
+        //! Returns it's item_id if successful.
         item_id create_item(const contact& the_contact)
         {
             return create_item_impl(the_contact);
         }
 
+        //! Creates a new message in the Exchange store
         item_id create_item(const message& the_message,
                             ews::message_disposition disposition)
         {
@@ -7658,7 +7728,8 @@ namespace ews
             const std::string request_string =
         "<m:UpdateItem"
         "    MessageDisposition=\"SaveOnly\"\n"
-        "    ConflictResolution=\"" + conflict_resolution_str(res) + "\">\n"
+        "    ConflictResolution=\"" + internal::conflict_resolution_str(res)
+                                                        + "\">\n"
         "  <m:ItemChanges>\n"
         "    <t:ItemChange>\n"
         "      " + id.to_xml("t") + "\n"
@@ -7824,7 +7895,8 @@ namespace ews
             const std::string request_string =
         "<m:GetItem>\n"
         "  <m:ItemShape>\n"
-        "    <t:BaseShape>" + base_shape_str(shape) + "</t:BaseShape>\n"
+        "    <t:BaseShape>" + internal::base_shape_str(shape)
+                                    + "</t:BaseShape>\n"
         "    <t:AdditionalProperties>\n"
         "      <t:FieldURI FieldURI=\"item:MimeContent\"/>\n"
         "    </t:AdditionalProperties>\n"
