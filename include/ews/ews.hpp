@@ -4497,6 +4497,8 @@ namespace ews
         //! \brief Returns the item_id of the <em>parent</em> or <em>root</em>
         //! item.
         //!
+        //! The root item is the item that contains the attachment.
+        //!
         //! Note: the returned item_id is only valid and meaningful when you
         //! obtained this attachment_id in a call to \ref
         //! service::create_attachment.
@@ -7563,11 +7565,15 @@ namespace ews
         {
         }
 
+        //! \brief Sets the schema version that will be used in requests made
+        //! by this service
         void set_request_server_version(server_version vers)
         {
             server_version_ = internal::server_version_to_str(vers);
         }
 
+        //! \brief Returns the schema version that is used in requests by this
+        //! service
         server_version get_request_server_version() const
         {
             return internal::str_to_server_version(server_version_);
