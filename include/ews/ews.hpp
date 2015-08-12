@@ -4481,20 +4481,31 @@ namespace ews
         attachment_id() {}
 #endif
 
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
         explicit attachment_id(std::string id) : id_(std::move(id)) {}
 
         attachment_id(std::string id, item_id root_item_id)
             : id_(std::move(id)),
               root_item_id_(std::move(root_item_id))
         {}
+#endif
 
+        //! Returns the string representing the unique identifier of an
+        //! attachment
         const std::string& id() const EWS_NOEXCEPT { return id_; }
 
+        //! \brief Returns the item_id of the <em>parent</em> or <em>root</em>
+        //! item.
+        //!
+        //! Note: the returned item_id is only valid and meaningful when you
+        //! obtained this attachment_id in a call to \ref
+        //! service::create_attachment.
         const item_id& root_item_id() const EWS_NOEXCEPT
         {
             return root_item_id_;
         }
 
+        //! Whether this attachment_id is valid
         bool valid() const EWS_NOEXCEPT { return !id_.empty(); }
 
         std::string to_xml(const char* xmlns=nullptr) const
@@ -5492,7 +5503,7 @@ namespace ews
 
         // TODO: add remaining properties
 
-        //! Makes a task instance from a <Task> XML element
+        //! Makes a task instance from a <tt>\<Task></tt> XML element
         static task from_xml_element(const rapidxml::xml_node<>& elem)
         {
             auto id_node = elem.first_node_ns(internal::uri<>::microsoft::types(),
@@ -7410,6 +7421,15 @@ namespace ews
         //! Returns a new <tt>\<FileAttachment></tt> that you can pass to
         //! ews::service::create_attachment in order to create the attachment on
         //! the server.
+        //!
+        //! \param file_path path to an existing and readable file
+        //! \param content_type the (RFC 2046) MIME content type of the
+        //!        attachment
+        //! \param name a name for this attachment
+        //!
+        //! On Windows you can use HKEY_CLASSES_ROOT/MIME/Database/Content Type
+        //! registry hive to get the content type from a file extension. On a
+        //! UNIX see magic(5) and file(1).
         static attachment from_file(const std::string& file_path,
                                     std::string content_type,
                                     std::string name)
@@ -7768,10 +7788,12 @@ namespace ews
             return response_message.items().front();
         }
 
-        // content_type: the (RFC 2046) MIME content type of the attachment. On
-        // Windows you can use HKEY_CLASSES_ROOT/MIME/Database/Content Type
-        // registry hive to get the content type from a file extension. On a
-        // UNIX see magic(5) and file(1).
+        //! \brief Lets you attach a file (or another item) to an existing item.
+        //!
+        //! \param parent_item an existing item in the Exchange store
+        //! \param a the <tt>\<FileAttachment></tt> or
+        //!        <tt>\<ItemAttachment></tt> you want to attach to
+        //!        \p parent_item
         attachment_id create_attachment(const item& parent_item,
                                         const attachment& a)
         {

@@ -67,6 +67,15 @@ enabled do something like this::
 Type `make help` to see more configuration options.
 
 
+API Docs
+--------
+
+Use the `doc` target to create the API documentation with Doxygen.  Type::
+
+    $ make doc
+    $ open html/index.html
+
+
 Test Suite
 ----------
 
