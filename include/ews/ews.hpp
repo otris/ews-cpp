@@ -4772,8 +4772,7 @@ namespace ews
 
     }
 
-    //! \brief A date/time string wrapper class for xs:dateTime formatted
-    //! strings.
+    //! \brief A thin wrapper for xs:dateTime formatted strings.
     //!
     //! Note About Dates in EWS
     //!
@@ -4792,18 +4791,14 @@ namespace ews
     //! you get the idea.
     //!
     //! This library does not interpret, parse, or in any way touch date nor
-    //! date/time strings in any circumstance. This library provides two classes,
-    //! date and date_type. Both classes, date and date_time, act solely as thin
-    //! wrapper to make the signatures of public API functions more type-rich and
-    //! easier to understand. Both types are implicitly convertible from
-    //! std::string.
+    //! date/time strings in any circumstance. This library provides the \ref
+    //! date_time class, which acts solely as a thin wrapper to make the
+    //! signatures of public API functions more type-rich and easier to
+    //! understand. date_time is implicitly convertible from std::string.
     //!
     //! If your date or date/time strings are not formatted properly, Microsoft
     //! EWS will likely give you a SOAP fault which this library transports to
     //! you as an exception of type ews::soap_fault.
-    //! TODO: we don't really need date class, date_time class is sufficient if
-    //! xs:date and xs:dateTime are interchangeable.
-
     class date_time final
     {
     public:
@@ -4822,19 +4817,6 @@ namespace ews
     {
         return lhs.val_ == rhs.val_;
     }
-
-    // TODO: remove?
-    class date final
-    {
-    public:
-        date(std::string str) // intentionally not explicit
-            : date_string_(std::move(str))
-        {
-        }
-
-    private:
-        std::string date_string_;
-    };
 
     //! Specifies the type of a <Body> element
     enum class body_type { best, plain_text, html };
