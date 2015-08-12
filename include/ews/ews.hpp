@@ -4818,7 +4818,7 @@ namespace ews
         return lhs.val_ == rhs.val_;
     }
 
-    //! Specifies the type of a <Body> element
+    //! Specifies the type of a <tt>\<Body></tt> element
     enum class body_type { best, plain_text, html };
 
     namespace internal
