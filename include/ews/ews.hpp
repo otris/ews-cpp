@@ -30,6 +30,8 @@
 # include <ostream>
 #endif
 
+#include "ews_fwd.hpp"
+
 // Macro for verifying expressions at run-time. Calls assert() with 'expr'.
 // Allows turning assertions off, even if -DNDEBUG wasn't given at
 // compile-time.  This macro does nothing unless EWS_ENABLE_ASSERTS was defined
@@ -42,12 +44,6 @@
 #  define EWS_ASSERT(expr) assert(expr)
 # endif
 #endif // !NDEBUG
-
-#ifdef EWS_HAS_NOEXCEPT_SPECIFIER
-# define EWS_NOEXCEPT noexcept
-#else
-# define EWS_NOEXCEPT
-#endif
 
 //! Contains all classes, functions, and enumerations of this library
 namespace ews
@@ -276,9 +272,6 @@ namespace ews
         // Forward declarations
         class http_request;
     }
-
-    // Forward declarations
-    class item_id;
 
     //! The ResponseClass attibute of a ResponseMessage
     enum class response_class { error, success, warning };
@@ -4137,443 +4130,6 @@ namespace ews
             return request.send(request_stream.str());
         }
 
-        // Parse response class and response code from given element.
-        inline std::pair<response_class, response_code>
-        parse_response_class_and_code(const rapidxml::xml_node<>& elem)
-        {
-            using rapidxml::internal::compare;
-
-            auto cls = response_class::success;
-            auto response_class_attr = elem.first_attribute("ResponseClass");
-            if (compare(response_class_attr->value(),
-                        response_class_attr->value_size(),
-                        "Error",
-                        5))
-            {
-                cls = response_class::error;
-            }
-            else if (compare(response_class_attr->value(),
-                             response_class_attr->value_size(),
-                             "Warning",
-                             7))
-            {
-                cls = response_class::warning;
-            }
-
-            // One thing we can count on is that when the ResponseClass
-            // attribute is set to Success, ResponseCode will be set to NoError.
-            // So we only parse the <ResponseCode> element when we have a
-            // warning or an error.
-
-            auto code = response_code::no_error;
-            if (cls != response_class::success)
-            {
-                auto response_code_elem =
-                    elem.first_node_ns(uri<>::microsoft::messages(),
-                                       "ResponseCode");
-                EWS_ASSERT(response_code_elem
-                        && "Expected <ResponseCode> element");
-                code = str_to_response_code(response_code_elem->value());
-            }
-
-            return std::make_pair(cls, code);
-        }
-
-        // Iterate over <Items> array and execute given function for each node.
-        //
-        // elem: a response message element, e.g., CreateItemResponseMessage
-        // func: A callable that is invoked for each item in the response
-        // message's <Items> array. A const rapidxml::xml_node& is passed to
-        // that callable.
-        template <typename Func>
-        inline void for_each_item(const rapidxml::xml_node<>& elem, Func func)
-        {
-            auto items_elem =
-                elem.first_node_ns(uri<>::microsoft::messages(), "Items");
-            EWS_ASSERT(items_elem && "Expected <Items> element");
-
-            for (auto item_elem = items_elem->first_node(); item_elem;
-                 item_elem = item_elem->next_sibling())
-            {
-                EWS_ASSERT(item_elem && "Expected an element, got nullptr");
-                func(*item_elem);
-            }
-        }
-
-        // Base-class for all response messages
-        class response_message_base
-        {
-        public:
-            response_message_base(response_class cls, response_code code)
-                : cls_(cls),
-                  code_(code)
-            {
-            }
-
-            response_class get_response_class() const EWS_NOEXCEPT
-            {
-                return cls_;
-            }
-
-            bool success() const EWS_NOEXCEPT
-            {
-                return get_response_class() == response_class::success;
-            }
-
-            response_code get_response_code() const EWS_NOEXCEPT
-            {
-                return code_;
-            }
-
-        private:
-            response_class cls_;
-            response_code code_;
-        };
-
-        // Base-class for response messages that contain an <Items> array.
-        //
-        // The ItemType template parameter denotes the type of all items in the
-        // returned array. The choice for a compile-time parameter has following
-        // implications and restrictions:
-        //
-        // - Microsoft EWS allows for different types of items in the returned
-        //   array. However, this implementation forces you to only issue
-        //   requests that return only one type of item in a single response at
-        //   a time.
-        //
-        // - You need to know the type of the item returned by a request
-        //   up-front at compile time. Microsoft EWS would allow to deal with
-        //   different types of items in a single response dynamically.
-        template <typename ItemType>
-        class response_message_with_items : public response_message_base
-        {
-        public:
-            typedef ItemType item_type;
-
-            response_message_with_items(response_class cls,
-                                        response_code code,
-                                        std::vector<item_type> items)
-                : response_message_base(cls, code),
-                  items_(std::move(items))
-            {
-            }
-
-            const std::vector<item_type>& items() const EWS_NOEXCEPT
-            {
-                return items_;
-            }
-
-        private:
-            std::vector<item_type> items_;
-        };
-
-        class create_item_response_message final
-            : public response_message_with_items<item_id>
-        {
-        public:
-            // implemented below
-            static create_item_response_message parse(http_response&);
-
-        private:
-            create_item_response_message(response_class cls,
-                                         response_code code,
-                                         std::vector<item_id> items)
-                : response_message_with_items<item_id>(cls,
-                                                       code,
-                                                       std::move(items))
-            {
-            }
-        };
-
-        class find_item_response_message final
-            : public response_message_with_items<item_id>
-        {
-        public:
-            // implemented below
-            static find_item_response_message parse(http_response&);
-
-        private:
-            find_item_response_message(response_class cls,
-                                       response_code code,
-                                       std::vector<item_id> items)
-                : response_message_with_items<item_id>(cls,
-                  code,
-                  std::move(items))
-            {
-            }
-        };
-
-        class update_item_response_message final
-            : public response_message_with_items<item_id>
-        {
-        public:
-            // implemented below
-            static update_item_response_message parse(http_response&);
-
-        private:
-            update_item_response_message(response_class cls,
-                                       response_code code,
-                                       std::vector<item_id> items)
-                : response_message_with_items<item_id>(cls,
-                  code,
-                  std::move(items))
-            {
-            }
-        };
-
-        template <typename ItemType>
-        class get_item_response_message final
-            : public response_message_with_items<ItemType>
-        {
-        public:
-            // implemented below
-            static get_item_response_message parse(http_response&);
-
-        private:
-            get_item_response_message(response_class cls,
-                                      response_code code,
-                                      std::vector<ItemType> items)
-                : response_message_with_items<ItemType>(cls,
-                                                        code,
-                                                        std::move(items))
-            {
-            }
-        };
-
-        class delete_item_response_message final : public response_message_base
-        {
-        public:
-            static delete_item_response_message parse(http_response& response)
-            {
-                const auto& doc = response.payload();
-                auto elem = get_element_by_qname(doc,
-                                                 "DeleteItemResponseMessage",
-                                                 uri<>::microsoft::messages());
-
-#ifdef EWS_ENABLE_VERBOSE
-            if (!elem)
-            {
-                std::cerr
-                    << "Parsing DeleteItemResponseMessage failed, response code: "
-                    << response.code() << ", payload:\n\'"
-                    << doc << "\'" << std::endl;
-            }
-#endif
-
-                EWS_ASSERT(elem &&
-                        "Expected <DeleteItemResponseMessage>, got nullptr");
-                const auto result = parse_response_class_and_code(*elem);
-                return delete_item_response_message(result.first,
-                                                    result.second);
-            }
-
-        private:
-            delete_item_response_message(response_class cls, response_code code)
-                : response_message_base(cls, code)
-            {
-            }
-        };
-    }
-
-    //! Set-up EWS library.
-    //
-    //! Should be called when application is still in single-threaded context.
-    //! Calling this function more than once does no harm.
-    //!
-    //! Note: Function is not thread-safe
-    inline void set_up() EWS_NOEXCEPT { curl_global_init(CURL_GLOBAL_DEFAULT); }
-
-    //! Clean-up EWS library.
-    //!
-    //! You should call this function only when no other thread is running.
-    //! See libcurl(3) man-page or http://curl.haxx.se/libcurl/c/libcurl.html
-    //!
-    //! Note: Function is not thread-safe
-    inline void tear_down() EWS_NOEXCEPT { curl_global_cleanup(); }
-
-    //! \brief Contains the unique identifier and change key of an item in the
-    //! Exchange store.
-    //!
-    //! Instances of this class are somewhat immutable. You can default construct
-    //! an item_id in which case valid() will always return false. (Default
-    //! construction is needed because we need item and it's sub-classes to be
-    //! default constructible.) Only item_ids that come from an Exchange store
-    //! are considered to be valid.
-    class item_id final
-    {
-    public:
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
-        item_id() = default;
-#else
-        item_id() {}
-#endif
-
-        explicit item_id(std::string id)
-            : id_(std::move(id)),
-              change_key_()
-        {}
-
-        item_id(std::string id, std::string change_key)
-            : id_(std::move(id)),
-              change_key_(std::move(change_key))
-        {}
-
-        const std::string& id() const EWS_NOEXCEPT { return id_; }
-
-        const std::string& change_key() const EWS_NOEXCEPT
-        {
-            return change_key_;
-        }
-
-        bool valid() const EWS_NOEXCEPT { return !id_.empty(); }
-
-        std::string to_xml(const char* xmlns=nullptr) const
-        {
-            if (xmlns)
-            {
-                return std::string("<") + xmlns + ":ItemId Id=\"" + id() +
-                    "\" ChangeKey=\"" + change_key() + "\"/>";
-            }
-            else
-            {
-                return "<ItemId Id=\"" + id() +
-                    "\" ChangeKey=\"" + change_key() + "\"/>";
-            }
-        }
-
-        // Makes an item_id instance from an <ItemId> XML element
-        static item_id from_xml_element(const rapidxml::xml_node<>& elem)
-        {
-            auto id_attr = elem.first_attribute("Id");
-            EWS_ASSERT(id_attr && "Missing attribute Id in <ItemId>");
-            auto id = std::string(id_attr->value(), id_attr->value_size());
-            auto ckey_attr = elem.first_attribute("ChangeKey");
-            EWS_ASSERT(ckey_attr && "Missing attribute ChangeKey in <ItemId>");
-            auto ckey = std::string(ckey_attr->value(),
-                    ckey_attr->value_size());
-            return item_id(std::move(id), std::move(ckey));
-        }
-
-    private:
-        // case-sensitive; therefore, comparisons between IDs must be
-        // case-sensitive or binary
-        std::string id_;
-
-        // Identifies a specific version of an item.
-        std::string change_key_;
-    };
-
-#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(std::is_default_constructible<item_id>::value, "");
-    static_assert(std::is_copy_constructible<item_id>::value, "");
-    static_assert(std::is_copy_assignable<item_id>::value, "");
-    static_assert(std::is_move_constructible<item_id>::value, "");
-    static_assert(std::is_move_assignable<item_id>::value, "");
-#endif
-
-    //! Contains the unique identifier of an attachment.
-    class attachment_id final
-    {
-    public:
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
-        attachment_id() = default;
-#else
-        attachment_id() {}
-#endif
-
-#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
-        explicit attachment_id(std::string id) : id_(std::move(id)) {}
-
-        attachment_id(std::string id, item_id root_item_id)
-            : id_(std::move(id)),
-              root_item_id_(std::move(root_item_id))
-        {}
-#endif
-
-        //! Returns the string representing the unique identifier of an
-        //! attachment
-        const std::string& id() const EWS_NOEXCEPT { return id_; }
-
-        //! \brief Returns the item_id of the <em>parent</em> or <em>root</em>
-        //! item.
-        //!
-        //! The root item is the item that contains the attachment.
-        //!
-        //! Note: the returned item_id is only valid and meaningful when you
-        //! obtained this attachment_id in a call to \ref
-        //! service::create_attachment.
-        const item_id& root_item_id() const EWS_NOEXCEPT
-        {
-            return root_item_id_;
-        }
-
-        //! Whether this attachment_id is valid
-        bool valid() const EWS_NOEXCEPT { return !id_.empty(); }
-
-        std::string to_xml(const char* xmlns=nullptr) const
-        {
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
-            std::stringstream sstr;
-            sstr << "<" << pref << "AttachmentId Id=\"" << id() << "\"";
-            if (root_item_id().valid())
-            {
-                sstr << " RootItemId=\"" << root_item_id().id()
-                     << "\" RootItemChangeKey=\"" << root_item_id().change_key()
-                     << "\"";
-            }
-            sstr << "/>";
-            return sstr.str();
-        }
-
-        // Makes an attachment_id instance from an <AttachmentId> element
-        static attachment_id from_xml_element(const rapidxml::xml_node<>& elem)
-        {
-            auto id_attr = elem.first_attribute("Id");
-            EWS_ASSERT(id_attr && "Missing attribute Id in <AttachmentId>");
-            auto id = std::string(id_attr->value(), id_attr->value_size());
-            auto root_item_id = std::string();
-            auto root_item_ckey = std::string();
-
-            auto root_item_id_attr = elem.first_attribute("RootItemId");
-            if (root_item_id_attr)
-            {
-                root_item_id =
-                    std::string(root_item_id_attr->value(),
-                                root_item_id_attr->value_size());
-                auto root_item_ckey_attr =
-                    elem.first_attribute("RootItemChangeKey");
-                EWS_ASSERT(root_item_ckey_attr
-                        && "Expected attribute RootItemChangeKey");
-                root_item_ckey = std::string(root_item_ckey_attr->value(),
-                                             root_item_ckey_attr->value_size());
-            }
-
-            return root_item_id.empty() ?
-                   attachment_id(std::move(id)) :
-                   attachment_id(std::move(id),
-                                 item_id(std::move(root_item_id),
-                                         std::move(root_item_ckey)));
-        }
-
-    private:
-        std::string id_;
-        item_id root_item_id_;
-    };
-
-#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(std::is_default_constructible<attachment_id>::value, "");
-    static_assert(std::is_copy_constructible<attachment_id>::value, "");
-    static_assert(std::is_copy_assignable<attachment_id>::value, "");
-    static_assert(std::is_move_constructible<attachment_id>::value, "");
-    static_assert(std::is_move_assignable<attachment_id>::value, "");
-#endif
-
-    namespace internal
-    {
         // A self-contained copy of a DOM sub-tree generally used to hold
         // properties of an item class
         //
@@ -4744,8 +4300,8 @@ namespace ews
                 };
             };
 
-            inline void reparse(const rapidxml::xml_node<char>& source,
-                                std::size_t size_hint)
+            void reparse(const rapidxml::xml_node<char>& source,
+                         std::size_t size_hint)
             {
                 rawdata_.reserve(size_hint);
                 rapidxml::print(std::back_inserter(rawdata_),
@@ -4770,6 +4326,853 @@ namespace ews
         static_assert(std::is_move_assignable<xml_subtree>::value, "");
 #endif
 
+    }
+
+    //! Set-up EWS library.
+    //
+    //! Should be called when application is still in single-threaded context.
+    //! Calling this function more than once does no harm.
+    //!
+    //! Note: Function is not thread-safe
+    inline void set_up() EWS_NOEXCEPT { curl_global_init(CURL_GLOBAL_DEFAULT); }
+
+    //! Clean-up EWS library.
+    //!
+    //! You should call this function only when no other thread is running.
+    //! See libcurl(3) man-page or http://curl.haxx.se/libcurl/c/libcurl.html
+    //!
+    //! Note: Function is not thread-safe
+    inline void tear_down() EWS_NOEXCEPT { curl_global_cleanup(); }
+
+    //! \brief Contains the unique identifier and change key of an item in the
+    //! Exchange store.
+    //!
+    //! The ID uniquely identifies a concrete item throughout the Exchange
+    //! store and is not expected to change as long as the item exists. The
+    //! change key on the other hand identifies a specific version of an item. It
+    //! is expected to be changed whenever a property of the item is changed. The
+    //! change key is used for synchronization purposes on the server. You only
+    //! need to take care that the change key you include in a service call is
+    //! the most current one.
+    //!
+    //! Instances of this class are somewhat immutable. You can default construct
+    //! an item_id in which case valid() will always return false. (Default
+    //! construction is needed because we need item and it's sub-classes to be
+    //! default constructible.) Only item_ids that come from an Exchange store
+    //! are considered to be valid.
+    class item_id final
+    {
+    public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        //! Constructs an invalid item_id instance
+        item_id() = default;
+#else
+        item_id() {}
+#endif
+
+        //! Constructs an <tt>\<ItemId></tt> from given \p id string.
+        explicit item_id(std::string id)
+            : id_(std::move(id)),
+              change_key_()
+        {}
+
+        //! \brief Constructs an <tt>\<ItemId></tt> from given identifier and
+        //! change key.
+        item_id(std::string id, std::string change_key)
+            : id_(std::move(id)),
+              change_key_(std::move(change_key))
+        {}
+
+        //! Returns the identifier.
+        const std::string& id() const EWS_NOEXCEPT { return id_; }
+
+        //! Returns the change key
+        const std::string& change_key() const EWS_NOEXCEPT
+        {
+            return change_key_;
+        }
+
+        //! Whether this item_id is expected to be valid
+        bool valid() const EWS_NOEXCEPT { return !id_.empty(); }
+
+        //! Serializes this item_id to an XML string
+        std::string to_xml(const char* xmlns=nullptr) const
+        {
+            if (xmlns)
+            {
+                return std::string("<") + xmlns + ":ItemId Id=\"" + id() +
+                    "\" ChangeKey=\"" + change_key() + "\"/>";
+            }
+            else
+            {
+                return "<ItemId Id=\"" + id() +
+                    "\" ChangeKey=\"" + change_key() + "\"/>";
+            }
+        }
+
+        //! Makes an item_id instance from a <tt>\<ItemId></tt> XML element
+        static item_id from_xml_element(const rapidxml::xml_node<>& elem)
+        {
+            auto id_attr = elem.first_attribute("Id");
+            EWS_ASSERT(id_attr && "Missing attribute Id in <ItemId>");
+            auto id = std::string(id_attr->value(), id_attr->value_size());
+            auto ckey_attr = elem.first_attribute("ChangeKey");
+            EWS_ASSERT(ckey_attr && "Missing attribute ChangeKey in <ItemId>");
+            auto ckey = std::string(ckey_attr->value(),
+                    ckey_attr->value_size());
+            return item_id(std::move(id), std::move(ckey));
+        }
+
+    private:
+        // case-sensitive; therefore, comparisons between IDs must be
+        // case-sensitive or binary
+        std::string id_;
+        std::string change_key_;
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(std::is_default_constructible<item_id>::value, "");
+    static_assert(std::is_copy_constructible<item_id>::value, "");
+    static_assert(std::is_copy_assignable<item_id>::value, "");
+    static_assert(std::is_move_constructible<item_id>::value, "");
+    static_assert(std::is_move_assignable<item_id>::value, "");
+#endif
+
+    //! Contains the unique identifier of an attachment.
+    class attachment_id final
+    {
+    public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        attachment_id() = default;
+#else
+        attachment_id() {}
+#endif
+
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
+        explicit attachment_id(std::string id) : id_(std::move(id)) {}
+
+        attachment_id(std::string id, item_id root_item_id)
+            : id_(std::move(id)),
+              root_item_id_(std::move(root_item_id))
+        {}
+#endif
+
+        //! Returns the string representing the unique identifier of an
+        //! attachment
+        const std::string& id() const EWS_NOEXCEPT { return id_; }
+
+        //! \brief Returns the item_id of the <em>parent</em> or <em>root</em>
+        //! item.
+        //!
+        //! The root item is the item that contains the attachment.
+        //!
+        //! Note: the returned item_id is only valid and meaningful when you
+        //! obtained this attachment_id in a call to \ref
+        //! service::create_attachment.
+        const item_id& root_item_id() const EWS_NOEXCEPT
+        {
+            return root_item_id_;
+        }
+
+        //! Whether this attachment_id is valid
+        bool valid() const EWS_NOEXCEPT { return !id_.empty(); }
+
+        std::string to_xml(const char* xmlns=nullptr) const
+        {
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "AttachmentId Id=\"" << id() << "\"";
+            if (root_item_id().valid())
+            {
+                sstr << " RootItemId=\"" << root_item_id().id()
+                     << "\" RootItemChangeKey=\"" << root_item_id().change_key()
+                     << "\"";
+            }
+            sstr << "/>";
+            return sstr.str();
+        }
+
+        // Makes an attachment_id instance from an <AttachmentId> element
+        static attachment_id from_xml_element(const rapidxml::xml_node<>& elem)
+        {
+            auto id_attr = elem.first_attribute("Id");
+            EWS_ASSERT(id_attr && "Missing attribute Id in <AttachmentId>");
+            auto id = std::string(id_attr->value(), id_attr->value_size());
+            auto root_item_id = std::string();
+            auto root_item_ckey = std::string();
+
+            auto root_item_id_attr = elem.first_attribute("RootItemId");
+            if (root_item_id_attr)
+            {
+                root_item_id =
+                    std::string(root_item_id_attr->value(),
+                                root_item_id_attr->value_size());
+                auto root_item_ckey_attr =
+                    elem.first_attribute("RootItemChangeKey");
+                EWS_ASSERT(root_item_ckey_attr
+                        && "Expected attribute RootItemChangeKey");
+                root_item_ckey = std::string(root_item_ckey_attr->value(),
+                                             root_item_ckey_attr->value_size());
+            }
+
+            return root_item_id.empty() ?
+                   attachment_id(std::move(id)) :
+                   attachment_id(std::move(id),
+                                 item_id(std::move(root_item_id),
+                                         std::move(root_item_ckey)));
+        }
+
+    private:
+        std::string id_;
+        item_id root_item_id_;
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(std::is_default_constructible<attachment_id>::value, "");
+    static_assert(std::is_copy_constructible<attachment_id>::value, "");
+    static_assert(std::is_copy_assignable<attachment_id>::value, "");
+    static_assert(std::is_move_constructible<attachment_id>::value, "");
+    static_assert(std::is_move_assignable<attachment_id>::value, "");
+#endif
+
+    //! Represents a <tt>\<FileAttachment></tt> or an <tt>\<ItemAttachment></tt>
+    class attachment final
+    {
+    public:
+        //! Describes whether an attachment contains a file or another item.
+        enum class type
+        {
+            //! An <tt>\<ItemAttachment></tt>
+            item,
+
+            //! A <tt>\<FileAttachment></tt>
+            file
+        };
+
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        attachment() = default;
+#else
+        attachment() {}
+#endif
+
+        //! Returns this attachment's attachment_id
+        attachment_id id() const
+        {
+            auto node = xml_.get_node("AttachmentId");
+            if (!node)
+            {
+                return attachment_id();
+            }
+            return attachment_id::from_xml_element(*node);
+        }
+
+        //! Returns the attachment's name
+        std::string name() const
+        {
+            return xml_.get_value_as_string("Name");
+        }
+
+        //! Returns the attachment's content type
+        std::string content_type() const
+        {
+            return xml_.get_value_as_string("ContentType");
+        }
+
+        //! \brief Returns the attachment's contents
+        //!
+        //! If this is a <tt>\<FileAttachment></tt>, returns the Base64-encoded
+        //! contents of the file attachment. If this is an <ItemAttachment>, the
+        //! empty string.
+        std::string content() const
+        {
+            return xml_.get_value_as_string("Content");
+        }
+
+        //! \brief Returns the attachment's size in bytes
+        //!
+        //! If this is a <tt>\<FileAttachment></tt>, returns the size in bytes
+        //! of the file attachment; otherwise 0.
+        std::size_t content_size() const
+        {
+            auto size = xml_.get_value_as_string("Size");
+            return size.empty() ? 0U : std::stoul(size);
+        }
+
+        //! Returns either type::file or type::item
+        type get_type() const EWS_NOEXCEPT { return type_; }
+
+        //! \brief Write contents to a file
+        //!
+        //! If this is a <tt>\<FileAttachment></tt>, writes content to file.
+        //! Does nothing if this is an <tt>\<ItemAttachment></tt>.  Returns the
+        //! number of bytes written.
+        std::size_t write_content_to_file(const std::string& file_path) const
+        {
+            if (get_type() == type::item)
+            {
+                return 0U;
+            }
+
+            const auto raw_bytes = internal::base64::decode(content());
+
+            std::ofstream ofstr(file_path,
+                                std::ofstream::out | std::ios::binary);
+            if (!ofstr.is_open())
+            {
+                if (file_path.empty())
+                {
+                    throw exception(
+                        "Could not open file for writing: no file name given");
+                }
+
+                throw exception(
+                        "Could not open file for writing: " + file_path);
+            }
+
+            std::copy(begin(raw_bytes), end(raw_bytes),
+                      std::ostreambuf_iterator<char>(ofstr));
+            ofstr.close();
+            return raw_bytes.size();
+        }
+
+        //! Returns this attachment serialized to XML
+        std::string to_xml() const
+        {
+            auto elem = std::string(get_type() == type::item ?
+                    "ItemAttachment" : "FileAttachment");
+            std::stringstream sstr;
+            sstr << "<t:" << elem << ">";
+            sstr << xml_.to_string();
+            sstr << "</t:" << elem << ">";
+            return sstr.str();
+        }
+
+        //! Constructs an attachment from a given XML element \p elem.
+        static attachment from_xml_element(const rapidxml::xml_node<>& elem)
+        {
+            const auto elem_name = std::string(elem.local_name(),
+                                               elem.local_name_size());
+            EWS_ASSERT((elem_name == "FileAttachment"
+                     || elem_name == "ItemAttachment")
+                    && "Expected <FileAttachment> or <ItemAttachment>");
+            return attachment(elem_name == "FileAttachment" ?
+                    type::file : type::item, internal::xml_subtree(elem));
+        }
+
+        //! \brief Creates a new <tt>\<FileAttachment></tt> from a given file.
+        //!
+        //! Returns a new <tt>\<FileAttachment></tt> that you can pass to
+        //! ews::service::create_attachment in order to create the attachment on
+        //! the server.
+        //!
+        //! \param file_path path to an existing and readable file
+        //! \param content_type the (RFC 2046) MIME content type of the
+        //!        attachment
+        //! \param name a name for this attachment
+        //!
+        //! On Windows you can use HKEY_CLASSES_ROOT/MIME/Database/Content Type
+        //! registry hive to get the content type from a file extension. On a
+        //! UNIX see magic(5) and file(1).
+        static attachment from_file(const std::string& file_path,
+                                    std::string content_type,
+                                    std::string name)
+        {
+            // Try open file
+            std::ifstream ifstr(file_path,
+                                std::ifstream::in | std::ios::binary);
+            if (!ifstr.is_open())
+            {
+                throw exception(
+                        "Could not open file for reading: " + file_path);
+            }
+
+            // Stop eating newlines in binary mode
+            ifstr.unsetf(std::ios::skipws);
+
+            // Determine size
+            ifstr.seekg(0, std::ios::end);
+            const auto file_size = ifstr.tellg();
+            ifstr.seekg(0, std::ios::beg);
+
+            // Allocate buffer
+            auto buffer = std::vector<unsigned char>();
+            buffer.reserve(file_size);
+
+            // Read
+            buffer.insert(begin(buffer),
+                          std::istream_iterator<unsigned char>(ifstr),
+                          std::istream_iterator<unsigned char>());
+            ifstr.close();
+
+            // And encode
+            auto content = internal::base64::encode(buffer);
+
+            auto obj = attachment();
+            obj.type_ = type::file;
+            obj.xml_.set_or_update("Name", std::move(name));
+            obj.xml_.set_or_update("ContentType", std::move(content_type));
+            obj.xml_.set_or_update("Content", std::move(content));
+            obj.xml_.set_or_update("Size", std::to_string(buffer.size()));
+            return obj;
+        }
+
+        static attachment
+        from_item(const item& the_item, std::string name); // implemented below
+
+    private:
+        attachment(type&& t, internal::xml_subtree&& xml)
+            : xml_(std::move(xml)),
+              type_(std::move(t))
+        {
+        }
+
+        internal::xml_subtree xml_;
+        type type_;
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(std::is_default_constructible<attachment>::value, "");
+    static_assert(std::is_copy_constructible<attachment>::value, "");
+    static_assert(std::is_copy_assignable<attachment>::value, "");
+    static_assert(std::is_move_constructible<attachment>::value, "");
+    static_assert(std::is_move_assignable<attachment>::value, "");
+#endif
+
+    namespace internal
+    {
+        // Parse response class and response code from given element.
+        inline std::pair<response_class, response_code>
+        parse_response_class_and_code(const rapidxml::xml_node<>& elem)
+        {
+            using rapidxml::internal::compare;
+
+            auto cls = response_class::success;
+            auto response_class_attr = elem.first_attribute("ResponseClass");
+            if (compare(response_class_attr->value(),
+                        response_class_attr->value_size(),
+                        "Error",
+                        5))
+            {
+                cls = response_class::error;
+            }
+            else if (compare(response_class_attr->value(),
+                             response_class_attr->value_size(),
+                             "Warning",
+                             7))
+            {
+                cls = response_class::warning;
+            }
+
+            // One thing we can count on is that when the ResponseClass
+            // attribute is set to Success, ResponseCode will be set to NoError.
+            // So we only parse the <ResponseCode> element when we have a
+            // warning or an error.
+
+            auto code = response_code::no_error;
+            if (cls != response_class::success)
+            {
+                auto response_code_elem =
+                    elem.first_node_ns(uri<>::microsoft::messages(),
+                                       "ResponseCode");
+                EWS_ASSERT(response_code_elem
+                        && "Expected <ResponseCode> element");
+                code = str_to_response_code(response_code_elem->value());
+            }
+
+            return std::make_pair(cls, code);
+        }
+
+        // Iterate over <Items> array and execute given function for each node.
+        //
+        // elem: a response message element, e.g., CreateItemResponseMessage
+        // func: A callable that is invoked for each item in the response
+        // message's <Items> array. A const rapidxml::xml_node& is passed to
+        // that callable.
+        template <typename Func>
+        inline void for_each_item(const rapidxml::xml_node<>& elem, Func func)
+        {
+            auto items_elem =
+                elem.first_node_ns(uri<>::microsoft::messages(), "Items");
+            EWS_ASSERT(items_elem && "Expected <Items> element");
+
+            for (auto item_elem = items_elem->first_node(); item_elem;
+                 item_elem = item_elem->next_sibling())
+            {
+                func(*item_elem);
+            }
+        }
+
+        // Base-class for all response messages
+        class response_message_base
+        {
+        public:
+            response_message_base(response_class cls, response_code code)
+                : cls_(cls),
+                  code_(code)
+            {
+            }
+
+            response_class get_response_class() const EWS_NOEXCEPT
+            {
+                return cls_;
+            }
+
+            bool success() const EWS_NOEXCEPT
+            {
+                return get_response_class() == response_class::success;
+            }
+
+            response_code get_response_code() const EWS_NOEXCEPT
+            {
+                return code_;
+            }
+
+        private:
+            response_class cls_;
+            response_code code_;
+        };
+
+        // Base-class for response messages that contain an <Items> array.
+        //
+        // The ItemType template parameter denotes the type of all items in the
+        // returned array. The choice for a compile-time parameter has following
+        // implications and restrictions:
+        //
+        // - Microsoft EWS allows for different types of items in the returned
+        //   array. However, this implementation forces you to only issue
+        //   requests that return only one type of item in a single response at
+        //   a time.
+        //
+        // - You need to know the type of the item returned by a request
+        //   up-front at compile time. Microsoft EWS would allow to deal with
+        //   different types of items in a single response dynamically.
+        template <typename ItemType>
+        class response_message_with_items : public response_message_base
+        {
+        public:
+            typedef ItemType item_type;
+
+            response_message_with_items(response_class cls,
+                                        response_code code,
+                                        std::vector<item_type> items)
+                : response_message_base(cls, code),
+                  items_(std::move(items))
+            {
+            }
+
+            const std::vector<item_type>& items() const EWS_NOEXCEPT
+            {
+                return items_;
+            }
+
+        private:
+            std::vector<item_type> items_;
+        };
+
+        class create_item_response_message final
+            : public response_message_with_items<item_id>
+        {
+        public:
+            // implemented below
+            static create_item_response_message parse(http_response&);
+
+        private:
+            create_item_response_message(response_class cls,
+                                         response_code code,
+                                         std::vector<item_id> items)
+                : response_message_with_items<item_id>(cls,
+                                                       code,
+                                                       std::move(items))
+            {
+            }
+        };
+
+        class find_item_response_message final
+            : public response_message_with_items<item_id>
+        {
+        public:
+            // implemented below
+            static find_item_response_message parse(http_response&);
+
+        private:
+            find_item_response_message(response_class cls,
+                                       response_code code,
+                                       std::vector<item_id> items)
+                : response_message_with_items<item_id>(cls,
+                  code,
+                  std::move(items))
+            {
+            }
+        };
+
+        class update_item_response_message final
+            : public response_message_with_items<item_id>
+        {
+        public:
+            // implemented below
+            static update_item_response_message parse(http_response&);
+
+        private:
+            update_item_response_message(response_class cls,
+                                       response_code code,
+                                       std::vector<item_id> items)
+                : response_message_with_items<item_id>(cls,
+                  code,
+                  std::move(items))
+            {
+            }
+        };
+
+        template <typename ItemType>
+        class get_item_response_message final
+            : public response_message_with_items<ItemType>
+        {
+        public:
+            // implemented below
+            static get_item_response_message parse(http_response&);
+
+        private:
+            get_item_response_message(response_class cls,
+                                      response_code code,
+                                      std::vector<ItemType> items)
+                : response_message_with_items<ItemType>(cls,
+                                                        code,
+                                                        std::move(items))
+            {
+            }
+        };
+
+        class create_attachment_response_message final
+            : public response_message_base
+        {
+        public:
+            static
+            create_attachment_response_message parse(http_response& response)
+            {
+                const auto& doc = response.payload();
+                auto elem = get_element_by_qname(doc,
+                                             "CreateAttachmentResponseMessage",
+                                             uri<>::microsoft::messages());
+#ifdef EWS_ENABLE_VERBOSE
+                if (!elem)
+                {
+                    std::cerr
+                        << "Parsing CreateAttachmentResponseMessage failed, "
+                        << "response code: " << response.code()
+                        << ", payload:\n\'" << doc << "\'" << std::endl;
+                }
+#endif
+                EWS_ASSERT(elem &&
+                    "Expected <CreateAttachmentResponseMessage>, got nullptr");
+
+                const auto cls_and_code = parse_response_class_and_code(*elem);
+
+                auto attachments_element =
+                    elem->first_node_ns(uri<>::microsoft::messages(),
+                                        "Attachments");
+                EWS_ASSERT(attachments_element
+                        && "Expected <Attachments> element");
+
+                auto ids = std::vector<attachment_id>();
+                for (auto attachment_elem = attachments_element->first_node();
+                     attachment_elem;
+                     attachment_elem = attachment_elem->next_sibling())
+                {
+                    ids.emplace_back(
+                            attachment_id::from_xml_element(*attachment_elem));
+                }
+                return create_attachment_response_message(
+                                    cls_and_code.first,
+                                    cls_and_code.second,
+                                    std::move(ids));
+            }
+
+            const std::vector<attachment_id>&
+            attachment_ids() const EWS_NOEXCEPT
+            {
+                return ids_;
+            }
+
+        private:
+            create_attachment_response_message(
+                                    response_class cls,
+                                    response_code code,
+                                    std::vector<attachment_id> attachment_ids)
+                : response_message_base(cls, code),
+                  ids_(std::move(attachment_ids))
+            {
+            }
+
+            std::vector<attachment_id> ids_;
+        };
+
+        class get_attachment_response_message final
+            : public response_message_base
+        {
+        public:
+            static
+            get_attachment_response_message parse(http_response& response)
+            {
+                const auto& doc = response.payload();
+                auto elem = get_element_by_qname(doc,
+                                             "GetAttachmentResponseMessage",
+                                             uri<>::microsoft::messages());
+#ifdef EWS_ENABLE_VERBOSE
+                if (!elem)
+                {
+                    std::cerr
+                        << "Parsing GetAttachmentResponseMessage failed, "
+                        << "response code: " << response.code()
+                        << ", payload:\n\'" << doc << "\'" << std::endl;
+                }
+#endif
+                EWS_ASSERT(elem &&
+                    "Expected <GetAttachmentResponseMessage>, got nullptr");
+
+                const auto cls_and_code = parse_response_class_and_code(*elem);
+
+                auto attachments_element =
+                    elem->first_node_ns(uri<>::microsoft::messages(),
+                                        "Attachments");
+                EWS_ASSERT(attachments_element
+                        && "Expected <Attachments> element");
+                auto attachments = std::vector<attachment>();
+                for (auto attachment_elem = attachments_element->first_node();
+                     attachment_elem;
+                     attachment_elem = attachment_elem->next_sibling())
+                {
+                    attachments.emplace_back(
+                            attachment::from_xml_element(*attachment_elem));
+                }
+                return get_attachment_response_message(cls_and_code.first,
+                                                       cls_and_code.second,
+                                                       std::move(attachments));
+            }
+
+            const std::vector<attachment>& attachments() const EWS_NOEXCEPT
+            {
+                return attachments_;
+            }
+
+        private:
+            get_attachment_response_message(response_class cls,
+                                            response_code code,
+                                            std::vector<attachment> attachments)
+                : response_message_base(cls, code),
+                  attachments_(std::move(attachments))
+            {
+            }
+
+            std::vector<attachment> attachments_;
+        };
+
+        class delete_item_response_message final : public response_message_base
+        {
+        public:
+            static delete_item_response_message parse(http_response& response)
+            {
+                const auto& doc = response.payload();
+                auto elem = get_element_by_qname(doc,
+                                                 "DeleteItemResponseMessage",
+                                                 uri<>::microsoft::messages());
+
+#ifdef EWS_ENABLE_VERBOSE
+                if (!elem)
+                {
+                    std::cerr
+                        << "Parsing DeleteItemResponseMessage failed, "
+                        << "response code: " << response.code()
+                        << ", payload:\n\'" << doc << "\'" << std::endl;
+                }
+#endif
+
+                EWS_ASSERT(elem &&
+                        "Expected <DeleteItemResponseMessage>, got nullptr");
+                const auto result = parse_response_class_and_code(*elem);
+                return delete_item_response_message(result.first,
+                                                    result.second);
+            }
+
+        private:
+            delete_item_response_message(response_class cls, response_code code)
+                : response_message_base(cls, code)
+            {
+            }
+        };
+
+        class delete_attachment_response_message final
+            : public response_message_base
+        {
+        public:
+            static
+            delete_attachment_response_message parse(http_response& response)
+            {
+                const auto& doc = response.payload();
+                auto elem =
+                    get_element_by_qname(doc,
+                                         "DeleteAttachmentResponseMessage",
+                                         uri<>::microsoft::messages());
+
+#ifdef EWS_ENABLE_VERBOSE
+                if (!elem)
+                {
+                    std::cerr
+                        << "Parsing DeleteAttachmentResponseMessage failed, "
+                        << "response code: " << response.code()
+                        << ", payload:\n\'" << doc << "\'" << std::endl;
+                }
+#endif
+
+                EWS_ASSERT(elem &&
+                    "Expected <DeleteAttachmentResponseMessage>, got nullptr");
+                const auto cls_and_code = parse_response_class_and_code(*elem);
+
+                auto root_item_id = item_id();
+                auto root_item_id_elem =
+                    elem->first_node_ns(uri<>::microsoft::messages(),
+                                        "RootItemId");
+                if (root_item_id_elem)
+                {
+                    auto id_attr
+                        = root_item_id_elem->first_attribute("RootItemId");
+                    EWS_ASSERT(id_attr && "Expected RootItemId attribute");
+                    auto id = std::string(id_attr->value(),
+                                          id_attr->value_size());
+
+                    auto change_key_attr =
+                        root_item_id_elem->first_attribute("RootItemChangeKey");
+                    EWS_ASSERT(change_key_attr
+                            && "Expected RootItemChangeKey attribute");
+                    auto change_key =
+                            std::string(change_key_attr->value(),
+                                        change_key_attr->value_size());
+
+                    root_item_id = item_id(std::move(id),
+                                           std::move(change_key));
+                }
+
+                return delete_attachment_response_message(cls_and_code.first,
+                                                          cls_and_code.second,
+                                                          root_item_id);
+            }
+
+            item_id get_root_item_id() const { return root_item_id_; }
+
+        private:
+            delete_attachment_response_message(response_class cls,
+                                               response_code code,
+                                               item_id root_item_id)
+                : response_message_base(cls, code),
+                  root_item_id_(std::move(root_item_id))
+            {
+            }
+
+            item_id root_item_id_;
+        };
     }
 
     //! \brief A thin wrapper for xs:dateTime formatted strings.
@@ -7276,235 +7679,6 @@ namespace ews
         // TODO: is_equal_to(property_path, property_path) {}
     };
 
-    //! Represents a <tt>\<FileAttachment></tt> or a <tt>\<ItemAttachment></tt>
-    class attachment final
-    {
-    public:
-        //! Describes whether an attachment contains a file or another item.
-        enum class type
-        {
-            //! An <tt>\<ItemAttachment></tt>
-            item,
-
-            //! A <tt>\<FileAttachment></tt>
-            file
-        };
-
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
-        attachment() = default;
-#else
-        attachment() {}
-#endif
-
-        //! Returns this attachment's attachment_id
-        attachment_id id() const
-        {
-            auto node = xml_.get_node("AttachmentId");
-            if (!node)
-            {
-                return attachment_id();
-            }
-            return attachment_id::from_xml_element(*node);
-        }
-
-        //! Returns the attachment's name
-        std::string name() const
-        {
-            return xml_.get_value_as_string("Name");
-        }
-
-        //! Returns the attachment's content type
-        std::string content_type() const
-        {
-            return xml_.get_value_as_string("ContentType");
-        }
-
-        //! \brief Returns the attachment's contents
-        //!
-        //! If this is a <tt>\<FileAttachment></tt>, returns the Base64-encoded
-        //! contents of the file attachment. If this is an <ItemAttachment>, the
-        //! empty string.
-        std::string content() const
-        {
-            return xml_.get_value_as_string("Content");
-        }
-
-        //! \brief Returns the attachment's size in bytes
-        //!
-        //! If this is a <tt>\<FileAttachment></tt>, returns the size in bytes
-        //! of the file attachment; otherwise 0.
-        std::size_t content_size() const
-        {
-            auto size = xml_.get_value_as_string("Size");
-            return size.empty() ? 0U : std::stoul(size);
-        }
-
-        //! Returns either type::file or type::item
-        type get_type() const EWS_NOEXCEPT { return type_; }
-
-        //! \brief Write contents to a file
-        //!
-        //! If this is a <tt>\<FileAttachment></tt>, writes content to file.
-        //! Does nothing if this is an <tt>\<ItemAttachment></tt>.  Returns the
-        //! number of bytes written.
-        std::size_t write_content_to_file(const std::string& file_path) const
-        {
-            if (get_type() == type::item)
-            {
-                return 0U;
-            }
-
-            const auto raw_bytes = internal::base64::decode(content());
-
-            std::ofstream ofstr(file_path,
-                                std::ofstream::out | std::ios::binary);
-            if (!ofstr.is_open())
-            {
-                if (file_path.empty())
-                {
-                    throw exception(
-                        "Could not open file for writing: no file name given");
-                }
-
-                throw exception(
-                        "Could not open file for writing: " + file_path);
-            }
-
-            std::copy(begin(raw_bytes), end(raw_bytes),
-                      std::ostreambuf_iterator<char>(ofstr));
-            ofstr.close();
-            return raw_bytes.size();
-        }
-
-        //! Returns this attachment serialized to XML
-        std::string to_xml() const
-        {
-            auto elem = std::string(get_type() == type::item ?
-                    "ItemAttachment" : "FileAttachment");
-            std::stringstream sstr;
-            sstr << "<t:" << elem << ">";
-            sstr << xml_.to_string();
-            sstr << "</t:" << elem << ">";
-            return sstr.str();
-        }
-
-        //! Constructs an attachment from a given XML element \p elem.
-        static attachment from_xml_element(const rapidxml::xml_node<>& elem)
-        {
-            const auto elem_name = std::string(elem.local_name(),
-                                               elem.local_name_size());
-            EWS_ASSERT((elem_name == "FileAttachment"
-                     || elem_name == "ItemAttachment")
-                    && "Expected <FileAttachment> or <ItemAttachment>");
-            return attachment(elem_name == "FileAttachment" ?
-                    type::file : type::item, internal::xml_subtree(elem));
-        }
-
-        //! \brief Creates a new <tt>\<FileAttachment></tt> from a given file.
-        //!
-        //! Returns a new <tt>\<FileAttachment></tt> that you can pass to
-        //! ews::service::create_attachment in order to create the attachment on
-        //! the server.
-        //!
-        //! \param file_path path to an existing and readable file
-        //! \param content_type the (RFC 2046) MIME content type of the
-        //!        attachment
-        //! \param name a name for this attachment
-        //!
-        //! On Windows you can use HKEY_CLASSES_ROOT/MIME/Database/Content Type
-        //! registry hive to get the content type from a file extension. On a
-        //! UNIX see magic(5) and file(1).
-        static attachment from_file(const std::string& file_path,
-                                    std::string content_type,
-                                    std::string name)
-        {
-            // Try open file
-            std::ifstream ifstr(file_path,
-                                std::ifstream::in | std::ios::binary);
-            if (!ifstr.is_open())
-            {
-                throw exception(
-                        "Could not open file for reading: " + file_path);
-            }
-
-            // Stop eating newlines in binary mode
-            ifstr.unsetf(std::ios::skipws);
-
-            // Determine size
-            ifstr.seekg(0, std::ios::end);
-            const auto file_size = ifstr.tellg();
-            ifstr.seekg(0, std::ios::beg);
-
-            // Allocate buffer
-            auto buffer = std::vector<unsigned char>();
-            buffer.reserve(file_size);
-
-            // Read
-            buffer.insert(begin(buffer),
-                          std::istream_iterator<unsigned char>(ifstr),
-                          std::istream_iterator<unsigned char>());
-            ifstr.close();
-
-            // And encode
-            auto content = internal::base64::encode(buffer);
-
-            auto obj = attachment();
-            obj.type_ = type::file;
-            obj.xml_.set_or_update("Name", std::move(name));
-            obj.xml_.set_or_update("ContentType", std::move(content_type));
-            obj.xml_.set_or_update("Content", std::move(content));
-            obj.xml_.set_or_update("Size", std::to_string(buffer.size()));
-            return obj;
-        }
-
-        //! Creates a new <tt>\<ItemAttachment></tt> from a given item.
-        //
-        //! It is not necessary for the item to already exist in the Exchange
-        //! store. If it doesn't, it will be automatically created.
-        static attachment from_item(const item& the_item, std::string name)
-        {
-            (void)the_item;
-
-            // Creating a new <ItemAttachment> with the <CreateAttachment>
-            // method is pretty similar to a <CreateItem> method call. However,
-            // most of the times we do not want to create item attachments out
-            // of thin air but attach an _existing_ item.
-            //
-            // If we want create an attachment from an existing item, we need
-            // to first call <GetItem> before we call <CreateItem> and put the
-            // complete item from the response into the <CreateAttachment>
-            // call.
-            //
-            // There is a shortcut: use <BaseShape>IdOnly</BaseShape> and
-            // <AdditionalProperties> with item::MimeContent in <GetItem> call,
-            // remove <ItemId> from the response and pass that to
-            // <CreateAttachment>.
-
-            auto obj = attachment();
-            obj.type_ = type::item;
-            obj.xml_.set_or_update("Name", std::move(name));
-            return obj;
-        }
-
-    private:
-        attachment(type&& t, internal::xml_subtree&& xml)
-            : xml_(std::move(xml)),
-              type_(std::move(t))
-        {
-        }
-
-        internal::xml_subtree xml_;
-        type type_;
-    };
-
-#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(std::is_default_constructible<attachment>::value, "");
-    static_assert(std::is_copy_constructible<attachment>::value, "");
-    static_assert(std::is_copy_assignable<attachment>::value, "");
-    static_assert(std::is_move_constructible<attachment>::value, "");
-    static_assert(std::is_move_assignable<attachment>::value, "");
-#endif
-
     //! \brief Contains the methods to perfom operations on an Exchange server
     //!
     //! The service class contains all methods that can be performed on an
@@ -7745,21 +7919,22 @@ namespace ews
             }
 
             const std::string request_string =
-        "<m:UpdateItem"
-        "    MessageDisposition=\"SaveOnly\"\n"
-        "    ConflictResolution=\"" + internal::conflict_resolution_str(res)
-                                                        + "\">\n"
-        "  <m:ItemChanges>\n"
-        "    <t:ItemChange>\n"
-        "      " + id.to_xml("t") + "\n"
-        "      <t:Updates>\n"
-        "        " + item_change_open_tag + "\n"
-        "          " + prop.to_xml("t") + "\n"
-        "        " + item_change_close_tag + "\n"
-        "      </t:Updates>\n"
-        "    </t:ItemChange>\n"
-        "  </m:ItemChanges>\n"
-        "</m:UpdateItem>\n";
+                "<m:UpdateItem"
+                "    MessageDisposition=\"SaveOnly\"\n"
+                "    ConflictResolution=\""
+                        + internal::conflict_resolution_str(res)
+                        + "\">\n"
+                "  <m:ItemChanges>\n"
+                "    <t:ItemChange>\n"
+                "      " + id.to_xml("t") + "\n"
+                "      <t:Updates>\n"
+                "        " + item_change_open_tag + "\n"
+                "          " + prop.to_xml("t") + "\n"
+                "        " + item_change_close_tag + "\n"
+                "      </t:Updates>\n"
+                "    </t:ItemChange>\n"
+                "  </m:ItemChanges>\n"
+                "</m:UpdateItem>\n";
 
             auto response = request(request_string);
 #ifdef EWS_ENABLE_VERBOSE
@@ -7785,18 +7960,108 @@ namespace ews
         attachment_id create_attachment(const item& parent_item,
                                         const attachment& a)
         {
-            (void)parent_item;
-            (void)a;
-            return attachment_id();
+            if (a.get_type() == attachment::type::file)
+            {
+                auto response = request(
+                    "<m:CreateAttachment>\n"
+                    "  <m:ParentItemId Id=\""
+                        + parent_item.get_item_id().id()
+                        + "\" ChangeKey=\""
+                        + parent_item.get_item_id().change_key()
+                        + "\"/>\n"
+                    "  <m:Attachments>" + a.to_xml() + "</m:Attachments>\n"
+                    "</m:CreateAttachment>\n");
+
+#ifdef EWS_ENABLE_VERBOSE
+                std::cerr << response.payload() << std::endl;
+#endif
+                const auto response_message =
+                    internal::create_attachment_response_message::parse(
+                                                                    response);
+                if (!response_message.success())
+                {
+                    throw exchange_error(response_message.get_response_code());
+                }
+                EWS_ASSERT(!response_message.attachment_ids().empty()
+                        && "Expected at least one attachment");
+                return response_message.attachment_ids().front();
+            }
+            else
+            {
+                // TODO
+                EWS_ASSERT(false);
+                return attachment_id();
+            }
         }
 
+        //! \brief Attach one or more files (or items) to an existing item.
+        //!
+        //! Use this member-function when you want to create multiple
+        //! attachments to a single item. If you want to create attachments for
+        //! multiple items, you will need to call create_attachment several
+        //! times--one for each item that you want to add attachments to.
         std::vector<attachment_id>
-        create_attachment(const item& parent_item,
-                          const std::vector<attachment>& attachments)
+        create_attachments(const item& parent_item,
+                           const std::vector<attachment>& attachments)
         {
             (void)parent_item;
             (void)attachments;
+            EWS_ASSERT(false);
             return std::vector<attachment_id>();
+        }
+
+        //! Retrieves an attachment from the Exchange store
+        attachment get_attachment(const attachment_id& id)
+        {
+            auto response = request(
+                "<m:GetAttachment>\n"
+                "  <m:AttachmentShape>\n"
+                "    <m:IncludeMimeContent/>\n"
+                "    <m:BodyType/>\n"
+                "    <m:FilterHtmlContent/>\n"
+                "    <m:AdditionalProperties/>\n"
+                "  </m:AttachmentShape>\n"
+                "  <m:AttachmentIds>" + id.to_xml("t") + "</m:AttachmentIds>\n"
+                "</m:GetAttachment>\n");
+
+#ifdef EWS_ENABLE_VERBOSE
+            std::cerr << response.payload() << std::endl;
+#endif
+
+            const auto response_message =
+                internal::get_attachment_response_message::parse(response);
+            if (!response_message.success())
+            {
+                throw exchange_error(response_message.get_response_code());
+            }
+            EWS_ASSERT(!response_message.attachments().empty()
+                    && "Expected at least one attachment to be returned");
+            return response_message.attachments().front();
+        }
+
+        //! \brief Deletes given attachment from the Exchange store
+        //!
+        //! Returns the item_id of the parent item from which the attachment !
+        //! was removed (also known as <em>root</em> item). This item_id contains
+        //! the updated change key of the parent item.
+        item_id delete_attachment(attachment&& the_attachment)
+        {
+            auto response = request(
+                "<m:DeleteAttachment>\n"
+                "  <m:AttachmentIds>\n" + the_attachment.id().to_xml("t")
+                        + "</m:AttachmentIds>\n"
+                "</m:DeleteAttachment>\n");
+#ifdef EWS_ENABLE_VERBOSE
+            std::cerr << response.payload() << std::endl;
+#endif
+            const auto response_message =
+                internal::delete_attachment_response_message::parse(response);
+            if (!response_message.success())
+            {
+                throw exchange_error(response_message.get_response_code());
+            }
+            the_attachment = attachment();
+            return response_message.get_root_item_id();
         }
 
     private:
@@ -8010,7 +8275,8 @@ namespace ews
         }
 
         // FIXME: a CreateItemResponse can contain multiple ResponseMessages
-        inline create_item_response_message
+        inline
+        create_item_response_message
         create_item_response_message::parse(http_response& response)
         {
             const auto& doc = response.payload();
@@ -8047,7 +8313,8 @@ namespace ews
                                                 std::move(item_ids));
         }
 
-        inline find_item_response_message
+        inline
+        find_item_response_message
         find_item_response_message::parse(http_response& response)
         {
             const auto& doc = response.payload();
@@ -8081,7 +8348,8 @@ namespace ews
                                               std::move(items));
         }
 
-        inline update_item_response_message
+        inline
+        update_item_response_message
         update_item_response_message::parse(http_response& response)
         {
             const auto& doc = response.payload();
@@ -8142,5 +8410,35 @@ namespace ews
                                              result.second,
                                              std::move(items));
         }
+    }
+
+    //! \brief Creates a new <tt>\<ItemAttachment></tt> from a given item.
+    //
+    //! It is not necessary for the item to already exist in the Exchange
+    //! store. If it doesn't, it will be automatically created.
+    inline
+    attachment attachment::from_item(const item& the_item, std::string name)
+    {
+        (void)the_item;
+
+        // Creating a new <ItemAttachment> with the <CreateAttachment>
+        // method is pretty similar to a <CreateItem> method call. However,
+        // most of the times we do not want to create item attachments out
+        // of thin air but attach an _existing_ item.
+        //
+        // If we want create an attachment from an existing item, we need
+        // to first call <GetItem> before we call <CreateItem> and put the
+        // complete item from the response into the <CreateAttachment>
+        // call.
+        //
+        // There is a shortcut: use <BaseShape>IdOnly</BaseShape> and
+        // <AdditionalProperties> with item::MimeContent in <GetItem> call,
+        // remove <ItemId> from the response and pass that to
+        // <CreateAttachment>.
+
+        auto obj = attachment();
+        obj.type_ = type::item;
+        obj.xml_.set_or_update("Name", std::move(name));
+        return obj;
     }
 }

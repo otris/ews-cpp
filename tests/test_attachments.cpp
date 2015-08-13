@@ -9,8 +9,7 @@ typedef rapidxml::xml_document<> xml_document;
 #ifdef EWS_USE_BOOST_LIBRARY
 namespace
 {
-    inline
-    std::vector<char> read_contents(boost::filesystem::path path)
+    inline std::vector<char> read_contents(const boost::filesystem::path& path)
     {
         std::ifstream ifstr(path.string(),
                             std::ifstream::in | std::ios::binary);
@@ -150,14 +149,6 @@ namespace tests
         EXPECT_EQ(0U, att.content_size());
     }
 
-    // TEST_F(AttachmentTest, CreateAndDeleteAttachment)
-    // {
-    //     auto& msg = test_message();
-    //     auto file_attachment = ews::attachment::from_file();
-    //     auto attachment_id = service().create_attachment(msg, file_attachment);
-    //     ASSERT_TRUE(attachment_id.valid());
-    // }
-
     TEST_F(AttachmentTest, ToXML)
     {
         auto item = ews::item();
@@ -169,9 +160,55 @@ namespace tests
             xml.c_str());
     }
 
-    // TODO: from_item
+    // TODO: CreateFromItem
+    // TODO: GetAttachmentWithInvalidIdThrows
+    // TODO: GetAttachmentWithInvalidIdExceptionResponse
 
 #ifdef EWS_USE_BOOST_LIBRARY
+    TEST_F(FileAttachmentTest, CreateAndDeleteAttachmentOnServer)
+    {
+        auto& msg = test_message();
+        const auto path = assets_dir() / "ballmer_peak.png";
+
+        auto file_attachment = ews::attachment::from_file(path.string(),
+                                                          "image/png",
+                                                          "Ballmer Peak");
+
+        // Attach image to email message
+        auto attachment_id = service().create_attachment(msg, file_attachment);
+        ASSERT_TRUE(attachment_id.valid());
+
+        // Make sure two additional attributes of <AttachmentId> are set; only
+        // <CreateAttachment> call returns them
+        EXPECT_FALSE(attachment_id.root_item_id().id().empty());
+        EXPECT_FALSE(attachment_id.root_item_id().change_key().empty());
+
+        file_attachment = service().get_attachment(attachment_id);
+
+        // Test if properties are as expected
+        EXPECT_EQ(ews::attachment::type::file, file_attachment.get_type());
+        EXPECT_TRUE(file_attachment.id().valid());
+        EXPECT_STREQ("Ballmer Peak", file_attachment.name().c_str());
+        EXPECT_STREQ("image/png", file_attachment.content_type().c_str());
+        EXPECT_FALSE(file_attachment.content().empty());
+        EXPECT_EQ(93525U, file_attachment.content_size());
+
+        ASSERT_NO_THROW(
+        {
+            service().delete_attachment(std::move(file_attachment));
+        });
+
+        // Test sink argument
+        EXPECT_FALSE(file_attachment.id().valid());
+
+        // Check if it is still in store
+        EXPECT_THROW(
+        {
+            service().get_attachment(attachment_id);
+
+        }, ews::exchange_error);
+    }
+
     TEST_F(FileAttachmentTest, ToXML)
     {
         const auto path = assets_dir() / "ballmer_peak.png";
