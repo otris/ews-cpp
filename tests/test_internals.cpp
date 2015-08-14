@@ -32,7 +32,38 @@ namespace
 "            </m:ResponseMessages>\n"
 "        </m:GetItemResponse>\n"
 "    </s:Body>\n"
-"</s:Envelope>\n";
+"</s:Envelope>";
+
+    const std::string malformed_xml_1 =
+"<html>\n"
+"  <head>\n"
+"  </head>\n"
+"  <body>\n"
+"    <p>\n"
+"      <h1</h1>\n"
+// line 6   ~
+"    </p>\n"
+"  </body>\n"
+"</html>";
+
+    const std::string malformed_xml_2 =
+"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n"
+"    <s:Body xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n"
+"        <m:GetItemResponse xmlns:m=\"http://schemas.microsoft.com/exchange/services/2006/messages\" xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\">\n"
+"            <m:ResponseMessages>\n"
+"                <m:GetItemResponseMessage ResponseClass=\"Success\">\n"
+"                    <m:ResponseCode>NoError</m:ResponseCode>\n"
+"                    <m:Items>\n"
+"                        <t:Contact>\n"
+"                            <t:Cultu</t:Culture>\n"
+// line 9                              ~
+"                        </t:Contact>\n"
+"                    </m:Items>\n"
+"                </m:GetItemResponseMessage>\n"
+"            </m:ResponseMessages>\n"
+"        </m:GetItemResponse>\n"
+"    </s:Body>\n"
+"</s:Envelope>";
 
 }
 
@@ -164,4 +195,25 @@ namespace tests
     }
 
     // TODO: test size_hint parameter of xml_subtree reduces/eliminates reallocs
+
+    TEST(InternalTest, XMLParseErrorMessage)
+    {
+        // TODO: make this a real test
+
+        std::vector<char> data;
+        std::copy(begin(malformed_xml_1), end(malformed_xml_1),
+                  std::back_inserter(data));
+        data.emplace_back('\0');
+
+        rapidxml::xml_document<> doc;
+        try
+        {
+            doc.parse<0>(&data[0]);
+        }
+        catch (rapidxml::parse_error& exc)
+        {
+            std::cout << ews::xml_parse_error::error_message_from(exc, data)
+                << std::endl;
+        }
+    }
 }

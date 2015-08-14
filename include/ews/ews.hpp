@@ -269,6 +269,14 @@ namespace ews
 
         }
 
+        template <typename T>
+        inline bool points_within_array(T* p, T* begin, T* end)
+        {
+            // Not 100% sure if this works in each and every case
+            return std::greater_equal<T*>()(p, begin)
+                && std::less<T*>()(p, end);
+        }
+
         // Forward declarations
         class http_request;
     }
@@ -296,6 +304,93 @@ namespace ews
         {
         }
         explicit xml_parse_error(const char* what) : exception(what) {}
+
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
+        static
+        std::string error_message_from(const rapidxml::parse_error& exc,
+                                       const std::vector<char>& xml)
+        {
+            using internal::points_within_array;
+
+            const auto what = std::string(exc.what());
+            const auto* where = exc.where<char>();
+
+            if ((where == nullptr) || (*where == '\0'))
+            {
+                return what;
+            }
+
+            std::string msg = what;
+            try
+            {
+                if (points_within_array(where,
+                                        &xml[0], (&xml[0] + xml.size() + 1)))
+                {
+                    enum { column_width = 79 };
+                    const auto idx = std::distance(&xml[0], where);
+
+                    auto doc = std::string(&xml[0], xml.size());
+                    auto lineno = 1U;
+                    auto charno = 0U;
+                    std::replace_if(begin(doc), end(doc), [&](char c) -> bool
+                    {
+                        charno++;
+                        if (c == '\n')
+                        {
+                            if (charno < idx)
+                            {
+                                lineno++;
+                            }
+                            return true;
+                        }
+                        return false;
+                    }, ' ');
+
+                    // 0-termini probably got replaced by xml_document::parse
+                    std::replace(begin(doc), end(doc), '\0', '>');
+
+                    // Chop off last '>'
+                    doc = std::string(doc.data(), doc.length() - 1);
+
+                    // Construct message
+                    msg  = "in line " + std::to_string(lineno) + ":\n";
+                    msg += what + '\n';
+                    const auto pr = shorten(doc, idx, column_width);
+                    const auto line = pr.first;
+                    const auto line_index = pr.second;
+                    msg += line + '\n';
+
+                    auto squiggle = std::string(column_width, ' ');
+                    squiggle[line_index] = '~';
+                    msg += squiggle + '\n';
+                }
+            }
+            catch (std::exception&)
+            {
+            }
+            return msg;
+        }
+#endif // EWS_DOXYGEN_SHOULD_SKIP_THIS
+
+    private:
+        static
+        std::pair<std::string, unsigned>
+        shorten(const std::string& str, std::size_t at, unsigned columns)
+        {
+            at = std::min(at, str.length());
+            if (str.length() < columns)
+            {
+                return std::make_pair(str, at);
+            }
+
+            const auto start = std::max(at - (columns / 2), 0UL);
+            const auto end   = std::min(at + (columns / 2), str.length());
+            EWS_ASSERT(start < end);
+            std::string line;
+            std::copy(&str[start], &str[end], std::back_inserter(line));
+            const auto line_index = columns / 2;
+            return std::make_pair(line, line_index);
+        }
     };
 
     //! Response code enum describes status information about a request
