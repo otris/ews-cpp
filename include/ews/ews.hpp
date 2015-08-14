@@ -288,14 +288,14 @@ namespace ews
     };
 
     //! Raised when a response from a server could not be parsed
-    class parse_error final : public exception
+    class xml_parse_error final : public exception
     {
     public:
-        explicit parse_error(const std::string& what)
+        explicit xml_parse_error(const std::string& what)
             : exception(what)
         {
         }
-        explicit parse_error(const char* what) : exception(what) {}
+        explicit xml_parse_error(const char* what) : exception(what) {}
     };
 
     //! Response code enum describes status information about a request
@@ -3766,7 +3766,7 @@ namespace ews
                 catch (rapidxml::parse_error& e)
                 {
                     // Swallow and erase type
-                    throw parse_error(e.what());
+                    throw xml_parse_error(e.what());
                 }
             }
 
@@ -8102,7 +8102,7 @@ namespace ews
                 {
                     response.payload();
                 }
-                catch (parse_error&)
+                catch (xml_parse_error&)
                 {
                     throw soap_fault(
                         "The request failed for unknown reason "

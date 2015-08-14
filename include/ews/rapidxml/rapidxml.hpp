@@ -611,7 +611,8 @@ namespace rapidxml
                                                 (*it)->value_size());
                             return;
                         }
-                    RAPIDXML_PARSE_ERROR("No namespace definition found", 0);
+                    RAPIDXML_PARSE_ERROR("No namespace definition found",
+                                         nullptr);
                 }
 
             private:
@@ -948,7 +949,7 @@ namespace rapidxml
                 if (!memory) // If exceptions are disabled, verify memory
                              // allocation, because new will not be able to
                              // throw bad_alloc
-                    RAPIDXML_PARSE_ERROR("out of memory", 0);
+                    RAPIDXML_PARSE_ERROR("out of memory", nullptr);
 #endif
             }
             return static_cast<char*>(memory);
