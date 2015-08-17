@@ -382,8 +382,8 @@ namespace ews
         }
 
         static
-        std::pair<std::string, unsigned>
-        shorten(const std::string& str, std::size_t at, unsigned columns)
+        std::pair<std::string, std::size_t>
+        shorten(const std::string& str, std::size_t at, std::size_t columns)
         {
             at = std::min(at, str.length());
             if (str.length() < columns)
@@ -391,7 +391,7 @@ namespace ews
                 return std::make_pair(str, at);
             }
 
-            const auto start = std::max(at - (columns / 2), 0UL);
+            const auto start = std::max(at - (columns / 2), static_cast<std::size_t>(0));
             const auto end   = std::min(at + (columns / 2), str.length());
             EWS_ASSERT(start < end);
             std::string line;
