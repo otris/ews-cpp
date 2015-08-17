@@ -4141,7 +4141,8 @@ namespace ews
 
 #ifdef EWS_DISABLE_TLS_CERT_VERIFICATION
                 // Turn-off verification of the server's authenticity
-                set_option(CURLOPT_SSL_VERIFYPEER, 0);
+                set_option(CURLOPT_SSL_VERIFYPEER, 0L);
+                set_option(CURLOPT_SSL_VERIFYHOST, 0L);
 
                 // Warn in release builds
 # ifdef NDEBUG
