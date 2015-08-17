@@ -9,6 +9,18 @@
 
 namespace
 {
+    inline std::vector<std::string> split(const std::string& str, char delim)
+    {
+        std::stringstream sstr(str);
+        std::string item;
+        std::vector<std::string> elems;
+        while (std::getline(sstr, item, delim))
+        {
+            elems.push_back(item);
+        }
+        return elems;
+    }
+
     const std::string contact_card =
 "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n"
 "    <s:Body xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n"
@@ -196,24 +208,57 @@ namespace tests
 
     // TODO: test size_hint parameter of xml_subtree reduces/eliminates reallocs
 
-    TEST(InternalTest, XMLParseErrorMessage)
+    TEST(InternalTest, XMLParseErrorMessageShort)
     {
-        // TODO: make this a real test
-
         std::vector<char> data;
         std::copy(begin(malformed_xml_1), end(malformed_xml_1),
                   std::back_inserter(data));
         data.emplace_back('\0');
-
         rapidxml::xml_document<> doc;
         try
         {
             doc.parse<0>(&data[0]);
+            FAIL() << "Expected rapidxml::parse_error to be raised";
         }
         catch (rapidxml::parse_error& exc)
         {
-            std::cout << ews::xml_parse_error::error_message_from(exc, data)
-                << std::endl;
+            const auto str = ews::xml_parse_error::error_message_from(exc,
+                                                                      data);
+            ASSERT_FALSE(str.empty());
+            const auto output = split(str, '\n');
+            EXPECT_EQ(4U, output.size());
+            EXPECT_STREQ("in line 6:", output[0].c_str());
+            EXPECT_STREQ("   </head>   <body>     <p>       <h1</h1>     </p>   </body> </html>",
+                         output[2].c_str());
+            EXPECT_STREQ("                                       ~",
+                         output[3].c_str());
+        }
+    }
+
+    TEST(InternalTest, XMLParseErrorMessageLong)
+    {
+        std::vector<char> data;
+        std::copy(begin(malformed_xml_2), end(malformed_xml_2),
+                  std::back_inserter(data));
+        data.emplace_back('\0');
+        rapidxml::xml_document<> doc;
+        try
+        {
+            doc.parse<0>(&data[0]);
+            FAIL() << "Expected rapidxml::parse_error to be raised";
+        }
+        catch (rapidxml::parse_error& exc)
+        {
+            const auto str = ews::xml_parse_error::error_message_from(exc,
+                                                                      data);
+            ASSERT_FALSE(str.empty());
+            const auto output = split(str, '\n');
+            EXPECT_EQ(4U, output.size());
+            EXPECT_STREQ("in line 9:", output[0].c_str());
+            EXPECT_STREQ("                             <t:Cultu</t:Culture>                         </t:",
+                         output[2].c_str());
+            EXPECT_STREQ("                                       ~",
+                         output[3].c_str());
         }
     }
 }

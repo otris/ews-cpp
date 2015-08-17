@@ -362,6 +362,7 @@ namespace ews
 
                     auto squiggle = std::string(column_width, ' ');
                     squiggle[line_index] = '~';
+                    squiggle = remove_trailing_whitespace(squiggle);
                     msg += squiggle + '\n';
                 }
             }
@@ -373,6 +374,13 @@ namespace ews
 #endif // EWS_DOXYGEN_SHOULD_SKIP_THIS
 
     private:
+        static std::string remove_trailing_whitespace(const std::string& str)
+        {
+            static const auto whitespace = std::string(" \t");
+            const auto end = str.find_last_not_of(whitespace);
+            return str.substr(0, end + 1);
+        }
+
         static
         std::pair<std::string, unsigned>
         shorten(const std::string& str, std::size_t at, unsigned columns)
