@@ -4982,8 +4982,14 @@ namespace ews
                      attachment_elem;
                      attachment_elem = attachment_elem->next_sibling())
                 {
+                    auto attachment_id_elem =
+                        attachment_elem->first_node_ns(uri<>::microsoft::types(),
+                                                       "AttachmentId");
+                    EWS_ASSERT(attachment_id_elem
+                            && "Expected <AttachmentId> in response");
                     ids.emplace_back(
-                            attachment_id::from_xml_element(*attachment_elem));
+                            attachment_id::from_xml_element(
+                                                    *attachment_id_elem));
                 }
                 return create_attachment_response_message(
                                     cls_and_code.first,

@@ -191,7 +191,6 @@ namespace tests
         EXPECT_STREQ("Ballmer Peak", file_attachment.name().c_str());
         EXPECT_STREQ("image/png", file_attachment.content_type().c_str());
         EXPECT_FALSE(file_attachment.content().empty());
-        EXPECT_EQ(93525U, file_attachment.content_size());
 
         ASSERT_NO_THROW(
         {
