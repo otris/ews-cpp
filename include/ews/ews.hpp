@@ -3866,10 +3866,12 @@ namespace ews
                     static const int flags = 0;
                     doc_->parse<flags>(&data_[0]);
                 }
-                catch (rapidxml::parse_error& e)
+                catch (rapidxml::parse_error& exc)
                 {
                     // Swallow and erase type
-                    throw xml_parse_error(e.what());
+                    const auto msg = xml_parse_error::error_message_from(exc,
+                                                                         data_);
+                    throw xml_parse_error(msg);
                 }
             }
 
