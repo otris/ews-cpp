@@ -220,24 +220,26 @@ namespace ews
                        && (encoded_string[in] != '=')
                        && is_base64(encoded_string[in]))
                 {
-                    char_array_4[i++] = encoded_string[in]; in++;
+                    char_array_4[i++] = encoded_string[in];
+                    in++;
+
                     if (i == 4)
                     {
-                      for (i = 0; i < 4; i++)
-                      {
-                          char_array_4[i] = static_cast<unsigned char>(
-                              base64_chars.find(char_array_4[i]));
-                      }
+                        for (i = 0; i < 4; i++)
+                        {
+                            char_array_4[i] = static_cast<unsigned char>(
+                                base64_chars.find(char_array_4[i]));
+                        }
 
-                      char_array_3[0] =  (char_array_4[0] << 2)        + ((char_array_4[1] & 0x30) >> 4);
-                      char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-                      char_array_3[2] = ((char_array_4[2] & 0x3) << 6) +   char_array_4[3];
+                        char_array_3[0] =  (char_array_4[0] << 2)        + ((char_array_4[1] & 0x30) >> 4);
+                        char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+                        char_array_3[2] = ((char_array_4[2] & 0x3) << 6) +   char_array_4[3];
 
-                      for (i = 0; (i < 3); i++)
-                      {
-                          ret.push_back(char_array_3[i]);
-                      }
-                      i = 0;
+                        for (i = 0; (i < 3); i++)
+                        {
+                            ret.push_back(char_array_3[i]);
+                        }
+                        i = 0;
                     }
                 }
 
@@ -8531,6 +8533,7 @@ namespace ews
     inline
     attachment attachment::from_item(const item& the_item, std::string name)
     {
+        // TODO
         (void)the_item;
 
         // Creating a new <ItemAttachment> with the <CreateAttachment>
