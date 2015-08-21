@@ -4794,50 +4794,39 @@ namespace ews
     class folder_id
     {
     public:
-        folder_id()
-            : folder_id("", "")
-        {
-        }
-
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
-        ~folder_id() = default;
+        folder_id() = default;
+        virtual ~folder_id() = default;
 #else
-        ~folder_id() {}
+        folder_id() {}
+        virtual ~folder_id() {}
 #endif
 
         explicit folder_id(std::string id)
-            : folder_id(std::move(id), "")
+            : id_(std::move(id)),
+              change_key_()
         {
         }
 
         folder_id(std::string id, std::string change_key)
             : id_(std::move(id)),
-              change_key_(std::move(change_key)),
-              to_xml_impl_([=](const char* xmlns) -> std::string
-              {
-                  auto pref = std::string();
-                  if (xmlns)
-                  {
-                      pref = std::string(xmlns) + ":";
-                  }
-                  std::stringstream sstr;
-                  sstr << "<" << pref << "FolderId Id=\"" << id_;
-                  sstr << "\" ChangeKey=\"" << change_key_ << "\"/>";
-                  return sstr.str();
-              })
+              change_key_(std::move(change_key))
         {
         }
 
         std::string to_xml(const char* xmlns=nullptr) const
         {
-            return to_xml_impl_(xmlns);
+            return this->to_xml_impl(xmlns);
         }
 
         //! Returns a string identifying a folder in the Exchange store
         const std::string& id() const EWS_NOEXCEPT { return id_; }
 
         //! Returns a string identifying a version of a folder
-        const std::string& change_key() const EWS_NOEXCEPT { return change_key_; }
+        const std::string& change_key() const EWS_NOEXCEPT
+        {
+            return change_key_;
+        }
 
         //! Whether this folder_id is valid
         bool valid() const EWS_NOEXCEPT { return !id_.empty(); }
@@ -4862,16 +4851,27 @@ namespace ews
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
     protected:
-        explicit folder_id(std::function<std::string (const char*)>&& func)
-            : to_xml_impl_(std::move(func))
+        virtual std::string to_xml_impl(const char* xmlns) const
         {
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "FolderId Id=\"" << id_;
+            if (!change_key_.empty())
+            {
+                sstr << "\" ChangeKey=\"" << change_key_;
+            }
+            sstr << "\"/>";
+            return sstr.str();
         }
 #endif
 
     private:
         std::string id_;
         std::string change_key_;
-        std::function<std::string (const char*)> to_xml_impl_;
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
@@ -4894,28 +4894,37 @@ namespace ews
 
         // Intentionally not explicit
         distinguished_folder_id(standard_folder folder)
-            : folder_id([=](const char* xmlns) -> std::string
-                    {
-                        auto pref = std::string();
-                        if (xmlns)
-                        {
-                            pref = std::string(xmlns) + ":";
-                        }
-                        std::stringstream sstr;
-                        sstr << "<" << pref << "DistinguishedFolderId Id=\"";
-                        sstr << well_known_name(folder);
-                        sstr << "\" />";
-                        return sstr.str();
-                    })
+            : folder_id(well_known_name(folder))
+        {
+        }
+
+        distinguished_folder_id(standard_folder folder, std::string change_key)
+            : folder_id(well_known_name(folder), std::move(change_key))
         {
         }
 
         // TODO: Constructor for EWS delegate access
         // distinguished_folder_id(standard_folder, mailbox) {}
 
-        bool valid() const EWS_NOEXCEPT { return true; }
-
     private:
+        std::string to_xml_impl(const char* xmlns) const override
+        {
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "DistinguishedFolderId Id=\"";
+            sstr << id();
+            if (!change_key().empty())
+            {
+                sstr << "\" ChangeKey=\"" << change_key();
+            }
+            sstr << "\"/>";
+            return sstr.str();
+        }
+
         static std::string well_known_name(standard_folder enumeration)
         {
             std::string name;

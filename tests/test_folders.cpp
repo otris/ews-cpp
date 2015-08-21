@@ -2,13 +2,6 @@
 
 namespace tests
 {
-    TEST(FolderTest, DistinguishedFolderIdFromWellKnownName)
-    {
-        ews::distinguished_folder_id id = ews::standard_folder::inbox;
-        EXPECT_STREQ("<x:DistinguishedFolderId Id=\"inbox\" />",
-                     id.to_xml("x").c_str());
-    }
-
     TEST(FolderTest, ConstructWithIdOnly)
     {
         auto a = ews::folder_id("abcde");
@@ -48,9 +41,48 @@ namespace tests
         EXPECT_STREQ(expected, a.to_xml("t").c_str());
     }
 
+    TEST(FolderTest, ToXMLWithoutChangeKey)
+    {
+        const char* expected = "<t:FolderId Id=\"abcde\"/>";
+        const auto a = ews::folder_id("abcde");
+        EXPECT_STREQ(expected, a.to_xml("t").c_str());
+    }
+
+    TEST(FolderTest, DistinguishedFolderIdToXML)
+    {
+        const char* expected = "<t:DistinguishedFolderId Id=\"contacts\"/>";
+        const auto folder =
+            ews::distinguished_folder_id(ews::standard_folder::contacts);
+        EXPECT_STREQ(expected, folder.to_xml("t").c_str());
+    }
+
+    TEST(FolderTest, DistinguishedFolderIdToXMLWithChangeKey)
+    {
+        const char* expected =
+            "<t:DistinguishedFolderId Id=\"tasks\" ChangeKey=\"abcde\"/>";
+        const auto folder =
+            ews::distinguished_folder_id(ews::standard_folder::tasks, "abcde");
+        EXPECT_STREQ(expected, folder.to_xml("t").c_str());
+    }
+
     TEST(FolderTest, DistinguishedFolderIsAlwaysValid)
     {
         auto folder = ews::distinguished_folder_id(ews::standard_folder::inbox);
         EXPECT_TRUE(folder.valid());
+    }
+
+    TEST(FolderTest, DistinguishedFolderIdFromWellKnownName)
+    {
+        // Test conversion c'tor
+        ews::distinguished_folder_id id = ews::standard_folder::inbox;
+        EXPECT_STREQ("<x:DistinguishedFolderId Id=\"inbox\"/>",
+                     id.to_xml("x").c_str());
+    }
+
+    TEST(FolderTest, DistinguishedFolderIdAndChangeKeyAttribute)
+    {
+        auto folder =
+            ews::distinguished_folder_id(ews::standard_folder::calendar);
+        EXPECT_STREQ("calendar", folder.id().c_str());
     }
 }
