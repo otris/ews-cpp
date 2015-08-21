@@ -11,10 +11,7 @@ namespace tests
 #pragma warning(suppress: 6262)
     TEST(OfflineTaskTest, FromXMLElement)
     {
-        typedef rapidxml::xml_document<> xml_document;
-
-        // slang: 2013 SP1, not all properties included
-        const auto xml = std::string(
+        const auto task = make_task(
             "<t:Task\n"
             "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\">\n"
             "    <t:ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>\n"
@@ -61,17 +58,9 @@ namespace tests
             "    <t:Status>NotStarted</t:Status>\n"
             "    <t:StatusDescription>Not Started</t:StatusDescription>\n"
             "</t:Task>");
-        std::vector<char> buf;
-        std::copy(begin(xml), end(xml), std::back_inserter(buf));
-        buf.push_back('\0');
-        xml_document doc;
-        doc.parse<0>(&buf[0]);
-        auto node = doc.first_node();
-        auto t = ews::task::from_xml_element(*node);
-
-        EXPECT_STREQ("abcde", t.get_item_id().id().c_str());
-        EXPECT_STREQ("edcba", t.get_item_id().change_key().c_str());
-        EXPECT_STREQ("Write poem", t.get_subject().c_str());
+        EXPECT_STREQ("abcde", task.get_item_id().id().c_str());
+        EXPECT_STREQ("edcba", task.get_item_id().change_key().c_str());
+        EXPECT_STREQ("Write poem", task.get_subject().c_str());
     }
 
     TEST_F(TaskTest, GetTaskWithInvalidIdThrows)

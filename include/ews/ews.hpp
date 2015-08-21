@@ -3559,6 +3559,146 @@ namespace ews
         }
     }
 
+    //! Well known folder names enumeration. Usually rendered to XML as
+    //! <tt>\<DistinguishedFolderId></tt> element.
+    enum class standard_folder
+    {
+        //! The Calendar folder
+        calendar,
+
+        //! The Contacts folder
+        contacts,
+
+        //! The Deleted Items folder
+        deleted_items,
+
+        //! The Drafts folder
+        drafts,
+
+        //! The Inbox folder
+        inbox,
+
+        //! The Journal folder
+        journal,
+
+        //! The Notes folder
+        notes,
+
+        //! The Outbox folder
+        outbox,
+
+        //! The Sent Items folder
+        sent_items,
+
+        //! The Tasks folder
+        tasks,
+
+        //! The root of the message folder hierarchy
+        msg_folder_root,
+
+        //! The root of the mailbox
+        root,
+
+        //! The Junk E-mail folder
+        junk_email,
+
+        //! The Search Folders folder, also known as the Finder folder
+        search_folders,
+
+        //! The Voicemail folder
+        voice_mail,
+
+        //! Following are folders containing recoverable items:
+
+        //! The root of the Recoverable Items folder hierarchy
+        recoverable_items_root,
+
+        //! The root of the folder hierarchy of recoverable items that have been
+        //! soft-deleted from the Deleted Items folder
+        recoverable_items_deletions,
+
+        //! The root of the Recoverable Items versions folder hierarchy in the
+        //! archive mailbox
+        recoverable_items_versions,
+
+        //! The root of the folder hierarchy of recoverable items that have been
+        //! hard-deleted from the Deleted Items folder
+        recoverable_items_purges,
+
+        //! The root of the folder hierarchy in the archive mailbox
+        archive_root,
+
+        //! The root of the message folder hierarchy in the archive mailbox
+        archive_msg_folder_root,
+
+        //! The Deleted Items folder in the archive mailbox
+        archive_deleted_items,
+
+        //! Represents the archive Inbox folder. Caution: only versions of
+        //! Exchange starting with build number 15.00.0913.09 include this folder
+        archive_inbox,
+
+        //! The root of the Recoverable Items folder hierarchy in the archive
+        //! mailbox
+        archive_recoverable_items_root,
+
+        //! The root of the folder hierarchy of recoverable items that have been
+        //! soft-deleted from the Deleted Items folder of the archive mailbox
+        archive_recoverable_items_deletions,
+
+        //! The root of the Recoverable Items versions folder hierarchy in the
+        //! archive mailbox
+        archive_recoverable_items_versions,
+
+        //! The root of the hierarchy of recoverable items that have been
+        //! hard-deleted from the Deleted Items folder of the archive mailbox
+        archive_recoverable_items_purges,
+
+        // Following are folders that came with EWS 2013 and Exchange Online:
+
+        //! The Sync Issues folder
+        sync_issues,
+
+        //! The Conflicts folder
+        conflicts,
+
+        //! The Local Failures folder
+        local_failures,
+
+        //! Represents the Server Failures folder
+        server_failures,
+
+        //! The recipient cache folder
+        recipient_cache,
+
+        //! The quick contacts folder
+        quick_contacts,
+
+        //! The conversation history folder
+        conversation_history,
+
+        //! Represents the admin audit logs folder
+        admin_audit_logs,
+
+        //! The todo search folder
+        todo_search,
+
+        //! Represents the My Contacts folder
+        my_contacts,
+
+        //! Represents the directory folder
+        directory,
+
+        //! Represents the IM contact list folder
+        im_contact_list,
+
+        //! Represents the people connect folder
+        people_connect,
+
+        //! Represents the Favorites folder
+        favorites,
+    };
+
     //! Exception thrown when a request was not successful
     class exchange_error final : public exception
     {
@@ -4604,7 +4744,7 @@ namespace ews
             return sstr.str();
         }
 
-        // Makes an attachment_id instance from an <AttachmentId> element
+        //! Makes an attachment_id instance from an <AttachmentId> element
         static attachment_id from_xml_element(const rapidxml::xml_node<>& elem)
         {
             auto id_attr = elem.first_attribute("Id");
@@ -4645,6 +4785,319 @@ namespace ews
     static_assert(std::is_copy_assignable<attachment_id>::value, "");
     static_assert(std::is_move_constructible<attachment_id>::value, "");
     static_assert(std::is_move_assignable<attachment_id>::value, "");
+#endif
+
+    //! \brief Identifies a folder.
+    //!
+    //! Renders a <tt>\<FolderId></tt> element. Contains the identifier and
+    //! change key of a folder.
+    class folder_id
+    {
+    public:
+        folder_id()
+            : folder_id("", "")
+        {
+        }
+
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        ~folder_id() = default;
+#else
+        ~folder_id() {}
+#endif
+
+        explicit folder_id(std::string id)
+            : folder_id(std::move(id), "")
+        {
+        }
+
+        folder_id(std::string id, std::string change_key)
+            : id_(std::move(id)),
+              change_key_(std::move(change_key)),
+              to_xml_impl_([=](const char* xmlns) -> std::string
+              {
+                  auto pref = std::string();
+                  if (xmlns)
+                  {
+                      pref = std::string(xmlns) + ":";
+                  }
+                  std::stringstream sstr;
+                  sstr << "<" << pref << "FolderId Id=\"" << id_;
+                  sstr << "\" ChangeKey=\"" << change_key_ << "\"/>";
+                  return sstr.str();
+              })
+        {
+        }
+
+        std::string to_xml(const char* xmlns=nullptr) const
+        {
+            return to_xml_impl_(xmlns);
+        }
+
+        //! Returns a string identifying a folder in the Exchange store
+        const std::string& id() const EWS_NOEXCEPT { return id_; }
+
+        //! Returns a string identifying a version of a folder
+        const std::string& change_key() const EWS_NOEXCEPT { return change_key_; }
+
+        //! Whether this folder_id is valid
+        bool valid() const EWS_NOEXCEPT { return !id_.empty(); }
+
+        //! Makes a folder_id instance from given XML element
+        static folder_id from_xml_element(const rapidxml::xml_node<>& elem)
+        {
+            auto id_attr = elem.first_attribute("Id");
+            EWS_ASSERT(id_attr &&
+                    "Expected <ParentFolderId> to have an Id attribute");
+            auto id = std::string(id_attr->value(), id_attr->value_size());
+
+            std::string change_key;
+            auto ck_attr = elem.first_attribute("ChangeKey");
+            if (ck_attr)
+            {
+                change_key = std::string(ck_attr->value(),
+                                         ck_attr->value_size());
+            }
+            return folder_id(std::move(id), std::move(change_key));
+        }
+
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
+    protected:
+        explicit folder_id(std::function<std::string (const char*)>&& func)
+            : to_xml_impl_(std::move(func))
+        {
+        }
+#endif
+
+    private:
+        std::string id_;
+        std::string change_key_;
+        std::function<std::string (const char*)> to_xml_impl_;
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(std::is_default_constructible<folder_id>::value, "");
+    static_assert(std::is_copy_constructible<folder_id>::value, "");
+    static_assert(std::is_copy_assignable<folder_id>::value, "");
+    static_assert(std::is_move_constructible<folder_id>::value, "");
+    static_assert(std::is_move_assignable<folder_id>::value, "");
+#endif
+
+    //! \brief Renders a <tt>\<DistinguishedFolderId></tt> element.
+    //!
+    //! Implicitly convertible from \ref standard_folder.
+    class distinguished_folder_id final : public folder_id
+    {
+    public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        distinguished_folder_id() = delete;
+#endif
+
+        // Intentionally not explicit
+        distinguished_folder_id(standard_folder folder)
+            : folder_id([=](const char* xmlns) -> std::string
+                    {
+                        auto pref = std::string();
+                        if (xmlns)
+                        {
+                            pref = std::string(xmlns) + ":";
+                        }
+                        std::stringstream sstr;
+                        sstr << "<" << pref << "DistinguishedFolderId Id=\"";
+                        sstr << well_known_name(folder);
+                        sstr << "\" />";
+                        return sstr.str();
+                    })
+        {
+        }
+
+        // TODO: Constructor for EWS delegate access
+        // distinguished_folder_id(standard_folder, mailbox) {}
+
+        bool valid() const EWS_NOEXCEPT { return true; }
+
+    private:
+        static std::string well_known_name(standard_folder enumeration)
+        {
+            std::string name;
+            switch (enumeration)
+            {
+            case standard_folder::calendar:
+                name = "calendar";
+                break;
+
+            case standard_folder::contacts:
+                name = "contacts";
+                break;
+
+            case standard_folder::deleted_items:
+                name = "deleteditems";
+                break;
+
+            case standard_folder::drafts:
+                name = "drafts";
+                break;
+
+            case standard_folder::inbox:
+                name = "inbox";
+                break;
+
+            case standard_folder::journal:
+                name = "journal";
+                break;
+
+            case standard_folder::notes:
+                name = "notes";
+                break;
+
+            case standard_folder::outbox:
+                name = "outbox";
+                break;
+
+            case standard_folder::sent_items:
+                name = "sentitems";
+                break;
+
+            case standard_folder::tasks:
+                name = "tasks";
+                break;
+
+            case standard_folder::msg_folder_root:
+                name = "msgfolderroot";
+                break;
+
+            case standard_folder::root:
+                name = "root";
+                break;
+
+            case standard_folder::junk_email:
+                name = "junkemail";
+                break;
+
+            case standard_folder::search_folders:
+                name = "searchfolders";
+                break;
+
+            case standard_folder::voice_mail:
+                name = "voicemail";
+                break;
+
+            case standard_folder::recoverable_items_root:
+                name = "recoverableitemsroot";
+                break;
+
+            case standard_folder::recoverable_items_deletions:
+                name = "recoverableitemsdeletions";
+                break;
+
+            case standard_folder::recoverable_items_versions:
+                name = "recoverableitemsversions";
+                break;
+
+            case standard_folder::recoverable_items_purges:
+                name = "recoverableitemspurges";
+                break;
+
+            case standard_folder::archive_root:
+                name = "archiveroot";
+                break;
+
+            case standard_folder::archive_msg_folder_root:
+                name = "archivemsgfolderroot";
+                break;
+
+            case standard_folder::archive_deleted_items:
+                name = "archivedeleteditems";
+                break;
+
+            case standard_folder::archive_inbox:
+                name = "archiveinbox";
+                break;
+
+            case standard_folder::archive_recoverable_items_root:
+                name = "archiverecoverableitemsroot";
+                break;
+
+            case standard_folder::archive_recoverable_items_deletions:
+                name = "archiverecoverableitemsdeletions";
+                break;
+
+            case standard_folder::archive_recoverable_items_versions:
+                name = "archiverecoverableitemsversions";
+                break;
+
+            case standard_folder::archive_recoverable_items_purges:
+                name = "archiverecoverableitemspurges";
+                break;
+
+            case standard_folder::sync_issues:
+                name = "syncissues";
+                break;
+
+            case standard_folder::conflicts:
+                name = "conflicts";
+                break;
+
+            case standard_folder::local_failures:
+                name = "localfailures";
+                break;
+
+            case standard_folder::server_failures:
+                name = "serverfailures";
+                break;
+
+            case standard_folder::recipient_cache:
+                name = "recipientcache";
+                break;
+
+            case standard_folder::quick_contacts:
+                name = "quickcontacts";
+                break;
+
+            case standard_folder::conversation_history:
+                name = "conversationhistory";
+                break;
+
+            case standard_folder::admin_audit_logs:
+                name = "adminauditlogs";
+                break;
+
+            case standard_folder::todo_search:
+                name = "todosearch";
+                break;
+
+            case standard_folder::my_contacts:
+                name = "mycontacts";
+                break;
+
+            case standard_folder::directory:
+                name = "directory";
+                break;
+
+            case standard_folder::im_contact_list:
+                name = "imcontactlist";
+                break;
+
+            case standard_folder::people_connect:
+                name = "peopleconnect";
+                break;
+
+            case standard_folder::favorites:
+                name = "favorites";
+                break;
+
+            default:
+                throw exception("Unrecognized folder name");
+            };
+            return name;
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<distinguished_folder_id>::value, "");
+    static_assert(std::is_copy_constructible<distinguished_folder_id>::value, "");
+    static_assert(std::is_copy_assignable<distinguished_folder_id>::value, "");
+    static_assert(std::is_move_constructible<distinguished_folder_id>::value, "");
+    static_assert(std::is_move_assignable<distinguished_folder_id>::value, "");
 #endif
 
     //! Represents a <tt>\<FileAttachment></tt> or an <tt>\<ItemAttachment></tt>
@@ -5625,7 +6078,11 @@ namespace ews
 
         // Unique identifier for the folder that contains an item. This is a
         // read-only property
-        // TODO: get_parent_folder_id
+        folder_id get_parent_folder_id() const
+        {
+            const auto node = properties().get_node("ParentFolderId");
+            return node ? folder_id::from_xml_element(*node) : folder_id();
+        }
 
         // PR_MESSAGE_CLASS MAPI property (the message class) for an item
         // TODO: get_item_class
@@ -6695,400 +7152,6 @@ namespace ews
     static_assert(std::is_copy_assignable<message>::value, "");
     static_assert(std::is_move_constructible<message>::value, "");
     static_assert(std::is_move_assignable<message>::value, "");
-#endif
-
-    //! Well known folder names enumeration. Usually rendered to XML as
-    //! <tt>\<DistinguishedFolderId></tt> element.
-    enum class standard_folder
-    {
-        //! The Calendar folder
-        calendar,
-
-        //! The Contacts folder
-        contacts,
-
-        //! The Deleted Items folder
-        deleted_items,
-
-        //! The Drafts folder
-        drafts,
-
-        //! The Inbox folder
-        inbox,
-
-        //! The Journal folder
-        journal,
-
-        //! The Notes folder
-        notes,
-
-        //! The Outbox folder
-        outbox,
-
-        //! The Sent Items folder
-        sent_items,
-
-        //! The Tasks folder
-        tasks,
-
-        //! The root of the message folder hierarchy
-        msg_folder_root,
-
-        //! The root of the mailbox
-        root,
-
-        //! The Junk E-mail folder
-        junk_email,
-
-        //! The Search Folders folder, also known as the Finder folder
-        search_folders,
-
-        //! The Voicemail folder
-        voice_mail,
-
-        //! Following are folders containing recoverable items:
-
-        //! The root of the Recoverable Items folder hierarchy
-        recoverable_items_root,
-
-        //! The root of the folder hierarchy of recoverable items that have been
-        //! soft-deleted from the Deleted Items folder
-        recoverable_items_deletions,
-
-        //! The root of the Recoverable Items versions folder hierarchy in the
-        //! archive mailbox
-        recoverable_items_versions,
-
-        //! The root of the folder hierarchy of recoverable items that have been
-        //! hard-deleted from the Deleted Items folder
-        recoverable_items_purges,
-
-        //! The root of the folder hierarchy in the archive mailbox
-        archive_root,
-
-        //! The root of the message folder hierarchy in the archive mailbox
-        archive_msg_folder_root,
-
-        //! The Deleted Items folder in the archive mailbox
-        archive_deleted_items,
-
-        //! Represents the archive Inbox folder. Caution: only versions of
-        //! Exchange starting with build number 15.00.0913.09 include this folder
-        archive_inbox,
-
-        //! The root of the Recoverable Items folder hierarchy in the archive
-        //! mailbox
-        archive_recoverable_items_root,
-
-        //! The root of the folder hierarchy of recoverable items that have been
-        //! soft-deleted from the Deleted Items folder of the archive mailbox
-        archive_recoverable_items_deletions,
-
-        //! The root of the Recoverable Items versions folder hierarchy in the
-        //! archive mailbox
-        archive_recoverable_items_versions,
-
-        //! The root of the hierarchy of recoverable items that have been
-        //! hard-deleted from the Deleted Items folder of the archive mailbox
-        archive_recoverable_items_purges,
-
-        // Following are folders that came with EWS 2013 and Exchange Online:
-
-        //! The Sync Issues folder
-        sync_issues,
-
-        //! The Conflicts folder
-        conflicts,
-
-        //! The Local Failures folder
-        local_failures,
-
-        //! Represents the Server Failures folder
-        server_failures,
-
-        //! The recipient cache folder
-        recipient_cache,
-
-        //! The quick contacts folder
-        quick_contacts,
-
-        //! The conversation history folder
-        conversation_history,
-
-        //! Represents the admin audit logs folder
-        admin_audit_logs,
-
-        //! The todo search folder
-        todo_search,
-
-        //! Represents the My Contacts folder
-        my_contacts,
-
-        //! Represents the directory folder
-        directory,
-
-        //! Represents the IM contact list folder
-        im_contact_list,
-
-        //! Represents the people connect folder
-        people_connect,
-
-        //! Represents the Favorites folder
-        favorites,
-    };
-
-    //! Identifies a foler.
-    //
-    //! Renders a <tt>\<FolderId></tt> element. Contains the identifier and
-    //! change key of a folder.
-    class folder_id
-    {
-    public:
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
-        folder_id() = delete;
-
-        ~folder_id() = default;
-#endif
-
-        std::string to_xml(const char* xmlns=nullptr) const
-        {
-            return func_(xmlns);
-        }
-
-    protected:
-        explicit folder_id(std::function<std::string (const char*)>&& func)
-            : func_(std::move(func))
-        {
-        }
-
-    private:
-        std::function<std::string (const char*)> func_;
-    };
-
-#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<folder_id>::value, "");
-    static_assert(std::is_copy_constructible<folder_id>::value, "");
-    static_assert(std::is_copy_assignable<folder_id>::value, "");
-    static_assert(std::is_move_constructible<folder_id>::value, "");
-    static_assert(std::is_move_assignable<folder_id>::value, "");
-#endif
-
-    //! Renders a <tt>\<DistinguishedFolderId></tt> element.
-    //!
-    //! Implicitly convertible from \ref standard_folder.
-    class distinguished_folder_id final : public folder_id
-    {
-    public:
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
-        distinguished_folder_id() = delete;
-#endif
-
-        // Intentionally not explicit
-        distinguished_folder_id(standard_folder folder)
-            : folder_id([=](const char* xmlns) -> std::string
-                    {
-                        auto pref = std::string();
-                        if (xmlns)
-                        {
-                            pref = std::string(xmlns) + ":";
-                        }
-                        std::stringstream sstr;
-                        sstr << "<" << pref << "DistinguishedFolderId Id=\"";
-                        sstr << well_known_name(folder);
-                        sstr << "\" />";
-                        return sstr.str();
-                    })
-        {
-        }
-
-#if 0
-        // TODO: Constructor for EWS delegate access
-        distinguished_folder_id(standard_folder, mailbox) {}
-#endif
-
-    private:
-        static std::string well_known_name(standard_folder enumeration)
-        {
-            std::string name;
-            switch (enumeration)
-            {
-            case standard_folder::calendar:
-                name = "calendar";
-                break;
-
-            case standard_folder::contacts:
-                name = "contacts";
-                break;
-
-            case standard_folder::deleted_items:
-                name = "deleteditems";
-                break;
-
-            case standard_folder::drafts:
-                name = "drafts";
-                break;
-
-            case standard_folder::inbox:
-                name = "inbox";
-                break;
-
-            case standard_folder::journal:
-                name = "journal";
-                break;
-
-            case standard_folder::notes:
-                name = "notes";
-                break;
-
-            case standard_folder::outbox:
-                name = "outbox";
-                break;
-
-            case standard_folder::sent_items:
-                name = "sentitems";
-                break;
-
-            case standard_folder::tasks:
-                name = "tasks";
-                break;
-
-            case standard_folder::msg_folder_root:
-                name = "msgfolderroot";
-                break;
-
-            case standard_folder::root:
-                name = "root";
-                break;
-
-            case standard_folder::junk_email:
-                name = "junkemail";
-                break;
-
-            case standard_folder::search_folders:
-                name = "searchfolders";
-                break;
-
-            case standard_folder::voice_mail:
-                name = "voicemail";
-                break;
-
-            case standard_folder::recoverable_items_root:
-                name = "recoverableitemsroot";
-                break;
-
-            case standard_folder::recoverable_items_deletions:
-                name = "recoverableitemsdeletions";
-                break;
-
-            case standard_folder::recoverable_items_versions:
-                name = "recoverableitemsversions";
-                break;
-
-            case standard_folder::recoverable_items_purges:
-                name = "recoverableitemspurges";
-                break;
-
-            case standard_folder::archive_root:
-                name = "archiveroot";
-                break;
-
-            case standard_folder::archive_msg_folder_root:
-                name = "archivemsgfolderroot";
-                break;
-
-            case standard_folder::archive_deleted_items:
-                name = "archivedeleteditems";
-                break;
-
-            case standard_folder::archive_inbox:
-                name = "archiveinbox";
-                break;
-
-            case standard_folder::archive_recoverable_items_root:
-                name = "archiverecoverableitemsroot";
-                break;
-
-            case standard_folder::archive_recoverable_items_deletions:
-                name = "archiverecoverableitemsdeletions";
-                break;
-
-            case standard_folder::archive_recoverable_items_versions:
-                name = "archiverecoverableitemsversions";
-                break;
-
-            case standard_folder::archive_recoverable_items_purges:
-                name = "archiverecoverableitemspurges";
-                break;
-
-            case standard_folder::sync_issues:
-                name = "syncissues";
-                break;
-
-            case standard_folder::conflicts:
-                name = "conflicts";
-                break;
-
-            case standard_folder::local_failures:
-                name = "localfailures";
-                break;
-
-            case standard_folder::server_failures:
-                name = "serverfailures";
-                break;
-
-            case standard_folder::recipient_cache:
-                name = "recipientcache";
-                break;
-
-            case standard_folder::quick_contacts:
-                name = "quickcontacts";
-                break;
-
-            case standard_folder::conversation_history:
-                name = "conversationhistory";
-                break;
-
-            case standard_folder::admin_audit_logs:
-                name = "adminauditlogs";
-                break;
-
-            case standard_folder::todo_search:
-                name = "todosearch";
-                break;
-
-            case standard_folder::my_contacts:
-                name = "mycontacts";
-                break;
-
-            case standard_folder::directory:
-                name = "directory";
-                break;
-
-            case standard_folder::im_contact_list:
-                name = "imcontactlist";
-                break;
-
-            case standard_folder::people_connect:
-                name = "peopleconnect";
-                break;
-
-            case standard_folder::favorites:
-                name = "favorites";
-                break;
-
-            default:
-                throw exception("Unrecognized folder name");
-            };
-            return name;
-        }
-    };
-
-#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<distinguished_folder_id>::value, "");
-    static_assert(std::is_copy_constructible<distinguished_folder_id>::value, "");
-    static_assert(std::is_copy_assignable<distinguished_folder_id>::value, "");
-    static_assert(std::is_move_constructible<distinguished_folder_id>::value, "");
-    static_assert(std::is_move_assignable<distinguished_folder_id>::value, "");
 #endif
 
     //! The XPath for a property

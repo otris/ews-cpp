@@ -235,6 +235,19 @@ if(HAS_ROBUST_NONMODIFYING_SEQ_OPS)
     add_definitions(-DEWS_HAS_ROBUST_NONMODIFYING_SEQ_OPS)
 endif()
 
+# Delegating constructors - beginning with Visual Studio 2013
+CHECK_CXX_SOURCE_COMPILES("
+struct Fu {
+    Fu() : Fu(42) { }
+    Fu(int i) { (void)i; }
+};
+int main() { }
+" HAS_DELEGATING_CTORS)
+
+if(HAS_DELEGATING_CTORS)
+    add_definitions(-DEWS_HAS_DELEGATING_CTORS)
+endif()
+
 add_executable(tests
     ${ews_SOURCES}
     ${rapidxml_SOURCES}

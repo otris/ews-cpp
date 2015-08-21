@@ -1,17 +1,19 @@
 #pragma once
 
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <memory>
+#include <utility>
+#include <stdexcept>
+
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
+#include <ews/rapidxml/rapidxml.hpp>
 #include <gtest/gtest.h>
 #ifdef EWS_USE_BOOST_LIBRARY
 # include <boost/filesystem.hpp>
 #endif
-
-#include <string>
-#include <vector>
-#include <memory>
-#include <utility>
-#include <stdexcept>
 
 namespace tests
 {
@@ -367,4 +369,16 @@ namespace tests
         boost::filesystem::path workingdir_;
     };
 #endif // EWS_USE_BOOST_LIBRARY
+
+    inline ews::task make_task(const char* xml)
+    {
+        typedef rapidxml::xml_document<> xml_document;
+        std::vector<char> buf;
+        std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+        buf.push_back('\0');
+        xml_document doc;
+        doc.parse<0>(&buf[0]);
+        auto node = doc.first_node();
+        return ews::task::from_xml_element(*node);
+    }
 }
