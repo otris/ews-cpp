@@ -12,9 +12,7 @@
 #include <functional>
 #include <utility>
 #include <memory>
-#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-# include <type_traits>
-#endif
+#include <type_traits>
 #include <cstddef>
 #include <cstring>
 #include <cctype>
@@ -2781,7 +2779,7 @@ namespace ews
             throw exception(std::string("Unrecognized response code: ") + str);
         }
 
-        inline std::string response_code_to_str(response_code code)
+        inline std::string enum_to_str(response_code code)
         {
             switch (code)
             {
@@ -3364,7 +3362,7 @@ namespace ews
 
     namespace internal
     {
-        inline std::string server_version_to_str(server_version vers)
+        inline std::string enum_to_str(server_version vers)
         {
             switch (vers)
             {
@@ -3430,7 +3428,7 @@ namespace ews
 
     namespace internal
     {
-        inline std::string base_shape_str(base_shape shape)
+        inline std::string enum_to_str(base_shape shape)
         {
             switch (shape)
             {
@@ -3450,7 +3448,7 @@ namespace ews
 
     namespace internal
     {
-        inline std::string delete_type_str(delete_type d)
+        inline std::string enum_to_str(delete_type d)
         {
             switch (d)
             {
@@ -3472,8 +3470,7 @@ namespace ews
 
     namespace internal
     {
-        inline std::string
-        affected_task_occurrences_str(affected_task_occurrences o)
+        inline std::string enum_to_str(affected_task_occurrences o)
         {
             switch (o)
             {
@@ -3509,7 +3506,7 @@ namespace ews
 
     namespace internal
     {
-        inline std::string conflict_resolution_str(conflict_resolution val)
+        inline std::string enum_to_str(conflict_resolution val)
         {
             switch (val)
             {
@@ -3543,7 +3540,7 @@ namespace ews
 
     namespace internal
     {
-        inline std::string message_disposition_str(message_disposition val)
+        inline std::string enum_to_str(message_disposition val)
         {
             switch (val)
             {
@@ -3699,12 +3696,60 @@ namespace ews
         favorites,
     };
 
+    //! This enumeration indicates the sensitive nature of an item; valid
+    //! values are Normal, Personal, Private, and Confidential
+    enum class sensitivity { normal, personal, priv, confidential };
+
+    namespace internal
+    {
+        static std::string enum_to_str(sensitivity s)
+        {
+            switch (s)
+            {
+                case sensitivity::normal:
+                    return "Normal";
+                case sensitivity::personal:
+                    return "Personal";
+                case sensitivity::priv:
+                    return "Private";
+                case sensitivity::confidential:
+                    return "Confidential";
+                default:
+                    throw exception("Bad enum value");
+            }
+        }
+
+        static sensitivity str_to_sensitivity(const std::string& str)
+        {
+            if (str == "Normal")
+            {
+                return sensitivity::normal;
+            }
+            else if (str == "Personal")
+            {
+                return sensitivity::personal;
+            }
+            else if (str == "Private")
+            {
+                return sensitivity::priv;
+            }
+            else if (str == "Confidential")
+            {
+                return sensitivity::confidential;
+            }
+            else
+            {
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
     //! Exception thrown when a request was not successful
     class exchange_error final : public exception
     {
     public:
         explicit exchange_error(response_code code)
-            : exception(internal::response_code_to_str(code)),
+            : exception(internal::enum_to_str(code)),
               code_(code)
         {
         }
@@ -6047,7 +6092,6 @@ namespace ews
     static_assert(std::is_move_assignable<email_address>::value, "");
 #endif
 
-
     //! Represents a generic item in the Exchange store.
     class item
     {
@@ -6085,32 +6129,48 @@ namespace ews
                                 node->value_size());
         }
 
-        // Unique identifier for the folder that contains an item. This is a
-        // read-only property
+        //! \brief Returns a unique identifier for the folder that contains
+        //! this item
+        //!
+        //! This is a read-only property.
         folder_id get_parent_folder_id() const
         {
             const auto node = properties().get_node("ParentFolderId");
             return node ? folder_id::from_xml_element(*node) : folder_id();
         }
 
-        // PR_MESSAGE_CLASS MAPI property (the message class) for an item
-        // TODO: get_item_class
+        //! \brief Returns the PR_MESSAGE_CLASS MAPI property (the message
+        //! class) for an item
+        std::string get_item_class() const
+        {
+            return properties().get_value_as_string("ItemClass");
+        }
 
-        // Sets this item's subject. Limited to 255 characters.
+        //! Sets this item's subject. Limited to 255 characters.
         void set_subject(const std::string& subject)
         {
             properties().set_or_update("Subject", subject);
         }
 
-        // Returns this item's subject
+        //! Returns this item's subject
         std::string get_subject() const
         {
             return properties().get_value_as_string("Subject");
         }
 
-        // Enumeration indicating the sensitive nature of an item; valid
-        // values are Normal, Personal, Private, and Confidential
-        // TODO: get_sensitivity
+        //! Returns the sensitivity level of this item
+        sensitivity get_sensitivity() const
+        {
+            const auto val = properties().get_value_as_string("Sensitivity");
+            return !val.empty() ? internal::str_to_sensitivity(val)
+                                : sensitivity::normal;
+        }
+
+        //! Sets the sensitivity level of this item
+        void set_sensitivity(sensitivity s)
+        {
+            properties().set_or_update("Sensitivity", internal::enum_to_str(s));
+        }
 
         //! Set the body content of an item
         void set_body(const body& b)
@@ -6482,19 +6542,17 @@ namespace ews
 
     private:
         template <typename U> friend class basic_service;
+
         std::string create_item_request_string() const
         {
             std::stringstream sstr;
-            sstr <<
-              "<CreateItem " \
-                  "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
-                  "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
-              "<Items>" \
+            sstr << "<m:CreateItem>" \
+              "<m:Items>" \
               "<t:Task>";
             sstr << properties().to_string() << "\n";
             sstr << "</t:Task>" \
-              "</Items>" \
-              "</CreateItem>";
+              "</m:Items>" \
+              "</m:CreateItem>";
             return sstr.str();
         }
     };
@@ -7144,7 +7202,7 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << "<m:CreateItem MessageDisposition=\""
-                 << internal::message_disposition_str(disposition) << "\">";
+                 << internal::enum_to_str(disposition) << "\">";
             sstr << "<m:Items>";
             sstr << "<t:Message>";
             sstr << properties().to_string() << "\n";
@@ -7667,6 +7725,13 @@ namespace ews
         {
         }
 
+        template <typename T,
+            typename = typename std::enable_if<std::is_enum<T>::value>::type>
+        property(property_path path, T enum_value)
+            : path_(std::move(path)),
+              value_(internal::enum_to_str(enum_value))
+        {}
+
         property(property_path path, const body& value)
             : path_(std::move(path)),
               value_(value.to_xml("t"))
@@ -7911,7 +7976,7 @@ namespace ews
         //! by this service
         void set_request_server_version(server_version vers)
         {
-            server_version_ = internal::server_version_to_str(vers);
+            server_version_ = internal::enum_to_str(vers);
         }
 
         //! \brief Returns the schema version that is used in requests by this
@@ -7955,9 +8020,9 @@ namespace ews
 
             const std::string request_string =
 "<m:DeleteItem\n"
-"  DeleteType=\"" + internal::delete_type_str(del_type) + "\"\n"
+"  DeleteType=\"" + internal::enum_to_str(del_type) + "\"\n"
 "  AffectedTaskOccurrences=\""
-            + internal::affected_task_occurrences_str(affected) + "\">\n"
+            + internal::enum_to_str(affected) + "\">\n"
 "  <m:ItemIds>" + the_task.get_item_id().to_xml("t") + "</m:ItemIds>\n"
 "</m:DeleteItem>\n";
 
@@ -8108,7 +8173,7 @@ namespace ews
                 "<m:UpdateItem"
                 "    MessageDisposition=\"SaveOnly\"\n"
                 "    ConflictResolution=\""
-                        + internal::conflict_resolution_str(res)
+                        + internal::enum_to_str(res)
                         + "\">\n"
                 "  <m:ItemChanges>\n"
                 "    <t:ItemChange>\n"
@@ -8365,16 +8430,16 @@ namespace ews
             // TODO: remove <AdditionalProperties> below, add parameter(s) or
             // overload to allow users customization
             const std::string request_string =
-        "<m:GetItem>\n"
-        "  <m:ItemShape>\n"
-        "    <t:BaseShape>" + internal::base_shape_str(shape)
-                                    + "</t:BaseShape>\n"
-        "    <t:AdditionalProperties>\n"
-        "      <t:FieldURI FieldURI=\"item:MimeContent\"/>\n"
-        "    </t:AdditionalProperties>\n"
-        "  </m:ItemShape>\n"
-        "  <m:ItemIds>" + id.to_xml("t") + "</m:ItemIds>\n"
-        "</m:GetItem>\n";
+                "<m:GetItem>\n"
+                "  <m:ItemShape>\n"
+                "    <t:BaseShape>" + internal::enum_to_str(shape)
+                                            + "</t:BaseShape>\n"
+                "    <t:AdditionalProperties>\n"
+                "      <t:FieldURI FieldURI=\"item:MimeContent\"/>\n"
+                "    </t:AdditionalProperties>\n"
+                "  </m:ItemShape>\n"
+                "  <m:ItemIds>" + id.to_xml("t") + "</m:ItemIds>\n"
+                "</m:GetItem>\n";
 
             auto response = request(request_string);
 #ifdef EWS_ENABLE_VERBOSE

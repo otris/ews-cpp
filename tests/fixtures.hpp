@@ -370,9 +370,61 @@ namespace tests
     };
 #endif // EWS_USE_BOOST_LIBRARY
 
-    inline ews::task make_task(const char* xml)
+    inline ews::task make_fake_task(const char* xml=nullptr)
     {
         typedef rapidxml::xml_document<> xml_document;
+
+        if (!xml)
+        {
+            xml =
+                "<t:Task\n"
+                "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\">\n"
+                "    <t:ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>\n"
+                "    <t:ParentFolderId Id=\"qwertz\" ChangeKey=\"ztrewq\"/>\n"
+                "    <t:ItemClass>IPM.Task</t:ItemClass>\n"
+                "    <t:Subject>Write poem</t:Subject>\n"
+                "    <t:Sensitivity>Confidential</t:Sensitivity>\n"
+                "    <t:Body BodyType=\"Text\" IsTruncated=\"false\"/>\n"
+                "    <t:DateTimeReceived>2015-02-09T13:00:11Z</t:DateTimeReceived>\n"
+                "    <t:Size>962</t:Size>\n"
+                "    <t:Importance>Normal</t:Importance>\n"
+                "    <t:IsSubmitted>false</t:IsSubmitted>\n"
+                "    <t:IsDraft>false</t:IsDraft>\n"
+                "    <t:IsFromMe>false</t:IsFromMe>\n"
+                "    <t:IsResend>false</t:IsResend>\n"
+                "    <t:IsUnmodified>false</t:IsUnmodified>\n"
+                "    <t:DateTimeSent>2015-02-09T13:00:11Z</t:DateTimeSent>\n"
+                "    <t:DateTimeCreated>2015-02-09T13:00:11Z</t:DateTimeCreated>\n"
+                "    <t:DisplayCc/>\n"
+                "    <t:DisplayTo/>\n"
+                "    <t:HasAttachments>false</t:HasAttachments>\n"
+                "    <t:Culture>en-US</t:Culture>\n"
+                "    <t:EffectiveRights>\n"
+                "            <t:CreateAssociated>false</t:CreateAssociated>\n"
+                "            <t:CreateContents>false</t:CreateContents>\n"
+                "            <t:CreateHierarchy>false</t:CreateHierarchy>\n"
+                "            <t:Delete>true</t:Delete>\n"
+                "            <t:Modify>true</t:Modify>\n"
+                "            <t:Read>true</t:Read>\n"
+                "            <t:ViewPrivateItems>true</t:ViewPrivateItems>\n"
+                "    </t:EffectiveRights>\n"
+                "    <t:LastModifiedName>Kwaltz</t:LastModifiedName>\n"
+                "    <t:LastModifiedTime>2015-02-09T13:00:11Z</t:LastModifiedTime>\n"
+                "    <t:IsAssociated>false</t:IsAssociated>\n"
+                "    <t:Flag>\n"
+                "            <t:FlagStatus>NotFlagged</t:FlagStatus>\n"
+                "    </t:Flag>\n"
+                "    <t:InstanceKey>AQAAAAAAARMBAAAAG4AqWQAAAAA=</t:InstanceKey>\n"
+                "    <t:EntityExtractionResult/>\n"
+                "    <t:ChangeCount>1</t:ChangeCount>\n"
+                "    <t:IsComplete>false</t:IsComplete>\n"
+                "    <t:IsRecurring>false</t:IsRecurring>\n"
+                "    <t:PercentComplete>0</t:PercentComplete>\n"
+                "    <t:Status>NotStarted</t:Status>\n"
+                "    <t:StatusDescription>Not Started</t:StatusDescription>\n"
+                "</t:Task>";
+        }
+
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
