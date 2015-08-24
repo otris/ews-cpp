@@ -7959,6 +7959,10 @@ namespace ews
     class basic_service final
     {
     public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        basic_service() = delete;
+#endif
+
         // FIXME: credentials are stored plain-text in memory
         //
         // That'll be bad. We wouldn't want random Joe at first-level support to
