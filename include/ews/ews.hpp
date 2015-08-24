@@ -5168,11 +5168,11 @@ namespace ews
             file
         };
 
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
-        attachment() = default;
-#else
-        attachment() {}
-#endif
+        attachment()
+            : xml_(),
+              type_(type::item)
+        {
+        }
 
         //! Returns this attachment's attachment_id
         attachment_id id() const
