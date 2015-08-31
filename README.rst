@@ -16,7 +16,8 @@ Supported Operating Systems
 * Microsoft Windows 8.1
 * Mac OS X 10.10
 * RHEL 7
-* Ubuntu 14.04
+* Ubuntu 14.04 LTS (x86_64 and i386)
+* SLES12
 
 
 Supported Microsoft Exchange Server Versions
