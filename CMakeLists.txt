@@ -115,8 +115,8 @@ set(rapidxml_SOURCES
     ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml_print.hpp
     ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml_utils.hpp)
 
-# libcurl 7.35 is packed for Ubuntu 14.04 LTS
-find_package(CURL 7.35 REQUIRED)
+# libcurl 7.35 is packed for Ubuntu 14.04 LTS, 7.29 for RHEL7
+find_package(CURL 7.29 REQUIRED)
 include_directories(${ews_INCLUDE_DIR} ${CURL_INCLUDE_DIRS})
 
 add_subdirectory(3rdparty/gtest)
