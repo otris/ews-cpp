@@ -92,12 +92,16 @@ elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
     endif()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SCL_SECURE_NO_WARNINGS /DNOMINMAX")
+    set(CMAKE_CXX_FLAGS
+        "${CMAKE_CXX_FLAGS} /D_SCL_SECURE_NO_WARNINGS /DNOMINMAX")
 
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0)
         # Make Google Test compile with Visual Studio 2012
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_VARIADIC_MAX=10")
     endif()
+else()
+    message(AUTHOR_WARNING
+        "Could not determine compiler ID: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
 # Uncomment to print out compiler settings for different configuration types
