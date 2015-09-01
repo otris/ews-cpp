@@ -249,7 +249,6 @@ add_executable(tests
     tests/test_contacts.cpp
     tests/test_folders.cpp
     tests/test_internals.cpp
-    tests/test_item_id.cpp
     tests/test_items.cpp
     tests/test_messages.cpp
     tests/test_restrictions.cpp
