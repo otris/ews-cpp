@@ -6,7 +6,9 @@ include(CheckCXXCompilerFlag)
 option(ENABLE_ASSERTS "Enable run-time checks." OFF)
 option(DISABLE_TLS_CERT_VERIFICATION
     "Turn-off verification of the server's authenticity." OFF)
-option(ENABLE_ASAN "Enable address sanitizer." OFF)
+if(NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+    option(ENABLE_ASAN "Enable address sanitizer." OFF)
+endif()
 option(ENABLE_VERBOSE
     "Enable verbose output to stderr (You don't want this set in production)."
     OFF)
