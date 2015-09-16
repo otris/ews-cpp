@@ -99,22 +99,7 @@ namespace tests
         EXPECT_EQ(initial_count + 1, ids.size());
     }
 
-    TEST_F(TaskTest, UpdateIsCompleteProperty)
-    {
-        auto get_milk = test_task();
-
-        auto complete_date = get_milk.get_complete_date();
-        ASSERT_FALSE(get_milk.is_complete());
-        auto prop = ews::property(ews::task_property_path::percent_complete,
-                                  100);
-        auto new_id = service().update_item(get_milk.get_item_id(), prop);
-        get_milk = service().get_task(new_id);
-
-        EXPECT_TRUE(get_milk.is_complete());
-        get_milk.get_complete_date();
-    }
-
-    TEST_F(TaskTest, InitialActualWorkProperty)
+    TEST_F(TaskTest, ActualWorkPropertyInitialValue)
     {
         auto task = ews::task();
         EXPECT_EQ(0, task.get_actual_work());
@@ -127,7 +112,7 @@ namespace tests
         EXPECT_EQ(42, task.get_actual_work());
     }
 
-    TEST_F(TaskTest, SetActualWorkPropertyServer)
+    TEST_F(TaskTest, UpdateActualWorkProperty)
     {
         auto task = test_task();
         auto prop = ews::property(ews::task_property_path::actual_work, 42);
@@ -141,11 +126,15 @@ namespace tests
         EXPECT_EQ(1729, task.get_actual_work());
     }
 
-    //TODO: assigned_time
-
-    TEST_F(TaskTest, GetBillingInformationIsEmptyInitially)
+    TEST_F(TaskTest, AssignedTimePropertyInitialValue)
     {
-        auto task = test_task();
+        auto task = ews::task();
+        EXPECT_TRUE(task.get_assigned_time().to_string().empty());
+    }
+
+    TEST_F(TaskTest, BillingInformationPropertyInitialValue)
+    {
+        auto task = ews::task();
         auto billing_information = task.get_billing_information();
         EXPECT_TRUE(billing_information.empty());
     }
@@ -153,11 +142,12 @@ namespace tests
     TEST_F(TaskTest, SetBillingInformationProperty)
     {
         auto task = ews::task();
-        task.set_billing_information("Billing Information Test");
-        EXPECT_STREQ("Billing Information Test", task.get_billing_information().c_str());
+        task.set_billing_information("Bank transfer to Nigeria National Bank");
+        EXPECT_STREQ("Bank transfer to Nigeria National Bank",
+                     task.get_billing_information().c_str());
     }
 
-    TEST_F(TaskTest, SetBillingInformationPropertyServer)
+    TEST_F(TaskTest, UpdateBillingInformationProperty)
     {
         auto task = test_task();
         auto prop = ews::property(ews::task_property_path::billing_information,
@@ -175,93 +165,135 @@ namespace tests
                      task.get_billing_information().c_str());
     }
 
-    // TODO: ChangeCount - Test with Delegation
-
-    // TODO
-    TEST_F(TaskTest, GetCompaniesIsEmptyInitially)
+    TEST_F(TaskTest, ChangeCountPropertyInitialValue)
     {
-        auto task = test_task();
+        auto task = ews::task();
+        EXPECT_EQ(0, task.get_change_count());
+    }
+
+    // TODO: ChangeCount - more tests as soon as we support delegation
+
+    TEST_F(TaskTest, CompaniesPropertyInitialValue)
+    {
+        auto task = ews::task();
         auto companies = task.get_companies();
         EXPECT_TRUE(companies.empty());
     }
 
     TEST_F(TaskTest, SetCompaniesProperty)
     {
-        const auto comps = std::vector<std::string>{
-            "Tic Tric Tac Inc.",
-        };
+        std::vector<std::string> companies;
+        companies.push_back("Tic Tric Tac Inc.");
         auto task = ews::task();
-        task.set_companies(comps);
+        task.set_companies(companies);
         ASSERT_EQ(1U, task.get_companies().size());
         EXPECT_STREQ("Tic Tric Tac Inc.", task.get_companies()[0].c_str());
     }
 
-    TEST_F(TaskTest, SetCompaniesPropertyServer)
+    TEST_F(TaskTest, UpdateCompaniesProperty)
     {
-        const auto comps = std::vector<std::string>{
-            "Tic Tric Tac Inc.",
-        };
+        std::vector<std::string> companies;
+        companies.push_back("Tic Tric Tac Inc.");
         auto task = test_task();
-        auto prop = ews::property(ews::task_property_path::companies, comps);
+        auto prop = ews::property(ews::task_property_path::companies,
+                                  companies);
         auto new_id = service().update_item(task.get_item_id(), prop);
         task = service().get_task(new_id);
         ASSERT_EQ(1U, task.get_companies().size());
         EXPECT_STREQ("Tic Tric Tac Inc.", task.get_companies()[0].c_str());
     }
 
-    TEST_F(TaskTest, GetContactsIsEmptyInitially)
+    TEST_F(TaskTest, CompleteDatePropertyInitialValue)
     {
-        auto task = test_task();
+        auto task = ews::task();
+        auto complete_date = task.get_complete_date();
+        EXPECT_TRUE(complete_date.to_string().empty());
+    }
+
+    TEST_F(TaskTest, ContactsPropertyInitialValue)
+    {
+        auto task = ews::task();
         auto contacts = task.get_contacts();
         EXPECT_TRUE(contacts.empty());
     }
 
-    // TODO: Contacts
+    // TODO: SetContactsProperty
+    // TODO: UpdateContactsProperty, especially with multiple contacts
 
-    // TODO: DelegationState
-    //TEST_F(TaskTest, GetDelegationState)
-    //{
-    //    auto task = test_task();
-    //    EXPECT_EQ(ews::delegation_state::no_match, task.get_delegation_state());
-    //}
-
-    // TODO: Delegator
-
-    // TODO: IsAssignmentEditable
-
-    // TODO: IsRecurring
-
-    // TODO: IsTeamTask
-
-    TEST_F(TaskTest, GetMileageIsEmptyInitially)
+    TEST_F(TaskTest, DelegationStatePropertyInitialValue)
     {
-        auto task = test_task();
-        auto mileage = task.get_mileage();
-        EXPECT_TRUE(mileage.empty());
+        auto task = ews::task();
+        // TODO: check if this is reasonable
+        EXPECT_EQ(ews::delegation_state::no_match, task.get_delegation_state());
+    }
+
+    TEST_F(TaskTest, DelegatorPropertyInitialValue)
+    {
+        auto task = ews::task();
+        EXPECT_TRUE(task.get_delegator().empty());
+    }
+
+    // TODO: SetDelegatorProperty
+    // TODO: UpdateDelegatorProperty
+
+    // TODO: DueDatePropertyInitialValue
+    // TODO: SetDueDateProperty
+    // TODO: UpdateDueDateProperty
+
+    // TODO: IsAssignmentEditablePropertyInitialValue
+
+    TEST_F(TaskTest, UpdateIsCompleteProperty)
+    {
+        auto get_milk = test_task();
+
+        auto complete_date = get_milk.get_complete_date();
+        ASSERT_FALSE(get_milk.is_complete());
+        auto prop = ews::property(ews::task_property_path::percent_complete,
+                                  100);
+        auto new_id = service().update_item(get_milk.get_item_id(), prop);
+        get_milk = service().get_task(new_id);
+
+        EXPECT_TRUE(get_milk.is_complete());
+        get_milk.get_complete_date();
+    }
+
+    // TODO: IsRecurringPropertyInitialValue
+    // TODO: more tests when we have task recurrences support
+
+    // TODO: IsTeamTaskPropertyInitialValue
+
+    TEST_F(TaskTest, MileagePropertyInitialValue)
+    {
+        auto task = ews::task();
+        auto str = task.get_mileage();
+        EXPECT_TRUE(str.empty());
     }
 
     TEST_F(TaskTest, SetMileageProperty)
     {
         auto task = ews::task();
-        task.set_mileage("Mileage Test");
-        EXPECT_STREQ("Mileage Test", task.get_mileage().c_str());
+        task.set_mileage("Thousands and thousands of parsecs");
+        EXPECT_STREQ("Thousands and thousands of parsecs",
+                     task.get_mileage().c_str());
     }
 
-    TEST_F(TaskTest, SetMileagePropertyServer)
+    TEST_F(TaskTest, UpdateMileageProperty)
     {
         auto task = test_task();
-        auto prop = ews::property(ews::task_property_path::mileage, "Mileage Test");
+        auto prop = ews::property(ews::task_property_path::mileage,
+                                  "Thousands and thousands of parsecs");
         auto new_id = service().update_item(task.get_item_id(), prop);
         task = service().get_task(new_id);
-        EXPECT_STREQ("Mileage Test", task.get_mileage().c_str());
+        EXPECT_STREQ("Thousands and thousands of parsecs",
+                     task.get_mileage().c_str());
 
-        prop = ews::property(ews::task_property_path::mileage, "Mileage Test 2");
+        prop = ews::property(ews::task_property_path::mileage, "A few steps");
         new_id = service().update_item(task.get_item_id(), prop);
         task = service().get_task(new_id);
-        EXPECT_STREQ("Mileage Test 2", task.get_mileage().c_str());
+        EXPECT_STREQ("A few steps", task.get_mileage().c_str());
     }
 
-    TEST_F(TaskTest, InitialPercentCompleteProperty)
+    TEST_F(TaskTest, PercentCompletePropertyInitialValue)
     {
         auto task = ews::task();
         EXPECT_EQ(0, task.get_percent_complete());
@@ -274,10 +306,11 @@ namespace tests
         EXPECT_EQ(55, task.get_percent_complete());
     }
 
-    TEST_F(TaskTest, SetPercentCompletePropertyServer)
+    TEST_F(TaskTest, UpdatePercentCompleteProperty)
     {
         auto task = test_task();
-        auto prop = ews::property(ews::task_property_path::percent_complete, 55);
+        auto prop = ews::property(ews::task_property_path::percent_complete,
+                                  55);
         auto new_id = service().update_item(task.get_item_id(), prop);
         task = service().get_task(new_id);
         EXPECT_EQ(55, task.get_percent_complete());
@@ -288,13 +321,17 @@ namespace tests
         EXPECT_EQ(100, task.get_percent_complete());
     }
 
-    //TODO: Recurrence
+    // TODO: StartDatePropertyInitialValue
+    // TODO: SetStartDateProperty
+    // TODO: UpdateStartDateProperty
 
-    //TODO: Status
+    // TODO: StatusPropertyInitialValue
+    // TODO: SetStatusProperty
+    // TODO: UpdateProperty
 
-    //TODO: StatusDescription
+    // TODO: StatusDescriptionPropertyInitialValue
 
-    TEST_F(TaskTest, InitialTotalWorkProperty)
+    TEST_F(TaskTest, TotalWorkPropertyInitialValue)
     {
         auto task = ews::task();
         EXPECT_EQ(0, task.get_total_work());
@@ -307,7 +344,7 @@ namespace tests
         EXPECT_EQ(3000, task.get_total_work());
     }
 
-    TEST_F(TaskTest, SetTotalWorkPropertyServer)
+    TEST_F(TaskTest, UpdateTotalWorkProperty)
     {
         auto task = test_task();
         auto prop = ews::property(ews::task_property_path::total_work, 3000);

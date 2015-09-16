@@ -6406,6 +6406,8 @@ namespace ews
     static_assert(std::is_move_assignable<item>::value, "");
 #endif
 
+    //! Enumeration value indicating whether the delegated task was accepted
+    //! or not.
     enum class delegation_state
     {
         no_match,
@@ -6434,8 +6436,8 @@ namespace ews
                 return "Declined";
             case delegation_state::max:
                 return "Max";
-            default: throw exception("Unexpected <DelegationState>");
-
+            default:
+                throw exception("Unexpected <DelegationState>");
             }
         }
     }
@@ -6481,6 +6483,7 @@ namespace ews
         task() {}
 #endif
 
+        //! Constructs a new task with the given item_id
         explicit task(item_id id) : item(std::move(id)) {}
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
@@ -6489,8 +6492,9 @@ namespace ews
         {}
 #endif
 
-        // Represents the actual amount of work expended on the task. Measured
-        // in minutes
+        //! \brief Returns the actual amount of work expended on the task.
+        //!
+        //! Measured in minutes.
         int get_actual_work() const
         {
             const auto val = properties().get_value_as_string("ActualWork");
@@ -6501,32 +6505,41 @@ namespace ews
             return std::stoi(val);
         }
 
+        //! \brief Sets the actual amount of work expended on the task.
+        //!
+        //! Measured in minutes.
         void set_actual_work(int actual_work)
         {
-            properties().set_or_update("ActualWork", std::to_string(actual_work));
+            properties().set_or_update("ActualWork",
+                                       std::to_string(actual_work));
         }
 
-        // Time the task was assigned to the current owner. This is a read-only property.
+        //! \brief Returns the time the task was assigned to the current owner.
+        //!
+        //! This is a read-only property.
         date_time get_assigned_time() const
         {
             return date_time(properties().get_value_as_string("AssignedTime"));
         }
 
-        // Billing information associated with this task
+        //! Returns the billing information associated with this task
         std::string get_billing_information() const
         {
             return properties().get_value_as_string("BillingInformation");
         }
 
-        void set_billing_information(const std::string& billing_information)
+        //! Sets the billing information associated with this task
+        void set_billing_information(const std::string& billing_info)
         {
-            properties().set_or_update("BillingInformation", billing_information);
+            properties().set_or_update("BillingInformation", billing_info);
         }
 
-        // How many times this task has been acted upon (sent, accepted,
-        // etc.). This is simply a way to resolve conflicts when the
-        // delegator sends multiple updates. Also known as TaskVersion
-        // Seems to be read-only.
+        //! \brief Returns the change count of this task.
+        //!
+        //! How many times this task has been acted upon (sent, accepted,
+        //! etc.). This is simply a way to resolve conflicts when the
+        //! delegator sends multiple updates. Also known as TaskVersion
+        //! Seems to be read-only.
         int get_change_count() const
         {
             const auto val = properties().get_value_as_string("ChangeCount");
@@ -6537,8 +6550,12 @@ namespace ews
             return std::stoi(val);
         }
 
-        // A list of company names associated with this task
-        // Server accepts only one String-Element, although it is an ArrayOfStringsType
+        //! \brief Returns the companies associated with this task.
+        //!
+        //! A list of company names associated with this task.
+        //!
+        //! Note: It seems that Exchange server accepts only one \<String>
+        //! element here, although it is an ArrayOfStringsType.
         std::vector<std::string> get_companies() const
         {
             auto node = properties().get_node("Companies");
@@ -6556,6 +6573,10 @@ namespace ews
             return res;
         }
 
+        //! \brief Sets the companies associated with this task.
+        //!
+        //! Note: It seems that Exchange server accepts only one \<String>
+        //! element here, although it is an ArrayOfStringsType.
         void set_companies(const std::vector<std::string>& companies)
         {
             using uri = internal::uri<>;
@@ -6575,7 +6596,9 @@ namespace ews
             auto doc = properties().document();
             auto ptr_to_qname = doc->allocate_string("t:Companies");
             companies_node = doc->allocate_node(rapidxml::node_element);
-            companies_node->qname(ptr_to_qname, std::strlen("t:Companies"), ptr_to_qname + 2);
+            companies_node->qname(ptr_to_qname,
+                                  std::strlen("t:Companies"),
+                                  ptr_to_qname + 2);
             companies_node->namespace_uri(uri::microsoft::types(),
                                           uri::microsoft::types_size);
             doc->append_node(companies_node);
@@ -6584,7 +6607,9 @@ namespace ews
             {
                 ptr_to_qname = doc->allocate_string("t:String");
                 auto node = doc->allocate_node(rapidxml::node_element);
-                node->qname(ptr_to_qname, std::strlen("t:String"), ptr_to_qname + 2);
+                node->qname(ptr_to_qname,
+                            std::strlen("t:String"),
+                            ptr_to_qname + 2);
                 node->namespace_uri(uri::microsoft::types(),
                                     uri::microsoft::types_size);
                 auto ptr_to_value = doc->allocate_string(company.c_str());
@@ -6593,29 +6618,24 @@ namespace ews
             }
         }
 
-        // Time the task was completed
+        //! Returns the time the task was completed
         date_time get_complete_date() const
         {
             return date_time(properties().get_value_as_string("CompleteDate"));
         }
 
-        // Contact names associated with this task
-        std::string get_contacts() const
+        //! Returns the contact names associated with this task
+        std::vector<std::string> get_contacts() const
         {
-            auto res = std::string();
             // TODO
-            //auto node = properties().get_node("Contacts");
-            return res;
+            return std::vector<std::string>();
         }
 
-        // Enumeration value indicating whether the delegated task was
-        // accepted or not. This is a read-only property.
-        void set_delegation_state(delegation_state state)
-        {
-            properties().set_or_update("DelegationState",
-                                       internal::enum_to_str(state));
-        }
+        // TODO: set_contacts()
 
+        //! \brief Returns the delegation state of this task
+        //!
+        //! This is a read-only property.
         delegation_state get_delegation_state() const
         {
             const auto& val =
@@ -6650,7 +6670,7 @@ namespace ews
             }
         }
 
-        // Display name of the user that delegated the task
+        //! Returns the name of the user that delegated the task
         std::string get_delegator() const
         {
             return properties().get_value_as_string("Delegator");
@@ -6668,13 +6688,20 @@ namespace ews
             return date_time(properties().get_value_as_string("DueDate"));
         }
 
-        // TODO: is_assignment_editable, possible values 0-5, 2007 dialect?
+        // TODO
         // This is a read-only property.
+#if 0
         int is_assignment_editable() const
         {
-            EWS_ASSERT(false && "TODO");
-            return 0;
+            // Possible values:
+            // 0 The default for all task items
+            // 1 A task request
+            // 2 A task acceptance from a recipient of a task request
+            // 3 A task declination from a recipient of a task request
+            // 4 An update to a previous task request
+            // 5 Not used
         }
+#endif
 
         //! \brief True if the task is marked as complete.
         //!
@@ -6685,35 +6712,37 @@ namespace ews
             return properties().get_value_as_string("IsComplete") == "true";
         }
 
-        // True if the task is recurring
-        // TODO: is_recurring
+        //! True if the task is recurring
         bool is_recurring() const
         {
             return properties().get_value_as_string("IsRecurring") == "true";
         }
 
-        // True if the task is a team task. This is a read-only property.
-        // TODO: is_team_task
+        //! \brief True if the task is a team task.
+        //!
+        //! This is a read-only property.
         bool is_team_task() const
         {
             return properties().get_value_as_string("IsTeamTask") == "true";
         }
 
-        // Mileage associated with the task, potentially used for reimbursement
-        // purposes
-        // TODO: get_mileage
+        //! \brief Returns the mileage associated with the task
+        //!
+        //! Potentially used for reimbursement purposes
         std::string get_mileage() const
         {
             return properties().get_value_as_string("Mileage");
         }
 
+        //! Sets the mileage associated with the task
         void set_mileage(const std::string& mileage)
         {
             properties().set_or_update("Mileage", mileage);
         }
 
-        // The name of the user who owns the task. This is a read-only property
         // TODO: Not in AllProperties shape in EWS 2013, investigate
+        // The name of the user who owns the task.
+        // This is a read-only property
 #if 0
         std::string get_owner() const
         {
@@ -6723,8 +6752,8 @@ namespace ews
 
         //! \brief Returns the percentage of the task that has been completed.
         //!
-        //! Valid values are 0-100
-        double get_percent_complete() const
+        //! Valid values are 0-100.
+        int get_percent_complete() const
         {
             const auto val =
                 properties().get_value_as_string("PercentComplete");
@@ -6735,11 +6764,17 @@ namespace ews
             return std::stoi(val);
         }
 
-        // TODO: test?
-        void set_percent_complete(double percent_complete)
+        //! \brief Sets the percentage of the task that has been completed.
+        //!
+        //! Valid values are 0-100. Note that setting \<PercentComplete> to 100
+        //! has the same effect as setting a \<CompleteDate> or \<Status> to
+        //! ews::status::completed.
+        //!
+        //! See MSDN for more on this.
+        void set_percent_complete(int value)
         {
             properties().set_or_update("PercentComplete",
-                                       std::to_string(percent_complete));
+                                       std::to_string(value));
         }
 
         // Used for recurring tasks
@@ -6787,10 +6822,10 @@ namespace ews
             }
         }
 
-        //! Sets the status of the task to \p status
-        void set_status(status status)
+        //! Sets the status of the task to \p s.
+        void set_status(status s)
         {
-            properties().set_or_update("Status", internal::enum_to_str(status));
+            properties().set_or_update("Status", internal::enum_to_str(s));
         }
 
         //! \brief Returns the status description.
@@ -6800,13 +6835,6 @@ namespace ews
         std::string get_status_description() const
         {
             return properties().get_value_as_string("StatusDescription");
-        }
-
-        //! Sets the status description
-        // TODO: is there a test! Seems weird to have such a function
-        void set_status_description(const std::string& status_description)
-        {
-            properties().set_or_update("StatusDescription", status_description);
         }
 
         //! Returns the total amount of work for this task
@@ -6820,10 +6848,11 @@ namespace ews
             return std::stoi(val);
         }
 
-        // TODO: test? doxygen comment
+        //! Sets the total amount of work for this task
         void set_total_work(int total_work)
         {
-            properties().set_or_update("TotalWork", std::to_string(total_work));
+            properties().set_or_update("TotalWork",
+                                       std::to_string(total_work));
         }
 
         // Every property below is 2012 or 2013 dialect
@@ -6833,8 +6862,9 @@ namespace ews
         //! Makes a task instance from a <tt>\<Task></tt> XML element
         static task from_xml_element(const rapidxml::xml_node<>& elem)
         {
-            auto id_node = elem.first_node_ns(internal::uri<>::microsoft::types(),
-                                              "ItemId");
+            auto id_node = elem.first_node_ns(
+                    internal::uri<>::microsoft::types(),
+                    "ItemId");
             EWS_ASSERT(id_node && "Expected <ItemId>");
             return task(item_id::from_xml_element(*id_node),
                         internal::xml_subtree(elem));
