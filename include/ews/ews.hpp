@@ -6640,7 +6640,8 @@ namespace ews
         {
             const auto& val =
                 properties().get_value_as_string("DelegationState");
-            if (val == "NoMatch")
+
+            if (val.empty() || val == "NoMatch")
             {
                 return delegation_state::no_match;
             }
