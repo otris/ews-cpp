@@ -6278,8 +6278,11 @@ namespace ews
             return b;
         }
 
-        // Metadata about the attachments of an item
-        // TODO: get_attachments
+        //! Returns the items or files that are attached to this item.
+        std::vector<attachment> get_attachments() const
+        {
+            return std::vector<attachment>();
+        }
 
         // Date/time an item was received
         // TODO: get_date_time_received
@@ -6400,6 +6403,8 @@ namespace ews
 #endif
 
     private:
+        friend class attachment;
+
         item_id item_id_;
         internal::xml_subtree properties_;
     };
@@ -8573,38 +8578,30 @@ namespace ews
         attachment_id create_attachment(const item& parent_item,
                                         const attachment& a)
         {
-            if (a.get_type() == attachment::type::file)
-            {
-                auto response = request(
-                    "<m:CreateAttachment>\n"
-                    "  <m:ParentItemId Id=\""
-                        + parent_item.get_item_id().id()
-                        + "\" ChangeKey=\""
-                        + parent_item.get_item_id().change_key()
-                        + "\"/>\n"
-                    "  <m:Attachments>" + a.to_xml() + "</m:Attachments>\n"
-                    "</m:CreateAttachment>\n");
+            auto response = request(
+                   "<m:CreateAttachment>\n"
+                       "<m:ParentItemId Id=\""
+                           + parent_item.get_item_id().id()
+                           + "\" ChangeKey=\""
+                           + parent_item.get_item_id().change_key()
+                           + "\"/>\n"
+                       "<m:Attachments>\n"
+                           + a.to_xml() +
+                       "</m:Attachments>\n"
+                   "</m:CreateAttachment>\n");
 
 #ifdef EWS_ENABLE_VERBOSE
-                std::cerr << response.payload() << std::endl;
+            std::cerr << response.payload() << std::endl;
 #endif
-                const auto response_message =
-                    internal::create_attachment_response_message::parse(
-                                                                    response);
-                if (!response_message.success())
-                {
-                    throw exchange_error(response_message.get_response_code());
-                }
-                EWS_ASSERT(!response_message.attachment_ids().empty()
-                        && "Expected at least one attachment");
-                return response_message.attachment_ids().front();
-            }
-            else
+            const auto response_message =
+                internal::create_attachment_response_message::parse(response);
+            if (!response_message.success())
             {
-                // TODO
-                EWS_ASSERT(false);
-                return attachment_id();
+                throw exchange_error(response_message.get_response_code());
             }
+            EWS_ASSERT(!response_message.attachment_ids().empty()
+                    && "Expected at least one attachment");
+            return response_message.attachment_ids().front();
         }
 
         //! \brief Attach one or more files (or items) to an existing item.
@@ -9026,7 +9023,7 @@ namespace ews
     }
 
     //! \brief Creates a new <tt>\<ItemAttachment></tt> from a given item.
-    //
+    //!
     //! It is not necessary for the item to already exist in the Exchange
     //! store. If it doesn't, it will be automatically created.
     inline

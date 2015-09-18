@@ -164,8 +164,51 @@ namespace tests
     // TODO: GetAttachmentWithInvalidIdThrows
     // TODO: GetAttachmentWithInvalidIdExceptionResponse
 
+    TEST_F(AttachmentTest, CreateAndDeleteItemAttachmentOnServer)
+    {
+        // Try to attach an existing message to a new task
+
+        auto& msg = test_message();
+        auto item_attachment = ews::attachment::from_item(msg, "This message");
+
+        auto some_task = ews::task();
+        some_task.set_subject("Respond to Mike's mail!");
+        auto task_id = service().create_item(some_task);
+        some_task = service().get_task(task_id);
+        ews::internal::on_scope_exit remove_task([&]
+        {
+            service().delete_task(std::move(some_task));
+        });
+
+        EXPECT_TRUE(some_task.get_attachments().empty());
+
+        auto attachment_id = service().create_attachment(some_task,
+                                                         item_attachment);
+        ASSERT_TRUE(attachment_id.valid());
+        item_attachment = service().get_attachment(attachment_id);
+        ews::internal::on_scope_exit remove_attachment([&]
+        {
+            service().delete_attachment(std::move(item_attachment));
+        });
+
+        // RootItemId should be that of the parent task
+
+        auto root_item_id = attachment_id.root_item_id();
+        ASSERT_TRUE(root_item_id.valid());
+        EXPECT_FALSE(root_item_id.change_key().empty());
+
+        EXPECT_STREQ(root_item_id.id().c_str(), task_id.id().c_str());
+
+        // Finally, check item::get_attachments
+
+        some_task = service().get_task(task_id);
+        auto attachments = some_task.get_attachments();
+        ASSERT_EQ(1U, attachments.size());
+        EXPECT_STREQ("This message", attachments[0].name().c_str());
+    }
+
 #ifdef EWS_USE_BOOST_LIBRARY
-    TEST_F(FileAttachmentTest, CreateAndDeleteAttachmentOnServer)
+    TEST_F(FileAttachmentTest, CreateAndDeleteFileAttachmentOnServer)
     {
         auto& msg = test_message();
         const auto path = assets_dir() / "ballmer_peak.png";
