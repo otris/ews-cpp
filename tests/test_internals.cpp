@@ -135,6 +135,112 @@ namespace tests
 #endif
     }
 
+    TEST(InternalTest, TraversalIsDepthFirst)
+    {
+        const auto xml = std::string(
+            "<a>\n"
+            "   <b>\n"
+            "       <c>\n"
+            "           <d>Some value</d>\n"
+            "       </c>\n"
+            "   </b>\n"
+            "   <e>\n"
+            "       <f>More</f>\n"
+            "       <g>Even more</g>\n"
+            "   </e>\n"
+            "   <h>Done</h>\n"
+            "</a>");
+
+        const std::vector<std::string> expected_order{
+            "d", "c", "b", "f", "g", "e", "h", "a"
+        };
+
+        std::vector<std::string> actual_order;
+
+        rapidxml::xml_document<> doc;
+        auto str = doc.allocate_string(xml.c_str());
+        doc.parse<0>(str);
+
+        ews::internal::traverse_elements(doc,
+                [&](const rapidxml::xml_node<>& node) -> bool
+        {
+            actual_order.push_back(node.name());
+            return false;
+        });
+
+#if EWS_HAS_ROBUST_NONMODIFYING_SEQ_OPS
+        auto ordered = std::equal(begin(actual_order),   end(actual_order),
+                                  begin(expected_order), end(expected_order));
+#else
+        auto ordered = actual_order.size() == expected_order.size() &&
+                    std::equal(begin(actual_order), end(actual_order),
+                               begin(expected_order));
+#endif
+
+        std::stringstream sstr;
+        sstr << "Expected: ";
+        for (const auto& e : expected_order)
+        {
+            sstr << e << ", ";
+        }
+        sstr << "\nActual: ";
+        for (const auto& e : actual_order)
+        {
+            sstr << e << ", ";
+        }
+        EXPECT_TRUE(ordered) << sstr.str();
+    }
+
+    TEST(InternalTest, GetElementByQualifiedName)
+    {
+        const char* noxmlns = "";
+        const auto xml = std::string(
+            "<a>\n"
+            "   <b>\n"
+            "       <c>\n"
+            "           <d>Some value</d>\n"
+            "       </c>\n"
+            "   </b>\n"
+            "   <e>\n"
+            "       <f>More</f>\n"
+            "       <g>Even more</g>\n"
+            "   </e>\n"
+            "   <h>Done</h>\n"
+            "</a>");
+
+        rapidxml::xml_document<> doc;
+        auto str = doc.allocate_string(xml.c_str());
+        doc.parse<0>(str);
+
+        auto root = doc.first_node();
+        auto node = ews::internal::get_element_by_qname(*root, "g", noxmlns);
+        ASSERT_TRUE(node);
+        EXPECT_STREQ("Even more", node->value());
+    }
+
+    TEST(InternalTest, GetElementByQualifiedNameMultiplePaths)
+    {
+        const char* noxmlns = "";
+        const auto xml = std::string(
+            "<a>\n"
+            "   <b>\n"
+            "       <c>\n"
+            "           <d>Some value</d>\n"
+            "       </c>\n"
+            "   </b>\n"
+            "   <d>Some other value</d>\n"
+            "</a>");
+
+        rapidxml::xml_document<> doc;
+        auto str = doc.allocate_string(xml.c_str());
+        doc.parse<0>(str);
+
+        auto root = doc.first_node();
+        auto node = ews::internal::get_element_by_qname(*root, "d", noxmlns);
+        ASSERT_TRUE(node);
+        EXPECT_STREQ("Some value", node->value());
+    }
+
     TEST(InternalTest, ExtractSubTreeFromDocument)
     {
         using namespace ews::internal;

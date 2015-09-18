@@ -4091,7 +4091,8 @@ namespace ews
         }
 
         // Select element by qualified name, nullptr if there is no such element
-        // TODO: what if namespace_uri is empty, can we do that cheaper?
+        // TODO: how to avoid ambiguities when two elements exist with the same
+        // name and namespace but different paths
         inline rapidxml::xml_node<>*
         get_element_by_qname(const rapidxml::xml_node<>& node,
                              const char* local_name,
@@ -6113,7 +6114,7 @@ namespace ews
 
         const item_id& get_item_id() const EWS_NOEXCEPT { return item_id_; }
 
-        //! Base64-encoded contents of the MIME stream for an item
+        //! Base64-encoded contents of the MIME stream of this item
         mime_content get_mime_content() const
         {
             const auto node = properties().get_node("MimeContent");
