@@ -6579,7 +6579,7 @@ namespace ews
         //! element here, although it is an ArrayOfStringsType.
         void set_companies(const std::vector<std::string>& companies)
         {
-            using uri = internal::uri<>;
+            typedef internal::uri<> uri;
 
             auto companies_node = properties().get_node("Companies");
             if (companies_node)
