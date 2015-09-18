@@ -151,9 +151,21 @@ namespace tests
             "   <h>Done</h>\n"
             "</a>");
 
+#ifdef EWS_HAS_INITIALIZER_LISTS
         const std::vector<std::string> expected_order{
             "d", "c", "b", "f", "g", "e", "h", "a"
         };
+#else
+        std::vector<std::string> expected_order;
+        expected_order.push_back("d");
+        expected_order.push_back("c");
+        expected_order.push_back("b");
+        expected_order.push_back("f");
+        expected_order.push_back("g");
+        expected_order.push_back("e");
+        expected_order.push_back("h");
+        expected_order.push_back("a");
+#endif
 
         std::vector<std::string> actual_order;
 

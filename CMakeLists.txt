@@ -161,7 +161,6 @@ CHECK_CXX_SOURCE_COMPILES("
 void func() noexcept { }
 int main() { }
 " HAS_NOEXCEPT_SPECIFIER)
-
 if(HAS_NOEXCEPT_SPECIFIER)
     add_definitions(-DEWS_HAS_NOEXCEPT_SPECIFIER)
 endif()
@@ -171,7 +170,6 @@ CHECK_CXX_SOURCE_COMPILES("
 #include <memory>
 int main() { std::unique_ptr<int> foo = std::make_unique<int>(4); }
 " HAS_MAKE_UNIQUE)
-
 if(HAS_MAKE_UNIQUE)
     add_definitions(-DEWS_HAS_MAKE_UNIQUE)
 endif()
@@ -181,7 +179,6 @@ CHECK_CXX_SOURCE_COMPILES("
 template <typename Fu = int> void func() { }
 int main() { }
 " HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS)
-
 if(HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS)
     add_definitions(-DEWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS)
 endif()
@@ -190,7 +187,6 @@ endif()
 CHECK_CXX_SOURCE_COMPILES("
 int main() { thread_local int i; }
 " HAS_THREAD_LOCAL_STORAGE)
-
 if(HAS_THREAD_LOCAL_STORAGE)
     add_definitions(-DEWS_HAS_THREAD_LOCAL_STORAGE)
 endif()
@@ -200,7 +196,6 @@ CHECK_CXX_SOURCE_COMPILES("
 struct Fu { Fu() = default; Fu(const Fu&) = delete; };
 int main() { }
 " HAS_DEFAULT_AND_DELETE)
-
 if(HAS_DEFAULT_AND_DELETE)
     add_definitions(-DEWS_HAS_DEFAULT_AND_DELETE)
 endif()
@@ -210,7 +205,6 @@ CHECK_CXX_SOURCE_COMPILES("
 template <typename... T> void func(T...) { }
 int main() { }
 " HAS_VARIADIC_TEMPLATES)
-
 if(HAS_VARIADIC_TEMPLATES)
     add_definitions(-DEWS_HAS_VARIADIC_TEMPLATES)
 endif()
@@ -222,7 +216,6 @@ struct Fu { Fu(const Fu&) = delete; };
 static_assert(!std::is_copy_constructible<Fu>::value, \"\");
 int main() { }
 " HAS_NON_BUGGY_TYPE_TRAITS)
-
 if(HAS_NON_BUGGY_TYPE_TRAITS)
     add_definitions(-DEWS_HAS_NON_BUGGY_TYPE_TRAITS)
 endif()
@@ -236,9 +229,17 @@ static const char dest[] = \"bar\";
 int main() { std::equal(source, source + std::strlen(source),
                         dest, dest + std::strlen(dest)); }
 " HAS_ROBUST_NONMODIFYING_SEQ_OPS)
-
 if(HAS_ROBUST_NONMODIFYING_SEQ_OPS)
     add_definitions(-DEWS_HAS_ROBUST_NONMODIFYING_SEQ_OPS)
+endif()
+
+# Test support for initializer lists - negative: VS 2012
+CHECK_CXX_SOURCE_COMPILES("
+#include <vector>
+int main() { std::vector<int> vec{1, 2, 3, 4, 5}; }
+" HAS_INITIALIZER_LISTS)
+if(HAS_INITIALIZER_LISTS)
+    add_definitions(-DEWS_HAS_INITIALIZER_LISTS)
 endif()
 
 add_executable(tests
