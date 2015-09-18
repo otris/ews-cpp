@@ -4073,21 +4073,26 @@ namespace ews
         // Applies given function to every element during traversal, stopping as
         // soon as that function returns true.
         template <typename Function>
-        inline void traverse_elements(const rapidxml::xml_node<>& node,
+        inline bool traverse_elements(const rapidxml::xml_node<>& node,
                                       Function func) EWS_NOEXCEPT
         {
             for (auto child = node.first_node(); child != nullptr;
                  child = child->next_sibling())
             {
-                traverse_elements(*child, func);
+                if (traverse_elements(*child, func))
+                {
+                    return true;
+                }
+
                 if (child->type() == rapidxml::node_element)
                 {
                     if (func(*child))
                     {
-                        return;
+                        return true;
                     }
                 }
             }
+            return false;
         }
 
         // Select element by qualified name, nullptr if there is no such element
