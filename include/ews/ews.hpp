@@ -6281,7 +6281,21 @@ namespace ews
         //! Returns the items or files that are attached to this item.
         std::vector<attachment> get_attachments() const
         {
-            return std::vector<attachment>();
+            //TODO: support attachment hierarchies
+
+            const auto attachments_node = properties().get_node("Attachments");
+            if (!attachments_node)
+            {
+                return std::vector<attachment>();
+            }
+
+            std::vector<attachment> attachments;
+            for (auto child = attachments_node->first_node(); child != nullptr;
+                 child = child->next_sibling())
+            {
+                attachments.emplace_back(attachment::from_xml_element(*child));
+            }
+            return attachments;
         }
 
         // Date/time an item was received
@@ -9029,9 +9043,6 @@ namespace ews
     inline
     attachment attachment::from_item(const item& the_item, std::string name)
     {
-        // TODO
-        (void)the_item;
-
         // Creating a new <ItemAttachment> with the <CreateAttachment>
         // method is pretty similar to a <CreateItem> method call. However,
         // most of the times we do not want to create item attachments out
@@ -9042,14 +9053,66 @@ namespace ews
         // complete item from the response into the <CreateAttachment>
         // call.
         //
-        // There is a shortcut: use <BaseShape>IdOnly</BaseShape> and
-        // <AdditionalProperties> with item::MimeContent in <GetItem> call,
-        // remove <ItemId> from the response and pass that to
-        // <CreateAttachment>.
+        // There is a shortcut for Calendar, E-mail message items and Posting
+        // notes: use <BaseShape>IdOnly</BaseShape> and <AdditionalProperties>
+        // with item::MimeContent in <GetItem> call, remove <ItemId> from the
+        // response and pass that to <CreateAttachment>.
+
+#if 0
+        const auto item_class = the_item.get_item_class();
+        if (       item_class == ""          // Calendar items
+                || item_class == "IPM.Note"  // E-mail messages
+                || item_class == "IPM.Post"  // Posting notes in a folder
+            )
+        {
+            auto mime_content_node = props.get_node("MimeContent");
+        }
+#endif
+
+        auto& props = the_item.properties();
+
+        // Filter out read-only property paths
+        for (const auto& property_name :
+                // item
+                { "ItemId", "ParentFolderId", "DateTimeReceived", "Size",
+                "IsSubmitted", "IsDraft", "IsFromMe", "IsResend",
+                "IsUnmodified", "DateTimeSent", "DateTimeCreated",
+                "ResponseObjects", "DisplayCc", "DisplayTo", "HasAttachments",
+                "EffectiveRights", "LastModifiedName", "LastModifiedTime",
+                "IsAssociated", "WebClientReadFormQueryString",
+                "WebClientEditFormQueryString", "ConversationId", "InstanceKey",
+
+                // message
+                "ConversationIndex", "ConversationTopic"
+                })
+        {
+            auto node = props.get_node(property_name);
+            if (node)
+            {
+                auto parent = node->parent();
+                EWS_ASSERT(parent);
+                parent->remove_node(node);
+            }
+        }
 
         auto obj = attachment();
         obj.type_ = type::item;
-        obj.xml_.set_or_update("Name", std::move(name));
+        obj.xml_ = props;
+
+        // Note that we are careful to avoid use of get_element_by_qname() here
+        // because it might return elements of the enclosed item and not what
+        // we'd expect
+
+        auto doc = obj.xml_.document();
+        auto str = doc->allocate_string("t:Name");
+        auto value_string = doc->allocate_string(name.c_str());
+        auto newnode = doc->allocate_node(rapidxml::node_element);
+        newnode->qname(str, std::strlen(str), str + 2);
+        newnode->value(value_string);
+        newnode->namespace_uri(internal::uri<>::microsoft::types(),
+                               internal::uri<>::microsoft::types_size);
+        doc->append_node(newnode);
+
         return obj;
     }
 }
