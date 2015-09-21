@@ -9053,7 +9053,7 @@ namespace ews
         // complete item from the response into the <CreateAttachment>
         // call.
         //
-        // There is a shortcut for Calendar, E-mail message items and Posting
+        // There is a shortcut for Calendar, E-mail message items, and Posting
         // notes: use <BaseShape>IdOnly</BaseShape> and <AdditionalProperties>
         // with item::MimeContent in <GetItem> call, remove <ItemId> from the
         // response and pass that to <CreateAttachment>.
