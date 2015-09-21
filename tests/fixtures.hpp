@@ -434,3 +434,5 @@ namespace tests
         return ews::task::from_xml_element(*node);
     }
 }
+
+// vim:et ts=4 sw=4 noic cc=80

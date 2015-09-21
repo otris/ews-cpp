@@ -56,3 +56,5 @@ namespace tests
         EXPECT_STREQ(expected, restr.to_xml("t").c_str());
     }
 }
+
+// vim:et ts=4 sw=4 noic cc=80

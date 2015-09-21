@@ -86,3 +86,5 @@ namespace tests
         EXPECT_STREQ("calendar", folder.id().c_str());
     }
 }
+
+// vim:et ts=4 sw=4 noic cc=80

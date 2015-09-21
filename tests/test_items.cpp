@@ -267,3 +267,5 @@ namespace tests
         EXPECT_EQ(ews::sensitivity::confidential, task.get_sensitivity());
     }
 }
+
+// vim:et ts=4 sw=4 noic cc=80

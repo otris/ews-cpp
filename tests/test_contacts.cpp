@@ -48,3 +48,5 @@ namespace tests
         // TODO: delete an email address entry from a contact
     }
 }
+
+// vim:et ts=4 sw=4 noic cc=80

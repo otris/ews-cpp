@@ -248,3 +248,5 @@ namespace tests
         ASSERT_EQ(2U, message.get_to_recipients().size());
     }
 }
+
+// vim:et ts=4 sw=4 noic cc=80

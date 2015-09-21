@@ -40,3 +40,5 @@ namespace ews
     void set_up() EWS_NOEXCEPT;
     void tear_down() EWS_NOEXCEPT;
 }
+
+// vim:et ts=4 sw=4 noic cc=80
