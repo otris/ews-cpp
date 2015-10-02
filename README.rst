@@ -6,6 +6,7 @@ Supported Compilers
 
 * Visual Studio 2012
 * Visual Studio 2013
+* Visual Studio 2015
 * Clang 3.5 with libc++
 * GCC 4.8 with libstdc++
 
@@ -13,7 +14,7 @@ Supported Compilers
 Supported Operating Systems
 ---------------------------
 
-* Microsoft Windows 8.1
+* Microsoft Windows 8.1 and Windows 10
 * Mac OS X 10.10
 * RHEL 7
 * Ubuntu 14.04 LTS (x86_64 and i386)
