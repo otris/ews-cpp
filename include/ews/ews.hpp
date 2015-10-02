@@ -4388,12 +4388,12 @@ namespace ews
             const std::string& soap_body,
             const std::vector<std::string>& soap_headers)
         {
-            RequestHandler request(url);
-            request.set_method(RequestHandler::method::POST);
-            request.set_content_type("text/xml; charset=utf-8");
+            RequestHandler req(url);
+            req.set_method(RequestHandler::method::POST);
+            req.set_content_type("text/xml; charset=utf-8");
 
             ntlm_credentials creds(username, password, domain);
-            request.set_credentials(creds);
+            req.set_credentials(creds);
 
             std::stringstream request_stream;
             request_stream <<
@@ -4426,7 +4426,7 @@ namespace ews
             std::cerr << request_stream.str() << std::endl;
 #endif
 
-            return request.send(request_stream.str());
+            return req.send(request_stream.str());
         }
 
         // A self-contained copy of a DOM sub-tree generally used to hold
