@@ -95,7 +95,11 @@ namespace
             }
         }
 
+#ifdef _MSC_VER
+        auto assets_dir = std::string(pwd() + "\\tests\\assets");
+#else
         auto assets_dir = std::string(pwd() + "/tests/assets");
+#endif
         auto it = args.find("--assets=");
         if (it != args.end())
         {

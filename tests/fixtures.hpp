@@ -347,8 +347,8 @@ namespace tests
         {
             EXPECT_TRUE(boost::filesystem::is_empty(workingdir_))
                 << "Temporary directory not empty on TearDown";
-            boost::filesystem::remove_all(workingdir_);
             boost::filesystem::current_path(olddir_);
+            boost::filesystem::remove_all(workingdir_);
 
             AttachmentTest::TearDown();
         }
