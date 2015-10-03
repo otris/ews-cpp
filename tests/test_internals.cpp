@@ -1,5 +1,6 @@
 #include <ews/ews.hpp>
 #include <gtest/gtest.h>
+#include <ews/rapidxml/rapidxml_print.hpp>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -322,6 +323,41 @@ namespace tests
         EXPECT_STREQ(
             "<t:EffectiveRights><t:Delete>true</t:Delete><t:Modify>false</t:Modify><t:Read>true</t:Read></t:EffectiveRights>",
             effective_rights.to_string().c_str());
+    }
+
+    TEST(InternalTest, AppendSubTreeToExistingXMLDocument)
+    {
+        using namespace ews::internal;
+
+        rapidxml::xml_document<> doc;
+        {
+            const auto xml = std::string(
+                "<a>\n"
+                "   <b>\n"
+                "   </b>\n"
+                "</a>");
+            auto str = doc.allocate_string(xml.c_str());
+            doc.parse<0>(str);
+        }
+        auto target_node = get_element_by_qname(doc, "b", "");
+
+        rapidxml::xml_document<> src;
+        const auto xml = std::string(
+            "<c>\n"
+            "   <d>\n"
+            "   </d>\n"
+            "</c>");
+        auto str = src.allocate_string(xml.c_str());
+        src.parse<0>(str);
+        auto subtree = xml_subtree(*src.first_node());
+
+        subtree.append_to(*target_node);
+
+        std::string actual;
+        rapidxml::print(std::back_inserter(actual),
+                        doc,
+                        rapidxml::print_no_indenting);
+        EXPECT_STREQ("<a><b><c><d/></c></b></a>", actual.c_str());
     }
 
     // TODO: test size_hint parameter of xml_subtree reduces/eliminates reallocs

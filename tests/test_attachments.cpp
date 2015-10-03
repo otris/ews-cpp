@@ -1,6 +1,9 @@
 #include "fixtures.hpp"
 
+#include <ews/rapidxml/rapidxml_print.hpp>
+#include <string>
 #include <vector>
+#include <iterator>
 #include <stdexcept>
 #include <cstring>
 
@@ -208,6 +211,220 @@ namespace tests
     }
 
 #ifdef EWS_USE_BOOST_LIBRARY
+    TEST_F(AssetsFixture, ItemAttachmentFromXML)
+    {
+        using ews::internal::get_element_by_qname;
+
+        std::vector<char> buf = read_contents(
+            assets_dir() / "get_attachment_response_item.xml");
+        buf.push_back('\0');
+        xml_document doc;
+        doc.parse<0>(&buf[0]);
+        auto node = get_element_by_qname(doc,
+                                        "ItemAttachment",
+                                        ews::internal::uri<>::microsoft::types());
+        ASSERT_TRUE(node);
+        auto att = ews::attachment::from_xml_element(*node);
+
+        EXPECT_EQ(ews::attachment::type::item, att.get_type());
+        EXPECT_TRUE(att.id().valid());
+        EXPECT_STREQ("This message", att.name().c_str());
+        EXPECT_STREQ("", att.content_type().c_str());
+        EXPECT_EQ(0U, att.content_size());
+
+        std::string expected_xml;
+        rapidxml::print(std::back_inserter(expected_xml),
+                        *node,
+                        rapidxml::print_no_indenting);
+        const auto actual_xml = att.to_xml();
+        EXPECT_STREQ(expected_xml.c_str(), actual_xml.c_str());
+    }
+
+    TEST_F(AssetsFixture, ToXML)
+    {
+        const auto path = assets_dir() / "ballmer_peak.png";
+        auto attachment = ews::attachment::from_file(path.string(),
+                                                     "image/png",
+                                                     "Ballmer Peak");
+        const auto xml = attachment.to_xml();
+        EXPECT_FALSE(xml.empty());
+        const char* prefix = "<t:FileAttachment>";
+        EXPECT_TRUE(std::equal(prefix, prefix + std::strlen(prefix),
+                    begin(xml)));
+    }
+
+    TEST_F(AssetsFixture, WriteContentToFileDoesNothingIfItemAttachment)
+    {
+        const auto target_path = cwd() / "output.bin";
+        auto item = ews::item();
+        auto item_attachment = ews::attachment::from_item(item, "Some name");
+        const auto bytes_written =
+            item_attachment.write_content_to_file(target_path.string());
+        EXPECT_EQ(0U, bytes_written);
+        EXPECT_FALSE(boost::filesystem::exists(target_path));
+    }
+
+    TEST_F(AssetsFixture, WriteContentToFile)
+    {
+        using uri = ews::internal::uri<>;
+        using ews::internal::get_element_by_qname;
+        using ews::internal::on_scope_exit;
+
+        const auto target_path = cwd() / "output.png";
+        std::vector<char> buf = read_contents(
+                assets_dir() / "get_attachment_response.xml");
+        buf.push_back('\0');
+        xml_document doc;
+        doc.parse<0>(&buf[0]);
+        auto node = get_element_by_qname(doc,
+                                         "FileAttachment",
+                                         uri::microsoft::types());
+        ASSERT_TRUE(node);
+        auto attachment = ews::attachment::from_xml_element(*node);
+        const auto bytes_written =
+            attachment.write_content_to_file(target_path.string());
+        on_scope_exit remove_file([&]
+        {
+            boost::filesystem::remove(target_path);
+        });
+        EXPECT_EQ(93525U, bytes_written);
+        EXPECT_TRUE(boost::filesystem::exists(target_path));
+    }
+
+    TEST_F(AssetsFixture, WriteContentToFileThrowsOnEmptyFileName)
+    {
+        const auto path = assets_dir() / "ballmer_peak.png";
+        auto attachment = ews::attachment::from_file(path.string(),
+                                                     "image/png",
+                                                     "Ballmer Peak");
+        EXPECT_THROW(
+        {
+            attachment.write_content_to_file("");
+
+        }, ews::exception);
+    }
+
+    TEST_F(AssetsFixture, WriteContentToFileExceptionMessage)
+    {
+        const auto path = assets_dir() / "ballmer_peak.png";
+        auto attachment = ews::attachment::from_file(path.string(),
+                                                     "image/png",
+                                                     "Ballmer Peak");
+        try
+        {
+            attachment.write_content_to_file("");
+            FAIL() << "Expected exception to be raised";
+        }
+        catch (ews::exception& exc)
+        {
+            EXPECT_STREQ("Could not open file for writing: no file name given",
+                         exc.what());
+        }
+    }
+
+    TEST_F(AssetsFixture, CreateFromFile)
+    {
+        const auto path = assets_dir() / "ballmer_peak.png";
+        auto file_attachment = ews::attachment::from_file(path.string(),
+                                                          "image/png",
+                                                          "Ballmer Peak");
+        EXPECT_EQ(ews::attachment::type::file, file_attachment.get_type());
+        EXPECT_FALSE(file_attachment.id().valid());
+        EXPECT_STREQ("Ballmer Peak", file_attachment.name().c_str());
+        EXPECT_STREQ("image/png", file_attachment.content_type().c_str());
+        EXPECT_FALSE(file_attachment.content().empty());
+        EXPECT_EQ(93525U, file_attachment.content_size());
+    }
+
+    TEST_F(AssetsFixture, CreateFromFileThrowsIfFileDoesNotExists)
+    {
+        const auto path = assets_dir() / "unlikely_to_exist.txt";
+        EXPECT_THROW(
+        {
+            ews::attachment::from_file(path.string(), "image/png", "");
+
+        }, ews::exception);
+    }
+
+    TEST_F(AssetsFixture, CreateFromFileExceptionMessage)
+    {
+        const auto path = assets_dir() / "unlikely_to_exist.txt";
+        try
+        {
+            ews::attachment::from_file(path.string(), "image/png", "");
+            FAIL() << "Expected exception to be raised";
+        }
+        catch (ews::exception& exc)
+        {
+            auto expected = "Could not open file for reading: " + path.string();
+            EXPECT_STREQ(expected.c_str(), exc.what());
+        }
+    }
+
+    TEST_F(AssetsFixture, FileAttachmentFromXML)
+    {
+        using ews::internal::get_element_by_qname;
+
+        std::vector<char> buf = read_contents(
+                assets_dir() / "get_attachment_response.xml");
+        buf.push_back('\0');
+        xml_document doc;
+        doc.parse<0>(&buf[0]);
+        auto node = get_element_by_qname(doc,
+                                         "FileAttachment",
+                                         ews::internal::uri<>::microsoft::types());
+        ASSERT_TRUE(node);
+        auto obj = ews::attachment::from_xml_element(*node);
+
+        EXPECT_EQ(ews::attachment::type::file, obj.get_type());
+        EXPECT_TRUE(obj.id().valid());
+        EXPECT_STREQ("ballmer_peak.png", obj.name().c_str());
+        EXPECT_STREQ("image/png", obj.content_type().c_str());
+        EXPECT_EQ(0U, obj.content_size());
+    }
+
+    class FileAttachmentTest : public AttachmentTest
+    {
+    public:
+        FileAttachmentTest()
+            : assetsdir_(ews::test::global_data::instance().assets_dir)
+        {
+        }
+
+        void SetUp()
+        {
+            AttachmentTest::SetUp();
+
+            olddir_ = boost::filesystem::current_path();
+            workingdir_ = boost::filesystem::unique_path(
+                boost::filesystem::temp_directory_path() /
+                "%%%%-%%%%-%%%%-%%%%");
+            ASSERT_TRUE(boost::filesystem::create_directory(workingdir_))
+                << "Unable to create temporary working directory";
+            boost::filesystem::current_path(workingdir_);
+        }
+
+        void TearDown()
+        {
+            EXPECT_TRUE(boost::filesystem::is_empty(workingdir_))
+                << "Temporary directory not empty on TearDown";
+            boost::filesystem::current_path(olddir_);
+            boost::filesystem::remove_all(workingdir_);
+
+            AttachmentTest::TearDown();
+        }
+
+        const boost::filesystem::path& assets_dir() const
+        {
+            return assetsdir_;
+        }
+
+    private:
+        boost::filesystem::path assetsdir_;
+        boost::filesystem::path olddir_;
+        boost::filesystem::path workingdir_;
+    };
+
     TEST_F(FileAttachmentTest, CreateAndDeleteFileAttachmentOnServer)
     {
         auto& msg = test_message();
@@ -249,149 +466,6 @@ namespace tests
             service().get_attachment(attachment_id);
 
         }, ews::exchange_error);
-    }
-
-    TEST_F(FileAttachmentTest, ToXML)
-    {
-        const auto path = assets_dir() / "ballmer_peak.png";
-        auto attachment = ews::attachment::from_file(path.string(),
-                                                     "image/png",
-                                                     "Ballmer Peak");
-        const auto xml = attachment.to_xml();
-        EXPECT_FALSE(xml.empty());
-        const char* prefix = "<t:FileAttachment>";
-        EXPECT_TRUE(std::equal(prefix, prefix + std::strlen(prefix),
-                    begin(xml)));
-    }
-
-    TEST_F(FileAttachmentTest, WriteContentToFileDoesNothingIfItemAttachment)
-    {
-        const auto target_path = cwd() / "output.bin";
-        auto item = ews::item();
-        auto item_attachment = ews::attachment::from_item(item, "Some name");
-        const auto bytes_written =
-            item_attachment.write_content_to_file(target_path.string());
-        EXPECT_EQ(0U, bytes_written);
-        EXPECT_FALSE(boost::filesystem::exists(target_path));
-    }
-
-    TEST_F(FileAttachmentTest, WriteContentToFile)
-    {
-        using uri = ews::internal::uri<>;
-        using ews::internal::get_element_by_qname;
-        using ews::internal::on_scope_exit;
-
-        const auto target_path = cwd() / "output.png";
-        std::vector<char> buf = read_contents(
-                assets_dir() / "get_attachment_response.xml");
-        buf.push_back('\0');
-        xml_document doc;
-        doc.parse<0>(&buf[0]);
-        auto node = get_element_by_qname(doc,
-                                         "FileAttachment",
-                                         uri::microsoft::types());
-        ASSERT_TRUE(node);
-        auto attachment = ews::attachment::from_xml_element(*node);
-        const auto bytes_written =
-            attachment.write_content_to_file(target_path.string());
-        on_scope_exit remove_file([&]
-        {
-            boost::filesystem::remove(target_path);
-        });
-        EXPECT_EQ(93525U, bytes_written);
-        EXPECT_TRUE(boost::filesystem::exists(target_path));
-    }
-
-    TEST_F(FileAttachmentTest, WriteContentToFileThrowsOnEmptyFileName)
-    {
-        const auto path = assets_dir() / "ballmer_peak.png";
-        auto attachment = ews::attachment::from_file(path.string(),
-                                                     "image/png",
-                                                     "Ballmer Peak");
-        EXPECT_THROW(
-        {
-            attachment.write_content_to_file("");
-
-        }, ews::exception);
-    }
-
-    TEST_F(FileAttachmentTest, WriteContentToFileExceptionMessage)
-    {
-        const auto path = assets_dir() / "ballmer_peak.png";
-        auto attachment = ews::attachment::from_file(path.string(),
-                                                     "image/png",
-                                                     "Ballmer Peak");
-        try
-        {
-            attachment.write_content_to_file("");
-            FAIL() << "Expected exception to be raised";
-        }
-        catch (ews::exception& exc)
-        {
-            EXPECT_STREQ("Could not open file for writing: no file name given",
-                         exc.what());
-        }
-    }
-
-    TEST_F(FileAttachmentTest, CreateFromFile)
-    {
-        const auto path = assets_dir() / "ballmer_peak.png";
-        auto file_attachment = ews::attachment::from_file(path.string(),
-                                                          "image/png",
-                                                          "Ballmer Peak");
-        EXPECT_EQ(ews::attachment::type::file, file_attachment.get_type());
-        EXPECT_FALSE(file_attachment.id().valid());
-        EXPECT_STREQ("Ballmer Peak", file_attachment.name().c_str());
-        EXPECT_STREQ("image/png", file_attachment.content_type().c_str());
-        EXPECT_FALSE(file_attachment.content().empty());
-        EXPECT_EQ(93525U, file_attachment.content_size());
-    }
-
-    TEST_F(FileAttachmentTest, CreateFromFileThrowsIfFileDoesNotExists)
-    {
-        const auto path = assets_dir() / "unlikely_to_exist.txt";
-        EXPECT_THROW(
-        {
-            ews::attachment::from_file(path.string(), "image/png", "");
-
-        }, ews::exception);
-    }
-
-    TEST_F(FileAttachmentTest, CreateFromFileExceptionMessage)
-    {
-        const auto path = assets_dir() / "unlikely_to_exist.txt";
-        try
-        {
-            ews::attachment::from_file(path.string(), "image/png", "");
-            FAIL() << "Expected exception to be raised";
-        }
-        catch (ews::exception& exc)
-        {
-            auto expected = "Could not open file for reading: " + path.string();
-            EXPECT_STREQ(expected.c_str(), exc.what());
-        }
-    }
-
-    TEST_F(FileAttachmentTest, FileAttachmentFromXML)
-    {
-        using ews::internal::get_element_by_qname;
-
-        std::vector<char> buf = read_contents(
-                assets_dir() / "get_attachment_response.xml");
-        buf.push_back('\0');
-        xml_document doc;
-        doc.parse<0>(&buf[0]);
-        auto node = get_element_by_qname(doc,
-                                         "FileAttachment",
-                                         ews::internal::uri<>::microsoft::types());
-        ASSERT_TRUE(node);
-        auto obj = ews::attachment::from_xml_element(*node);
-
-        EXPECT_EQ(ews::attachment::type::file, obj.get_type());
-        EXPECT_TRUE(obj.id().valid());
-        EXPECT_STREQ("ballmer_peak.png", obj.name().c_str());
-        EXPECT_STREQ("image/png", obj.content_type().c_str());
-        EXPECT_EQ(0U, obj.content_size());
     }
 #endif // EWS_USE_BOOST_LIBRARY
 }

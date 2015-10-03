@@ -1,0 +1,78 @@
+<GetAttachmentResponse xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"
+                       xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+    <m:ResponseMessages>
+        <m:GetAttachmentResponseMessage ResponseClass="Success">
+            <m:ResponseCode>NoError</m:ResponseCode>
+            <m:Attachments>
+                <t:ItemAttachment>
+                    <t:AttachmentId Id="AAMkAGUyMzlhODA1LWJjNmMtNDA3Zi05MmMyLTY5YzhiMGUzOTZiZABGAAAAAACy333R3lBgQ4hf/BNYPWikBwA5VVNr9VuwRKflbHd457lbAAAAAAETAAA5VVNr9VuwRKflbHd457lbAAAP46s2AAABEgAQAOlUgQdLlC9DoqjmkkyLmFc="/>
+                    <t:Name>This message</t:Name>
+                    <t:Message>
+                        <t:ItemClass>IPM.Note</t:ItemClass>
+                        <t:Subject>Honorable Minister of Finance - Release Funds</t:Subject>
+                        <t:Sensitivity>Normal</t:Sensitivity>
+                        <t:Body BodyType="Text" IsTruncated="false"/>
+                        <t:Size>3216</t:Size>
+                        <t:Importance>Normal</t:Importance>
+                        <t:IsSubmitted>false</t:IsSubmitted>
+                        <t:IsDraft>true</t:IsDraft>
+                        <t:IsFromMe>false</t:IsFromMe>
+                        <t:IsResend>false</t:IsResend>
+                        <t:IsUnmodified>false</t:IsUnmodified>
+                        <t:InternetMessageHeaders>
+                            <t:InternetMessageHeader HeaderName="Subject">Honorable Minister of Finance - Release Funds</t:InternetMessageHeader>
+                            <t:InternetMessageHeader HeaderName="Thread-Topic">Honorable Minister of Finance - Release Funds</t:InternetMessageHeader>
+                            <t:InternetMessageHeader HeaderName="Thread-Index">AQHQ/RHAUARM77uwH0uE2jyWfCrvSQ==</t:InternetMessageHeader>
+                            <t:InternetMessageHeader HeaderName="Date">Fri, 2 Oct 2015 12:56:27 +0000</t:InternetMessageHeader>
+                            <t:InternetMessageHeader HeaderName="Message-ID">&lt;036f1a2d210a4352b623552f1e884ad5@duckburg2013.otris.de&gt;</t:InternetMessageHeader>
+                            <t:InternetMessageHeader HeaderName="Content-Language">de-DE</t:InternetMessageHeader>
+                            <t:InternetMessageHeader HeaderName="Content-Type">text/plain</t:InternetMessageHeader>
+                            <t:InternetMessageHeader HeaderName="MIME-Version">1.0</t:InternetMessageHeader>
+                        </t:InternetMessageHeaders>
+                        <t:DateTimeSent>2015-10-02T12:56:27Z</t:DateTimeSent>
+                        <t:DateTimeCreated>2015-10-02T12:56:27Z</t:DateTimeCreated>
+                        <t:ResponseObjects>
+                                <t:ForwardItem/>
+                        </t:ResponseObjects>
+                        <t:DisplayCc/>
+                        <t:DisplayTo>udom.emmanuel@zenith-bank.com.ng</t:DisplayTo>
+                        <t:HasAttachments>false</t:HasAttachments>
+                        <t:Culture>de-DE</t:Culture>
+                        <t:EffectiveRights>
+                            <t:CreateAssociated>false</t:CreateAssociated>
+                            <t:CreateContents>false</t:CreateContents>
+                            <t:CreateHierarchy>false</t:CreateHierarchy>
+                            <t:Delete>true</t:Delete>
+                            <t:Modify>true</t:Modify>
+                            <t:Read>true</t:Read>
+                            <t:ViewPrivateItems>true</t:ViewPrivateItems>
+                        </t:EffectiveRights>
+                        <t:LastModifiedName>Donald Duck</t:LastModifiedName>
+                        <t:LastModifiedTime>2015-10-02T12:56:27Z</t:LastModifiedTime>
+                        <t:IsAssociated>false</t:IsAssociated>
+                        <t:WebClientReadFormQueryString>?ItemID=AAMkAGUyMzlhODA1LWJjNmMtNDA3Zi05MmMyLTY5YzhiMGUzOTZiZAAAAA%3D%3D&amp;exvsurl=1&amp;viewmodel=ReadMessageItem</t:WebClientReadFormQueryString>
+                        <t:ConversationId Id="AAQkAGUyMzlhODA1LWJjNmMtNDA3Zi05MmMyLTY5YzhiMGUzOTZiZAAQAFAETO+7sB9LhNo8lnwq70k="/>
+                        <t:Flag>
+                            <t:FlagStatus>NotFlagged</t:FlagStatus>
+                        </t:Flag>
+                        <t:EntityExtractionResult/>
+                        <t:ToRecipients>
+                            <t:Mailbox>
+                                <t:Name>udom.emmanuel@zenith-bank.com.ng</t:Name>
+                                <t:EmailAddress>udom.emmanuel@zenith-bank.com.ng</t:EmailAddress>
+                                <t:RoutingType>SMTP</t:RoutingType>
+                                <t:MailboxType>OneOff</t:MailboxType>
+                            </t:Mailbox>
+                        </t:ToRecipients>
+                        <t:IsReadReceiptRequested>false</t:IsReadReceiptRequested>
+                        <t:IsDeliveryReceiptRequested>false</t:IsDeliveryReceiptRequested>
+                        <t:ConversationIndex>AQHQ/RHAUARM77uwH0uE2jyWfCrvSQ==</t:ConversationIndex>
+                        <t:ConversationTopic>Honorable Minister of Finance - Release Funds</t:ConversationTopic>
+                        <t:InternetMessageId>&lt;036f1a2d210a4352b623552f1e884ad5@duckburg2013.otris.de&gt;</t:InternetMessageId>
+                        <t:IsRead>true</t:IsRead>
+                    </t:Message>
+                </t:ItemAttachment>
+            </m:Attachments>
+        </m:GetAttachmentResponseMessage>
+    </m:ResponseMessages>
+</GetAttachmentResponse>

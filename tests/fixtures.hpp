@@ -322,17 +322,17 @@ namespace tests
     };
 
 #ifdef EWS_USE_BOOST_LIBRARY
-    class FileAttachmentTest : public AttachmentTest
+    class AssetsFixture : public BaseFixture
     {
     public:
-        FileAttachmentTest()
+        AssetsFixture()
             : assetsdir_(ews::test::global_data::instance().assets_dir)
         {
         }
 
         void SetUp()
         {
-            AttachmentTest::SetUp();
+            BaseFixture::SetUp();
 
             olddir_ = boost::filesystem::current_path();
             workingdir_ = boost::filesystem::unique_path(
@@ -350,7 +350,7 @@ namespace tests
             boost::filesystem::current_path(olddir_);
             boost::filesystem::remove_all(workingdir_);
 
-            AttachmentTest::TearDown();
+            BaseFixture::TearDown();
         }
 
         const boost::filesystem::path& assets_dir() const

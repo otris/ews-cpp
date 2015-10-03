@@ -4473,6 +4473,7 @@ namespace ews
                     // FIXME: not strong exception safe
                     rawdata_.clear();
                     doc_->clear();
+                    // TODO: can be done with deep_copy
                     reparse(*rhs.doc_, rhs.rawdata_.size());
                 }
                 return *this;
@@ -4485,11 +4486,14 @@ namespace ews
                 reparse(*other.doc_, other.rawdata_.size());
             }
 
-            rapidxml::xml_node<char>& root() EWS_NOEXCEPT { return *doc_; }
+            rapidxml::xml_node<char>& root() EWS_NOEXCEPT
+            {
+                return *doc_->first_node();
+            }
 
             const rapidxml::xml_node<char>& root() const EWS_NOEXCEPT
             {
-                return *doc_;
+                return *doc_->first_node();
             }
 
             // Might return nullptr when there is no such element. Client code
@@ -4566,6 +4570,14 @@ namespace ews
                 return str;
             }
 
+            void append_to(rapidxml::xml_node<>& dest) const
+            {
+                auto target_document = dest.document();
+                auto new_child = deep_copy(target_document,
+                                           doc_->first_node());
+                dest.append_node(new_child);
+            }
+
         private:
             std::vector<char> rawdata_;
             std::unique_ptr<rapidxml::xml_document<char>> doc_;
@@ -4614,6 +4626,43 @@ namespace ews
                 // original XML document, we loose all enclosing namespace URIs.
 
                 doc_->parse_ns<0, custom_namespace_processor>(&rawdata_[0]);
+            }
+
+            static
+            rapidxml::xml_node<>* deep_copy(rapidxml::xml_document<>* target_doc,
+                                            const rapidxml::xml_node<>* source)
+            {
+                auto newnode = target_doc->allocate_node(source->type());
+
+                // Copy name and value
+                auto name = target_doc->allocate_string(source->name());
+                newnode->qname(name,
+                               source->name_size(),
+                               source->local_name());
+
+                auto value = target_doc->allocate_string(source->value());
+                newnode->value(value, source->value_size());
+
+                // Copy child nodes and attributes
+                for (auto child = source->first_node();
+                     child;
+                     child = child->next_sibling())
+                {
+                    newnode->append_node(deep_copy(target_doc, child));
+                }
+
+                for (auto attr = source->first_attribute();
+                     attr;
+                     attr = attr->next_attribute())
+                {
+                    newnode->append_attribute(
+                        target_doc->allocate_attribute(attr->name(),
+                                                       attr->value(),
+                                                       attr->name_size(),
+                                                       attr->value_size()));
+                }
+
+                return newnode;
             }
         };
 
@@ -5164,6 +5213,11 @@ namespace ews
     class attachment final
     {
     public:
+
+        // Note that we are careful to avoid use of get_element_by_qname() here
+        // because it might return elements of the enclosed item and not what
+        // we'd expect
+
         //! Describes whether an attachment contains a file or another item.
         enum class type
         {
@@ -5183,24 +5237,24 @@ namespace ews
         //! Returns this attachment's attachment_id
         attachment_id id() const
         {
-            auto node = xml_.get_node("AttachmentId");
-            if (!node)
-            {
-                return attachment_id();
-            }
-            return attachment_id::from_xml_element(*node);
+            const auto node = get_node("AttachmentId");
+            return node ?
+                  attachment_id::from_xml_element(*node)
+                : attachment_id();
         }
 
         //! Returns the attachment's name
         std::string name() const
         {
-            return xml_.get_value_as_string("Name");
+            const auto node = get_node("Name");
+            return node ? std::string(node->value(), node->value_size()) : "";
         }
 
         //! Returns the attachment's content type
         std::string content_type() const
         {
-            return xml_.get_value_as_string("ContentType");
+            const auto node = get_node("ContentType");
+            return node ? std::string(node->value(), node->value_size()) : "";
         }
 
         //! \brief Returns the attachment's contents
@@ -5210,7 +5264,8 @@ namespace ews
         //! empty string.
         std::string content() const
         {
-            return xml_.get_value_as_string("Content");
+            const auto node = get_node("Content");
+            return node ? std::string(node->value(), node->value_size()) : "";
         }
 
         //! \brief Returns the attachment's size in bytes
@@ -5219,7 +5274,12 @@ namespace ews
         //! of the file attachment; otherwise 0.
         std::size_t content_size() const
         {
-            auto size = xml_.get_value_as_string("Size");
+            const auto node = get_node("Size");
+            if (!node)
+            {
+                return 0U;
+            }
+            auto size = std::string(node->value(), node->value_size());
             return size.empty() ? 0U : std::stoul(size);
         }
 
@@ -5263,13 +5323,7 @@ namespace ews
         //! Returns this attachment serialized to XML
         std::string to_xml() const
         {
-            auto elem = std::string(get_type() == type::item ?
-                    "ItemAttachment" : "FileAttachment");
-            std::stringstream sstr;
-            sstr << "<t:" << elem << ">";
-            sstr << xml_.to_string();
-            sstr << "</t:" << elem << ">";
-            return sstr.str();
+            return xml_.to_string();
         }
 
         //! Constructs an attachment from a given XML element \p elem.
@@ -5349,6 +5403,26 @@ namespace ews
             : xml_(std::move(xml)),
               type_(std::move(t))
         {
+        }
+
+        rapidxml::xml_node<>* get_node(const char* local_name) const
+        {
+            using rapidxml::internal::compare;
+
+            rapidxml::xml_node<>* node = nullptr;
+            for (auto child = xml_.root().first_node(); child != nullptr;
+                 child = child->next_sibling())
+            {
+                if (compare(child->local_name(),
+                            child->local_name_size(),
+                            local_name,
+                            std::strlen(local_name)))
+                {
+                    node = child;
+                    break;
+                }
+            }
+            return node;
         }
 
         internal::xml_subtree xml_;
@@ -9097,21 +9171,26 @@ namespace ews
 
         auto obj = attachment();
         obj.type_ = type::item;
-        obj.xml_ = props;
-
-        // Note that we are careful to avoid use of get_element_by_qname() here
-        // because it might return elements of the enclosed item and not what
-        // we'd expect
 
         auto doc = obj.xml_.document();
-        auto str = doc->allocate_string("t:Name");
-        auto value_string = doc->allocate_string(name.c_str());
-        auto newnode = doc->allocate_node(rapidxml::node_element);
-        newnode->qname(str, std::strlen(str), str + 2);
-        newnode->value(value_string);
-        newnode->namespace_uri(internal::uri<>::microsoft::types(),
+
+        auto str = doc->allocate_string("t:ItemAttachment");
+        auto attnode = doc->allocate_node(rapidxml::node_element);
+        attnode->qname(str, std::strlen(str), str + 2);
+        attnode->namespace_uri(internal::uri<>::microsoft::types(),
                                internal::uri<>::microsoft::types_size);
-        doc->append_node(newnode);
+        doc->append_node(attnode);
+
+        str = doc->allocate_string("t:Name");
+        auto value_string = doc->allocate_string(name.c_str());
+        auto namenode = doc->allocate_node(rapidxml::node_element);
+        namenode->qname(str, std::strlen(str), str + 2);
+        namenode->value(value_string);
+        namenode->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+        attnode->append_node(namenode);
+
+        props.append_to(*attnode);
 
         return obj;
     }
