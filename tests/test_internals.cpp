@@ -360,6 +360,33 @@ namespace tests
         EXPECT_STREQ("<a><b><c><d/></c></b></a>", actual.c_str());
     }
 
+    TEST(InternalTest, SubTreeCopyAndAssignment)
+    {
+        using namespace ews::internal;
+
+        rapidxml::xml_document<> doc;
+        const auto xml = std::string(
+            "<a>\n"
+            "   <b>\n"
+            "   </b>\n"
+            "</a>");
+        auto str = doc.allocate_string(xml.c_str());
+        doc.parse<0>(str);
+        auto a = xml_subtree(*doc.first_node());
+
+        // Self-assignment
+        a = a;
+        EXPECT_STREQ("<a><b/></a>", a.to_string().c_str());
+
+        auto b = a;
+        EXPECT_STREQ("<a><b/></a>", b.to_string().c_str());
+        EXPECT_STREQ("<a><b/></a>", a.to_string().c_str());
+
+        auto c(a);
+        EXPECT_STREQ("<a><b/></a>", c.to_string().c_str());
+        EXPECT_STREQ("<a><b/></a>", a.to_string().c_str());
+    }
+
     // TODO: test size_hint parameter of xml_subtree reduces/eliminates reallocs
 
     TEST(InternalTest, XMLParseErrorMessageShort)
