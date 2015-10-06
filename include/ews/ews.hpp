@@ -9194,6 +9194,7 @@ namespace ews
         auto& props = the_item.properties();
 
         // Filter out read-only property paths
+#ifdef EWS_HAS_INITIALIZER_LISTS
         for (const auto& property_name :
                 // item
                 { "ItemId", "ParentFolderId", "DateTimeReceived", "Size",
@@ -9207,6 +9208,40 @@ namespace ews
                 // message
                 "ConversationIndex", "ConversationTopic"
                 })
+#else
+        std::vector<std::string> properties;
+
+        // item
+        properties.push_back("ItemId");
+        properties.push_back("ParentFolderId");
+        properties.push_back("DateTimeReceived");
+        properties.push_back("Size");
+        properties.push_back("IsSubmitted");
+        properties.push_back("IsDraft");
+        properties.push_back("IsFromMe");
+        properties.push_back("IsResend");
+        properties.push_back("IsUnmodified");
+        properties.push_back("DateTimeSent");
+        properties.push_back("DateTimeCreated");
+        properties.push_back("ResponseObjects");
+        properties.push_back("DisplayCc");
+        properties.push_back("DisplayTo");
+        properties.push_back("HasAttachments");
+        properties.push_back("EffectiveRights");
+        properties.push_back("LastModifiedName");
+        properties.push_back("LastModifiedTime");
+        properties.push_back("IsAssociated");
+        properties.push_back("WebClientReadFormQueryString");
+        properties.push_back("WebClientEditFormQueryString");
+        properties.push_back("ConversationId");
+        properties.push_back("InstanceKey");
+
+        // message
+        properties.push_back("ConversationIndex");
+        properties.push_back("ConversationTopic");
+
+        for (const auto& property_name : properties)
+#endif
         {
             auto node = props.get_node(property_name);
             if (node)
