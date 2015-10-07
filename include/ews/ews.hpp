@@ -4510,6 +4510,12 @@ namespace ews
                                             uri<>::microsoft::types());
             }
 
+            rapidxml::xml_node<char>*
+            get_node(const std::string& node_name) const EWS_NOEXCEPT
+            {
+                return get_node(node_name.c_str());
+            }
+
             rapidxml::xml_document<char>* document() const EWS_NOEXCEPT
             {
                 return doc_.get();
