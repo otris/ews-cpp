@@ -104,6 +104,29 @@ namespace
         if (it != args.end())
         {
             assets_dir = it->second;
+
+            // If a word begins with an unquoted tilde character replace it
+            // with value of $HOME or %USERPROFILE%, respectively
+
+            if (starts_with("~", assets_dir))
+            {
+#ifdef _WIN32
+# ifdef _MSC_VER
+#  pragma warning(push)
+#  pragma warning(disable: 4996)
+# endif
+
+                const char* const env = getenv("USERPROFILE");
+
+# ifdef _MSC_VER
+#  pragma warning(pop)
+# endif
+#else
+                const char* const env = getenv("HOME");
+#endif
+
+                assets_dir.replace(0, 1, env);
+            }
         }
         ews::test::global_data::instance().assets_dir = assets_dir;
         std::cout << "Loading assets from: '" << assets_dir << "'\n";
