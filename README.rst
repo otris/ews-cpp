@@ -43,7 +43,7 @@ from here:
 
 Additionally, you probably need to tell CMake where to find it. Just set
 `CMAKE_PREFIX_PATH` to the path where you installed libcurl (e.g.
-`C:\Program Files\cURL`) and re-configure.
+``C:\Program Files\cURL``) and re-configure.
 
 
 Source Code
