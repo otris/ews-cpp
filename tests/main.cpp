@@ -95,7 +95,7 @@ namespace
             }
         }
 
-#ifdef _MSC_VER
+#ifdef _WIN32
         auto assets_dir = std::string(pwd() + "\\tests\\assets");
 #else
         auto assets_dir = std::string(pwd() + "/tests/assets");
