@@ -22,7 +22,7 @@ int main()
 
         auto contact = ews::contact();
         contact.set_given_name("Darkwing");
-        contact.set_subject("Duck");
+        contact.set_surname("Duck");
         contact.set_email_address_1(
                 ews::email_address("superhero@ducktales.com"));
         contact.set_job_title("Average Citizen");
