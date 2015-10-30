@@ -6235,12 +6235,12 @@ namespace ews
         item() {}
 #endif
 
-        explicit item(item_id id) : item_id_(std::move(id)), properties_() {}
+        explicit item(item_id id) : item_id_(std::move(id)), xml_subtree_() {}
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
         item(item_id&& id, internal::xml_subtree&& properties)
             : item_id_(std::move(id)),
-              properties_(std::move(properties))
+              xml_subtree_(std::move(properties))
         {}
 #endif
 
@@ -6249,7 +6249,7 @@ namespace ews
         //! Base64-encoded contents of the MIME stream of this item
         mime_content get_mime_content() const
         {
-            const auto node = properties().get_node("MimeContent");
+            const auto node = xml().get_node("MimeContent");
             if (!node)
             {
                 return mime_content();
@@ -6268,7 +6268,7 @@ namespace ews
         //! This is a read-only property.
         folder_id get_parent_folder_id() const
         {
-            const auto node = properties().get_node("ParentFolderId");
+            const auto node = xml().get_node("ParentFolderId");
             return node ? folder_id::from_xml_element(*node) : folder_id();
         }
 
@@ -6276,25 +6276,25 @@ namespace ews
         //! class) for an item
         std::string get_item_class() const
         {
-            return properties().get_value_as_string("ItemClass");
+            return xml().get_value_as_string("ItemClass");
         }
 
         //! Sets this item's subject. Limited to 255 characters.
         void set_subject(const std::string& subject)
         {
-            properties().set_or_update("Subject", subject);
+            xml().set_or_update("Subject", subject);
         }
 
         //! Returns this item's subject
         std::string get_subject() const
         {
-            return properties().get_value_as_string("Subject");
+            return xml().get_value_as_string("Subject");
         }
 
         //! Returns the sensitivity level of this item
         sensitivity get_sensitivity() const
         {
-            const auto val = properties().get_value_as_string("Sensitivity");
+            const auto val = xml().get_value_as_string("Sensitivity");
             return !val.empty() ? internal::str_to_sensitivity(val)
                                 : sensitivity::normal;
         }
@@ -6302,15 +6302,15 @@ namespace ews
         //! Sets the sensitivity level of this item
         void set_sensitivity(sensitivity s)
         {
-            properties().set_or_update("Sensitivity", internal::enum_to_str(s));
+            xml().set_or_update("Sensitivity", internal::enum_to_str(s));
         }
 
         //! Set the body content of an item
         void set_body(const body& b)
         {
-            auto doc = properties().document();
+            auto doc = xml().document();
 
-            auto body_node = properties().get_node("Body");
+            auto body_node = xml().get_node("Body");
             if (body_node)
             {
                 doc->remove_node(body_node);
@@ -6353,7 +6353,7 @@ namespace ews
             using rapidxml::internal::compare;
 
             body b;
-            auto body_node = properties().get_node("Body");
+            auto body_node = xml().get_node("Body");
             if (body_node)
             {
                 for (auto attr = body_node->first_attribute(); attr;
@@ -6410,7 +6410,7 @@ namespace ews
         {
             //TODO: support attachment hierarchies
 
-            const auto attachments_node = properties().get_node("Attachments");
+            const auto attachments_node = xml().get_node("Attachments");
             if (!attachments_node)
             {
                 return std::vector<attachment>();
@@ -6472,26 +6472,25 @@ namespace ews
         //! Set due date of an item; used for reminders
         void set_reminder_due_by(const date_time& due_by)
         {
-            properties().set_or_update("ReminderDueBy", due_by.to_string());
+            xml().set_or_update("ReminderDueBy", due_by.to_string());
         }
 
         //! Returns the due date of an item; used for reminders
         date_time get_reminder_due_by() const
         {
-            return date_time(properties().get_value_as_string("ReminderDueBy"));
+            return date_time(xml().get_value_as_string("ReminderDueBy"));
         }
 
         //! Set a reminder on an item
         void set_reminder_enabled(bool enabled)
         {
-            properties().set_or_update("ReminderIsSet",
-                                       enabled ? "true" : "false");
+            xml().set_or_update("ReminderIsSet", enabled ? "true" : "false");
         }
 
         //! True if a reminder has been set on an item
         bool is_reminder_enabled() const
         {
-            return properties().get_value_as_string("ReminderIsSet") == "true";
+            return xml().get_value_as_string("ReminderIsSet") == "true";
         }
 
         // Number of minutes before the due date that a reminder should be
@@ -6510,7 +6509,7 @@ namespace ews
         // property
         bool has_attachments() const
         {
-            return properties().get_value_as_string("HasAttachments") == "true";
+            return xml().get_value_as_string("HasAttachments") == "true";
         }
 
         // List of zero or more extended properties that are requested for
@@ -6532,14 +6531,14 @@ namespace ews
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
     protected:
-        internal::xml_subtree& properties() EWS_NOEXCEPT
+        internal::xml_subtree& xml() EWS_NOEXCEPT
         {
-            return properties_;
+            return xml_subtree_;
         }
 
-        const internal::xml_subtree& properties() const EWS_NOEXCEPT
+        const internal::xml_subtree& xml() const EWS_NOEXCEPT
         {
-            return properties_;
+            return xml_subtree_;
         }
 #endif
 
@@ -6547,7 +6546,7 @@ namespace ews
         friend class attachment;
 
         item_id item_id_;
-        internal::xml_subtree properties_;
+        internal::xml_subtree xml_subtree_;
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
@@ -6649,7 +6648,7 @@ namespace ews
         //! Measured in minutes.
         int get_actual_work() const
         {
-            const auto val = properties().get_value_as_string("ActualWork");
+            const auto val = xml().get_value_as_string("ActualWork");
             if (val.empty())
             {
                 return 0;
@@ -6662,8 +6661,7 @@ namespace ews
         //! Measured in minutes.
         void set_actual_work(int actual_work)
         {
-            properties().set_or_update("ActualWork",
-                                       std::to_string(actual_work));
+            xml().set_or_update("ActualWork", std::to_string(actual_work));
         }
 
         //! \brief Returns the time the task was assigned to the current owner.
@@ -6671,19 +6669,19 @@ namespace ews
         //! This is a read-only property.
         date_time get_assigned_time() const
         {
-            return date_time(properties().get_value_as_string("AssignedTime"));
+            return date_time(xml().get_value_as_string("AssignedTime"));
         }
 
         //! Returns the billing information associated with this task
         std::string get_billing_information() const
         {
-            return properties().get_value_as_string("BillingInformation");
+            return xml().get_value_as_string("BillingInformation");
         }
 
         //! Sets the billing information associated with this task
         void set_billing_information(const std::string& billing_info)
         {
-            properties().set_or_update("BillingInformation", billing_info);
+            xml().set_or_update("BillingInformation", billing_info);
         }
 
         //! \brief Returns the change count of this task.
@@ -6694,7 +6692,7 @@ namespace ews
         //! Seems to be read-only.
         int get_change_count() const
         {
-            const auto val = properties().get_value_as_string("ChangeCount");
+            const auto val = xml().get_value_as_string("ChangeCount");
             if (val.empty())
             {
                 return 0;
@@ -6710,7 +6708,7 @@ namespace ews
         //! element here, although it is an ArrayOfStringsType.
         std::vector<std::string> get_companies() const
         {
-            auto node = properties().get_node("Companies");
+            auto node = xml().get_node("Companies");
             if (!node)
             {
                 return std::vector<std::string>();
@@ -6733,7 +6731,7 @@ namespace ews
         {
             typedef internal::uri<> uri;
 
-            auto companies_node = properties().get_node("Companies");
+            auto companies_node = xml().get_node("Companies");
             if (companies_node)
             {
                 auto doc = companies_node->document();
@@ -6745,7 +6743,7 @@ namespace ews
                 return;
             }
 
-            auto doc = properties().document();
+            auto doc = xml().document();
             auto ptr_to_qname = doc->allocate_string("t:Companies");
             companies_node = doc->allocate_node(rapidxml::node_element);
             companies_node->qname(ptr_to_qname,
@@ -6773,7 +6771,7 @@ namespace ews
         //! Returns the time the task was completed
         date_time get_complete_date() const
         {
-            return date_time(properties().get_value_as_string("CompleteDate"));
+            return date_time(xml().get_value_as_string("CompleteDate"));
         }
 
         //! Returns the contact names associated with this task
@@ -6790,8 +6788,7 @@ namespace ews
         //! This is a read-only property.
         delegation_state get_delegation_state() const
         {
-            const auto& val =
-                properties().get_value_as_string("DelegationState");
+            const auto& val = xml().get_value_as_string("DelegationState");
 
             if (val.empty() || val == "NoMatch")
             {
@@ -6826,19 +6823,19 @@ namespace ews
         //! Returns the name of the user that delegated the task
         std::string get_delegator() const
         {
-            return properties().get_value_as_string("Delegator");
+            return xml().get_value_as_string("Delegator");
         }
 
         //! Sets the date that the task is due
         void set_due_date(const date_time& due_date)
         {
-            properties().set_or_update("DueDate", due_date.to_string());
+            xml().set_or_update("DueDate", due_date.to_string());
         }
 
         //! Returns the date that the task is due
         date_time get_due_date() const
         {
-            return date_time(properties().get_value_as_string("DueDate"));
+            return date_time(xml().get_value_as_string("DueDate"));
         }
 
         // TODO
@@ -6862,13 +6859,13 @@ namespace ews
         //! task_property_path::percent_complete
         bool is_complete() const
         {
-            return properties().get_value_as_string("IsComplete") == "true";
+            return xml().get_value_as_string("IsComplete") == "true";
         }
 
         //! True if the task is recurring
         bool is_recurring() const
         {
-            return properties().get_value_as_string("IsRecurring") == "true";
+            return xml().get_value_as_string("IsRecurring") == "true";
         }
 
         //! \brief True if the task is a team task.
@@ -6876,7 +6873,7 @@ namespace ews
         //! This is a read-only property.
         bool is_team_task() const
         {
-            return properties().get_value_as_string("IsTeamTask") == "true";
+            return xml().get_value_as_string("IsTeamTask") == "true";
         }
 
         //! \brief Returns the mileage associated with the task
@@ -6884,13 +6881,13 @@ namespace ews
         //! Potentially used for reimbursement purposes
         std::string get_mileage() const
         {
-            return properties().get_value_as_string("Mileage");
+            return xml().get_value_as_string("Mileage");
         }
 
         //! Sets the mileage associated with the task
         void set_mileage(const std::string& mileage)
         {
-            properties().set_or_update("Mileage", mileage);
+            xml().set_or_update("Mileage", mileage);
         }
 
         // TODO: Not in AllProperties shape in EWS 2013, investigate
@@ -6899,7 +6896,7 @@ namespace ews
 #if 0
         std::string get_owner() const
         {
-            return properties().get_value_as_string("Owner");
+            return xml().get_value_as_string("Owner");
         }
 #endif
 
@@ -6908,8 +6905,7 @@ namespace ews
         //! Valid values are 0-100.
         int get_percent_complete() const
         {
-            const auto val =
-                properties().get_value_as_string("PercentComplete");
+            const auto val = xml().get_value_as_string("PercentComplete");
             if (val.empty())
             {
                 return 0;
@@ -6926,8 +6922,7 @@ namespace ews
         //! See MSDN for more on this.
         void set_percent_complete(int value)
         {
-            properties().set_or_update("PercentComplete",
-                                       std::to_string(value));
+            xml().set_or_update("PercentComplete", std::to_string(value));
         }
 
         // Used for recurring tasks
@@ -6936,19 +6931,19 @@ namespace ews
         //! Set the date that work on the task should start
         void set_start_date(const date_time& start_date)
         {
-            properties().set_or_update("StartDate", start_date.to_string());
+            xml().set_or_update("StartDate", start_date.to_string());
         }
 
         //! Returns the date that work on the task should start
         date_time get_start_date() const
         {
-            return date_time(properties().get_value_as_string("StartDate"));
+            return date_time(xml().get_value_as_string("StartDate"));
         }
 
         //! Returns the status of the task
         status get_status() const
         {
-            const auto& val = properties().get_value_as_string("Status");
+            const auto& val = xml().get_value_as_string("Status");
             if (val == "NotStarted")
             {
                 return status::not_started;
@@ -6978,7 +6973,7 @@ namespace ews
         //! Sets the status of the task to \p s.
         void set_status(status s)
         {
-            properties().set_or_update("Status", internal::enum_to_str(s));
+            xml().set_or_update("Status", internal::enum_to_str(s));
         }
 
         //! \brief Returns the status description.
@@ -6987,13 +6982,13 @@ namespace ews
         //! purposes. This is a read-only property.
         std::string get_status_description() const
         {
-            return properties().get_value_as_string("StatusDescription");
+            return xml().get_value_as_string("StatusDescription");
         }
 
         //! Returns the total amount of work for this task
         int get_total_work() const
         {
-            const auto val = properties().get_value_as_string("TotalWork");
+            const auto val = xml().get_value_as_string("TotalWork");
             if (val.empty())
             {
                 return 0;
@@ -7004,8 +6999,7 @@ namespace ews
         //! Sets the total amount of work for this task
         void set_total_work(int total_work)
         {
-            properties().set_or_update("TotalWork",
-                                       std::to_string(total_work));
+            xml().set_or_update("TotalWork", std::to_string(total_work));
         }
 
         // Every property below is 2012 or 2013 dialect
@@ -7032,7 +7026,7 @@ namespace ews
             sstr << "<m:CreateItem>" \
               "<m:Items>" \
               "<t:Task>";
-            sstr << properties().to_string() << "\n";
+            sstr << xml().to_string() << "\n";
             sstr << "</t:Task>" \
               "</m:Items>" \
               "</m:CreateItem>";
@@ -7080,13 +7074,13 @@ namespace ews
         // referred to as a person's first name
         void set_given_name(const std::string& given_name)
         {
-            properties().set_or_update("GivenName", given_name);
+            xml().set_or_update("GivenName", given_name);
         }
 
         //! Returns the person's first name
         std::string get_given_name() const
         {
-            return properties().get_value_as_string("GivenName");
+            return xml().get_value_as_string("GivenName");
         }
 
         // Initials for the contact
@@ -7108,7 +7102,7 @@ namespace ews
         //! A collection of e-mail addresses for the contact
         std::vector<email_address> get_email_addresses() const
         {
-            const auto addresses = properties().get_node("EmailAddresses");
+            const auto addresses = xml().get_node("EmailAddresses");
             if (!addresses)
             {
                 return std::vector<email_address>();
@@ -7197,13 +7191,13 @@ namespace ews
         //! Sets this contact's job title.
         void set_job_title(const std::string& title)
         {
-            properties().set_or_update("JobTitle", title);
+            xml().set_or_update("JobTitle", title);
         }
 
         //! Returns the job title for the contact
         std::string get_job_title() const
         {
-            return properties().get_value_as_string("JobTitle");
+            return xml().get_value_as_string("JobTitle");
         }
 
         // The name of the contact's manager
@@ -7225,26 +7219,26 @@ namespace ews
         //! Set name of the contact's significant other
         void set_spouse_name(const std::string& spouse_name)
         {
-            properties().set_or_update("SpouseName", spouse_name);
+            xml().set_or_update("SpouseName", spouse_name);
         }
 
         //! Get name of the contact's significant other
         std::string get_spouse_name() const
         {
-            return properties().get_value_as_string("SpouseName");
+            return xml().get_value_as_string("SpouseName");
         }
 
         //! Sets the family name of the contact; usually considered the last name
         void set_surname(const std::string& surname)
         {
-            properties().set_or_update("Surname", surname);
+            xml().set_or_update("Surname", surname);
         }
 
         //! Returns the family name of the contact; usually considered the last
         //! name
         std::string get_surname() const
         {
-            return properties().get_value_as_string("Surname");
+            return xml().get_value_as_string("Surname");
         }
 
         // Date that the contact was married
@@ -7286,7 +7280,7 @@ namespace ews
                   "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
               "<Items>" \
               "<t:Contact>";
-            sstr << properties().to_string() << "\n";
+            sstr << xml().to_string() << "\n";
             sstr << "</t:Contact>" \
               "</Items>" \
               "</CreateItem>";
@@ -7299,7 +7293,7 @@ namespace ews
             using rapidxml::internal::compare;
 
             // <Entry Key="" Name="" RoutingType="" MailboxType="" />
-            const auto addresses = properties().get_node("EmailAddresses");
+            const auto addresses = xml().get_node("EmailAddresses");
             if (!addresses)
             {
                 return "";
@@ -7328,8 +7322,8 @@ namespace ews
         {
             using rapidxml::internal::compare;
 
-            auto doc = properties().document();
-            auto addresses = properties().get_node("EmailAddresses");
+            auto doc = xml().document();
+            auto addresses = xml().get_node("EmailAddresses");
             if (addresses)
             {
                 // Check if there is alread any entry for given key
@@ -7441,9 +7435,9 @@ namespace ews
 
         void set_to_recipients(const std::vector<email_address>& recipients)
         {
-            auto doc = properties().document();
+            auto doc = xml().document();
 
-            auto to_recipients_node = properties().get_node("ToRecipients");
+            auto to_recipients_node = xml().get_node("ToRecipients");
             if (to_recipients_node)
             {
                 doc->remove_node(to_recipients_node);
@@ -7565,7 +7559,7 @@ namespace ews
         {
             using rapidxml::internal::compare;
 
-            const auto recipients = properties().get_node("ToRecipients");
+            const auto recipients = xml().get_node("ToRecipients");
             if (!recipients)
             {
                 return std::vector<email_address>();
@@ -7688,7 +7682,7 @@ namespace ews
                  << internal::enum_to_str(disposition) << "\">";
             sstr << "<m:Items>";
             sstr << "<t:Message>";
-            sstr << properties().to_string() << "\n";
+            sstr << xml().to_string() << "\n";
             sstr << "</t:Message>";
             sstr << "</m:Items>";
             sstr << "</m:CreateItem>";
@@ -9197,7 +9191,7 @@ namespace ews
         }
 #endif
 
-        auto& props = the_item.properties();
+        auto& props = the_item.xml();
 
         // Filter out read-only property paths
 #ifdef EWS_HAS_INITIALIZER_LISTS
