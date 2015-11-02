@@ -27,7 +27,7 @@ namespace tests
     {
         const ews::distinguished_folder_id drafts =
             ews::standard_folder::drafts;
-        auto initial_count = service().find_item(drafts).size();
+        const auto initial_count = service().find_item(drafts).size();
 
         auto message = ews::message();
         message.set_subject("You are hiding again, aren't you?");
@@ -45,7 +45,7 @@ namespace tests
         EXPECT_STREQ("darkwing.duck@duckburg.com",
                      recipients.front().value().c_str());
         service().delete_message(std::move(message));
-        EXPECT_TRUE(message.get_subject().empty()); // Chack sink argument
+        EXPECT_TRUE(message.get_subject().empty()); // Check sink argument
 
         auto messages = service().find_item(drafts);
         EXPECT_EQ(initial_count, messages.size());
