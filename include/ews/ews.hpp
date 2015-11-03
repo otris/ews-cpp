@@ -5022,25 +5022,178 @@ namespace ews
         // TODO: Constructor for EWS delegate access
         // distinguished_folder_id(standard_folder, mailbox) {}
 
-    private:
-        std::string to_xml_impl(const char* xmlns) const override
+        //! Returns the standard_folder enum for given string
+        static standard_folder str_to_standard_folder(const std::string& name)
         {
-            auto pref = std::string();
-            if (xmlns)
+            if (name == "calendar")
             {
-                pref = std::string(xmlns) + ":";
+                return standard_folder::calendar;
             }
-            std::stringstream sstr;
-            sstr << "<" << pref << "DistinguishedFolderId Id=\"";
-            sstr << id();
-            if (!change_key().empty())
+            else if (name == "contacts")
             {
-                sstr << "\" ChangeKey=\"" << change_key();
+                return standard_folder::contacts;
             }
-            sstr << "\"/>";
-            return sstr.str();
+            else if (name == "deleteditems")
+            {
+                return standard_folder::deleted_items;
+            }
+            else if (name == "drafts")
+            {
+                return standard_folder::drafts;
+            }
+            else if (name == "inbox")
+            {
+                return standard_folder::inbox;
+            }
+            else if (name == "journal")
+            {
+                return standard_folder::journal;
+            }
+            else if (name == "notes")
+            {
+                return standard_folder::notes;
+            }
+            else if (name == "outbox")
+            {
+                return standard_folder::outbox;
+            }
+            else if (name == "sentitems")
+            {
+                return standard_folder::sent_items;
+            }
+            else if (name == "tasks")
+            {
+                return standard_folder::tasks;
+            }
+            else if (name == "msgfolderroot")
+            {
+                return standard_folder::msg_folder_root;
+            }
+            else if (name == "root")
+            {
+                return standard_folder::root;
+            }
+            else if (name == "junkemail")
+            {
+                return standard_folder::junk_email;
+            }
+            else if (name == "searchfolders")
+            {
+                return standard_folder::search_folders;
+            }
+            else if (name == "voicemail")
+            {
+                return standard_folder::voice_mail;
+            }
+            else if (name == "recoverableitemsroot")
+            {
+                return standard_folder::recoverable_items_root;
+            }
+            else if (name == "recoverableitemsdeletions")
+            {
+                return standard_folder::recoverable_items_deletions;
+            }
+            else if (name == "recoverableitemsversions")
+            {
+                return standard_folder::recoverable_items_versions;
+            }
+            else if (name == "recoverableitemspurges")
+            {
+                return standard_folder::recoverable_items_purges;
+            }
+            else if (name == "archiveroot")
+            {
+                return standard_folder::archive_root;
+            }
+            else if (name == "archivemsgfolderroot")
+            {
+                return standard_folder::archive_msg_folder_root;
+            }
+            else if (name == "archivedeleteditems")
+            {
+                return standard_folder::archive_deleted_items;
+            }
+            else if (name == "archiveinbox")
+            {
+                return standard_folder::archive_inbox;
+            }
+            else if (name == "archiverecoverableitemsroot")
+            {
+                return standard_folder::archive_recoverable_items_root;
+            }
+            else if (name == "archiverecoverableitemsdeletions")
+            {
+                return standard_folder::archive_recoverable_items_deletions;
+            }
+            else if (name == "archiverecoverableitemsversions")
+            {
+                return standard_folder::archive_recoverable_items_versions;
+            }
+            else if (name == "archiverecoverableitemspurges")
+            {
+                return standard_folder::archive_recoverable_items_purges;
+            }
+            else if (name == "syncissues")
+            {
+                return standard_folder::sync_issues;
+            }
+            else if (name == "conflicts")
+            {
+                return standard_folder::conflicts;
+            }
+            else if (name == "localfailures")
+            {
+                return standard_folder::local_failures;
+            }
+            else if (name == "serverfailures")
+            {
+                return standard_folder::server_failures;
+            }
+            else if (name == "recipientcache")
+            {
+                return standard_folder::recipient_cache;
+            }
+            else if (name == "quickcontacts")
+            {
+                return standard_folder::quick_contacts;
+            }
+            else if (name == "conversationhistory")
+            {
+                return standard_folder::conversation_history;
+            }
+            else if (name == "adminauditlogs")
+            {
+                return standard_folder::admin_audit_logs;
+            }
+            else if (name == "todosearch")
+            {
+                return standard_folder::todo_search;
+            }
+            else if (name == "mycontacts")
+            {
+                return standard_folder::my_contacts;
+            }
+            else if (name == "directory")
+            {
+                return standard_folder::directory;
+            }
+            else if (name == "imcontactlist")
+            {
+                return standard_folder::im_contact_list;
+            }
+            else if (name == "peopleconnect")
+            {
+                return standard_folder::people_connect;
+            }
+            else if (name == "favorites")
+            {
+                return standard_folder::favorites;
+            }
+
+            throw exception("Unrecognized folder name");
         }
 
+        //! Returns the well-known name for given standard_folder as string.
         static std::string well_known_name(standard_folder enumeration)
         {
             std::string name;
@@ -5214,6 +5367,25 @@ namespace ews
                 throw exception("Unrecognized folder name");
             };
             return name;
+        }
+
+    private:
+        std::string to_xml_impl(const char* xmlns) const override
+        {
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "DistinguishedFolderId Id=\"";
+            sstr << id();
+            if (!change_key().empty())
+            {
+                sstr << "\" ChangeKey=\"" << change_key();
+            }
+            sstr << "\"/>";
+            return sstr.str();
         }
     };
 
