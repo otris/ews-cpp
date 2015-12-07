@@ -17,6 +17,14 @@ namespace tests
         EXPECT_STREQ("Write poem", task.get_subject().c_str());
     }
 
+    TEST(DateTimeTest, IsSet)
+    {
+        const auto a = ews::date_time("2015-12-07T14:18:18.000Z");
+        EXPECT_TRUE(a.is_set());
+        const auto b = ews::date_time("");
+        EXPECT_FALSE(b.is_set());
+    }
+
     TEST_F(TaskTest, GetTaskWithInvalidIdThrows)
     {
         auto invalid_id = ews::item_id();
@@ -129,7 +137,7 @@ namespace tests
     TEST_F(TaskTest, AssignedTimePropertyInitialValue)
     {
         auto task = ews::task();
-        EXPECT_TRUE(task.get_assigned_time().to_string().empty());
+        EXPECT_FALSE(task.get_assigned_time().is_set());
     }
 
     TEST_F(TaskTest, BillingInformationPropertyInitialValue)

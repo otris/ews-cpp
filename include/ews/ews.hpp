@@ -6120,8 +6120,8 @@ namespace ews
     //! you get the idea.
     //!
     //! This library does not interpret, parse, or in any way touch date nor
-    //! date/time strings in any circumstance. This library provides the \ref
-    //! date_time class, which acts solely as a thin wrapper to make the
+    //! date/time strings in any circumstance. This library provides the
+    //! \ref date_time class, which acts solely as a thin wrapper to make the
     //! signatures of public API functions more type-rich and easier to
     //! understand. date_time is implicitly convertible from std::string.
     //!
@@ -6135,7 +6135,10 @@ namespace ews
             : val_(std::move(str))
         {
         }
+
         const std::string& to_string() const EWS_NOEXCEPT { return val_; }
+
+        inline bool is_set() const EWS_NOEXCEPT { return !val_.empty(); }
 
     private:
         friend bool operator==(const date_time&, const date_time&);
@@ -6836,8 +6839,10 @@ namespace ews
             xml().set_or_update("ActualWork", std::to_string(actual_work));
         }
 
-        //! \brief Returns the time the task was assigned to the current owner.
+        //! \brief Returns the time this task was assigned to the current
+        //! owner.
         //!
+        //! If this task is not a delegated task, this property is not set.
         //! This is a read-only property.
         date_time get_assigned_time() const
         {
