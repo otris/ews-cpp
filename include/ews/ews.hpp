@@ -8701,6 +8701,116 @@ namespace ews
     static_assert(std::is_move_assignable<is_equal_to>::value, "");
 #endif
 
+    //! \brief This enumeration indicates which parts of a text value are
+    //! compared to a supplied constant value.
+    //! 
+    //! \sa contains
+    enum class containment_mode
+    {
+        full_string,
+        prefixed,
+        substring,
+        prefix_on_words,
+        exact_phrase
+    };
+
+    namespace internal
+    {
+        static std::string enum_to_str(containment_mode val)
+        {
+            switch (val)
+            {
+            case containment_mode::full_string:
+                return "FullString";
+            case containment_mode::prefixed:
+                return "Prefixed";
+            case containment_mode::substring:
+                return "Substring";
+            case containment_mode::prefix_on_words:
+                return "PrefixOnWords";
+            case containment_mode::exact_phrase:
+                return "ExactPhrase";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
+    //! \brief This enumeration determines how case and non-spacing characters
+    //! are considered when evaluating a text search expression.
+    //! 
+    //! \sa contains
+    enum class containment_comparison
+    {
+        exact,
+        ignore_case,
+        ignore_non_spacing_characters,
+        loose,
+    };
+
+    namespace internal
+    {
+        static std::string enum_to_str(containment_comparison val)
+        {
+            switch (val)
+            {
+            case containment_comparison::exact:
+                return "Exact";
+            case containment_comparison::ignore_case:
+                return "IgnoreCase";
+            case containment_comparison::ignore_non_spacing_characters:
+                return "IgnoreNonSpacingCharacters";
+            case containment_comparison::loose:
+                return "Loose";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
+    //! \brief Check if a text property contains a substring
+    //!
+    //! A search filter that allows you to do text searches on string
+    //! properties.
+    class contains final : public restriction
+    {
+    public:
+        contains(property_path path,
+                 const char* str,
+                 containment_mode mode,
+                 containment_comparison comparison)
+            : restriction([=](const char* xmlns) -> std::string
+                    {
+                        std::stringstream sstr;
+                        const char* pref = "";
+                        if (xmlns)
+                        {
+                            pref = "t:";
+                        }
+                        sstr << "<" << pref << "Contains ";
+                        sstr << "ContainmentMode=\""
+                            << internal::enum_to_str(mode) << "\" ";
+                        sstr << "ContainmentComparison=\""
+                            << internal::enum_to_str(comparison) << "\">";
+                        sstr << "<" << pref << "FieldURI FieldURI=\"";
+                        sstr << path.field_uri();
+                        sstr << "\"/><" << pref << "Constant Value=\"";
+                        sstr << str;
+                        sstr << "\"/></" << pref << "Contains>";
+                        return sstr.str();
+                    })
+        {
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<contains>::value, "");
+    static_assert(std::is_copy_constructible<contains>::value, "");
+    static_assert(std::is_copy_assignable<contains>::value, "");
+    static_assert(std::is_move_constructible<contains>::value, "");
+    static_assert(std::is_move_assignable<contains>::value, "");
+#endif
+
     //! \brief Contains the methods to perfom operations on an Exchange server
     //!
     //! The service class contains all methods that can be performed on an
