@@ -8605,6 +8605,14 @@ namespace ews
         // TODO: is_equal_to(property_path, property_path) {}
     };
 
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<is_equal_to>::value, "");
+    static_assert(std::is_copy_constructible<is_equal_to>::value, "");
+    static_assert(std::is_copy_assignable<is_equal_to>::value, "");
+    static_assert(std::is_move_constructible<is_equal_to>::value, "");
+    static_assert(std::is_move_assignable<is_equal_to>::value, "");
+#endif
+
     //! \brief Contains the methods to perfom operations on an Exchange server
     //!
     //! The service class contains all methods that can be performed on an
