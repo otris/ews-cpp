@@ -3470,14 +3470,47 @@ namespace ews
 
     namespace internal
     {
-        inline std::string enum_to_str(affected_task_occurrences o)
+        inline std::string enum_to_str(affected_task_occurrences val)
         {
-            switch (o)
+            switch (val)
             {
                 case affected_task_occurrences::all_occurrences:
                     return "AllOccurrences";
                 case affected_task_occurrences::specified_occurrence_only:
                     return "SpecifiedOccurrenceOnly";
+                default:
+                    throw exception("Bad enum value");
+            }
+        }
+    }
+
+    enum class send_meeting_cancellations
+    {
+        //! The calendar item is deleted without sending a cancellation message
+        send_to_none,
+
+        //! The calendar item is deleted and a cancellation message is sent to
+        //! all attendees
+        send_only_to_all,
+
+        //! The calendar item is deleted and a cancellation message is sent to
+        //! all attendees. A copy of the cancellation message is saved in the
+        //! Sent Items folder
+        send_to_all_and_save_copy
+    };
+
+    namespace internal
+    {
+        inline std::string enum_to_str(send_meeting_cancellations val)
+        {
+            switch (val)
+            {
+                case send_meeting_cancellations::send_to_none:
+                    return "SendToNone";
+                case send_meeting_cancellations::send_only_to_all:
+                    return "SendOnlyToAll";
+                case send_meeting_cancellations::send_to_all_and_save_copy:
+                    return "SendToAllAndSaveCopy";
                 default:
                     throw exception("Bad enum value");
             }
@@ -7590,6 +7623,61 @@ namespace ews
     static_assert(std::is_move_assignable<contact>::value, "");
 #endif
 
+    //! A calendar item in the Exchange store.
+    class calendar_item final : public item
+    {
+    public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        calendar_item() = default;
+#else
+        calendar_item() {}
+#endif
+
+        explicit calendar_item(item_id id) : item(id) {}
+
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
+        calendar_item(item_id&& id, internal::xml_subtree&& properties)
+            : item(std::move(id), std::move(properties))
+        {}
+#endif
+
+        //! Makes a calendar item instance from a <CalendarItem> XML element
+        static calendar_item from_xml_element(const rapidxml::xml_node<>& elem)
+        {
+            auto id_node = elem.first_node_ns(internal::uri<>::microsoft::types(),
+                                              "ItemId");
+            EWS_ASSERT(id_node && "Expected <ItemId>");
+            return calendar_item(item_id::from_xml_element(*id_node),
+                           internal::xml_subtree(elem));
+        }
+
+    private:
+        template <typename U> friend class basic_service;
+        std::string create_item_request_string() const
+        {
+            std::stringstream sstr;
+            sstr <<
+              "<CreateItem SendMeetingInvitations=\"SendToNone\" " \
+                  "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
+                  "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
+              "<Items>" \
+              "<t:CalendarItem>";
+            sstr << xml().to_string() << "\n";
+            sstr << "</t:CalendarItem>" \
+              "</Items>" \
+              "</CreateItem>";
+            return sstr.str();
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(std::is_default_constructible<calendar_item>::value, "");
+    static_assert(std::is_copy_constructible<calendar_item>::value, "");
+    static_assert(std::is_copy_assignable<calendar_item>::value, "");
+    static_assert(std::is_move_constructible<calendar_item>::value, "");
+    static_assert(std::is_move_assignable<calendar_item>::value, "");
+#endif
+
     //! A message item in the Exchange store.
     class message final : public item
     {
@@ -8685,6 +8773,12 @@ namespace ews
             return get_item_impl<contact>(id, base_shape::all_properties);
         }
 
+        //! Gets a calendar item from the Exchange store
+        calendar_item get_calendar_item(const item_id& id)
+        {
+            return get_item_impl<calendar_item>(id, base_shape::all_properties);
+        }
+
         //! Gets a message item from the Exchange store
         message get_message(const item_id& id)
         {
@@ -8695,13 +8789,18 @@ namespace ews
         void delete_item(const item_id& id,
                          delete_type del_type = delete_type::hard_delete,
                          affected_task_occurrences affected =
-                            affected_task_occurrences::all_occurrences)
+                            affected_task_occurrences::all_occurrences,
+                         send_meeting_cancellations cancellations =
+                            send_meeting_cancellations::send_to_none)
         {
             using internal::delete_item_response_message;
 
             const std::string request_string =
                 "<m:DeleteItem\n"
-                "  DeleteType=\"" + internal::enum_to_str(del_type) + "\"\n"
+                "  DeleteType=\""
+                            + internal::enum_to_str(del_type) + "\"\n"
+                "  SendMeetingCancellations=\""
+                            + internal::enum_to_str(cancellations) + "\"\n"
                 "  AffectedTaskOccurrences=\""
                             + internal::enum_to_str(affected) + "\">\n"
                 "  <m:ItemIds>" + id.to_xml("t") + "</m:ItemIds>\n"
@@ -8736,6 +8835,20 @@ namespace ews
             the_contact = ews::contact();
         }
 
+        //! Delete a calendar item from the Exchange store
+        void delete_calendar_item(calendar_item&& the_calendar_item,
+                                  delete_type del_type =
+                                      delete_type::hard_delete,
+                                  send_meeting_cancellations cancellations =
+                                      send_meeting_cancellations::send_to_none)
+        {
+            delete_item(the_calendar_item.get_item_id(),
+                        del_type,
+                        affected_task_occurrences::all_occurrences,
+                        cancellations);
+            the_calendar_item = ews::calendar_item();
+        }
+
         //! Delete a message item from the Exchange store
         void delete_message(message&& the_message)
         {
@@ -8763,13 +8876,22 @@ namespace ews
             return create_item_impl(the_task);
         }
 
-        //! \brief Creates a new contact item from the given object in the Exchange
-        //! store
+        //! \brief Creates a new contact item from the given object in the
+        //! Exchange store
         //!
         //! Returns it's item_id if successful.
         item_id create_item(const contact& the_contact)
         {
             return create_item_impl(the_contact);
+        }
+
+        //! \brief Creates a new calendar item from the given object in the
+        //! Exchange store
+        //!
+        //! Returns it's item_id if successful.
+        item_id create_item(const calendar_item& the_calendar_item)
+        {
+            return create_item_impl(the_calendar_item);
         }
 
         //! Creates a new message in the Exchange store

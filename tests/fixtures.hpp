@@ -288,6 +288,10 @@ namespace tests
     {
     };
 
+    struct CalendarItemTest : public ServiceFixture
+    {
+    };
+
     class AttachmentTest : public ServiceFixture
     {
     public:

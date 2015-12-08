@@ -247,6 +247,7 @@ add_executable(tests
     ${rapidxml_SOURCES}
     tests/main.cpp
     tests/test_attachments.cpp
+    tests/test_calendar_items.cpp
     tests/test_contacts.cpp
     tests/test_folders.cpp
     tests/test_internals.cpp
