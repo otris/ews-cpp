@@ -8684,9 +8684,31 @@ namespace ews
         }
 
         //! Delete an arbitrary item from the Exchange store
-        void delete_item(item&& the_item)
+        void delete_item(const item_id& id,
+                         delete_type del_type = delete_type::hard_delete,
+                         affected_task_occurrences affected =
+                            affected_task_occurrences::all_occurrences)
         {
-            delete_item_impl<item>(std::move(the_item));
+            using internal::delete_item_response_message;
+
+            const std::string request_string =
+                "<m:DeleteItem\n"
+                "  DeleteType=\"" + internal::enum_to_str(del_type) + "\"\n"
+                "  AffectedTaskOccurrences=\""
+                            + internal::enum_to_str(affected) + "\">\n"
+                "  <m:ItemIds>" + id.to_xml("t") + "</m:ItemIds>\n"
+                "</m:DeleteItem>\n";
+
+            auto response = request(request_string);
+#ifdef EWS_ENABLE_VERBOSE
+            std::cerr << response.payload() << std::endl;
+#endif
+            const auto response_message =
+                delete_item_response_message::parse(response);
+            if (!response_message.success())
+            {
+                throw exchange_error(response_message.get_response_code());
+            }
         }
 
         //! Delete a task item from the Exchange store
@@ -8695,36 +8717,22 @@ namespace ews
                          affected_task_occurrences affected =
                             affected_task_occurrences::all_occurrences)
         {
-            using internal::delete_item_response_message;
-
-            const std::string request_string =
-"<m:DeleteItem\n"
-"  DeleteType=\"" + internal::enum_to_str(del_type) + "\"\n"
-"  AffectedTaskOccurrences=\""
-            + internal::enum_to_str(affected) + "\">\n"
-"  <m:ItemIds>" + the_task.get_item_id().to_xml("t") + "</m:ItemIds>\n"
-"</m:DeleteItem>\n";
-
-            auto response = request(request_string);
-            const auto response_message =
-                delete_item_response_message::parse(response);
-            if (!response_message.success())
-            {
-                throw exchange_error(response_message.get_response_code());
-            }
-            the_task = task();
+            delete_item(the_task.get_item_id(), del_type, affected);
+            the_task = ews::task();
         }
 
         //! Delete a contact from the Exchange store
         void delete_contact(contact&& the_contact)
         {
-            delete_item_impl(std::move(the_contact));
+            delete_item(the_contact.get_item_id());
+            the_contact = ews::contact();
         }
 
         //! Delete a message item from the Exchange store
         void delete_message(message&& the_message)
         {
-            delete_item_impl(std::move(the_message));
+            delete_item(the_message.get_item_id());
+            the_message = ews::message();
         }
 
         // Following items can be created in Exchange:
@@ -9146,29 +9154,6 @@ namespace ews
             EWS_ASSERT(!response_message.items().empty()
                     && "Expected at least one item");
             return response_message.items().front();
-        }
-
-        template <typename ItemType>
-        void delete_item_impl(ItemType&& the_item)
-        {
-            using internal::delete_item_response_message;
-
-            const std::string request_string =
-    "<m:DeleteItem>\n"
-    "  <m:ItemIds>" + the_item.get_item_id().to_xml("t") + "</m:ItemIds>\n"
-    "</m:DeleteItem>\n";
-
-            auto response = request(request_string);
-#ifdef EWS_ENABLE_VERBOSE
-            std::cerr << response.payload() << std::endl;
-#endif
-            const auto response_message =
-                delete_item_response_message::parse(response);
-            if (!response_message.success())
-            {
-                throw exchange_error(response_message.get_response_code());
-            }
-            the_item = ItemType();
         }
     };
 
