@@ -245,6 +245,7 @@ endif()
 add_executable(tests
     ${ews_SOURCES}
     ${rapidxml_SOURCES}
+    tests/fixtures.hpp
     tests/main.cpp
     tests/test_attachments.cpp
     tests/test_calendar_items.cpp
