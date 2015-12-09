@@ -24,8 +24,8 @@ int main()
         ews::distinguished_folder_id drafts = ews::standard_folder::drafts;
         auto message = ews::message();
         message.set_subject("This is an e-mail message for our Contains query");
-        std::vector<ews::email_address> recipients;
-        recipients.push_back(ews::email_address("donald.duck@duckburg.com"));
+        std::vector<ews::mailbox> recipients;
+        recipients.push_back(ews::mailbox("donald.duck@duckburg.com"));
         message.set_to_recipients(recipients);
         auto item_id = service.create_item(message,
                                            ews::message_disposition::save_only);

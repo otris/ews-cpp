@@ -24,7 +24,7 @@ int main()
         contact.set_given_name("Darkwing");
         contact.set_surname("Duck");
         contact.set_email_address_1(
-                ews::email_address("superhero@ducktales.com"));
+                ews::mailbox("superhero@ducktales.com"));
         contact.set_job_title("Average Citizen");
 
         auto item_id = service.create_item(contact);

@@ -221,9 +221,9 @@ namespace tests
 
         auto message = ews::message();
         message.set_subject("You are hiding again, aren't you?");
-        std::vector<ews::email_address> recipients;
+        std::vector<ews::mailbox> recipients;
         recipients.push_back(
-            ews::email_address("darkwing.duck@duckburg.com")
+            ews::mailbox("darkwing.duck@duckburg.com")
         );
         message.set_to_recipients(recipients);
         auto item_id = service().create_item(
@@ -237,9 +237,9 @@ namespace tests
         recipients = message.get_to_recipients();
         EXPECT_EQ(1U, recipients.size());
 
-        std::vector<ews::email_address> additional_recipients;
+        std::vector<ews::mailbox> additional_recipients;
         additional_recipients.push_back(
-            ews::email_address("gus.goose@duckburg.com")
+            ews::mailbox("gus.goose@duckburg.com")
         );
         auto prop = ews::property(ews::message_property_path::to_recipients,
                                   additional_recipients);

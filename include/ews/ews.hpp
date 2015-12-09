@@ -6404,12 +6404,14 @@ namespace ews
     static_assert(std::is_move_assignable<mime_content>::value, "");
 #endif
 
-    // TODO: maybe rename to mailbox
-    // Represents a contact's email address
-    class email_address final
+    //! \brief Identifies a SMTP mailbox
+    //!
+    //! Usually represents a contact's email address, a message recipient, or
+    //! the organizer of a meeting.
+    class mailbox final
     {
     public:
-        explicit email_address(item_id id)
+        explicit mailbox(item_id id)
             : id_(std::move(id)),
               value_(),
               name_(),
@@ -6417,10 +6419,10 @@ namespace ews
               mailbox_type_()
         {}
 
-        explicit email_address(std::string value,
-                               std::string name = std::string(),
-                               std::string routing_type = std::string(),
-                               std::string mailbox_type = std::string())
+        explicit mailbox(std::string value,
+                         std::string name = std::string(),
+                         std::string routing_type = std::string(),
+                         std::string mailbox_type = std::string())
             : id_(),
               value_(std::move(value)),
               name_(std::move(name)),
@@ -6499,11 +6501,11 @@ namespace ews
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<email_address>::value, "");
-    static_assert(std::is_copy_constructible<email_address>::value, "");
-    static_assert(std::is_copy_assignable<email_address>::value, "");
-    static_assert(std::is_move_constructible<email_address>::value, "");
-    static_assert(std::is_move_assignable<email_address>::value, "");
+    static_assert(!std::is_default_constructible<mailbox>::value, "");
+    static_assert(std::is_copy_constructible<mailbox>::value, "");
+    static_assert(std::is_copy_assignable<mailbox>::value, "");
+    static_assert(std::is_move_constructible<mailbox>::value, "");
+    static_assert(std::is_move_assignable<mailbox>::value, "");
 #endif
 
     //! Represents a generic item in the Exchange store.
@@ -7383,14 +7385,14 @@ namespace ews
         // TODO: get_company_name
 
         //! A collection of e-mail addresses for the contact
-        std::vector<email_address> get_email_addresses() const
+        std::vector<mailbox> get_email_addresses() const
         {
             const auto addresses = xml().get_node("EmailAddresses");
             if (!addresses)
             {
-                return std::vector<email_address>();
+                return std::vector<mailbox>();
             }
-            std::vector<email_address> result;
+            std::vector<mailbox> result;
             for (auto entry = addresses->first_node(); entry;
                  entry = entry->next_sibling())
             {
@@ -7398,7 +7400,7 @@ namespace ews
                 auto routing_type_attr = entry->first_attribute("RoutingType");
                 auto mailbox_type_attr = entry->first_attribute("MailboxType");
                 result.emplace_back(
-                    email_address(
+                    mailbox(
                         entry->value(),
                         name_attr ? name_attr->value() : "",
                         routing_type_attr ? routing_type_attr->value() : "",
@@ -7412,7 +7414,7 @@ namespace ews
             return get_email_address_by_key("EmailAddress1");
         }
 
-        void set_email_address_1(email_address address)
+        void set_email_address_1(mailbox address)
         {
             set_email_address_by_key("EmailAddress1", std::move(address));
         }
@@ -7422,7 +7424,7 @@ namespace ews
             return get_email_address_by_key("EmailAddress2");
         }
 
-        void set_email_address_2(email_address address)
+        void set_email_address_2(mailbox address)
         {
             set_email_address_by_key("EmailAddress2", std::move(address));
         }
@@ -7432,7 +7434,7 @@ namespace ews
             return get_email_address_by_key("EmailAddress3");
         }
 
-        void set_email_address_3(email_address address)
+        void set_email_address_3(mailbox address)
         {
             set_email_address_by_key("EmailAddress3", std::move(address));
         }
@@ -7601,7 +7603,7 @@ namespace ews
         }
 
         // Helper function for set_email_address_{1,2,3}
-        void set_email_address_by_key(const char* key, email_address&& mail)
+        void set_email_address_by_key(const char* key, mailbox&& mail)
         {
             using rapidxml::internal::compare;
 
@@ -8008,7 +8010,7 @@ namespace ews
 
         // <Sender/>
 
-        void set_to_recipients(const std::vector<email_address>& recipients)
+        void set_to_recipients(const std::vector<mailbox>& recipients)
         {
             auto doc = xml().document();
 
@@ -8039,7 +8041,7 @@ namespace ews
                 if (!recipient.id().valid())
                 {
                     EWS_ASSERT(!recipient.value().empty()
-                  && "Neither item_id nor value set in email_address instance");
+                  && "Neither item_id nor value set in mailbox instance");
 
                     ptr_to_qname = doc->allocate_string("t:EmailAddress");
                     auto ptr_to_value = doc->allocate_string(
@@ -8130,16 +8132,16 @@ namespace ews
             doc->append_node(to_recipients_node);
         }
 
-        std::vector<email_address> get_to_recipients()
+        std::vector<mailbox> get_to_recipients()
         {
             using rapidxml::internal::compare;
 
             const auto recipients = xml().get_node("ToRecipients");
             if (!recipients)
             {
-                return std::vector<email_address>();
+                return std::vector<mailbox>();
             }
-            std::vector<email_address> result;
+            std::vector<mailbox> result;
             for (auto mailbox = recipients->first_node(); mailbox;
                  mailbox = mailbox->next_sibling())
             {
@@ -8208,17 +8210,14 @@ namespace ews
                             && "<EmailAddress> element value can't be empty");
 
                     result.emplace_back(
-                        email_address(
-                            std::move(address),
-                            std::move(name),
-                            std::move(routing_type),
-                            std::move(mailbox_type)));
+                        ews::mailbox(std::move(address),
+                                     std::move(name),
+                                     std::move(routing_type),
+                                     std::move(mailbox_type)));
                 }
                 else
                 {
-                    result.emplace_back(
-                        email_address(
-                            std::move(id)));
+                    result.emplace_back(ews::mailbox(std::move(id)));
                 }
             }
             return result;
@@ -8805,7 +8804,7 @@ namespace ews
         {
         }
 
-        property(property_path path, const std::vector<email_address>& value)
+        property(property_path path, const std::vector<mailbox>& value)
             : path_(std::move(path)),
               value_()
         {
