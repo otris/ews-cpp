@@ -4389,6 +4389,9 @@ namespace ews
                 curl_easy_getinfo(handle_.get(),
                     CURLINFO_RESPONSE_CODE, &response_code);
                 response_data.emplace_back('\0');
+#if EWS_ENABLE_VERBOSE
+                std::cerr << &response_data[0] << std::endl;
+#endif
                 return http_response(response_code, std::move(response_data));
             }
 
@@ -4562,7 +4565,8 @@ namespace ews
                     : "";
             }
 
-            void set_or_update(std::string node_name, std::string node_value)
+            void set_or_update(const std::string& node_name,
+                               const std::string& node_value)
             {
                 using rapidxml::internal::compare;
 
@@ -8010,7 +8014,7 @@ namespace ews
             }
             else if (substr == "calendar")
             {
-                return "Calendar";
+                return "CalendarItem";
             }
             else if (substr == "task")
             {
@@ -8389,7 +8393,7 @@ namespace ews
         //! Use this constructor if you want to delete a property from an item
         explicit property(property_path path)
             : path_(std::move(path)),
-            value_()
+              value_()
         {
         }
 
@@ -8397,73 +8401,73 @@ namespace ews
         // set or update an item's property
         property(property_path path, std::string value)
             : path_(std::move(path)),
-            value_(std::move(value))
+              value_(std::move(value))
         {
         }
 
         property(property_path path, const char* value)
             : path_(std::move(path)),
-            value_(std::string(value))
+              value_(std::string(value))
         {
         }
 
         property(property_path path, int value)
             : path_(std::move(path)),
-            value_(std::to_string(value))
+              value_(std::to_string(value))
         {
         }
 
         property(property_path path, long value)
             : path_(std::move(path)),
-            value_(std::to_string(value))
+              value_(std::to_string(value))
         {
         }
 
         property(property_path path, long long value)
             : path_(std::move(path)),
-            value_(std::to_string(value))
+              value_(std::to_string(value))
         {
         }
 
         property(property_path path, unsigned value)
             : path_(std::move(path)),
-            value_(std::to_string(value))
+              value_(std::to_string(value))
         {
         }
 
         property(property_path path, unsigned long value)
             : path_(std::move(path)),
-            value_(std::to_string(value))
+              value_(std::to_string(value))
         {
         }
 
         property(property_path path, unsigned long long value)
             : path_(std::move(path)),
-            value_(std::to_string(value))
+              value_(std::to_string(value))
         {
         }
 
         property(property_path path, float value)
             : path_(std::move(path)),
-            value_(std::to_string(value))
+              value_(std::to_string(value))
         {
         }
 
         property(property_path path, double value)
             : path_(std::move(path)),
-            value_(std::to_string(value))
+              value_(std::to_string(value))
         {
         }
 
         property(property_path path, long double value)
             : path_(std::move(path)),
-            value_(std::to_string(value))
+              value_(std::to_string(value))
         {
         }
 
         property(property_path path, bool value)
             : path_(std::move(path)),
-            value_(value ? "true" : "false")
+              value_(value ? "true" : "false")
         {
         }
 
@@ -8472,20 +8476,26 @@ namespace ews
             typename = typename std::enable_if<std::is_enum<T>::value>::type>
             property(property_path path, T enum_value)
             : path_(std::move(path)),
-            value_(internal::enum_to_str(enum_value))
+              value_(internal::enum_to_str(enum_value))
         {
         }
 #else
         property(property_path path, ews::sensitivity enum_value)
             : path_(std::move(path)),
-            value_(internal::enum_to_str(enum_value))
+              value_(internal::enum_to_str(enum_value))
         {
         }
 #endif
 
         property(property_path path, const body& value)
             : path_(std::move(path)),
-            value_(value.to_xml("t"))
+              value_(value.to_xml("t"))
+        {
+        }
+
+        property(property_path path, const date_time& value)
+            : path_(std::move(path)),
+              value_(value.to_string())
         {
         }
 
@@ -8703,7 +8713,7 @@ namespace ews
 
     //! \brief This enumeration indicates which parts of a text value are
     //! compared to a supplied constant value.
-    //! 
+    //!
     //! \sa contains
     enum class containment_mode
     {
@@ -8738,7 +8748,7 @@ namespace ews
 
     //! \brief This enumeration determines how case and non-spacing characters
     //! are considered when evaluating a text search expression.
-    //! 
+    //!
     //! \sa contains
     enum class containment_comparison
     {
@@ -9079,7 +9089,9 @@ namespace ews
         item_id
         update_item(item_id id,
                     property prop,
-                    conflict_resolution res = conflict_resolution::auto_resolve)
+                    conflict_resolution res = conflict_resolution::auto_resolve,
+                    send_meeting_cancellations cancellations =
+                        send_meeting_cancellations::send_to_none)
         {
             auto item_change_open_tag = "<t:SetItemField>";
             auto item_change_close_tag = "</t:SetItemField>";
@@ -9097,10 +9109,13 @@ namespace ews
             }
 
             const std::string request_string =
-                "<m:UpdateItem"
+                "<m:UpdateItem\n"
                 "    MessageDisposition=\"SaveOnly\"\n"
                 "    ConflictResolution=\""
                         + internal::enum_to_str(res)
+                        + "\"\n"
+                "    SendMeetingInvitationsOrCancellations=\""
+                        + internal::enum_to_str(cancellations)
                         + "\">\n"
                 "  <m:ItemChanges>\n"
                 "    <t:ItemChange>\n"

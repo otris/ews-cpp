@@ -122,7 +122,7 @@ namespace tests
         path = "calendar:Start";
         EXPECT_EQ("calendar:Start", path);
         EXPECT_STREQ("Start", path.property_name().c_str());
-        EXPECT_STREQ("Calendar", path.class_name().c_str());
+        EXPECT_STREQ("CalendarItem", path.class_name().c_str());
 
         path = "task:AssignedTime";
         EXPECT_EQ("task:AssignedTime", path);
