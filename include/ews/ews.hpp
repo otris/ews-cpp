@@ -3589,6 +3589,75 @@ namespace ews
         }
     }
 
+    enum class free_busy_status
+    {
+        //! The time slot is open for other events
+        free,
+
+        //! The time slot is potentially filled
+        tentative,
+
+        //! the time slot is filled and attempts by others to schedule a
+        //! meeting for this time period should be avoided by an application
+        busy,
+
+        //! The user is out-of-office and may not be able to respond to
+        //! meeting invitations for new events that occur in the time slot
+        out_of_office,
+
+        //! Status is undetermined. You should not explicitly set this.
+        //! However the Exchange store might return this value
+        no_data
+    };
+
+    namespace internal
+    {
+        inline std::string enum_to_str(free_busy_status val)
+        {
+            switch (val)
+            {
+            case free_busy_status::free:
+                return "Free";
+            case free_busy_status::tentative:
+                return "Tentative";
+            case free_busy_status::busy:
+                return "Busy";
+            case free_busy_status::out_of_office:
+                return "OOF";
+            case free_busy_status::no_data:
+                return "NoData";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
+    enum class calendar_item_type
+    {
+        //! The item is not associated with a recurring calendar item; default
+        //! for new calendar items
+        single,
+
+        //! The item is an occurrence of a recurring calendar item
+        occurrence,
+
+        //! The item is an exception to a recurring calendar item
+        exception,
+
+        //! The item is master for a set of recurring calendar items
+        recurring_master
+    };
+
+    enum class response_type
+    {
+        unknown,
+        organizer,
+        tentative,
+        accept,
+        decline,
+        no_response_received
+    };
+
     //! Well known folder names enumeration. Usually rendered to XML as
     //! <tt>\<DistinguishedFolderId></tt> element.
     enum class standard_folder
@@ -7644,6 +7713,243 @@ namespace ews
             : item(std::move(id), std::move(properties))
         {}
 #endif
+
+        date_time get_start() const
+        {
+            return date_time(xml().get_value_as_string("Start"));
+        }
+
+        void set_start(const date_time& datetime)
+        {
+            xml().set_or_update("Start", datetime.to_string());
+        }
+
+        date_time get_end() const
+        {
+            return date_time(xml().get_value_as_string("End"));
+        }
+
+        void set_end(const date_time& datetime)
+        {
+            xml().set_or_update("End", datetime.to_string());
+        }
+
+        //! \brief The original start time of a calendar item
+        //!
+        //! This is a read-only property.
+        date_time get_original_start() const
+        {
+            return date_time(xml().get_value_as_string("OriginalStart"));
+        }
+
+        bool is_all_day_event() const
+        {
+            return xml().get_value_as_string("IsAllDayEvent") == "true";
+        }
+
+        void set_all_day_event_enabled(bool enabled)
+        {
+            xml().set_or_update("IsAllDayEvent", enabled ? "true" : "false");
+        }
+
+        free_busy_status get_legacy_free_busy_status() const
+        {
+            const auto val = xml().get_value_as_string("LegacyFreeBusyStatus");
+            // Default seems to be 'Busy' if not explicitly set
+            if (val.empty() || val == "Free")
+            {
+                return free_busy_status::busy;
+            }
+            if (val == "Tentative")
+            {
+                return free_busy_status::tentative;
+            }
+            if (val == "Busy")
+            {
+                return free_busy_status::busy;
+            }
+            if (val == "OOF")
+            {
+                return free_busy_status::out_of_office;
+            }
+            if (val == "NoData")
+            {
+                return free_busy_status::no_data;
+            }
+            throw exception("Unexpected <LegacyFreeBusyStatus>");
+        }
+
+        void set_legacy_free_busy_status(free_busy_status status)
+        {
+            xml().set_or_update("LegacyFreeBusyStatus",
+                                internal::enum_to_str(status));
+        }
+
+        //! \brief Returns the location where a meeting or event is supposed
+        //! to take place.
+        std::string get_location() const
+        {
+            return xml().get_value_as_string("Location");
+        }
+
+        //! \brief Sets the location where a meeting or event is supposed to
+        //! take place.
+        void set_location(const std::string& location)
+        {
+            xml().set_or_update("Location", location);
+        }
+
+        std::string get_when() const
+        {
+            return xml().get_value_as_string("When");
+        }
+
+        void set_when(const std::string& desc)
+        {
+            xml().set_or_update("When", desc);
+        }
+
+        //! \brief Indicates whether this calendar item is a meeting
+        //!
+        //! This is a read-only property.
+        bool is_meeting() const
+        {
+            return xml().get_value_as_string("IsMeeting") == "true";
+        }
+
+        //! \brief Indicates whether this calendar item has been cancelled by
+        //! the organizer.
+        //!
+        //! This is a read-only property. It is only meaningful for meetings.
+        bool is_cancelled() const
+        {
+            return xml().get_value_as_string("IsCancelled") == "true";
+        }
+
+        //! \brief True if a calendar item is part of a recurring series.
+        //!
+        //! This is a read-only property. Note that a recurring master is not
+        //! considered part of a recurring series, even though it holds the
+        //! recurrence information.
+        bool is_recurring() const
+        {
+            return xml().get_value_as_string("IsRecurring") == "true";
+        }
+
+        //! \brief True if a meeting request for this calendar item has been
+        //! sent to all attendees.
+        //!
+        //! This is a read-only property.
+        bool meeting_request_was_sent() const
+        {
+            return xml().get_value_as_string("MeetingRequestWasSent") == "true";
+        }
+
+        //! \brief Indicates whether a response to a calendar item is needed.
+        //!
+        //! This is a read-only property.
+        bool is_response_requested() const
+        {
+            return xml().get_value_as_string("IsResponseRequested") == "true";
+        }
+
+        //! \brief Returns the type of this calendar item
+        //!
+        //! This is a read-only property.
+        calendar_item_type get_calendar_item_type() const
+        {
+            const auto val = xml().get_value_as_string("CalendarItemType");
+            // By default, newly created calendar items are of type 'Single'
+            if (val.empty() || val == "Single")
+            {
+                return calendar_item_type::single;
+            }
+            if (val == "Occurrence")
+            {
+                return calendar_item_type::occurrence;
+            }
+            if (val == "Exception")
+            {
+                return calendar_item_type::exception;
+            }
+            if (val == "RecurringMaster")
+            {
+                return calendar_item_type::recurring_master;
+            }
+            throw exception("Unexpected <CalendarItemType>");
+        }
+
+        //! \brief Returns the response of this calendar item's owner to the
+        //! meeting
+        //!
+        //! This is a read-only property.
+        response_type get_my_response_type() const
+        {
+            const auto val = xml().get_value_as_string("MyResponseType");
+            if (val.empty() || val == "Unknown")
+            {
+                return response_type::unknown;
+            }
+            if (val == "Organizer")
+            {
+                return response_type::organizer;
+            }
+            if (val == "Tentative")
+            {
+                return response_type::tentative;
+            }
+            if (val == "Accept")
+            {
+                return response_type::accept;
+            }
+            if (val == "Decline")
+            {
+                return response_type::decline;
+            }
+            if (val == "NoResponseReceived")
+            {
+                return response_type::no_response_received;
+            }
+            throw exception("Unexpected value for <MyResponseType>");
+        }
+
+        // <Organizer/>
+        // <RequiredAttendees/>
+        // <OptionalAttendees/>
+        // <Resources/>
+        // <ConflictingMeetingCount/>
+        // <AdjacentMeetingCount/>
+        // <ConflictingMeetings/>
+        // <AdjacentMeetings/>
+        // <Duration/>
+        // <TimeZone/>
+        // <AppointmentReplyTime/>
+        // <AppointmentSequenceNumber/>
+        // <AppointmentState/>
+        // <Recurrence/>
+        // <FirstOccurrence/>
+        // <LastOccurrence/>
+        // <ModifiedOccurrences/>
+        // <DeletedOccurrences/>
+        // <MeetingTimeZone/>
+        // <StartTimeZone/>
+        // <EndTimeZone/>
+        // <ConferenceType/>
+        // <AllowNewTimeProposal/>
+        // <IsOnlineMeeting/>
+        // <MeetingWorkspaceUrl/>
+        // <NetShowUrl/>
+
+        // Properties beyond 2007 scope
+
+        // <EffectiveRights/>
+        // <LastModifiedName/>
+        // <LastModifiedTime/>
+        // <IsAssociated/>
+        // <WebClientReadFormQueryString/>
+        // <WebClientEditFormQueryString/>
+        // <ConversationId/>
+        // <UniqueBody/>
 
         //! Makes a calendar item instance from a <CalendarItem> XML element
         static calendar_item from_xml_element(const rapidxml::xml_node<>& elem)

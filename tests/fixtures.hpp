@@ -290,6 +290,29 @@ namespace tests
 
     struct CalendarItemTest : public ServiceFixture
     {
+    public:
+        void SetUp()
+        {
+            ServiceFixture::SetUp();
+
+            calitem_.set_subject("Meet the Fockers");
+            calitem_.set_start(ews::date_time("2004-12-25T10:00:00.000Z"));
+            calitem_.set_end(  ews::date_time("2004-12-27T10:00:00.000Z"));
+            const auto item_id = service().create_item(calitem_);
+            calitem_ = service().get_calendar_item(item_id);
+        }
+
+        void TearDown()
+        {
+            service().delete_calendar_item(std::move(calitem_));
+
+            ServiceFixture::TearDown();
+        }
+
+        ews::calendar_item& test_calendar_item() { return calitem_; }
+
+    private:
+        ews::calendar_item calitem_;
     };
 
     class AttachmentTest : public ServiceFixture
