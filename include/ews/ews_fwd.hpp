@@ -11,12 +11,12 @@ namespace ews
 {
     class attachment;
     class attachment_id;
-    template <typename T> class basic_service;
     class body;
+    class calendar_item;
     class contact;
+    class contains;
     class date_time;
     class distinguished_folder_id;
-    class email_address;
     class exception;
     class exchange_error;
     class folder_id;
@@ -25,6 +25,7 @@ namespace ews
     class is_equal_to;
     class item;
     class item_id;
+    class mailbox;
     class message;
     class mime_content;
     class parse_error;
@@ -34,6 +35,7 @@ namespace ews
     class schema_validation_error;
     class soap_fault;
     class task;
+    template <typename T> class basic_service;
 
     bool operator==(const date_time&, const date_time&);
     bool operator==(const property_path&, const property_path&);
