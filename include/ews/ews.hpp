@@ -8779,12 +8779,18 @@ namespace ews
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
         template <typename T,
             typename = typename std::enable_if<std::is_enum<T>::value>::type>
-            property(property_path path, T enum_value)
+        property(property_path path, T enum_value)
             : path_(std::move(path)),
               value_(internal::enum_to_str(enum_value))
         {
         }
 #else
+        property(property_path path, ews::free_busy_status enum_value)
+            : path_(std::move(path)),
+              value_(internal::enum_to_str(enum_value))
+        {
+        }
+
         property(property_path path, ews::sensitivity enum_value)
             : path_(std::move(path)),
               value_(internal::enum_to_str(enum_value))
