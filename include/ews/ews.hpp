@@ -3555,7 +3555,7 @@ namespace ews
         }
     }
 
-    //! <CreateItem> and <UpdateItem> methods use this attribute. Only
+    //! \<CreateItem> and \<UpdateItem> methods use this attribute. Only
     //! applicable to e-mail messages
     enum class message_disposition
     {
@@ -4966,7 +4966,7 @@ namespace ews
             return sstr.str();
         }
 
-        //! Makes an attachment_id instance from an <AttachmentId> element
+        //! Makes an attachment_id instance from an \<AttachmentId> element
         static attachment_id from_xml_element(const rapidxml::xml_node<>& elem)
         {
             auto id_attr = elem.first_attribute("Id");
@@ -5554,7 +5554,7 @@ namespace ews
         //! \brief Returns the attachment's contents
         //!
         //! If this is a <tt>\<FileAttachment></tt>, returns the Base64-encoded
-        //! contents of the file attachment. If this is an <ItemAttachment>, the
+        //! contents of the file attachment. If this is an \<ItemAttachment>, the
         //! empty string.
         std::string content() const
         {
@@ -6386,7 +6386,7 @@ namespace ews
 
         //! Returns true if no MIME content is available.
         //!
-        //! Note that a <MimeContent> property is only included in a GetItem
+        //! Note that a \<MimeContent> property is only included in a GetItem
         //! response when explicitly requested using additional properties. This
         //! function lets you test whether MIME content is available.
         bool none() const EWS_NOEXCEPT { return len_bytes() == 0U; }
@@ -7544,7 +7544,7 @@ namespace ews
         // manager_mailbox
         // direct_reports
 
-        //! Makes a contact instance from a <Contact> XML element
+        //! Makes a contact instance from a \<Contact> XML element
         static contact from_xml_element(const rapidxml::xml_node<>& elem)
         {
             auto id_node = elem.first_node_ns(internal::uri<>::microsoft::types(),
@@ -7716,21 +7716,25 @@ namespace ews
         {}
 #endif
 
+        //! Returns the starting date and time for this calendar item
         date_time get_start() const
         {
             return date_time(xml().get_value_as_string("Start"));
         }
 
+        //! Sets the starting date and time for this calendar item
         void set_start(const date_time& datetime)
         {
             xml().set_or_update("Start", datetime.to_string());
         }
 
+        //! Returns the ending date and time for this calendar item
         date_time get_end() const
         {
             return date_time(xml().get_value_as_string("End"));
         }
 
+        //! Sets the ending date and time for this calendar item
         void set_end(const date_time& datetime)
         {
             xml().set_or_update("End", datetime.to_string());
@@ -7744,16 +7748,19 @@ namespace ews
             return date_time(xml().get_value_as_string("OriginalStart"));
         }
 
+        //! True if this calendar item is lasting all day
         bool is_all_day_event() const
         {
             return xml().get_value_as_string("IsAllDayEvent") == "true";
         }
 
+        //! Makes this calendar item an all day event or not
         void set_all_day_event_enabled(bool enabled)
         {
             xml().set_or_update("IsAllDayEvent", enabled ? "true" : "false");
         }
 
+        //! Returns the free/busy status of this calendar item
         free_busy_status get_legacy_free_busy_status() const
         {
             const auto val = xml().get_value_as_string("LegacyFreeBusyStatus");
@@ -7781,6 +7788,7 @@ namespace ews
             throw exception("Unexpected <LegacyFreeBusyStatus>");
         }
 
+        //! Sets the free/busy status of this calendar item
         void set_legacy_free_busy_status(free_busy_status status)
         {
             xml().set_or_update("LegacyFreeBusyStatus",
@@ -7801,11 +7809,13 @@ namespace ews
             xml().set_or_update("Location", location);
         }
 
+        //! Returns a description of when this calendar item occurs
         std::string get_when() const
         {
             return xml().get_value_as_string("When");
         }
 
+        //! Sets a description of when this calendar item occurs
         void set_when(const std::string& desc)
         {
             xml().set_or_update("When", desc);
@@ -7953,7 +7963,7 @@ namespace ews
         // <ConversationId/>
         // <UniqueBody/>
 
-        //! Makes a calendar item instance from a <CalendarItem> XML element
+        //! Makes a calendar item instance from a \<CalendarItem> XML element
         static calendar_item from_xml_element(const rapidxml::xml_node<>& elem)
         {
             auto id_node = elem.first_node_ns(internal::uri<>::microsoft::types(),
@@ -8236,7 +8246,7 @@ namespace ews
         // <References/>
         // <ReplyTo/>
 
-        //! Makes a message instance from a <Message> XML element
+        //! Makes a message instance from a \<Message> XML element
         static message from_xml_element(const rapidxml::xml_node<>& elem)
         {
             auto id_node = elem.first_node_ns(internal::uri<>::microsoft::types(),
@@ -8279,7 +8289,7 @@ namespace ews
         // Intentionally not explicit
         property_path(const char* uri) : uri_(std::string(uri)) {}
 
-        //! Returns the <FieldURI> element for this property.
+        //! Returns the \<FieldURI> element for this property.
         //!
         //! Identifies frequently referenced properties by URI
         const std::string& field_uri() const EWS_NOEXCEPT { return uri_; }
