@@ -267,6 +267,13 @@ namespace tests
         auto cal = ews::calendar_item();
         EXPECT_EQ(ews::response_type::unknown, cal.get_my_response_type());
     }
+
+    // <Organizer/>
+    TEST(OfflineCalendarItemTest, OrganizerPropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_TRUE(cal.get_organizer().none());
+    }
 }
 
 // vim:et ts=4 sw=4 noic cc=80
