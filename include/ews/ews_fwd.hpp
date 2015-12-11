@@ -11,6 +11,7 @@ namespace ews
 {
     class attachment;
     class attachment_id;
+    class attendee;
     class body;
     class calendar_item;
     class contact;

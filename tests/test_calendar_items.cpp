@@ -1,7 +1,57 @@
 #include "fixtures.hpp"
 
+#include <ews/rapidxml/rapidxml.hpp>
+
+#include <vector>
+#include <iterator>
+#include <memory>
+#include <algorithm>
+#include <cstring>
+
 namespace tests
 {
+    TEST(AttendeeTest, ToXML)
+    {
+        auto a = ews::attendee(
+                    ews::mailbox("gaylord.focker@uchospitals.edu"),
+                    ews::response_type::accept,
+                    ews::date_time("2004-11-11T11:11:11Z"));
+
+        EXPECT_STREQ("<y:Attendee>"
+                       "<y:Mailbox>"
+                         "<y:EmailAddress>gaylord.focker@uchospitals.edu</y:EmailAddress>"
+                       "</y:Mailbox>"
+                       "<y:ResponseType>Accept</y:ResponseType>"
+                       "<y:LastResponseTime>2004-11-11T11:11:11Z</y:LastResponseTime>"
+                     "</y:Attendee>",
+                     a.to_xml("y").c_str());
+    }
+
+    TEST(AttendeeTest, FromXML)
+    {
+        const char* xml =
+            "<Attendee>"
+              "<Mailbox>"
+                "<EmailAddress>gaylord.focker@uchospitals.edu</EmailAddress>"
+              "</Mailbox>"
+              "<ResponseType>Accept</ResponseType>"
+              "<LastResponseTime>2004-11-11T11:11:11Z</LastResponseTime>"
+            "</Attendee>";
+        std::vector<char> buf;
+        std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+        buf.push_back('\0');
+        rapidxml::xml_document<> doc;
+        doc.parse<0>(&buf[0]);
+        auto node = doc.first_node();
+        auto a = ews::attendee::from_xml_element(*node);
+
+        EXPECT_STREQ("gaylord.focker@.uchospitals.edu",
+                     a.get_mailbox().value().c_str());
+        EXPECT_EQ(ews::response_type::accept, a.get_response_type());
+        EXPECT_EQ(ews::date_time("2004-11-11T11:11:11Z"),
+                  a.get_last_response_time());
+    }
+
     TEST_F(CalendarItemTest, GetCalendarItemWithInvalidIdThrows)
     {
         auto invalid_id = ews::item_id();

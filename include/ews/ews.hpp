@@ -3658,6 +3658,62 @@ namespace ews
         no_response_received
     };
 
+    namespace internal
+    {
+        inline std::string enum_to_str(response_type val)
+        {
+            switch (val)
+            {
+            case response_type::unknown:
+                return "Unknown";
+            case response_type::organizer:
+                return "Organizer";
+            case response_type::tentative:
+                return "Tentative";
+            case response_type::accept:
+                return "Accept";
+            case response_type::decline:
+                return "Decline";
+            case response_type::no_response_received:
+                return "NoResponseReceived";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+
+        inline response_type str_to_response_type(const std::string& str)
+        {
+            if (str == "Unknown")
+            {
+                return response_type::unknown;
+            }
+            else if (str == "Organizer")
+            {
+                return response_type::organizer;
+            }
+            else if (str == "Tentative")
+            {
+                return response_type::tentative;
+            }
+            else if (str == "Accept")
+            {
+                return response_type::accept;
+            }
+            else if (str == "Decline")
+            {
+                return response_type::decline;
+            }
+            else if (str == "NoResponseReceived")
+            {
+                return response_type::no_response_received;
+            }
+            else
+            {
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
     //! Well known folder names enumeration. Usually rendered to XML as
     //! <tt>\<DistinguishedFolderId></tt> element.
     enum class standard_folder
@@ -3804,7 +3860,7 @@ namespace ews
 
     namespace internal
     {
-        static std::string enum_to_str(sensitivity s)
+        inline std::string enum_to_str(sensitivity s)
         {
             switch (s)
             {
@@ -3821,7 +3877,7 @@ namespace ews
             }
         }
 
-        static sensitivity str_to_sensitivity(const std::string& str)
+        inline sensitivity str_to_sensitivity(const std::string& str)
         {
             if (str == "Normal")
             {
@@ -6406,8 +6462,9 @@ namespace ews
 
     //! \brief Identifies a SMTP mailbox
     //!
-    //! Usually represents a contact's email address, a message recipient, or
-    //! the organizer of a meeting.
+    //! Identifies a fully resolved e-mail address. Usually represents a
+    //! contact's email address, a message recipient, or the organizer of a
+    //! meeting.
     class mailbox final
     {
     public:
@@ -6609,6 +6666,125 @@ namespace ews
     static_assert(std::is_copy_assignable<mailbox>::value, "");
     static_assert(std::is_move_constructible<mailbox>::value, "");
     static_assert(std::is_move_assignable<mailbox>::value, "");
+#endif
+
+    //! An attendee of a meeting or a meeting room.
+    class attendee final
+    {
+    public:
+        explicit attendee(mailbox addr,
+                          response_type response,
+                          date_time last_response_time)
+            : mailbox_(std::move(addr)),
+              response_(std::move(response)),
+              last_response_time_(std::move(last_response_time))
+        {}
+
+        //! Returns this attendee's e-mail address
+        const mailbox& get_mailbox() const EWS_NOEXCEPT
+        {
+            return mailbox_;
+        }
+
+        //! \brief Returns this attendee's response
+        //!
+        //! This property is only relevant to a meeting organizer's calendar
+        //! item.
+        response_type get_response_type() const EWS_NOEXCEPT
+        {
+            return response_;
+        }
+
+        //! Returns the date and time of the latest response that was received
+        const date_time& get_last_response_time() const EWS_NOEXCEPT
+        {
+            return last_response_time_;
+        }
+
+        //! Returns the XML serialized version of this attendee instance
+        std::string to_xml(const char* xmlns=nullptr) const
+        {
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "Attendee>";
+            sstr << mailbox_.to_xml(xmlns);
+            sstr << "<" << pref << "ResponseType>"
+                 << internal::enum_to_str(response_)
+                 << "</" << pref << "ResponseType>";
+            sstr << "<" << pref << "LastResponseTime>"
+                 << last_response_time_.to_string()
+                 << "</" << pref << "LastResponseTime>";
+            sstr << "</" << pref << "Attendee>";
+            return sstr.str();
+        }
+
+        //! Makes a attendee instance from an \<Attendee> XML element
+        static attendee from_xml_element(const rapidxml::xml_node<>& elem)
+        {
+            using rapidxml::internal::compare;
+
+            //  <Attendee>
+            //    <Mailbox/>
+            //    <ResponseType/>
+            //    <LastResponseTime/>
+            //  </Attendee>
+
+            mailbox addr;
+            auto resp_type = response_type::unknown;
+            date_time last_resp_time("");
+
+            for (auto node = elem.first_node(); node;
+                 node = node->next_sibling())
+            {
+                if (compare(node->local_name(),
+                    node->local_name_size(),
+                    "Mailbox",
+                    std::strlen("Mailbox")))
+                {
+                    addr = mailbox::from_xml_element(*node);
+                }
+                else if (compare(node->local_name(),
+                         node->local_name_size(),
+                         "ResponseType",
+                         std::strlen("ResponseType")))
+                {
+                    resp_type = internal::str_to_response_type(
+                        std::string(node->value(), node->value_size()));
+                }
+                else if (compare(node->local_name(),
+                         node->local_name_size(),
+                         "LastResponseTime",
+                         std::strlen("LastResponseTime")))
+                {
+                    last_resp_time = ews::date_time(
+                        std::string(node->value(), node->value_size()));
+                }
+                else
+                {
+                    throw exception(
+                        "Unexpected child element in <Attendee>");
+                }
+            }
+
+            return attendee(addr, resp_type, last_resp_time);
+        }
+
+    private:
+        mailbox mailbox_;
+        response_type response_;
+        date_time last_response_time_;
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<attendee>::value, "");
+    static_assert(std::is_copy_constructible<attendee>::value, "");
+    static_assert(std::is_copy_assignable<attendee>::value, "");
+    static_assert(std::is_move_constructible<attendee>::value, "");
+    static_assert(std::is_move_assignable<attendee>::value, "");
 #endif
 
     //! Represents a generic item in the Exchange store.
@@ -8001,31 +8177,11 @@ namespace ews
         response_type get_my_response_type() const
         {
             const auto val = xml().get_value_as_string("MyResponseType");
-            if (val.empty() || val == "Unknown")
+            if (val.empty())
             {
                 return response_type::unknown;
             }
-            if (val == "Organizer")
-            {
-                return response_type::organizer;
-            }
-            if (val == "Tentative")
-            {
-                return response_type::tentative;
-            }
-            if (val == "Accept")
-            {
-                return response_type::accept;
-            }
-            if (val == "Decline")
-            {
-                return response_type::decline;
-            }
-            if (val == "NoResponseReceived")
-            {
-                return response_type::no_response_received;
-            }
-            throw exception("Unexpected value for <MyResponseType>");
+            return internal::str_to_response_type(val);
         }
 
         //! \brief Returns the organizer of this calendar item
@@ -9088,7 +9244,7 @@ namespace ews
 
     namespace internal
     {
-        static std::string enum_to_str(containment_mode val)
+        inline std::string enum_to_str(containment_mode val)
         {
             switch (val)
             {
@@ -9122,7 +9278,7 @@ namespace ews
 
     namespace internal
     {
-        static std::string enum_to_str(containment_comparison val)
+        inline std::string enum_to_str(containment_comparison val)
         {
             switch (val)
             {
