@@ -8362,55 +8362,42 @@ namespace ews
         //! Returns all attendees required to attend this meeting
         std::vector<attendee> get_required_attendees() const
         {
-            const auto attendees = xml().get_node("RequiredAttendees");
-            if (!attendees)
-            {
-                return std::vector<attendee>();
-            }
-
-            std::vector<attendee> result;
-            for (auto attendee_node = attendees->first_node(); attendee_node;
-                 attendee_node = attendee_node->next_sibling())
-            {
-                result.emplace_back(
-                    attendee::from_xml_element(*attendee_node));
-            }
-            return result;
+            return get_attendees_helper("RequiredAttendees");
         }
 
         //! Sets the attendees required to attend this meeting
         void
         set_required_attendees(const std::vector<attendee>& attendees) const
         {
-            auto doc = xml().document();
-
-            auto required_attendees_node =
-                xml().get_node("RequiredAttendees");
-            if (required_attendees_node)
-            {
-                doc->remove_node(required_attendees_node);
-            }
-
-            auto ptr_to_qname = doc->allocate_string("t:RequiredAttendees");
-            required_attendees_node = doc->allocate_node(
-                                                    rapidxml::node_element);
-            required_attendees_node->qname(ptr_to_qname,
-                                           std::strlen("t:RequiredAttendees"),
-                                           ptr_to_qname + 2);
-            required_attendees_node->namespace_uri(
-                                    internal::uri<>::microsoft::types(),
-                                    internal::uri<>::microsoft::types_size);
-
-            doc->append_node(required_attendees_node);
-
-            for (const auto& a : attendees)
-            {
-                a.to_xml_element(*required_attendees_node);
-            }
+            set_attendees_helper("RequiredAttendees", attendees);
         }
 
-        // <OptionalAttendees/>
-        // <Resources/>
+        //! Returns all attendees not required to attend this meeting
+        std::vector<attendee> get_optional_attendees() const
+        {
+            return get_attendees_helper("OptionalAttendees");
+        }
+
+        //! Sets the attendees not required to attend this meeting
+        void
+        set_optional_attendees(const std::vector<attendee>& attendees) const
+        {
+            set_attendees_helper("OptionalAttendees", attendees);
+        }
+
+        //! Returns all scheduled resources of this meeting
+        std::vector<attendee> get_resources() const
+        {
+            return get_attendees_helper("Resources");
+        }
+
+        //! Sets the scheduled resources of this meeting
+        void
+        set_resources(const std::vector<attendee>& resources) const
+        {
+            set_attendees_helper("Resources", resources);
+        }
+
         // <ConflictingMeetingCount/>
         // <AdjacentMeetingCount/>
         // <ConflictingMeetings/>
@@ -8456,6 +8443,56 @@ namespace ews
         }
 
     private:
+        inline
+        std::vector<attendee> get_attendees_helper(const char* node_name) const
+        {
+            const auto attendees = xml().get_node(node_name);
+            if (!attendees)
+            {
+                return std::vector<attendee>();
+            }
+
+            std::vector<attendee> result;
+            for (auto attendee_node = attendees->first_node(); attendee_node;
+                 attendee_node = attendee_node->next_sibling())
+            {
+                result.emplace_back(
+                                attendee::from_xml_element(*attendee_node));
+            }
+            return result;
+        }
+
+        inline
+        void set_attendees_helper(const char* node_name,
+                                  const std::vector<attendee>& attendees) const
+        {
+            auto doc = xml().document();
+
+            auto attendees_node = xml().get_node(node_name);
+            if (attendees_node)
+            {
+                doc->remove_node(attendees_node);
+            }
+
+            const auto tmp = std::string("t:") + node_name;
+            auto ptr_to_qname = doc->allocate_string(tmp.c_str());
+            attendees_node = doc->allocate_node(
+                                    rapidxml::node_element);
+            attendees_node->qname(ptr_to_qname,
+                                  std::strlen(node_name) + 2,
+                                  ptr_to_qname + 2);
+            attendees_node->namespace_uri(
+                                    internal::uri<>::microsoft::types(),
+                                    internal::uri<>::microsoft::types_size);
+
+            doc->append_node(attendees_node);
+
+            for (const auto& a : attendees)
+            {
+                a.to_xml_element(*attendees_node);
+            }
+        }
+
         template <typename U> friend class basic_service;
         std::string create_item_request_string() const
         {
@@ -9741,10 +9778,10 @@ namespace ews
         {
             auto item_change_open_tag = "<t:SetItemField>";
             auto item_change_close_tag = "</t:SetItemField>";
-            if (   prop.path() == "calendar:OptionalAttendees"
+            if (//   prop.path() == "calendar:OptionalAttendees"
                 //|| prop.path() == "calendar:RequiredAttendees"
-                || prop.path() == "calendar:Resources"
-                || prop.path() == "item:Body"
+                //|| prop.path() == "calendar:Resources"
+                   prop.path() == "item:Body"
                 || prop.path() == "message:ToRecipients"
                 || prop.path() == "message:CcRecipients"
                 || prop.path() == "message:BccRecipients"
