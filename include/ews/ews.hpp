@@ -6525,7 +6525,7 @@ namespace ews
             return mailbox_type_;
         }
 
-        //! Returns the XML serialized version of this mailbox instance
+        //! Returns the XML serialized string version of this mailbox instance
         std::string to_xml(const char* xmlns=nullptr) const
         {
             auto pref = std::string();
@@ -6564,6 +6564,112 @@ namespace ews
             }
             sstr << "</" << pref << "Mailbox>";
             return sstr.str();
+        }
+
+        //! \brief Creates a new \<Mailbox> XML element and appends it to given
+        //! parent node.
+        //!
+        //! Returns a reference to the newly created element.
+        rapidxml::xml_node<>& to_xml_element(rapidxml::xml_node<>& parent) const
+        {
+            auto doc = parent.document();
+
+            EWS_ASSERT(doc
+                    && "parent node needs to be somewhere in a document");
+
+            auto ptr_to_qname = doc->allocate_string("t:Mailbox");
+            auto mailbox_node = doc->allocate_node(rapidxml::node_element);
+            mailbox_node->qname(ptr_to_qname,
+                                std::strlen("t:Mailbox"),
+                                ptr_to_qname + 2);
+            mailbox_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                        internal::uri<>::microsoft::types_size);
+
+            if (!id_.valid())
+            {
+                EWS_ASSERT(!value_.empty()
+                    && "Neither item_id nor value set in mailbox instance");
+
+                ptr_to_qname = doc->allocate_string("t:EmailAddress");
+                auto ptr_to_value = doc->allocate_string(value_.c_str());
+                auto node = doc->allocate_node(rapidxml::node_element);
+                node->qname(ptr_to_qname,
+                            std::strlen("t:EmailAddress"),
+                            ptr_to_qname + 2);
+                node->value(ptr_to_value);
+                node->namespace_uri(internal::uri<>::microsoft::types(),
+                                    internal::uri<>::microsoft::types_size);
+                mailbox_node->append_node(node);
+
+                if (!name_.empty())
+                {
+                    ptr_to_qname = doc->allocate_string("t:Name");
+                    ptr_to_value = doc->allocate_string(name_.c_str());
+                    node = doc->allocate_node(rapidxml::node_element);
+                    node->qname(ptr_to_qname,
+                                std::strlen("t:Name"),
+                                ptr_to_qname + 2);
+                    node->value(ptr_to_value);
+                    node->namespace_uri(internal::uri<>::microsoft::types(),
+                                        internal::uri<>::microsoft::types_size);
+                    mailbox_node->append_node(node);
+                }
+
+                if (!routing_type_.empty())
+                {
+                    ptr_to_qname = doc->allocate_string("t:RoutingType");
+                    ptr_to_value = doc->allocate_string(routing_type_.c_str());
+                    node = doc->allocate_node(rapidxml::node_element);
+                    node->qname(ptr_to_qname,
+                                std::strlen("t:RoutingType"),
+                                ptr_to_qname + 2);
+                    node->value(ptr_to_value);
+                    node->namespace_uri(internal::uri<>::microsoft::types(),
+                                        internal::uri<>::microsoft::types_size);
+                    mailbox_node->append_node(node);
+                }
+
+                if (!mailbox_type_.empty())
+                {
+                    ptr_to_qname = doc->allocate_string("t:MailboxType");
+                    ptr_to_value = doc->allocate_string(mailbox_type_.c_str());
+                    node = doc->allocate_node(rapidxml::node_element);
+                    node->qname(ptr_to_qname,
+                                std::strlen("t:MailboxType"),
+                                ptr_to_qname + 2);
+                    node->value(ptr_to_value);
+                    node->namespace_uri(internal::uri<>::microsoft::types(),
+                                        internal::uri<>::microsoft::types_size);
+                    mailbox_node->append_node(node);
+                }
+            }
+            else
+            {
+                ptr_to_qname = doc->allocate_string("t:ItemId");
+                auto item_id_node =
+                    doc->allocate_node(rapidxml::node_element);
+                item_id_node->qname(ptr_to_qname,
+                                    std::strlen("t:ItemId"),
+                                    ptr_to_qname + 2);
+                item_id_node->namespace_uri(
+                                        internal::uri<>::microsoft::types(),
+                                        internal::uri<>::microsoft::types_size);
+
+                auto ptr_to_key = doc->allocate_string("Id");
+                auto ptr_to_value = doc->allocate_string(id_.id().c_str());
+                item_id_node->append_attribute(
+                        doc->allocate_attribute(ptr_to_key, ptr_to_value));
+
+                ptr_to_key = doc->allocate_string("ChangeKey");
+                ptr_to_value = doc->allocate_string(id_.change_key().c_str());
+                item_id_node->append_attribute(
+                        doc->allocate_attribute(ptr_to_key, ptr_to_value));
+
+                mailbox_node->append_node(item_id_node);
+            }
+
+            parent.append_node(mailbox_node);
+            return *mailbox_node;
         }
 
         //! Makes a mailbox instance from a \<Mailbox> XML element
@@ -8306,111 +8412,16 @@ namespace ews
             to_recipients_node->qname(ptr_to_qname,
                                       std::strlen("t:ToRecipients"),
                                       ptr_to_qname + 2);
-            to_recipients_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                              internal::uri<>::microsoft::types_size);
+            to_recipients_node->namespace_uri(
+                                        internal::uri<>::microsoft::types(),
+                                        internal::uri<>::microsoft::types_size);
+
+            doc->append_node(to_recipients_node);
 
             for (const auto& recipient : recipients)
             {
-                ptr_to_qname = doc->allocate_string("t:Mailbox");
-                auto mailbox_node = doc->allocate_node(rapidxml::node_element);
-                mailbox_node->qname(ptr_to_qname,
-                                    std::strlen("t:Mailbox"),
-                                    ptr_to_qname + 2);
-                mailbox_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                            internal::uri<>::microsoft::types_size);
-
-                if (!recipient.id().valid())
-                {
-                    EWS_ASSERT(!recipient.value().empty()
-                        && "Neither item_id nor value set in mailbox instance");
-
-                    ptr_to_qname = doc->allocate_string("t:EmailAddress");
-                    auto ptr_to_value = doc->allocate_string(
-                            recipient.value().c_str());
-                    auto node = doc->allocate_node(rapidxml::node_element);
-                    node->qname(ptr_to_qname,
-                                std::strlen("t:EmailAddress"),
-                                ptr_to_qname + 2);
-                    node->value(ptr_to_value);
-                    node->namespace_uri(internal::uri<>::microsoft::types(),
-                                        internal::uri<>::microsoft::types_size);
-                    mailbox_node->append_node(node);
-
-                    if (!recipient.name().empty())
-                    {
-                        ptr_to_qname = doc->allocate_string("t:Name");
-                        ptr_to_value = doc->allocate_string(
-                                recipient.name().c_str());
-                        node = doc->allocate_node(rapidxml::node_element);
-                        node->qname(ptr_to_qname,
-                                    std::strlen("t:Name"),
-                                    ptr_to_qname + 2);
-                        node->value(ptr_to_value);
-                        node->namespace_uri(internal::uri<>::microsoft::types(),
-                                            internal::uri<>::microsoft::types_size);
-                        mailbox_node->append_node(node);
-                    }
-
-                    if (!recipient.routing_type().empty())
-                    {
-                        ptr_to_qname = doc->allocate_string("t:RoutingType");
-                        ptr_to_value = doc->allocate_string(
-                                recipient.routing_type().c_str());
-                        node = doc->allocate_node(rapidxml::node_element);
-                        node->qname(ptr_to_qname,
-                                    std::strlen("t:RoutingType"),
-                                    ptr_to_qname + 2);
-                        node->value(ptr_to_value);
-                        node->namespace_uri(internal::uri<>::microsoft::types(),
-                                            internal::uri<>::microsoft::types_size);
-                        mailbox_node->append_node(node);
-                    }
-
-                    if (!recipient.mailbox_type().empty())
-                    {
-                        ptr_to_qname = doc->allocate_string("t:MailboxType");
-                        ptr_to_value = doc->allocate_string(
-                                recipient.mailbox_type().c_str());
-                        node = doc->allocate_node(rapidxml::node_element);
-                        node->qname(ptr_to_qname,
-                                    std::strlen("t:MailboxType"),
-                                    ptr_to_qname + 2);
-                        node->value(ptr_to_value);
-                        node->namespace_uri(internal::uri<>::microsoft::types(),
-                                            internal::uri<>::microsoft::types_size);
-                        mailbox_node->append_node(node);
-                    }
-                }
-                else
-                {
-                    ptr_to_qname = doc->allocate_string("t:ItemId");
-                    auto item_id_node =
-                        doc->allocate_node(rapidxml::node_element);
-                    item_id_node->qname(ptr_to_qname,
-                                        std::strlen("t:ItemId"),
-                                        ptr_to_qname + 2);
-                    item_id_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                                internal::uri<>::microsoft::types_size);
-
-                    auto ptr_to_key = doc->allocate_string("Id");
-                    auto ptr_to_value = doc->allocate_string(
-                            recipient.id().id().c_str()); // Uh, thats smelly
-                    item_id_node->append_attribute(
-                            doc->allocate_attribute(ptr_to_key, ptr_to_value));
-
-                    ptr_to_key = doc->allocate_string("ChangeKey");
-                    ptr_to_value = doc->allocate_string(
-                            recipient.id().change_key().c_str());
-                    item_id_node->append_attribute(
-                            doc->allocate_attribute(ptr_to_key, ptr_to_value));
-
-                    mailbox_node->append_node(item_id_node);
-                }
-
-                to_recipients_node->append_node(mailbox_node);
+                recipient.to_xml_element(*to_recipients_node);
             }
-
-            doc->append_node(to_recipients_node);
         }
 
         std::vector<mailbox> get_to_recipients()
