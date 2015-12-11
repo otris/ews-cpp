@@ -26,6 +26,20 @@ namespace tests
         }
     };
 
+    // Check if cont contains the element val
+    template <typename ContainerType, typename ValueType>
+    inline bool contains(const ContainerType& cont, const ValueType& val)
+    {
+        return std::find(begin(cont), end(cont), val) != end(cont);
+    }
+
+    // Check if cont contains an element for which pred evaluates to true
+    template <typename ContainerType, typename Predicate>
+    inline bool contains_if(const ContainerType& cont, Predicate pred)
+    {
+        return std::find_if(begin(cont), end(cont), pred) != end(cont);
+    }
+
     // Per-test-case set-up and tear-down
     class BaseFixture : public ::testing::Test
     {

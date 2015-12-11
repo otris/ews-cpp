@@ -324,6 +324,73 @@ namespace tests
         auto cal = ews::calendar_item();
         EXPECT_TRUE(cal.get_organizer().none());
     }
+
+    // <RequiredAttendees/>
+    TEST(OfflineCalendarItemTest, RequiredAttendeesPropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_TRUE(cal.get_required_attendees().empty());
+    }
+
+    TEST(OfflineCalendarItemTest, SetRequiredAttendeesProperty)
+    {
+        auto cal = ews::calendar_item();
+        const auto empty_vec = std::vector<ews::attendee>();
+        cal.set_required_attendees(empty_vec);
+        EXPECT_TRUE(cal.get_required_attendees().empty());
+
+        std::vector<ews::attendee> vec;
+        vec.push_back(
+            ews::attendee(
+                ews::mailbox("gaylord.focker@uchospitals.edu"),
+                ews::response_type::accept,
+                ews::date_time("2004-11-11T11:11:11Z")));
+        vec.push_back(
+            ews::attendee(
+                ews::mailbox("pam@nursery.org"),
+                ews::response_type::no_response_received,
+                ews::date_time("2004-12-24T08:00:00Z")));
+        cal.set_required_attendees(vec);
+        auto result = cal.get_required_attendees();
+        ASSERT_FALSE(result.empty());
+        EXPECT_TRUE(contains_if(result, [&](const ews::attendee& a)
+        {
+            return a.get_mailbox().value() == "pam@nursery.org"
+                && a.get_response_type() == ews::response_type::no_response_received
+                && a.get_last_response_time() == ews::date_time("2004-12-24T08:00:00Z");
+        }));
+
+        // Finally, remove all
+        cal.set_required_attendees(empty_vec);
+        EXPECT_TRUE(cal.get_required_attendees().empty());
+    }
+
+    TEST_F(CalendarItemTest, UpdateRequiredAttendeesProperty)
+    {
+        // Add one
+        auto cal = test_calendar_item();
+        auto vec = cal.get_required_attendees();
+        const auto initial_count = vec.size();
+        vec.push_back(
+            ews::attendee(
+                ews::mailbox("pam@nursery.org"),
+                ews::response_type::accept,
+                ews::date_time("2004-12-24T10:00:00Z")));
+        auto prop = ews::property(
+                ews::calendar_property_path::required_attendees,
+                vec);
+        auto new_id = service().update_item(cal.get_item_id(), prop);
+        cal = service().get_calendar_item(new_id);
+        EXPECT_EQ(initial_count + 1, cal.get_required_attendees().size());
+
+        // Remove all again
+        prop = ews::property(
+            ews::calendar_property_path::required_attendees,
+            std::vector<ews::attendee>());
+        new_id = service().update_item(cal.get_item_id(), prop);
+        cal = service().get_calendar_item(new_id);
+        EXPECT_TRUE(cal.get_required_attendees().empty());
+    }
 }
 
 // vim:et ts=4 sw=4 noic cc=80

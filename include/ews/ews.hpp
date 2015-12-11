@@ -6828,6 +6828,62 @@ namespace ews
             return sstr.str();
         }
 
+        //! \brief Creates a new \<Attendee> XML element and appends it to
+        //! given parent node.
+        //!
+        //! Returns a reference to the newly created element.
+        rapidxml::xml_node<>&
+        to_xml_element(rapidxml::xml_node<>& parent) const
+        {
+            auto doc = parent.document();
+
+            EWS_ASSERT(doc
+                && "parent node needs to be somewhere in a document");
+
+            //  <Attendee>
+            //    <Mailbox/>
+            //    <ResponseType/>
+            //    <LastResponseTime/>
+            //  </Attendee>
+
+            auto ptr_to_qname = doc->allocate_string("t:Attendee");
+            auto attendee_node = doc->allocate_node(rapidxml::node_element);
+            attendee_node->qname(ptr_to_qname,
+                                 std::strlen("t:Attendee"),
+                                 ptr_to_qname + 2);
+            attendee_node->namespace_uri(internal::uri<>::microsoft::types(),
+                internal::uri<>::microsoft::types_size);
+            parent.append_node(attendee_node);
+
+            mailbox_.to_xml_element(*attendee_node);
+
+            ptr_to_qname = doc->allocate_string("t:ResponseType");
+            auto ptr_to_value = doc->allocate_string(
+                                internal::enum_to_str(response_).c_str());
+            auto node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:ResponseType"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            attendee_node->append_node(node);
+
+            ptr_to_qname = doc->allocate_string("t:LastResponseTime");
+            ptr_to_value = doc->allocate_string(
+                                last_response_time_.to_string().c_str());
+            node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:LastResponseTime"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            attendee_node->append_node(node);
+
+            return *attendee_node;
+        }
+
         //! Makes a attendee instance from an \<Attendee> XML element
         static attendee from_xml_element(const rapidxml::xml_node<>& elem)
         {
@@ -8303,7 +8359,56 @@ namespace ews
             return mailbox::from_xml_element(*(organizer->first_node()));
         }
 
-        // <RequiredAttendees/>
+        //! Returns all attendees required to attend this meeting
+        std::vector<attendee> get_required_attendees() const
+        {
+            const auto attendees = xml().get_node("RequiredAttendees");
+            if (!attendees)
+            {
+                return std::vector<attendee>();
+            }
+
+            std::vector<attendee> result;
+            for (auto attendee_node = attendees->first_node(); attendee_node;
+                 attendee_node = attendee_node->next_sibling())
+            {
+                result.emplace_back(
+                    attendee::from_xml_element(*attendee_node));
+            }
+            return result;
+        }
+
+        //! Sets the attendees required to attend this meeting
+        void
+        set_required_attendees(const std::vector<attendee>& attendees) const
+        {
+            auto doc = xml().document();
+
+            auto required_attendees_node =
+                xml().get_node("RequiredAttendees");
+            if (required_attendees_node)
+            {
+                doc->remove_node(required_attendees_node);
+            }
+
+            auto ptr_to_qname = doc->allocate_string("t:RequiredAttendees");
+            required_attendees_node = doc->allocate_node(
+                                                    rapidxml::node_element);
+            required_attendees_node->qname(ptr_to_qname,
+                                           std::strlen("t:RequiredAttendees"),
+                                           ptr_to_qname + 2);
+            required_attendees_node->namespace_uri(
+                                    internal::uri<>::microsoft::types(),
+                                    internal::uri<>::microsoft::types_size);
+
+            doc->append_node(required_attendees_node);
+
+            for (const auto& a : attendees)
+            {
+                a.to_xml_element(*required_attendees_node);
+            }
+        }
+
         // <OptionalAttendees/>
         // <Resources/>
         // <ConflictingMeetingCount/>
@@ -9040,6 +9145,18 @@ namespace ews
             value_ = sstr.str();
         }
 
+        property(property_path path, const std::vector<attendee>& value)
+            : path_(std::move(path)),
+              value_()
+        {
+            std::stringstream sstr;
+            for (const auto& a : value)
+            {
+                sstr << a.to_xml("t");
+            }
+            value_ = sstr.str();
+        }
+
         property(property_path path, const std::vector<std::string>& value)
             : path_(std::move(path)),
               value_()
@@ -9625,7 +9742,7 @@ namespace ews
             auto item_change_open_tag = "<t:SetItemField>";
             auto item_change_close_tag = "</t:SetItemField>";
             if (   prop.path() == "calendar:OptionalAttendees"
-                || prop.path() == "calendar:RequiredAttendees"
+                //|| prop.path() == "calendar:RequiredAttendees"
                 || prop.path() == "calendar:Resources"
                 || prop.path() == "item:Body"
                 || prop.path() == "message:ToRecipients"
