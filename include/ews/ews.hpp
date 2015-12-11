@@ -8322,7 +8322,7 @@ namespace ews
                 if (!recipient.id().valid())
                 {
                     EWS_ASSERT(!recipient.value().empty()
-                  && "Neither item_id nor value set in mailbox instance");
+                        && "Neither item_id nor value set in mailbox instance");
 
                     ptr_to_qname = doc->allocate_string("t:EmailAddress");
                     auto ptr_to_value = doc->allocate_string(

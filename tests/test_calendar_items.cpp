@@ -45,7 +45,7 @@ namespace tests
         auto node = doc.first_node();
         auto a = ews::attendee::from_xml_element(*node);
 
-        EXPECT_STREQ("gaylord.focker@.uchospitals.edu",
+        EXPECT_STREQ("gaylord.focker@uchospitals.edu",
                      a.get_mailbox().value().c_str());
         EXPECT_EQ(ews::response_type::accept, a.get_response_type());
         EXPECT_EQ(ews::date_time("2004-11-11T11:11:11Z"),
