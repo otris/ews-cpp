@@ -7728,7 +7728,7 @@ namespace ews
             xml().set_or_update("TotalWork", std::to_string(total_work));
         }
 
-        // Every property below is 2012 or 2013 dialect
+        // Every property below is 2010 or 2013 dialect
 
         // TODO: add remaining properties
 
