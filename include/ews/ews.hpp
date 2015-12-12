@@ -281,7 +281,7 @@ namespace ews
         class http_request;
     }
 
-    //! The ResponseClass attibute of a ResponseMessage
+    //! The ResponseClass attribute of a ResponseMessage
     enum class response_class { error, success, warning };
 
     //! Base-class for all exceptions thrown by this library
@@ -4528,7 +4528,7 @@ namespace ews
         // Makes a raw SOAP request.
         //
         // url: The URL of the server to talk to.
-        // username: The username of user.
+        // username: The user-name of user.
         // password: The user's secret password, plain-text.
         // domain: The user's Windows domain.
         // soap_body: The contents of the SOAP body (minus the body element);
@@ -5610,8 +5610,8 @@ namespace ews
         //! \brief Returns the attachment's contents
         //!
         //! If this is a <tt>\<FileAttachment></tt>, returns the Base64-encoded
-        //! contents of the file attachment. If this is an \<ItemAttachment>, the
-        //! empty string.
+        //! contents of the file attachment. If this is an \<ItemAttachment>,
+        //! the empty string.
         std::string content() const
         {
             const auto node = get_node("Content");
@@ -6267,8 +6267,8 @@ namespace ews
     //!
     //! Note About Dates in EWS
     //!
-    //! Microsoft EWS uses date and date/time string representations as described
-    //! in http://www.w3.org/TR/xmlschema-2/, notably xs:dateTime (or
+    //! Microsoft EWS uses date and date/time string representations as
+    //! described in http://www.w3.org/TR/xmlschema-2/, notably xs:dateTime (or
     //! http://www.w3.org/2001/XMLSchema:dateTime) and xs:date (also known as
     //! http://www.w3.org/2001/XMLSchema:date).
     //!
@@ -9504,7 +9504,7 @@ namespace ews
     static_assert(std::is_move_assignable<contains>::value, "");
 #endif
 
-    //! \brief Contains the methods to perfom operations on an Exchange server
+    //! \brief Contains the methods to perform operations on an Exchange server
     //!
     //! The service class contains all methods that can be performed on an
     //! Exchange server.
