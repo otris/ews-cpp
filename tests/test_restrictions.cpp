@@ -184,6 +184,20 @@ namespace tests
             ews::contact_property_path::email_address_1, "bruce@willis.com");
         EXPECT_STREQ(expected, restr.to_xml("t").c_str());
     }
+
+    TEST(RestrictionTest, IsNotEqualToBooleanConstantRendersCorrectly)
+    {
+        const char* expected = "<t:IsNotEqualTo>"
+                               "<t:FieldURI FieldURI=\"task:IsComplete\"/>"
+                               "<t:FieldURIOrConstant>"
+                               "<t:Constant Value=\"true\"/>"
+                               "</t:FieldURIOrConstant>"
+                               "</t:IsNotEqualTo>";
+
+        auto restr =
+            ews::is_not_equal_to(ews::task_property_path::is_complete, true);
+        EXPECT_STREQ(expected, restr.to_xml("t").c_str());
+    }
 }
 
 // vim:et ts=4 sw=4 noic cc=80

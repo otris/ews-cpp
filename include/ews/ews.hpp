@@ -9279,6 +9279,100 @@ namespace ews
         {
         }
 
+        // Used by sub-classes to share common code
+        search_expression(const char* term, property_path path, bool b)
+            : search_expression([=](const char* xmlns) -> std::string
+                    {
+                        std::stringstream sstr;
+                        auto pref = std::string();
+                        if (xmlns)
+                        {
+                            pref = std::string(xmlns) + ":";
+                        }
+                        sstr << "<" << pref << term << "><" << pref;
+                        sstr << "FieldURI FieldURI=\"";
+                        sstr << path.field_uri();
+                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
+                        sstr << pref << "Constant Value=\"";
+                        sstr << std::boolalpha << b;
+                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
+                        sstr << pref << term << ">";
+                        return sstr.str();
+                    })
+        {
+        }
+
+        search_expression(const char* term,
+                          property_path path,
+                          const char* str)
+            : search_expression([=](const char* xmlns) -> std::string
+                    {
+                        std::stringstream sstr;
+                        const char* pref = "";
+                        if (xmlns)
+                        {
+                            pref = "t:";
+                        }
+                        sstr << "<" << pref << term << "><" << pref;
+                        sstr << "FieldURI FieldURI=\"";
+                        sstr << path.field_uri();
+                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
+                        sstr << pref << "Constant Value=\"";
+                        sstr << str;
+                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
+                        sstr << pref << term << ">";
+                        return sstr.str();
+                    })
+        {
+        }
+
+        search_expression(const char* term,
+                          indexed_property_path path,
+                          const char* str)
+            : search_expression([=](const char* xmlns) -> std::string
+                    {
+                        std::stringstream sstr;
+                        const char* pref = "";
+                        if (xmlns)
+                        {
+                            pref = "t:";
+                        }
+                        sstr << "<" << pref << term << "><" << pref;
+                        sstr << "IndexedFieldURI FieldURI=\"";
+                        sstr << path.field_uri();
+                        sstr << "\" FieldIndex=\"" << path.field_index();
+                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
+                        sstr << pref << "Constant Value=\"";
+                        sstr << str;
+                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
+                        sstr << pref << term << ">";
+                        return sstr.str();
+                    })
+        {
+        }
+
+        search_expression(const char* term, property_path path, date_time when)
+            : search_expression([=](const char* xmlns) -> std::string
+                    {
+                        std::stringstream sstr;
+                        const char* pref = "";
+                        if (xmlns)
+                        {
+                            pref = "t:";
+                        }
+                        sstr << "<" << pref << term << "><" << pref;
+                        sstr << "FieldURI FieldURI=\"";
+                        sstr << path.field_uri();
+                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
+                        sstr << pref << "Constant Value=\"";
+                        sstr << when.to_string();
+                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
+                        sstr << pref << term << ">";
+                        return sstr.str();
+                    })
+        {
+        }
+
     private:
         std::function<std::string (const char*)> func_;
     };
@@ -9291,7 +9385,7 @@ namespace ews
     static_assert(std::is_move_assignable<search_expression>::value, "");
 #endif
 
-    //! \brief Compare two properties
+    //! \brief Compare a property with a constant or another property
     //!
     //! A search expression that compares a property with either a constant
     //! value or another property and evaluates to true if they are equal.
@@ -9299,91 +9393,22 @@ namespace ews
     {
     public:
         is_equal_to(property_path path, bool b)
-            : search_expression([=](const char* xmlns) -> std::string
-                    {
-                        std::stringstream sstr;
-                        auto pref = std::string();
-                        if (xmlns)
-                        {
-                            pref = std::string(xmlns) + ":";
-                        }
-                        sstr << "<" << pref << "IsEqualTo><" << pref;
-                        sstr << "FieldURI FieldURI=\"";
-                        sstr << path.field_uri();
-                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
-                        sstr << pref << "Constant Value=\"";
-                        sstr << std::boolalpha << b;
-                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
-                        sstr << pref << "IsEqualTo>";
-                        return sstr.str();
-                    })
+            : search_expression("IsEqualTo", std::move(path), b)
         {
         }
 
         is_equal_to(property_path path, const char* str)
-            : search_expression([=](const char* xmlns) -> std::string
-                    {
-                        std::stringstream sstr;
-                        const char* pref = "";
-                        if (xmlns)
-                        {
-                            pref = "t:";
-                        }
-                        sstr << "<" << pref << "IsEqualTo><" << pref;
-                        sstr << "FieldURI FieldURI=\"";
-                        sstr << path.field_uri();
-                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
-                        sstr << pref << "Constant Value=\"";
-                        sstr << str;
-                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
-                        sstr << pref << "IsEqualTo>";
-                        return sstr.str();
-                    })
+            : search_expression("IsEqualTo", std::move(path), str)
         {
         }
 
         is_equal_to(indexed_property_path path, const char* str)
-            : search_expression([=](const char* xmlns) -> std::string
-                    {
-                        std::stringstream sstr;
-                        const char* pref = "";
-                        if (xmlns)
-                        {
-                            pref = "t:";
-                        }
-                        sstr << "<" << pref << "IsEqualTo><" << pref;
-                        sstr << "IndexedFieldURI FieldURI=\"";
-                        sstr << path.field_uri();
-                        sstr << "\" FieldIndex=\"" << path.field_index();
-                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
-                        sstr << pref << "Constant Value=\"";
-                        sstr << str;
-                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
-                        sstr << pref << "IsEqualTo>";
-                        return sstr.str();
-                    })
+            : search_expression("IsEqualTo", std::move(path), str)
         {
         }
 
         is_equal_to(property_path path, date_time when)
-            : search_expression([=](const char* xmlns) -> std::string
-                    {
-                        std::stringstream sstr;
-                        const char* pref = "";
-                        if (xmlns)
-                        {
-                            pref = "t:";
-                        }
-                        sstr << "<" << pref << "IsEqualTo><" << pref;
-                        sstr << "FieldURI FieldURI=\"";
-                        sstr << path.field_uri();
-                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
-                        sstr << pref << "Constant Value=\"";
-                        sstr << when.to_string();
-                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
-                        sstr << pref << "IsEqualTo>";
-                        return sstr.str();
-                    })
+            : search_expression("IsEqualTo", std::move(path), std::move(when))
         {
         }
 
@@ -9396,6 +9421,44 @@ namespace ews
     static_assert(std::is_copy_assignable<is_equal_to>::value, "");
     static_assert(std::is_move_constructible<is_equal_to>::value, "");
     static_assert(std::is_move_assignable<is_equal_to>::value, "");
+#endif
+
+    //! \brief Compare a property with a constant or another property.
+    //!
+    //! Compares a property with either a constant value or another property
+    //! and returns true if the values are not the same.
+    class is_not_equal_to final : public search_expression
+    {
+    public:
+        is_not_equal_to(property_path path, bool b)
+            : search_expression("IsNotEqualTo", std::move(path), b)
+        {
+        }
+
+        is_not_equal_to(property_path path, const char* str)
+            : search_expression("IsNotEqualTo", std::move(path), str)
+        {
+        }
+
+        is_not_equal_to(indexed_property_path path, const char* str)
+            : search_expression("IsNotEqualTo", std::move(path), str)
+        {
+        }
+
+        is_not_equal_to(property_path path, date_time when)
+            : search_expression("IsNotEqualTo",
+                                std::move(path),
+                                std::move(when))
+        {
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<is_not_equal_to>::value, "");
+    static_assert(std::is_copy_constructible<is_not_equal_to>::value, "");
+    static_assert(std::is_copy_assignable<is_not_equal_to>::value, "");
+    static_assert(std::is_move_constructible<is_not_equal_to>::value, "");
+    static_assert(std::is_move_assignable<is_not_equal_to>::value, "");
 #endif
 
     //! \brief Allows you to express a boolean And operation between two search
