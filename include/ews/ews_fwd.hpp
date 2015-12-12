@@ -27,6 +27,8 @@ namespace ews
     class is_equal_to;
     class is_greater_than;
     class is_greater_than_or_equal_to;
+    class is_less_than;
+    class is_less_than_or_equal_to;
     class is_not_equal_to;
     class item;
     class item_id;

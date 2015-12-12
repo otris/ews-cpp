@@ -9573,6 +9573,86 @@ namespace ews
     static_assert(std::is_move_assignable<is_greater_than_or_equal_to>::value, "");
 #endif
 
+    //! \brief Compare a property with a constant or another property
+    class is_less_than final : public search_expression
+    {
+    public:
+        is_less_than(property_path path, bool b)
+            : search_expression("IsLessThan", std::move(path), b)
+        {
+        }
+
+        is_less_than(property_path path, int i)
+            : search_expression("IsLessThan", std::move(path), i)
+        {
+        }
+
+        is_less_than(property_path path, const char* str)
+            : search_expression("IsLessThan", std::move(path), str)
+        {
+        }
+
+        is_less_than(indexed_property_path path, const char* str)
+            : search_expression("IsLessThan", std::move(path), str)
+        {
+        }
+
+        is_less_than(property_path path, date_time when)
+            : search_expression("IsLessThan",
+                                std::move(path),
+                                std::move(when))
+        {
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<is_less_than>::value, "");
+    static_assert(std::is_copy_constructible<is_less_than>::value, "");
+    static_assert(std::is_copy_assignable<is_less_than>::value, "");
+    static_assert(std::is_move_constructible<is_less_than>::value, "");
+    static_assert(std::is_move_assignable<is_less_than>::value, "");
+#endif
+
+    //! \brief Compare a property with a constant or another property
+    class is_less_than_or_equal_to final : public search_expression
+    {
+    public:
+        is_less_than_or_equal_to(property_path path, bool b)
+            : search_expression("IsLessThanOrEqualTo", std::move(path), b)
+        {
+        }
+
+        is_less_than_or_equal_to(property_path path, int i)
+            : search_expression("IsLessThanOrEqualTo", std::move(path), i)
+        {
+        }
+
+        is_less_than_or_equal_to(property_path path, const char* str)
+            : search_expression("IsLessThanOrEqualTo", std::move(path), str)
+        {
+        }
+
+        is_less_than_or_equal_to(indexed_property_path path, const char* str)
+            : search_expression("IsLessThanOrEqualTo", std::move(path), str)
+        {
+        }
+
+        is_less_than_or_equal_to(property_path path, date_time when)
+            : search_expression("IsLessThanOrEqualTo",
+                                std::move(path),
+                                std::move(when))
+        {
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<is_less_than_or_equal_to>::value, "");
+    static_assert(std::is_copy_constructible<is_less_than_or_equal_to>::value, "");
+    static_assert(std::is_copy_assignable<is_less_than_or_equal_to>::value, "");
+    static_assert(std::is_move_constructible<is_less_than_or_equal_to>::value, "");
+    static_assert(std::is_move_assignable<is_less_than_or_equal_to>::value, "");
+#endif
+
     //! \brief Allows you to express a boolean And operation between two search
     //! expressions
     class and_ final : public search_expression
