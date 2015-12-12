@@ -9426,6 +9426,38 @@ namespace ews
     static_assert(std::is_move_assignable<and_>::value, "");
 #endif
 
+    //! \brief Allows you to express a logical Or operation between two search
+    //! expressions
+    class or_ final : public restriction
+    {
+    public:
+        or_(const restriction& first, const restriction& second)
+            : restriction([=](const char* xmlns) -> std::string
+                    {
+                        std::stringstream sstr;
+                        const char* pref = "";
+                        if (xmlns)
+                        {
+                            pref = "t:";
+                        }
+                        sstr << "<" << pref << "Or" << ">";
+                        sstr << first.to_xml(xmlns);
+                        sstr << second.to_xml(xmlns);
+                        sstr << "</" << pref << "Or>";
+                        return sstr.str();
+                    })
+        {
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<or_>::value, "");
+    static_assert(std::is_copy_constructible<or_>::value, "");
+    static_assert(std::is_copy_assignable<or_>::value, "");
+    static_assert(std::is_move_constructible<or_>::value, "");
+    static_assert(std::is_move_assignable<or_>::value, "");
+#endif
+
     //! \brief This enumeration indicates which parts of a text value are
     //! compared to a supplied constant value.
     //!

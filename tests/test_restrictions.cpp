@@ -46,6 +46,34 @@ namespace tests
         EXPECT_STREQ(expected, restr.to_xml().c_str());
     }
 
+    TEST(RestrictionTest, OrExpressionRendersCorrectly)
+    {
+        using ews::or_;
+        using ews::contains;
+        using ews::is_equal_to;
+
+        const char* expected = "<Or>"
+                               "<IsEqualTo>"
+                               "<FieldURI FieldURI=\"task:IsComplete\"/>"
+                               "<FieldURIOrConstant>"
+                               "<Constant Value=\"false\"/>"
+                               "</FieldURIOrConstant>"
+                               "</IsEqualTo>"
+                               "<Contains "
+                               "ContainmentMode=\"Substring\" "
+                               "ContainmentComparison=\"Loose\">"
+                               "<FieldURI FieldURI=\"item:Subject\"/>"
+                               "<Constant Value=\"Soccer\"/>"
+                               "</Contains>"
+                               "</Or>";
+
+        auto restr =
+            or_(is_equal_to(ews::task_property_path::is_complete, false),
+                contains(ews::item_property_path::subject, "Soccer"));
+
+        EXPECT_STREQ(expected, restr.to_xml().c_str());
+    }
+
     TEST(RestrictionTest, IsEqualToBooleanConstantRendersCorrectly)
     {
         const char* expected = "<IsEqualTo>"
