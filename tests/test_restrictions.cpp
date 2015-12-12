@@ -198,6 +198,34 @@ namespace tests
             ews::is_not_equal_to(ews::task_property_path::is_complete, true);
         EXPECT_STREQ(expected, restr.to_xml("t").c_str());
     }
+
+    TEST(RestrictionTest, IsGreaterThanIntConstantRendersCorrectly)
+    {
+        const char* expected = "<IsGreaterThan>"
+                               "<FieldURI FieldURI=\"task:PercentComplete\"/>"
+                               "<FieldURIOrConstant>"
+                               "<Constant Value=\"75\"/>"
+                               "</FieldURIOrConstant>"
+                               "</IsGreaterThan>";
+
+        auto restr =
+            ews::is_greater_than(ews::task_property_path::percent_complete, 75);
+        EXPECT_STREQ(expected, restr.to_xml().c_str());
+    }
+
+    TEST(RestrictionTest, IsGreaterThanOrEqualToIntConstantRendersCorrectly)
+    {
+        const char* expected = "<IsGreaterThanOrEqualTo>"
+                               "<FieldURI FieldURI=\"task:PercentComplete\"/>"
+                               "<FieldURIOrConstant>"
+                               "<Constant Value=\"80\"/>"
+                               "</FieldURIOrConstant>"
+                               "</IsGreaterThanOrEqualTo>";
+
+        auto restr = ews::is_greater_than_or_equal_to(
+            ews::task_property_path::percent_complete, 80);
+        EXPECT_STREQ(expected, restr.to_xml().c_str());
+    }
 }
 
 // vim:et ts=4 sw=4 noic cc=80

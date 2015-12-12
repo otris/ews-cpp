@@ -25,6 +25,9 @@ namespace ews
     class http_error;
     class indexed_property_path;
     class is_equal_to;
+    class is_greater_than;
+    class is_greater_than_or_equal_to;
+    class is_not_equal_to;
     class item;
     class item_id;
     class mailbox;

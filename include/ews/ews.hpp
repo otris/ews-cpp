@@ -9302,6 +9302,28 @@ namespace ews
         {
         }
 
+        search_expression(const char* term, property_path path, int i)
+            : search_expression([=](const char* xmlns) -> std::string
+                    {
+                        std::stringstream sstr;
+                        auto pref = std::string();
+                        if (xmlns)
+                        {
+                            pref = std::string(xmlns) + ":";
+                        }
+                        sstr << "<" << pref << term << "><" << pref;
+                        sstr << "FieldURI FieldURI=\"";
+                        sstr << path.field_uri();
+                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
+                        sstr << pref << "Constant Value=\"";
+                        sstr << std::to_string(i);
+                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
+                        sstr << pref << term << ">";
+                        return sstr.str();
+                    })
+        {
+        }
+
         search_expression(const char* term,
                           property_path path,
                           const char* str)
@@ -9397,6 +9419,11 @@ namespace ews
         {
         }
 
+        is_equal_to(property_path path, int i)
+            : search_expression("IsEqualTo", std::move(path), i)
+        {
+        }
+
         is_equal_to(property_path path, const char* str)
             : search_expression("IsEqualTo", std::move(path), str)
         {
@@ -9435,6 +9462,11 @@ namespace ews
         {
         }
 
+        is_not_equal_to(property_path path, int i)
+            : search_expression("IsNotEqualTo", std::move(path), i)
+        {
+        }
+
         is_not_equal_to(property_path path, const char* str)
             : search_expression("IsNotEqualTo", std::move(path), str)
         {
@@ -9459,6 +9491,86 @@ namespace ews
     static_assert(std::is_copy_assignable<is_not_equal_to>::value, "");
     static_assert(std::is_move_constructible<is_not_equal_to>::value, "");
     static_assert(std::is_move_assignable<is_not_equal_to>::value, "");
+#endif
+
+    //! \brief Compare a property with a constant or another property
+    class is_greater_than final : public search_expression
+    {
+    public:
+        is_greater_than(property_path path, bool b)
+            : search_expression("IsGreaterThan", std::move(path), b)
+        {
+        }
+
+        is_greater_than(property_path path, int i)
+            : search_expression("IsGreaterThan", std::move(path), i)
+        {
+        }
+
+        is_greater_than(property_path path, const char* str)
+            : search_expression("IsGreaterThan", std::move(path), str)
+        {
+        }
+
+        is_greater_than(indexed_property_path path, const char* str)
+            : search_expression("IsGreaterThan", std::move(path), str)
+        {
+        }
+
+        is_greater_than(property_path path, date_time when)
+            : search_expression("IsGreaterThan",
+                                std::move(path),
+                                std::move(when))
+        {
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<is_greater_than>::value, "");
+    static_assert(std::is_copy_constructible<is_greater_than>::value, "");
+    static_assert(std::is_copy_assignable<is_greater_than>::value, "");
+    static_assert(std::is_move_constructible<is_greater_than>::value, "");
+    static_assert(std::is_move_assignable<is_greater_than>::value, "");
+#endif
+
+    //! \brief Compare a property with a constant or another property
+    class is_greater_than_or_equal_to final : public search_expression
+    {
+    public:
+        is_greater_than_or_equal_to(property_path path, bool b)
+            : search_expression("IsGreaterThanOrEqualTo", std::move(path), b)
+        {
+        }
+
+        is_greater_than_or_equal_to(property_path path, int i)
+            : search_expression("IsGreaterThanOrEqualTo", std::move(path), i)
+        {
+        }
+
+        is_greater_than_or_equal_to(property_path path, const char* str)
+            : search_expression("IsGreaterThanOrEqualTo", std::move(path), str)
+        {
+        }
+
+        is_greater_than_or_equal_to(indexed_property_path path, const char* str)
+            : search_expression("IsGreaterThanOrEqualTo", std::move(path), str)
+        {
+        }
+
+        is_greater_than_or_equal_to(property_path path, date_time when)
+            : search_expression("IsGreaterThanOrEqualTo",
+                                std::move(path),
+                                std::move(when))
+        {
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<is_greater_than_or_equal_to>::value, "");
+    static_assert(std::is_copy_constructible<is_greater_than_or_equal_to>::value, "");
+    static_assert(std::is_copy_assignable<is_greater_than_or_equal_to>::value, "");
+    static_assert(std::is_move_constructible<is_greater_than_or_equal_to>::value, "");
+    static_assert(std::is_move_assignable<is_greater_than_or_equal_to>::value, "");
 #endif
 
     //! \brief Allows you to express a boolean And operation between two search
