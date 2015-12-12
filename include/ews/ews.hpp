@@ -9241,7 +9241,10 @@ namespace ews
     static_assert(std::is_move_assignable<property>::value, "");
 #endif
 
-    //! \brief Base-class for search expressions.
+    //! \brief Base-class for all search expressions.
+    //!
+    //! Search expressions are used to restrict the result set of a
+    //! \<FindItem/> operation.
     //!
     //! E.g.
     //!
@@ -9257,11 +9260,11 @@ namespace ews
     //!   - not
     //!   - and
     //!   - or
-    class restriction
+    class search_expression
     {
     public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
-        ~restriction() = default;
+        ~search_expression() = default;
 #endif
 
         std::string to_xml(const char* xmlns=nullptr) const
@@ -9270,7 +9273,8 @@ namespace ews
         }
 
     protected:
-        explicit restriction(std::function<std::string (const char*)>&& func)
+        explicit search_expression(
+                    std::function<std::string (const char*)>&& func)
             : func_(std::move(func))
         {
         }
@@ -9280,22 +9284,22 @@ namespace ews
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<restriction>::value, "");
-    static_assert(std::is_copy_constructible<restriction>::value, "");
-    static_assert(std::is_copy_assignable<restriction>::value, "");
-    static_assert(std::is_move_constructible<restriction>::value, "");
-    static_assert(std::is_move_assignable<restriction>::value, "");
+    static_assert(!std::is_default_constructible<search_expression>::value, "");
+    static_assert(std::is_copy_constructible<search_expression>::value, "");
+    static_assert(std::is_copy_assignable<search_expression>::value, "");
+    static_assert(std::is_move_constructible<search_expression>::value, "");
+    static_assert(std::is_move_assignable<search_expression>::value, "");
 #endif
 
     //! \brief Compare two properties
     //!
     //! A search expression that compares a property with either a constant
     //! value or another property and evaluates to true if they are equal.
-    class is_equal_to final : public restriction
+    class is_equal_to final : public search_expression
     {
     public:
         is_equal_to(property_path path, bool b)
-            : restriction([=](const char* xmlns) -> std::string
+            : search_expression([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
                         auto pref = std::string();
@@ -9317,7 +9321,7 @@ namespace ews
         }
 
         is_equal_to(property_path path, const char* str)
-            : restriction([=](const char* xmlns) -> std::string
+            : search_expression([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
                         const char* pref = "";
@@ -9339,7 +9343,7 @@ namespace ews
         }
 
         is_equal_to(indexed_property_path path, const char* str)
-            : restriction([=](const char* xmlns) -> std::string
+            : search_expression([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
                         const char* pref = "";
@@ -9362,7 +9366,7 @@ namespace ews
         }
 
         is_equal_to(property_path path, date_time when)
-            : restriction([=](const char* xmlns) -> std::string
+            : search_expression([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
                         const char* pref = "";
@@ -9396,11 +9400,11 @@ namespace ews
 
     //! \brief Allows you to express a boolean And operation between two search
     //! expressions
-    class and_ final : public restriction
+    class and_ final : public search_expression
     {
     public:
-        and_(const restriction& first, const restriction& second)
-            : restriction([=](const char* xmlns) -> std::string
+        and_(const search_expression& first, const search_expression& second)
+            : search_expression([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
                         const char* pref = "";
@@ -9428,11 +9432,11 @@ namespace ews
 
     //! \brief Allows you to express a logical Or operation between two search
     //! expressions
-    class or_ final : public restriction
+    class or_ final : public search_expression
     {
     public:
-        or_(const restriction& first, const restriction& second)
-            : restriction([=](const char* xmlns) -> std::string
+        or_(const search_expression& first, const search_expression& second)
+            : search_expression([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
                         const char* pref = "";
@@ -9459,11 +9463,11 @@ namespace ews
 #endif
 
     //! Negates the boolean value of the search expression it contains
-    class not_ final : public restriction
+    class not_ final : public search_expression
     {
     public:
-        not_(const restriction& expr)
-            : restriction([=](const char* xmlns) -> std::string
+        not_(const search_expression& expr)
+            : search_expression([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
                         const char* pref = "";
@@ -9559,7 +9563,7 @@ namespace ews
     //!
     //! A search filter that allows you to do text searches on string
     //! properties.
-    class contains final : public restriction
+    class contains final : public search_expression
     {
     public:
         contains(property_path path,
@@ -9568,7 +9572,7 @@ namespace ews
                     containment_mode::substring,
                  containment_comparison comparison =
                     containment_comparison::loose)
-            : restriction([=](const char* xmlns) -> std::string
+            : search_expression([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
                         const char* pref = "";
@@ -9838,15 +9842,26 @@ namespace ews
             return response_message.items();
         }
 
+        //! \brief Sends a \<FindItem/> operation to the server
+        //!
+        //! Allows you to search for items that are located in a user's
+        //! mailbox.
+        //!
+        //! \param parent_folder_id the folder in the mailbox that is searched
+        //! \param restriction a search expression that restricts the elements
+        //! returned by this operation
+        //!
+        //! Returns a list of items (item_ids) that match given folder and
+        //! restrictions
         std::vector<item_id> find_item(const folder_id& parent_folder_id,
-                                       restriction filter)
+                                       search_expression restriction)
         {
             const std::string request_string =
 "<m:FindItem Traversal=\"Shallow\">\n"
 "  <m:ItemShape>\n"
 "    <t:BaseShape>IdOnly</t:BaseShape>\n"
 "  </m:ItemShape>\n"
-"  <m:Restriction>" + filter.to_xml("t") + "</m:Restriction>\n"
+"  <m:Restriction>" + restriction.to_xml("t") + "</m:Restriction>\n"
 "  <m:ParentFolderIds>" + parent_folder_id.to_xml("t") + "</m:ParentFolderIds>\n"
 "</m:FindItem>\n";
 

@@ -35,12 +35,11 @@ namespace ews
     class parse_error;
     class property;
     class property_path;
-    class restriction;
     class schema_validation_error;
+    class search_expression;
     class soap_fault;
     class task;
     template <typename T> class basic_service;
-
     bool operator==(const date_time&, const date_time&);
     bool operator==(const property_path&, const property_path&);
     void set_up() EWS_NOEXCEPT;
