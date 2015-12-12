@@ -1048,9 +1048,9 @@ namespace ews
         error_invalid_recipient_subfilter,
 
         //! Indicates that the search folder in question has a recipient table
-        //! filter that Exchange Web Services cannot represent. The error code is
-        //! a little misleading—there is nothing invalid about the search
-        //! folder restriction.. To get around this, issue, call GetFolder
+        //! filter that Exchange Web Services cannot represent. The error code
+        //! is a little misleading—there is nothing invalid about the search
+        //! folder restriction. To get around this, issue, call GetFolder
         //! without requesting the search parameters.
         error_invalid_recipient_subfilter_comparison,
 
@@ -9394,6 +9394,38 @@ namespace ews
     static_assert(std::is_move_assignable<is_equal_to>::value, "");
 #endif
 
+    //! \brief Allows you to express a boolean And operation between two search
+    //! expressions
+    class and_ final : public restriction
+    {
+    public:
+        and_(const restriction& first, const restriction& second)
+            : restriction([=](const char* xmlns) -> std::string
+                    {
+                        std::stringstream sstr;
+                        const char* pref = "";
+                        if (xmlns)
+                        {
+                            pref = "t:";
+                        }
+                        sstr << "<" << pref << "And" << ">";
+                        sstr << first.to_xml(xmlns);
+                        sstr << second.to_xml(xmlns);
+                        sstr << "</" << pref << "And>";
+                        return sstr.str();
+                    })
+        {
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<and_>::value, "");
+    static_assert(std::is_copy_constructible<and_>::value, "");
+    static_assert(std::is_copy_assignable<and_>::value, "");
+    static_assert(std::is_move_constructible<and_>::value, "");
+    static_assert(std::is_move_assignable<and_>::value, "");
+#endif
+
     //! \brief This enumeration indicates which parts of a text value are
     //! compared to a supplied constant value.
     //!
@@ -9470,8 +9502,10 @@ namespace ews
     public:
         contains(property_path path,
                  const char* str,
-                 containment_mode mode,
-                 containment_comparison comparison)
+                 containment_mode mode =
+                    containment_mode::substring,
+                 containment_comparison comparison =
+                    containment_comparison::loose)
             : restriction([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
