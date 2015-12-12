@@ -9458,6 +9458,36 @@ namespace ews
     static_assert(std::is_move_assignable<or_>::value, "");
 #endif
 
+    //! Negates the boolean value of the search expression it contains
+    class not_ final : public restriction
+    {
+    public:
+        not_(const restriction& expr)
+            : restriction([=](const char* xmlns) -> std::string
+                    {
+                        std::stringstream sstr;
+                        const char* pref = "";
+                        if (xmlns)
+                        {
+                            pref = "t:";
+                        }
+                        sstr << "<" << pref << "Not" << ">";
+                        sstr << expr.to_xml(xmlns);
+                        sstr << "</" << pref << "Not>";
+                        return sstr.str();
+                    })
+        {
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<not_>::value, "");
+    static_assert(std::is_copy_constructible<not_>::value, "");
+    static_assert(std::is_copy_assignable<not_>::value, "");
+    static_assert(std::is_move_constructible<not_>::value, "");
+    static_assert(std::is_move_assignable<not_>::value, "");
+#endif
+
     //! \brief This enumeration indicates which parts of a text value are
     //! compared to a supplied constant value.
     //!

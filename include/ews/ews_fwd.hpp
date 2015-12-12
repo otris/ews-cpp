@@ -9,6 +9,7 @@
 // Forward declarations
 namespace ews
 {
+    class and_;
     class attachment;
     class attachment_id;
     class attendee;
@@ -29,6 +30,8 @@ namespace ews
     class mailbox;
     class message;
     class mime_content;
+    class not_;
+    class or_;
     class parse_error;
     class property;
     class property_path;

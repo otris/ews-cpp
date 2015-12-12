@@ -74,6 +74,25 @@ namespace tests
         EXPECT_STREQ(expected, restr.to_xml().c_str());
     }
 
+    TEST(RestrictionTest, NotExpressionRendersCorrectly)
+    {
+        using ews::not_;
+        using ews::is_equal_to;
+
+        const char* expected = "<Not>"
+                               "<IsEqualTo>"
+                               "<FieldURI FieldURI=\"task:IsComplete\"/>"
+                               "<FieldURIOrConstant>"
+                               "<Constant Value=\"true\"/>"
+                               "</FieldURIOrConstant>"
+                               "</IsEqualTo>"
+                               "</Not>";
+
+        auto restr =
+            not_(is_equal_to(ews::task_property_path::is_complete, true));
+        EXPECT_STREQ(expected, restr.to_xml().c_str());
+    }
+
     TEST(RestrictionTest, IsEqualToBooleanConstantRendersCorrectly)
     {
         const char* expected = "<IsEqualTo>"
