@@ -9170,26 +9170,15 @@ namespace ews
         {
         }
 
-        property(property_path path, const std::vector<mailbox>& value)
+        template <typename T>
+        property(property_path path, const std::vector<T>& value)
             : path_(std::move(path)),
               value_()
         {
             std::stringstream sstr;
-            for (const auto& addr : value)
+            for (const auto& elem : value)
             {
-                sstr << addr.to_xml("t");
-            }
-            value_ = sstr.str();
-        }
-
-        property(property_path path, const std::vector<attendee>& value)
-            : path_(std::move(path)),
-              value_()
-        {
-            std::stringstream sstr;
-            for (const auto& a : value)
-            {
-                sstr << a.to_xml("t");
+                sstr << elem.to_xml("t");
             }
             value_ = sstr.str();
         }
