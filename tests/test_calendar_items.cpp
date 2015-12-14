@@ -525,6 +525,20 @@ namespace tests
         cal = service().get_calendar_item(new_id);
         EXPECT_TRUE(cal.get_resources().empty());
     }
+
+    // <ConflictingMeetingCount/>
+    TEST(OfflineCalendarItemTest, ConflictingMeetingCountPropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_EQ(0, cal.get_conflicting_meeting_count());
+    }
+
+    // <AdjacentMeetingCount/>
+    TEST(OfflineCalendarItemTest, AdjacentMeetingCountPropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_EQ(0, cal.get_adjacent_meeting_count());
+    }
 }
 
 // vim:et ts=4 sw=4 noic cc=80

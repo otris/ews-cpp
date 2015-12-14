@@ -8398,8 +8398,32 @@ namespace ews
             set_attendees_helper("Resources", resources);
         }
 
-        // <ConflictingMeetingCount/>
-        // <AdjacentMeetingCount/>
+        //! \brief Returns the number of meetings that are in conflict with
+        //! this meeting
+        //!
+        //! Note: this property is only included in \<GetItem/> response when
+        //! 'calendar:ConflictingMeetingCount' is passed in
+        //! \<AdditionalProperties/>. This is a read-only property.
+        //! \sa service::get_conflicting_meetings
+        int get_conflicting_meeting_count() const
+        {
+            const auto val = xml().get_value_as_string("ConflictingMeetingCount");
+            return val.empty() ? 0 : std::stoi(val);
+        }
+
+        //! \brief Returns the number of meetings that are adjacent to this
+        //! meeting
+        //!
+        //! Note: this property is only included in \<GetItem/> response when
+        //! 'calendar:AdjacentMeetingCount' is passed in
+        //! \<AdditionalProperties/>. This is a read-only property.
+        //! \sa service::get_adjacent_meetings
+        int get_adjacent_meeting_count() const
+        {
+            const auto val = xml().get_value_as_string("AdjacentMeetingCount");
+            return val.empty() ? 0 : std::stoi(val);
+        }
+
         // <ConflictingMeetings/>
         // <AdjacentMeetings/>
         // <Duration/>
@@ -8439,7 +8463,7 @@ namespace ews
                                               "ItemId");
             EWS_ASSERT(id_node && "Expected <ItemId>");
             return calendar_item(item_id::from_xml_element(*id_node),
-                           internal::xml_subtree(elem));
+                                 internal::xml_subtree(elem));
         }
 
     private:
