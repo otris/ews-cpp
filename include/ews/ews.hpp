@@ -9270,7 +9270,7 @@ namespace ews
 
         // Used by sub-classes to share common code
         search_expression(const char* term, property_path path, bool b)
-            : search_expression([=](const char* xmlns) -> std::string
+            : func_([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
                         auto pref = std::string();
@@ -9292,7 +9292,7 @@ namespace ews
         }
 
         search_expression(const char* term, property_path path, int i)
-            : search_expression([=](const char* xmlns) -> std::string
+            : func_([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
                         auto pref = std::string();
@@ -9316,7 +9316,7 @@ namespace ews
         search_expression(const char* term,
                           property_path path,
                           const char* str)
-            : search_expression([=](const char* xmlns) -> std::string
+            : func_([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
                         const char* pref = "";
@@ -9340,7 +9340,7 @@ namespace ews
         search_expression(const char* term,
                           indexed_property_path path,
                           const char* str)
-            : search_expression([=](const char* xmlns) -> std::string
+            : func_([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
                         const char* pref = "";
@@ -9363,7 +9363,7 @@ namespace ews
         }
 
         search_expression(const char* term, property_path path, date_time when)
-            : search_expression([=](const char* xmlns) -> std::string
+            : func_([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
                         const char* pref = "";
