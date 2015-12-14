@@ -18,6 +18,7 @@ namespace ews
     class contact;
     class contains;
     class date_time;
+    class duration;
     class distinguished_folder_id;
     class exception;
     class exchange_error;

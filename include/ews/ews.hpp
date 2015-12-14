@@ -6312,6 +6312,60 @@ namespace ews
         return lhs.val_ == rhs.val_;
     }
 
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<date_time>::value, "");
+    static_assert(std::is_copy_constructible<date_time>::value, "");
+    static_assert(std::is_copy_assignable<date_time>::value, "");
+    static_assert(std::is_move_constructible<date_time>::value, "");
+    static_assert(std::is_move_assignable<date_time>::value, "");
+#endif
+
+    //! \brief Specifies a time interval
+    //!
+    //! A thin wrapper around xs:duration formatted strings.
+    //!
+    //! The time interval is specified in the following form
+    //! <tt>PnYnMnDTnHnMnS</tt> where:
+    //!
+    //! \li P indicates the period(required)
+    //! \li nY indicates the number of years
+    //! \li nM indicates the number of months
+    //! \li nD indicates the number of days
+    //! \li T indicates the start of a time section (required if you are going
+    //!     to specify hours, minutes, or seconds)
+    //! \li nH indicates the number of hours
+    //! \li nM indicates the number of minutes
+    //! \li nS indicates the number of seconds
+    class duration final
+    {
+    public:
+        duration(std::string str) // intentionally not explicit
+            : val_(std::move(str))
+        {
+        }
+
+        const std::string& to_string() const EWS_NOEXCEPT { return val_; }
+
+        inline bool is_set() const EWS_NOEXCEPT { return !val_.empty(); }
+
+    private:
+        friend bool operator==(const duration&, const duration&);
+        std::string val_;
+    };
+
+    inline bool operator==(const duration& lhs, const duration& rhs)
+    {
+        return lhs.val_ == rhs.val_;
+    }
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<duration>::value, "");
+    static_assert(std::is_copy_constructible<duration>::value, "");
+    static_assert(std::is_copy_assignable<duration>::value, "");
+    static_assert(std::is_move_constructible<duration>::value, "");
+    static_assert(std::is_move_assignable<duration>::value, "");
+#endif
+
     //! Specifies the type of a <tt>\<Body></tt> element
     enum class body_type { best, plain_text, html };
 
@@ -8424,9 +8478,18 @@ namespace ews
             return val.empty() ? 0 : std::stoi(val);
         }
 
+        // TODO: issue #19
         // <ConflictingMeetings/>
         // <AdjacentMeetings/>
-        // <Duration/>
+
+        //! \brief Returns the duration of this meeting.
+        //!
+        //! This is a read-only property.
+        duration get_duration() const
+        {
+            return duration(xml().get_value_as_string("Duration"));
+        }
+
         // <TimeZone/>
         // <AppointmentReplyTime/>
         // <AppointmentSequenceNumber/>

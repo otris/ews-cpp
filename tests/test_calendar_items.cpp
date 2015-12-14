@@ -539,6 +539,19 @@ namespace tests
         auto cal = ews::calendar_item();
         EXPECT_EQ(0, cal.get_adjacent_meeting_count());
     }
+
+    // <Duration/>
+    TEST(OfflineCalendarItemTest, DurationPropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_FALSE(cal.get_duration().is_set());
+    }
+
+    TEST_F(CalendarItemTest, GetDurationProperty)
+    {
+        auto cal = test_calendar_item();
+        EXPECT_TRUE(cal.get_duration().is_set());
+    }
 }
 
 // vim:et ts=4 sw=4 noic cc=80
