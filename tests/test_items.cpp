@@ -232,7 +232,7 @@ namespace tests
         EXPECT_EQ(ews::sensitivity::personal, task.get_sensitivity());
     }
 
-    TEST_F(ItemTest, GetMimeContentProperty)
+    TEST_F(ItemTest, NoMimeContentIfNotRequested)
     {
         auto contact = ews::contact();
         auto s = service();
@@ -242,6 +242,21 @@ namespace tests
             s.delete_contact(std::move(contact));
         });
         contact = s.get_contact(item_id);
+        EXPECT_TRUE(contact.get_mime_content().none());
+    }
+
+    TEST_F(ItemTest, GetMimeContentProperty)
+    {
+        auto contact = ews::contact();
+        auto s = service();
+        const auto item_id = s.create_item(contact);
+        ews::internal::on_scope_exit remove_contact([&]
+        {
+            s.delete_contact(std::move(contact));
+        });
+        auto additional_properties = std::vector<ews::property_path>();
+        additional_properties.push_back(ews::item_property_path::mime_content);
+        contact = s.get_contact(item_id, additional_properties);
         EXPECT_FALSE(contact.get_mime_content().none());
     }
 

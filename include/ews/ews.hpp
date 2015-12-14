@@ -9938,10 +9938,32 @@ namespace ews
             return get_item_impl<task>(id, base_shape::all_properties);
         }
 
+        //! \brief Gets a task from the Exchange store
+        //!
+        //! The returned task includes specified additional properties.
+        task get_task(const item_id& id,
+                      const std::vector<property_path>& additional_properties)
+        {
+            return get_item_impl<task>(id,
+                                       base_shape::all_properties,
+                                        additional_properties);
+        }
+
         //! Gets a contact from the Exchange store
         contact get_contact(const item_id& id)
         {
             return get_item_impl<contact>(id, base_shape::all_properties);
+        }
+
+        //! \brief Gets a contact from the Exchange store
+        //!
+        //! The returned contact includes specified additional properties.
+        contact get_contact(const item_id& id,
+                            const std::vector<property_path>& additional_properties)
+        {
+            return get_item_impl<contact>(id,
+                                          base_shape::all_properties,
+                                          additional_properties);
         }
 
         //! Gets a calendar item from the Exchange store
@@ -9950,10 +9972,35 @@ namespace ews
             return get_item_impl<calendar_item>(id, base_shape::all_properties);
         }
 
+        //! \brief Gets a calendar item from the Exchange store
+        //!
+        //! The returned calendar item includes specified additional
+        //! properties.
+        calendar_item get_calendar_item(
+                    const item_id& id,
+                    const std::vector<property_path>& additional_properties)
+        {
+            return get_item_impl<calendar_item>(id,
+                                                base_shape::all_properties,
+                                                additional_properties);
+        }
+
         //! Gets a message item from the Exchange store
         message get_message(const item_id& id)
         {
             return get_item_impl<message>(id, base_shape::all_properties);
+        }
+
+        //! \brief Gets a message from the Exchange store
+        //!
+        //! The returned message includes specified additional properties.
+        message get_message(
+                    const item_id& id,
+                    const std::vector<property_path>& additional_properties)
+        {
+            return get_item_impl<message>(id,
+                                          base_shape::all_properties,
+                                          additional_properties);
         }
 
         //! Delete an arbitrary item from the Exchange store
@@ -10419,20 +10466,15 @@ namespace ews
             }
         }
 
-        // Gets an item from the server.
+        // Gets an item from the server
         template <typename ItemType>
         ItemType get_item_impl(const item_id& id, base_shape shape)
         {
-            // TODO: remove <AdditionalProperties> below, add parameter(s) or
-            // overload to allow users customization
             const std::string request_string =
                 "<m:GetItem>\n"
                 "  <m:ItemShape>\n"
                 "    <t:BaseShape>" + internal::enum_to_str(shape)
-                                            + "</t:BaseShape>\n"
-                "    <t:AdditionalProperties>\n"
-                "      <t:FieldURI FieldURI=\"item:MimeContent\"/>\n"
-                "    </t:AdditionalProperties>\n"
+                                    + "</t:BaseShape>\n"
                 "  </m:ItemShape>\n"
                 "  <m:ItemIds>" + id.to_xml("t") + "</m:ItemIds>\n"
                 "</m:GetItem>\n";
@@ -10451,6 +10493,48 @@ namespace ews
                     && "Expected at least one item");
             return response_message.items().front();
         }
+
+        // Gets an item from the server with additional properties
+        template <typename ItemType>
+        ItemType get_item_impl(const item_id& id,
+                               base_shape shape,
+                               const std::vector<property_path>& additional_properties)
+        {
+            EWS_ASSERT(!additional_properties.empty());
+
+            std::stringstream sstr;
+            sstr <<
+                "<m:GetItem>\n"
+                "  <m:ItemShape>\n"
+                "    <t:BaseShape>" << internal::enum_to_str(shape)
+                                    << "</t:BaseShape>\n"
+                "    <t:AdditionalProperties>\n";
+            for (const auto& prop : additional_properties)
+            {
+                //      "      <t:FieldURI FieldURI=\"item:MimeContent\"/>\n"
+                sstr << "      <t:FieldURI FieldURI=\"" << prop.field_uri() << "\"/>\n";
+            }
+            sstr <<
+                "    </t:AdditionalProperties>\n"
+                "  </m:ItemShape>\n"
+                "  <m:ItemIds>" << id.to_xml("t") << "</m:ItemIds>\n"
+                "</m:GetItem>\n";
+
+            auto response = request(sstr.str());
+#ifdef EWS_ENABLE_VERBOSE
+            std::cerr << response.payload() << std::endl;
+#endif
+            const auto response_message =
+                internal::get_item_response_message<ItemType>::parse(response);
+            if (!response_message.success())
+            {
+                throw exchange_error(response_message.get_response_code());
+            }
+            EWS_ASSERT(!response_message.items().empty()
+                    && "Expected at least one item");
+            return response_message.items().front();
+        }
+
 
         // Creates an item on the server and returns it's item_id.
         template <typename ItemType>
