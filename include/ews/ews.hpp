@@ -8771,6 +8771,8 @@ namespace ews
     static_assert(std::is_move_assignable<indexed_property_path>::value, "");
 #endif
 
+    // TODO: extended_property_path missing?
+
     namespace folder_property_path
     {
         static const property_path folder_id = "folder:FolderId";
