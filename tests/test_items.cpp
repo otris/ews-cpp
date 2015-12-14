@@ -170,7 +170,7 @@ namespace tests
         }
     }
 
-    TEST(ItemTest, DefaultConstruction)
+    TEST(OfflineItemTest, DefaultConstruction)
     {
         auto i = ews::item();
         EXPECT_TRUE(i.get_mime_content().none());
@@ -178,7 +178,7 @@ namespace tests
         EXPECT_FALSE(i.get_item_id().valid());
     }
 
-    TEST(ItemTest, GetAndSetBodyProperty)
+    TEST(OfflineItemTest, GetAndSetBodyProperty)
     {
         auto item = ews::item();
 
@@ -197,7 +197,7 @@ namespace tests
                      actual.content().c_str());
     }
 
-    TEST(ItemTest, GetParentFolderIdProperty)
+    TEST(OfflineItemTest, GetParentFolderIdProperty)
     {
         const auto task = make_fake_task();
         auto parent_folder_id = task.get_parent_folder_id();
@@ -206,37 +206,34 @@ namespace tests
         EXPECT_STREQ("ztrewq", parent_folder_id.change_key().c_str());
     }
 
-    TEST(ItemTest, GetItemClassProperty)
+    TEST(OfflineItemTest, GetItemClassProperty)
     {
         const auto task = make_fake_task();
         const auto item_class = task.get_item_class();
         EXPECT_STREQ("IPM.Task", item_class.c_str());
     }
 
-    TEST(ItemTest, GetSensitivityProperty)
+    TEST(OfflineItemTest, GetSensitivityProperty)
     {
         const auto task = make_fake_task();
         EXPECT_EQ(ews::sensitivity::confidential, task.get_sensitivity());
     }
 
-    TEST(ItemTest, GetSensitivityPropertyDefaultConstructed)
+    TEST(OfflineItemTest, GetSensitivityPropertyDefaultConstructed)
     {
         const auto task = ews::task();
         EXPECT_EQ(ews::sensitivity::normal, task.get_sensitivity());
     }
 
-    TEST(ItemTest, SetSensitivity)
+    TEST(OfflineItemTest, SetSensitivity)
     {
         auto task = ews::task();
         task.set_sensitivity(ews::sensitivity::personal);
         EXPECT_EQ(ews::sensitivity::personal, task.get_sensitivity());
     }
 
-    class ItemTestAgainstExchangeServer : public ServiceFixture {};
-
-    TEST_F(ItemTestAgainstExchangeServer, GetMimeContentProperty)
+    TEST_F(ItemTest, GetMimeContentProperty)
     {
-        // A contact is an item
         auto contact = ews::contact();
         auto s = service();
         const auto item_id = s.create_item(contact);
@@ -248,7 +245,7 @@ namespace tests
         EXPECT_FALSE(contact.get_mime_content().none());
     }
 
-    TEST_F(ItemTestAgainstExchangeServer, UpdateSensitivityProperty)
+    TEST_F(ItemTest, UpdateSensitivityProperty)
     {
         auto task = ews::task();
         task.set_sensitivity(ews::sensitivity::personal);

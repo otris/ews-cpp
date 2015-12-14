@@ -239,6 +239,8 @@ namespace tests
         std::unique_ptr<ews::service> service_ptr_;
     };
 
+    class ItemTest : public ServiceFixture {};
+
     // Create and remove a task on the server
     class TaskTest : public ServiceFixture
     {
