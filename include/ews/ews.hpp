@@ -8491,34 +8491,163 @@ namespace ews
             return duration(xml().get_value_as_string("Duration"));
         }
 
-        // <TimeZone/>
-        // <AppointmentReplyTime/>
-        // <AppointmentSequenceNumber/>
-        // <AppointmentState/>
+        //! \brief Returns the display name for the time zone associated with
+        //! this calendar item.
+        //!
+        //! Provides a text-only description of the time zone for a calendar
+        //! item.
+        //!
+        //! Note: This is a read-only property. EWS does not allow you to
+        //! specify the name of a time zone for a calendar item with
+        //! \<CreateItem/> and \<UpdateItem/>. Hence, any calendar items that
+        //! is fetched with EWS that were also created with EWS will always
+        //! have an empty \<TimeZone/> property.
+        //!
+        //! \sa get_meeting_timezone, set_meeting_timezone
+        std::string get_timezone() const
+        {
+            return xml().get_value_as_string("TimeZone");
+        }
+
+        //! \brief Returns the date and time when when this meeting was
+        //! responded to.
+        //!
+        //! Note: Applicable to meetings only. This is a read-only property
+        date_time get_appointment_reply_time() const
+        {
+            return date_time(xml().get_value_as_string("AppointmentReplyTime"));
+        }
+
+        //! \brief Returns the sequence number of this meetings version
+        //!
+        //! Note: Applicable to meetings only. This is a read-only property
+        int get_appointment_sequence_number() const
+        {
+            const auto val = xml().get_value_as_string("AppointmentSequenceNumber");
+            return val.empty() ? 0 : std::stoi(val);
+        }
+
+        //! \brief Returns the status of this meeting.
+        //!
+        //! The returned integer is a bitmask.
+        //!
+        //! \li <tt>0x0000</tt> - No flags have been set. This is only used
+        //!                       for a calendar item that does not include
+        //!                       attendees
+        //! \li <tt>0x0001</tt> - Appointment is a meeting
+        //! \li <tt>0x0002</tt> - Appointment has been received
+        //! \li <tt>0x0004</tt> - Appointment has been canceled
+        //!
+        //! Note: Applicable to meetings only and is only included in a
+        //! meeting response. This is a read-only property
+        int get_appointment_state() const
+        {
+            const auto val = xml().get_value_as_string("AppointmentState");
+            return val.empty() ? 0 : std::stoi(val);
+        }
+
+        // TODO: issue #22
         // <Recurrence/>
         // <FirstOccurrence/>
         // <LastOccurrence/>
         // <ModifiedOccurrences/>
         // <DeletedOccurrences/>
+
+        // TODO: issue #23
         // <MeetingTimeZone/>
         // <StartTimeZone/>
         // <EndTimeZone/>
-        // <ConferenceType/>
-        // <AllowNewTimeProposal/>
-        // <IsOnlineMeeting/>
-        // <MeetingWorkspaceUrl/>
-        // <NetShowUrl/>
 
-        // Properties beyond 2007 scope
+        //! \brief Returns the type of conferencing that is performed with this
+        //! calendar item.
+        //!
+        //! Possible values:
+        //!
+        //! \li 0 - NetMeeting
+        //! \li 1 - NetShow
+        //! \li 2 - Chat
+        int get_conference_type() const
+        {
+            const auto val = xml().get_value_as_string("ConferenceType");
+            return val.empty() ? 0 : std::stoi(val);
+        }
 
-        // <EffectiveRights/>
-        // <LastModifiedName/>
-        // <LastModifiedTime/>
-        // <IsAssociated/>
-        // <WebClientReadFormQueryString/>
-        // <WebClientEditFormQueryString/>
-        // <ConversationId/>
-        // <UniqueBody/>
+        //! \brief Sets the type of conferencing that is performed with this
+        //! calendar item.
+        //!
+        //! \sa get_conference_type
+        void set_conference_type(int value)
+        {
+            xml().set_or_update("ConferenceType", std::to_string(value));
+        }
+
+        //! \brief Returns true if attendees are allowed to respond to the
+        //! organizer with new time suggestions.
+        bool is_new_time_proposal_allowed() const
+        {
+            return xml().get_value_as_string("AllowNewTimeProposal") == "true";
+        }
+
+        //! \brief If set to true, allows attendees to respond to the organizer
+        //! with new time suggestions.
+        //!
+        //! Note: This property is read-writable for the organizer's calendar
+        //! item. For meeting requests and for attendees' calendar items this
+        //! is read-only .
+        void set_new_time_proposal_allowed(bool allowed)
+        {
+            xml().set_or_update("AllowNewTimeProposal",
+                allowed ? "true" : "false");
+        }
+
+        //! \brief Returns whether this meeting is held online.
+        bool is_online_meeting() const
+        {
+            return xml().get_value_as_string("IsOnlineMeeting") == "true";
+        }
+
+        //! \brief If set to true, this meeting is supposed to be held online.
+        //!
+        //! Note: This property is read-writable for the organizer's calendar
+        //! item. For meeting requests and for attendees' calendar items this
+        //! is read-only .
+        void set_online_meeting_enabled(bool enabled)
+        {
+            xml().set_or_update("IsOnlineMeeting",
+                enabled ? "true" : "false");
+        }
+
+        //! Returns the URL for a meeting workspace
+        std::string get_meeting_workspace_url() const
+        {
+            return xml().get_value_as_string("MeetingWorkspaceUrl");
+        }
+
+        //! \brief Sets the URL for a meeting workspace.
+        //!
+        //! Note: This property is read-writable for the organizer's calendar
+        //! item. For meeting requests and for attendees' calendar items this
+        //! is read-only .
+        void set_meeting_workspace_url(const std::string& url)
+        {
+            xml().set_or_update("MeetingWorkspaceUrl", url);
+        }
+
+        //! Returns a URL for Microsoft NetShow online meeting
+        std::string get_netshow_url() const
+        {
+            return xml().get_value_as_string("NetShowUrl");
+        }
+
+        //! \brief Sets the URL for Microsoft NetShow online meeting.
+        //!
+        //! Note: This property is read-writable for the organizer's calendar
+        //! item. For meeting requests and for attendees' calendar items this
+        //! is read-only .
+        void set_netshow_url(const std::string& url)
+        {
+            xml().set_or_update("NetShowUrl", url);
+        }
 
         //! Makes a calendar item instance from a \<CalendarItem> XML element
         static calendar_item from_xml_element(const rapidxml::xml_node<>& elem)

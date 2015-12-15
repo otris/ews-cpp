@@ -552,6 +552,144 @@ namespace tests
         auto cal = test_calendar_item();
         EXPECT_TRUE(cal.get_duration().is_set());
     }
+
+    // <TimeZone/>
+    TEST(OfflineCalendarItemTest, TimeZonePropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_TRUE(cal.get_timezone().empty());
+    }
+
+    // <AppointmentReplyTime/>
+    TEST(OfflineCalendarItemTest, AppointmentReplyTimePropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_FALSE(cal.get_appointment_reply_time().is_set());
+    }
+
+    // <AppointmentSequenceNumber/>
+    TEST(OfflineCalendarItemTest,
+         AppointmentSequenceNumberPropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_EQ(0, cal.get_appointment_sequence_number());
+    }
+
+    // <AppointmentState/>
+    TEST(OfflineCalendarItemTest, AppointmentStatePropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_EQ(0, cal.get_appointment_state());
+    }
+
+    // <ConferenceType/>
+    TEST(OfflineCalendarItemTest, ConferenceTypePropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_EQ(0, cal.get_conference_type());
+    }
+
+    TEST(OfflineCalendarItemTest, SetConferenceTypeProperty)
+    {
+        auto cal = ews::calendar_item();
+        cal.set_conference_type(1);
+        EXPECT_EQ(1, cal.get_conference_type());
+    }
+
+    TEST_F(CalendarItemTest, UpdateConferenceTypeProperty)
+    {
+        auto cal = test_calendar_item();
+        auto prop = ews::property(
+            ews::calendar_property_path::conference_type, 2);
+        auto new_id = service().update_item(cal.get_item_id(), prop);
+        cal = service().get_calendar_item(new_id);
+        EXPECT_EQ(2, cal.get_conference_type());
+    }
+
+    // <AllowNewTimeProposal/>
+    TEST(OfflineCalendarItemTest, AllowNewTimeProposalPropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_FALSE(cal.is_new_time_proposal_allowed());
+    }
+
+    TEST(OfflineCalendarItemTest, SetAllowNewTimeProposalProperty)
+    {
+        auto cal = ews::calendar_item();
+        cal.set_new_time_proposal_allowed(true);
+        EXPECT_TRUE(cal.is_new_time_proposal_allowed());
+        cal.set_new_time_proposal_allowed(false);
+        EXPECT_FALSE(cal.is_new_time_proposal_allowed());
+    }
+
+    TEST_F(CalendarItemTest, UpdateAllowNewTimeProposalProperty)
+    {
+        auto cal = test_calendar_item();
+        auto prop = ews::property(
+            ews::calendar_property_path::allow_new_time_proposal, true);
+        auto new_id = service().update_item(cal.get_item_id(), prop);
+        cal = service().get_calendar_item(new_id);
+        EXPECT_TRUE(cal.is_new_time_proposal_allowed());
+    }
+
+    // <IsOnlineMeeting/>
+    TEST(OfflineCalendarItemTest, IsOnlineMeetingPropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_FALSE(cal.is_online_meeting());
+    }
+
+    TEST(OfflineCalendarItemTest, SetIsOnlineMeetingProperty)
+    {
+        auto cal = ews::calendar_item();
+        cal.set_online_meeting_enabled(true);
+        EXPECT_TRUE(cal.is_online_meeting());
+        cal.set_online_meeting_enabled(false);
+        EXPECT_FALSE(cal.is_online_meeting());
+    }
+
+    TEST_F(CalendarItemTest, UpdateIsOnlineMeetingProperty)
+    {
+        auto cal = test_calendar_item();
+        auto prop = ews::property(
+            ews::calendar_property_path::is_online_meeting, true);
+        auto new_id = service().update_item(cal.get_item_id(), prop);
+        cal = service().get_calendar_item(new_id);
+        EXPECT_TRUE(cal.is_online_meeting());
+
+        prop = ews::property(
+            ews::calendar_property_path::is_online_meeting, false);
+        new_id = service().update_item(cal.get_item_id(), prop);
+        cal = service().get_calendar_item(new_id);
+        EXPECT_FALSE(cal.is_online_meeting());
+    }
+
+    // <MeetingWorkspaceUrl/>
+    TEST(OfflineCalendarItemTest, MeetingWorkspaceUrlPropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_TRUE(cal.get_meeting_workspace_url().empty());
+    }
+
+    TEST(OfflineCalendarItemTest, SetMeetingWorkspaceUrlProperty)
+    {
+        auto cal = ews::calendar_item();
+        cal.set_meeting_workspace_url("kitchen");
+        EXPECT_STREQ("kitchen", cal.get_meeting_workspace_url().c_str());
+
+        cal.set_meeting_workspace_url("13th floor");
+        EXPECT_STREQ("13th floor", cal.get_meeting_workspace_url().c_str());
+    }
+
+    TEST_F(CalendarItemTest, UpdateMeetingWorkspaceUrlProperty)
+    {
+        auto cal = test_calendar_item();
+        auto prop = ews::property(
+            ews::calendar_property_path::meeting_workspace_url, "kitchen");
+        auto new_id = service().update_item(cal.get_item_id(), prop);
+        cal = service().get_calendar_item(new_id);
+        EXPECT_STREQ("kitchen", cal.get_meeting_workspace_url().c_str());
+    }
 }
 
 // vim:et ts=4 sw=4 noic cc=80
