@@ -312,17 +312,26 @@ namespace tests
         rapidxml::xml_document<> doc;
         auto str = doc.allocate_string(contact_card.c_str());
         doc.parse<0>(str);
-        auto effective_rights_element =
+        auto contact_element =
             get_element_by_qname(doc,
-                                 "EffectiveRights",
+                                 "Contact",
                                  uri<>::microsoft::types());
-        auto effective_rights = xml_subtree(*effective_rights_element);
+        auto cont = xml_subtree(*contact_element);
 
-        effective_rights.set_or_update("Modify", "false");
-        EXPECT_STREQ("false", effective_rights.get_node("Modify")->value());
+        cont.set_or_update("Modify", "false");
+        EXPECT_STREQ("false", cont.get_node("Modify")->value());
         EXPECT_STREQ(
-            "<t:EffectiveRights><t:Delete>true</t:Delete><t:Modify>false</t:Modify><t:Read>true</t:Read></t:EffectiveRights>",
-            effective_rights.to_string().c_str());
+            "<t:Contact>"
+                "<t:DateTimeSent>2015-05-21T10:13:28Z</t:DateTimeSent>"
+                "<t:DateTimeCreated>2015-05-21T10:13:28Z</t:DateTimeCreated>"
+                "<t:EffectiveRights>"
+                    "<t:Delete>true</t:Delete>"
+                    "<t:Modify>false</t:Modify>"
+                    "<t:Read>true</t:Read>"
+                "</t:EffectiveRights>"
+                "<t:Culture>en-US</t:Culture>"
+            "</t:Contact>",
+            cont.to_string().c_str());
     }
 
     TEST(InternalTest, AppendSubTreeToExistingXMLDocument)
@@ -332,9 +341,9 @@ namespace tests
         rapidxml::xml_document<> doc;
         {
             const auto xml = std::string(
-                "<a>\n"
-                "   <b>\n"
-                "   </b>\n"
+                "<a>"
+                    "<b>"
+                    "</b>"
                 "</a>");
             auto str = doc.allocate_string(xml.c_str());
             doc.parse<0>(str);
@@ -343,9 +352,9 @@ namespace tests
 
         rapidxml::xml_document<> src;
         const auto xml = std::string(
-            "<c>\n"
-            "   <d>\n"
-            "   </d>\n"
+            "<c>"
+                "<d>"
+                "</d>"
             "</c>");
         auto str = src.allocate_string(xml.c_str());
         src.parse<0>(str);
@@ -357,7 +366,13 @@ namespace tests
         rapidxml::print(std::back_inserter(actual),
                         doc,
                         rapidxml::print_no_indenting);
-        EXPECT_STREQ("<a><b><c><d/></c></b></a>", actual.c_str());
+        EXPECT_STREQ("<a>"
+                         "<b>"
+                             "<c>"
+                                 "<d/>"
+                             "</c>"
+                         "</b>"
+                     "</a>", actual.c_str());
     }
 
     TEST(InternalTest, SubTreeCopyAndAssignment)

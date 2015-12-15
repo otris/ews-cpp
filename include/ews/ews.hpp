@@ -4724,8 +4724,9 @@ namespace ews
                                        uri<>::microsoft::types_size);
                 if (oldnode)
                 {
-                    doc_->first_node()->insert_node(oldnode, newnode);
-                    doc_->first_node()->remove_node(oldnode);
+                    auto parent = oldnode->parent();
+                    parent->insert_node(oldnode, newnode);
+                    parent->remove_node(oldnode);
                 }
                 else
                 {
