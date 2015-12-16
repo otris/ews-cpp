@@ -1,6 +1,19 @@
 README
 ======
 
+EWS is an API that third-party programmers can use to communicate with
+Microsoft Exchange Server. The API exists since Exchange Server 2007 and is
+continuously up-dated by Microsoft and present in the latest iteration of the
+product, Exchange Server 2016.
+
+This library provides a native and platform-independent way to use EWS in your
+C++ application.
+
+
+.. image:: ews-overview.png
+    :align: left
+
+
 Supported Compilers
 -------------------
 
