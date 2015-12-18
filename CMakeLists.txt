@@ -316,7 +316,7 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/ews_version.hpp.in"
     "${CMAKE_CURRENT_BINARY_DIR}/ews_version.hpp" @ONLY)
 list(APPEND ews_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/ews_version.hpp")
 
-install(FILES ${ews_SOURCES} DESTINATION include/ews)
-install(FILES ${rapidxml_SOURCES} DESTINATION include/ews/rapidxml)
+install(FILES ${ews_SOURCES} DESTINATION ews)
+install(FILES ${rapidxml_SOURCES} DESTINATION ews/rapidxml)
 
 # vim:et sw=4 ts=4
