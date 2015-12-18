@@ -13,7 +13,12 @@ option(ENABLE_VERBOSE
     "Enable verbose output to stderr (You don't want this set in production)."
     OFF)
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-    option(ENABLE_LIBCXX "Link against libc++ instead of libstdc++." ON)
+    set(_ews_option_text "Link against libc++ instead of libstdc++.")
+    if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin")
+        option(ENABLE_LIBCXX ${_ews_option_text} ON)
+    else()
+        option(ENABLE_LIBCXX ${_ews_option_text} OFF)
+    endif()
 endif()
 
 set(SANITIZE_CXXFLAGS)
