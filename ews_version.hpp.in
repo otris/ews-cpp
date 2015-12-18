@@ -1,0 +1,13 @@
+#pragma once
+
+#include <string>
+
+namespace ews
+{
+    inline std::string version()
+    {
+        return "@GIT_TAG@ (@GIT_SHA1@)";
+    }
+}
+
+// vim:et ts=4 sw=4 noic cc=80

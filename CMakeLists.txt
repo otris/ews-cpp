@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(ews CXX)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(GetGitRevisionDescription)
+git_describe(GIT_TAG --tag --candidates=30 --abbrev=0)
+message(STATUS "Git tag: ${GIT_TAG}")
+get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+message(STATUS "Git SHA-1: ${GIT_SHA1}")
+
 include(CheckCXXCompilerFlag)
 
 option(ENABLE_ASSERTS "Enable run-time checks." OFF)
@@ -304,6 +311,10 @@ if(DOXYGEN_FOUND)
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating API documentation with Doxygen" VERBATIM)
 endif()
+
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/ews_version.hpp.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/ews_version.hpp" @ONLY)
+list(APPEND ews_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/ews_version.hpp")
 
 install(FILES ${ews_SOURCES} DESTINATION include/ews)
 install(FILES ${rapidxml_SOURCES} DESTINATION include/ews/rapidxml)
