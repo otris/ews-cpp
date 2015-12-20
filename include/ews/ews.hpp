@@ -421,8 +421,8 @@ namespace ews
         //! Operation failed due to issues talking with the Active Directory.
         error_ad_operation,
 
-        //! You should never encounter this response code, which occurs only as a
-        //! result of an issue in Exchange Web Services.
+        //! You should never encounter this response code, which occurs only as
+        //! a result of an issue in Exchange Web Services.
         error_ad_session_filter,
 
         //! The Active Directory is temporarily unavailable. Try your request
@@ -510,12 +510,12 @@ namespace ews
         //! Occurs when an invalid time zone is encountered.
         error_calendar_invalid_time_zone,
 
-        //! Accepting a meeting request by using delegate access is not supported
-        //! in RTM.
+        //! Accepting a meeting request by using delegate access is not
+        //! supported in RTM.
         error_calendar_is_delegated_for_accept,
 
-        //! Declining a meeting request by using delegate access is not supported
-        //! in RTM.
+        //! Declining a meeting request by using delegate access is not
+        //! supported in RTM.
         error_calendar_is_delegated_for_decline,
 
         //! Removing an item from the calendar by using delegate access is not
@@ -526,8 +526,8 @@ namespace ews
         //! not supported in RTM.
         error_calendar_is_delegated_for_tentative,
 
-        //! Only the meeting organizer can cancel the meeting, no matter how much
-        //! you are dreading it.
+        //! Only the meeting organizer can cancel the meeting, no matter how
+        //! much you are dreading it.
         error_calendar_is_not_organizer,
 
         //! The organizer cannot accept the meeting. Only attendees can accept a
@@ -580,8 +580,8 @@ namespace ews
         //! in question for some unexpected reason.
         error_cannot_delete_object,
 
-        //! This error indicates that you either tried to delete an occurrence of
-        //! a nonrecurring task or tried to delete the last occurrence of a
+        //! This error indicates that you either tried to delete an occurrence
+        //! of a nonrecurring task or tried to delete the last occurrence of a
         //! recurring task.
         error_cannot_delete_task_occurrence,
 
@@ -632,10 +632,10 @@ namespace ews
         //! You cannot move an item or folder from one Mailbox to another.
         error_cross_mailbox_move_copy,
 
-        //! Either the data that you were trying to set exceeded the maximum size
-        //! for the property, or the value is large enough to require streaming
-        //! and the property does not support streaming (that is, folder
-        //! properties).
+        //! Either the data that you were trying to set exceeded the maximum
+        //! size for the property, or the value is large enough to require
+        //! streaming and the property does not support streaming (that is,
+        //! folder properties).
         error_data_size_limit_exceeded,
 
         //! An Active Directory operation failed.
@@ -653,9 +653,9 @@ namespace ews
 
         //! The Mailbox subelement of DistinguishedFolderId pointed to a
         //! different Mailbox than the one you are currently operating on. For
-        //! example, you cannot create a search folder that exists in one Mailbox
-        //! but considers distinguished folders from another Mailbox in its
-        //! search criteria.
+        //! example, you cannot create a search folder that exists in one
+        //! Mailbox but considers distinguished folders from another Mailbox in
+        //! its search criteria.
         error_email_address_mismatch,
 
         //! Indicates that the subscription that was created with a particular
@@ -666,14 +666,15 @@ namespace ews
         error_expired_subscription,
 
         //! The folder is corrupt and cannot be saved. This means that you set
-        //! some strange and invalid property on the folder, or possibly that the
-        //! folder was already in some strange state before you tried to set
-        //! values on it (UpdateFolder). In any case, this is not a common error.
+        //! some strange and invalid property on the folder, or possibly that
+        //! the folder was already in some strange state before you tried to
+        //! set values on it (UpdateFolder). In any case, this is not a common
+        //! error.
         error_folder_corrupt,
 
-        //! Indicates that the folder id passed in does not correspond to a valid
-        //! folder, or in delegate access cases that the delegate does not have
-        //! permissions to access the folder.
+        //! Indicates that the folder id passed in does not correspond to a
+        //! valid folder, or in delegate access cases that the delegate does
+        //! not have permissions to access the folder.
         error_folder_not_found,
 
         //! Indicates that the property that was requested could not be
@@ -703,9 +704,10 @@ namespace ews
         error_get_server_security_descriptor_failed,
 
         //! This response code is always returned within a SOAP fault. It
-        //! indicates that the calling account does not have the ms-Exch-EPI-May-
-        //! Impersonate right on either the user/contact they are try to
-        //! impersonate or the Mailbox database containing the user Mailbox.
+        //! indicates that the calling account does not have the
+        //! ms-Exch-EPI-May-Impersonate right on either the user/contact they
+        //! are try to impersonate or the Mailbox database containing the user
+        //! Mailbox.
         error_impersonate_user_denied,
 
         //! This response code is always returned within a SOAP fault. It
@@ -752,26 +754,26 @@ namespace ews
 
         //! Indicates that the attachment was not found within the attachments
         //! collection on the item in question. You might encounter this if you
-        //! have an attachment id, the attachment is deleted, and then you try to
-        //! call GetAttachment on the old attachment id.
+        //! have an attachment id, the attachment is deleted, and then you try
+        //! to call GetAttachment on the old attachment id.
         error_invalid_attachment_id,
 
         //! Exchange Web Services supports only simple contains filters against
-        //! the attachment table. If you try to retrieve the search parameters on
-        //! an existing search folder that has a more complex attachment table
-        //! restriction (called a subfilter), then Exchange Web Services has no
-        //! way of rendering the XML for that filter, and it returns this
-        //! response code. Note that you can still call GetFolder on this folder,
-        //! just don't request the SearchParameters property.
+        //! the attachment table. If you try to retrieve the search parameters
+        //! on an existing search folder that has a more complex attachment
+        //! table restriction (called a subfilter), then Exchange Web Services
+        //! has no way of rendering the XML for that filter, and it returns
+        //! this response code. Note that you can still call GetFolder on this
+        //! folder, just don't request the SearchParameters property.
         error_invalid_attachment_subfilter,
 
         //! Exchange Web Services supports only simple contains filters against
-        //! the attachment table. If you try to retrieve the search parameters on
-        //! an existing search folder that has a more complex attachment table
-        //! restriction, then Exchange Web Services has no way of rendering the
-        //! XML for that filter. This specific case means that the attachment
-        //! subfilter is a contains (text) filter, but the subfilter is not
-        //! referring to the attachment display name.
+        //! the attachment table. If you try to retrieve the search parameters
+        //! on an existing search folder that has a more complex attachment
+        //! table restriction, then Exchange Web Services has no way of
+        //! rendering the XML for that filter. This specific case means that
+        //! the attachment subfilter is a contains (text) filter, but the
+        //! subfilter is not referring to the attachment display name.
         error_invalid_attachment_subfilter_text_filter,
 
         //! You should not encounter this error, which has to do with a failure
@@ -790,22 +792,22 @@ namespace ews
 
         //! Occurs when you try to set the CompleteDate of a task to a date in
         //! the past. When converted to the local time of the CAS, the
-        //! CompleteDate cannot be set to a value less than the local time on the
-        //! CAS.
+        //! CompleteDate cannot be set to a value less than the local time on
+        //! the CAS.
         error_invalid_complete_date,
 
-        //! This response code can be returned with two different error messages:
-        //! Unable to send cross-forest request for mailbox {mailbox identifier}
-        //! because of invalid configuration. When UseServiceAccount is
-        //! false, user name cannot be null or empty. You should never encounter
-        //! this response code.
+        //! This response code can be returned with two different error
+        //! messages: Unable to send cross-forest request for mailbox {mailbox
+        //! identifier} because of invalid configuration. When
+        //! UseServiceAccount is false, user name cannot be null or empty. You
+        //! should never encounter this response code.
         error_invalid_cross_forest_credentials,
 
         //! An ExchangeImpersonation header was passed in but it did not contain
         //! a security identifier (SID), user principal name (UPN) or primary
-        //! SMTP address. You must supply one of these identifiers and of course,
-        //! they cannot be empty strings. Note that this response code is always
-        //! returned within a SOAP fault.
+        //! SMTP address. You must supply one of these identifiers and of
+        //! course, they cannot be empty strings. Note that this response code
+        //! is always returned within a SOAP fault.
         error_invalid_exchange_impersonation_header_data,
 
         //! The bitmask passed into the Excludes restriction was unparsable.
@@ -828,8 +830,10 @@ namespace ews
         //! You should never encounter this response code
         error_invalid_folder_id,
 
-        //! This response code will occur if: Numerator > denominator Numerator <
-        //! 0 Denominator <= 0
+        //! This response code will occur if:
+        //! Numerator > denominator
+        //! Numerator < 0
+        //! Denominator <= 0
         error_invalid_fractional_paging_parameters,
 
         //! Returned if you call GetUserAvailability with a FreeBusyViewType of
@@ -850,8 +854,8 @@ namespace ews
         //! the name of this response code is contained within the id and
         //! indicates which Mailbox the id belongs to. Exchange Web Services
         //! checks the length of this moniker and fails it if the byte count is
-        //! more than expected. The check is good, but there is no reason to have
-        //! a separate response code for this condition.
+        //! more than expected. The check is good, but there is no reason to
+        //! have a separate response code for this condition.
         error_invalid_id_moniker_too_long,
 
         //! The AttachmentId specified does not refer to an item attachment.
@@ -903,24 +907,24 @@ namespace ews
         //! message.
         error_invalid_item_for_operation_create_item,
 
-        //! This response code is returned if: You created an AcceptItem response
-        //! object and referenced an item type other than a meeting request or a
-        //! calendar item. You tried to accept a calendar item occurrence that is
-        //! in the deleted items folder.
+        //! This response code is returned if: You created an AcceptItem
+        //! response object and referenced an item type other than a meeting
+        //! request or a calendar item. You tried to accept a calendar item
+        //! occurrence that is in the deleted items folder.
         error_invalid_item_for_operation_accept_item,
 
         //! You created a CancelItem response object and referenced an item type
         //! other than a calendar item.
         error_invalid_item_for_operation_cancel_item,
 
-        //! This response code is returned if: You created a DeclineItem response
-        //! object referencing an item with a type other than a meeting request
-        //! or a calendar item. You tried to decline a calendar item occurrence
-        //! that is in the deleted items folder.
+        //! This response code is returned if: You created a DeclineItem
+        //! response object referencing an item with a type other than a
+        //! meeting request or a calendar item. You tried to decline a calendar
+        //! item occurrence that is in the deleted items folder.
         error_invalid_item_for_operation_decline_item,
 
-        //! The ItemId passed to ExpandDL does not represent a distribution list.
-        //! For example, you cannot expand a Message.
+        //! The ItemId passed to ExpandDL does not represent a distribution
+        //! list. For example, you cannot expand a Message.
         error_invalid_item_for_operation_expand_dl,
 
         //! You created a RemoveItem response object reference an item with a
@@ -933,10 +937,10 @@ namespace ews
         error_invalid_item_for_operation_send_item,
 
         //! This response code is returned if: You created a
-        //! TentativelyAcceptItem response object referencing an item whose type
-        //! is not a meeting request or a calendar item. You tried to tentatively
-        //! accept a calendar item occurrence that is in the deleted items
-        //! folder.
+        //! TentativelyAcceptItem response object referencing an item whose
+        //! type is not a meeting request or a calendar item. You tried to
+        //! tentatively accept a calendar item occurrence that is in the
+        //! deleted items folder.
         error_invalid_item_for_operation_tentative,
 
         //! Indicates that the structure of the managed folder is corrupt and
@@ -976,21 +980,23 @@ namespace ews
         //! You tried to create a folder within a search folder.
         error_invalid_parent_folder,
 
-        //! You tried to set the percentage complete property to an invalid value
-        //! (must be between 0 and 100 inclusive).
+        //! You tried to set the percentage complete property to an invalid
+        //! value (must be between 0 and 100 inclusive).
         error_invalid_percent_complete_value,
 
         //! The property that you are trying to append to does not support
-        //! appending. Currently, the only properties that support appending are:
-        //! * Recipient collections (ToRecipients, CcRecipients, BccRecipients)
-        //! * Attendee collections (RequiredAttendees, OptionalAttendees,
-        //!   Resources)
-        //! * Body
-        //! * ReplyTo
+        //! appending. Currently, the only properties that support appending
+        //! are:
+        //! \li Recipient collections (ToRecipients, CcRecipients, BccRecipients)
+        //! \li Attendee collections (RequiredAttendees, OptionalAttendees,
+        //! Resources)
+        //! \li Body
+        //! \li ReplyTo
         error_invalid_property_append,
 
-        //! The property that you are trying to delete does not support deleting.
-        //! An example of this is trying to delete the ItemId of an item.
+        //! The property that you are trying to delete does not support
+        //! deleting. An example of this is trying to delete the ItemId of an
+        //! item.
         error_invalid_property_delete,
 
         //! You cannot pass in a flags property to an Exists filter. The flags
@@ -1030,9 +1036,10 @@ namespace ews
         //! The URL provided as a callback for the push subscription has a bad
         //! format. The following conditions must be met for Exchange Web
         //! Services to accept the URL:
-        //! * String length > 0 and < 2083
-        //! * Protocol is HTTP or HTTPS
-        //! * Must be parsable by the System.Uri.NET Framework class
+        //!
+        //! \li String length > 0 and < 2083
+        //! \li Protocol is HTTP or HTTPS
+        //! \li Must be parsable by the System.Uri.NET Framework class
         error_invalid_push_subscription_url,
 
         //! You should never encounter this response code. If you do, the
@@ -1041,10 +1048,10 @@ namespace ews
         error_invalid_recipients,
 
         //! Indicates that the search folder in question has a recipient table
-        //! filter that Exchange Web Services cannot represent. The response code
-        //! is a little misleading—there is nothing invalid about the search
-        //! folder restriction. To get around this issue, call GetFolder without
-        //! requesting the search parameters.
+        //! filter that Exchange Web Services cannot represent. The response
+        //! code is a little misleading—there is nothing invalid about the
+        //! search folder restriction. To get around this issue, call GetFolder
+        //! without requesting the search parameters.
         error_invalid_recipient_subfilter,
 
         //! Indicates that the search folder in question has a recipient table
@@ -1055,10 +1062,10 @@ namespace ews
         error_invalid_recipient_subfilter_comparison,
 
         //! Indicates that the search folder in question has a recipient table
-        //! filter that Exchange Web Services cannot represent. The response code
-        //! is a little misleading—there is nothing invalid about the search
-        //! folder restriction To get around this,issue, call GetFolder without
-        //! requesting the search parameters.
+        //! filter that Exchange Web Services cannot represent. The response
+        //! code is a little misleading—there is nothing invalid about the
+        //! search folder restriction To get around this,issue, call GetFolder
+        //! without requesting the search parameters.
         error_invalid_recipient_subfilter_order,
 
         //! Can you guess our comments on this one? Indicates that the search
@@ -1076,20 +1083,20 @@ namespace ews
         //! suppression, you can reference only a Message or descendant.
         error_invalid_reference_item,
 
-        //! Indicates that the SOAP request has a SOAP Action header, but nothing
-        //! in the SOAP body. Note that the SOAP Action header is not required
-        //! because Exchange Web Services can determine the method to call from
-        //! the local name of the root element in the SOAP body. However, you
-        //! must supply content in the SOAP body or else there is really nothing
-        //! for Exchange Web Services to act on..
+        //! Indicates that the SOAP request has a SOAP Action header, but
+        //! nothing in the SOAP body. Note that the SOAP Action header is not
+        //! required because Exchange Web Services can determine the method to
+        //! call from the local name of the root element in the SOAP body.
+        //! However, you must supply content in the SOAP body or else there is
+        //! really nothing for Exchange Web Services to act on.
         error_invalid_request,
 
         //! You will never encounter this response code.
         error_invalid_restriction,
 
         //! Indicates that the RoutingType element that was passed for an
-        //! EmailAddressType is not a valid routing type. Typically, routing type
-        //! will be set to Simple Mail Transfer Protocol (SMTP).
+        //! EmailAddressType is not a valid routing type. Typically, routing
+        //! type will be set to Simple Mail Transfer Protocol (SMTP).
         error_invalid_routing_type,
 
         //! The specified duration end time must be greater than the start time
@@ -1107,8 +1114,8 @@ namespace ews
         //! Because you never use token serialization in your application, you
         //! should never encounter this response code. The response code occurs
         //! if the token passed in the SOAP header is malformed, doesn't refer
-        //! to a valid account in the Active Directory, or is missing the primary
-        //! group SID.
+        //! to a valid account in the Active Directory, or is missing the
+        //! primary group SID.
         error_invalid_serialized_access_token,
 
         //! ExchangeImpersonation element have an invalid structure.
@@ -1126,8 +1133,8 @@ namespace ews
         //! You will never encounter this response code.
         error_invalid_subfilter_type_not_recipient_type,
 
-        //! Indicates that the subscription is no longer valid. This could be due
-        //! to the CAS having been rebooted or because the subscription has
+        //! Indicates that the subscription is no longer valid. This could be
+        //! due to the CAS having been rebooted or because the subscription has
         //! expired.
         error_invalid_subscription,
 
@@ -1167,15 +1174,15 @@ namespace ews
         error_invalid_watermark,
 
         //! Indicates that conflict resolution was unable to resolve changes for
-        //! the properties in question. This typically means that someone changed
-        //! the item in the Store, and you are dealing with a stale copy.
-        //! Retrieve the updated change key and try again.
+        //! the properties in question. This typically means that someone
+        //! changed the item in the Store, and you are dealing with a stale
+        //! copy. Retrieve the updated change key and try again.
         error_irresolvable_conflict,
 
         //! Indicates that the state of the object is corrupt and cannot be
-        //! retrieved. When retrieving an item, typically only certain properties
-        //! will be in this state (i.e. Body, MimeContent). Try omitting those
-        //! properties and retrying the operation.
+        //! retrieved. When retrieving an item, typically only certain
+        //! properties will be in this state (i.e. Body, MimeContent). Try
+        //! omitting those properties and retrying the operation.
         error_item_corrupt,
 
         //! Indicates that the item in question was not found, or potentially
@@ -1229,7 +1236,8 @@ namespace ews
         //! in a plethora of other conditions that make the Mailbox unavailable.
         error_mailbox_store_unavailable,
 
-        //! Could not map the MailboxData information to a valid Mailbox account.
+        //! Could not map the MailboxData information to a valid Mailbox
+        //! account.
         error_mail_recipient_not_found,
 
         //! The managed folder that you are trying to create already exists in
@@ -1258,8 +1266,8 @@ namespace ews
         //! was trying to generate the suggestions.
         error_meeting_suggestion_generation_failed,
 
-        //! When creating or updating an item that descends from MessageType, you
-        //! must supply the MessageDisposition attribute on the request to
+        //! When creating or updating an item that descends from MessageType,
+        //! you must supply the MessageDisposition attribute on the request to
         //! indicate what operations should be performed on the message. Note
         //! that this attribute is not required for any other type of item.
         error_message_disposition_required,
@@ -1295,8 +1303,8 @@ namespace ews
 
         //! Indicates that the attendee or recipient does not have the
         //! EmailAddress element set. You must set this element when making
-        //! requests. The other two elements within EmailAddressType are optional
-        //! (name and routing type).
+        //! requests. The other two elements within EmailAddressType are
+        //! optional (name and routing type).
         error_missing_information_email_address,
 
         //! When creating a response object such as ForwardItem, you must supply
@@ -1308,8 +1316,9 @@ namespace ews
         //! returned if you omit this element.
         error_missing_item_for_create_item_attachment,
 
-        //! The policy ids property (Property Tag: 0x6732, String) for the folder
-        //! in question is missing. You should consider this a corrupt folder.
+        //! The policy ids property (Property Tag: 0x6732, String) for the
+        //! folder in question is missing. You should consider this a corrupt
+        //! folder.
         error_missing_managed_folder_id,
 
         //! Indicates you tried to send an item with no recipients. Note that if
@@ -1320,18 +1329,18 @@ namespace ews
 
         //! Indicates that the move or copy operation failed. A move occurs in
         //! CreateItem when you accept a meeting request that is in the Deleted
-        //! Items folder. In addition, if you decline a meeting request, cancel a
-        //! calendar item, or remove a meeting from your calendar, it gets moved
-        //! to the deleted items folder.
+        //! Items folder. In addition, if you decline a meeting request, cancel
+        //! a calendar item, or remove a meeting from your calendar, it gets
+        //! moved to the deleted items folder.
         error_move_copy_failed,
 
         //! You cannot move a distinguished folder.
         error_move_distinguished_folder,
 
-        //! This is not actually an error. It should be categorized as a warning.
-        //! This response code indicates that the ambiguous name that you
-        //! specified matched more than one contact or distribution list.. This
-        //! is also the only "error" response code that includes response
+        //! This is not actually an error. It should be categorized as a
+        //! warning. This response code indicates that the ambiguous name that
+        //! you specified matched more than one contact or distribution list.
+        //! This is also the only "error" response code that includes response
         //! data (the matched names).
         error_name_resolution_multiple_results,
 
@@ -1353,17 +1362,25 @@ namespace ews
         //! different folder type via UpdateFolder, you get
         //! ErrorObjectTypeChanged—so don't even try it (we knew you were
         //! going there...). Exchange Web Services should enable you to create a
-        //! more specialized— but consistent—folder class when creating a
-        //! strongly typed folder. To get around this issue, use a generic folder
-        //! type but set the folder class to the value you need. Exchange Web
-        //! Services then creates the correct strongly typed folder.
+        //! more specialized—but consistent—folder class when creating a
+        //! strongly typed folder. To get around this issue, use a generic
+        //! folder type but set the folder class to the value you need.
+        //! Exchange Web Services then creates the correct strongly typed
+        //! folder.
         error_no_folder_class_override,
 
         //! Indicates that the caller does not have free/busy viewing rights on
         //! the calendar folder in question.
         error_no_free_busy_access,
 
+        //! The SMTP address has no mailbox associated with it.
+        //!
         //! This response code is returned in two cases:
+        //!
+        //! \li (CreateManagedFolder) You specified a Mailbox element in your
+        //! request but you either omitted the EmailAddress child element or the
+        //! value in the EmailAddress is empty
+        //! \li The SMTP address does not map to a valid mailbox
         error_non_existent_mailbox,
 
         //! For requests that take an SMTP address, the address must be the
@@ -1400,9 +1417,9 @@ namespace ews
         //! with one of its neighbors.
         error_occurrence_crossing_boundary,
 
-        //! Indicates that the time allotment for a given occurrence is too long,
-        //! which causes the occurrence to overlap with its neighbor. This
-        //! response code also occurs if the length in minutes of a given
+        //! Indicates that the time allotment for a given occurrence is too
+        //! long, which causes the occurrence to overlap with its neighbor.
+        //! This response code also occurs if the length in minutes of a given
         //! occurrence is larger than Int32.MaxValue.
         error_occurrence_time_span_too_big,
 
@@ -1457,8 +1474,8 @@ namespace ews
         error_public_folder_server_not_found,
 
         //! Restrictions can contain a maximum of 255 filter expressions. If you
-        //! try to bind to an existing search folder that exceeds this limit, you
-        //! encounter this response code.
+        //! try to bind to an existing search folder that exceeds this limit,
+        //! you encounter this response code.
         error_query_filter_too_long,
 
         //! The Mailbox quota has been exceeded.
@@ -1493,8 +1510,8 @@ namespace ews
         error_required_property_missing,
 
         //! You will never encounter this response code. Just as a piece of
-        //! trivia, the Exchange Web Services design team used this response code
-        //! for debug builds to ensure that their responses were schema
+        //! trivia, the Exchange Web Services design team used this response
+        //! code for debug builds to ensure that their responses were schema
         //! compliant. If Exchange Web Services expects you to send schema-
         //! compliant XML, then the least Exchange Web Services can do is be
         //! compliant in return.
@@ -1523,27 +1540,28 @@ namespace ews
         error_schema_validation,
 
         //! Indicates that the search folder has been created, but the search
-        //! criteria was never set on the folder. This condition occurs only when
-        //! you access corrupt search folders that were created with another
-        //! application programming interface (API) or client. Exchange Web
-        //! Services does not enable you to create search folders with this
-        //! condition To fix a search folder that has not been initialized, call
-        //! UpdateFolder and set the SearchParameters to include the restriction
-        //! that should be on the folder.
+        //! criteria was never set on the folder. This condition occurs only
+        //! when you access corrupt search folders that were created with
+        //! another application programming interface (API) or client. Exchange
+        //! Web Services does not enable you to create search folders with this
+        //! condition To fix a search folder that has not been initialized,
+        //! call UpdateFolder and set the SearchParameters to include the
+        //! restriction that should be on the folder.
         error_search_folder_not_initialized,
 
         //! The caller does not have Send As rights for the account in question.
         error_send_as_denied,
 
-        //! When you are the organizer and are deleting a calendar item, you must
-        //! set the SendMeetingCancellations attribute on the DeleteItem request
-        //! to indicate whether meeting cancellations will be sent to the meeting
-        //! attendees. If you are using the proxy classes don't forget to set
-        //! the SendMeetingCancellationsSpecified property to true.
+        //! When you are the organizer and are deleting a calendar item, you
+        //! must set the SendMeetingCancellations attribute on the DeleteItem
+        //! request to indicate whether meeting cancellations will be sent to
+        //! the meeting attendees. If you are using the proxy classes don't
+        //! forget to set the SendMeetingCancellationsSpecified property to
+        //! true.
         error_send_meeting_cancellations_required,
 
-        //! When you are the organizer and are updating a calendar item, you must
-        //! set the SendMeetingInvitationsOrCancellations attribute on the
+        //! When you are the organizer and are updating a calendar item, you
+        //! must set the SendMeetingInvitationsOrCancellations attribute on the
         //! UpdateItem request. If you are using the proxy classes don't forget
         //! to set the SendMeetingInvitationsOrCancellationsSpecified attribute
         //! to true.
@@ -1560,9 +1578,10 @@ namespace ews
         //! modify the calendar item, not the meeting request.
         error_sent_meeting_request_update,
 
-        //! After the task initiator sends a task request, that request cannot be
-        //! updated. However, you should not encounter this response code because
-        //! Exchange Web Services does not support task assignment at this point.
+        //! After the task initiator sends a task request, that request cannot
+        //! be updated. However, you should not encounter this response code
+        //! because Exchange Web Services does not support task assignment at
+        //! this point.
         error_sent_task_request_update,
 
         //! The server is busy, potentially due to virus scan operations. It is
@@ -1571,8 +1590,8 @@ namespace ews
 
         //! You must supply an up-to-date change key when calling the applicable
         //! methods. You either did not supply a change key, or the change key
-        //! you supplied is stale. Call GetItem to retrieve an updated change key
-        //! and then try your operation again.
+        //! you supplied is stale. Call GetItem to retrieve an updated change
+        //! key and then try your operation again.
         error_stale_object,
 
         //! You tried to access a subscription by using an account that did not
@@ -1587,9 +1606,9 @@ namespace ews
 
         //! The specified subscription does not exist which could mean that the
         //! subscription expired, the Exchange Web Services process was
-        //! restarted, or you passed in an invalid subscription. If you encounter
-        //! this response code, recreate the subscription by using the last
-        //! watermark that you have.
+        //! restarted, or you passed in an invalid subscription. If you
+        //! encounter this response code, recreate the subscription by using
+        //! the last watermark that you have.
         error_subscription_not_found,
 
         //! Indicates that the folder id you specified in your SyncFolderItems
@@ -1604,16 +1623,16 @@ namespace ews
         error_to_folder_not_found,
 
         //! The calling account does not have the ms-Exch-EPI-TokenSerialization
-        //! right on the CAS that is being called. Of course, because you are not
-        //! using token serialization in your application, you should never
+        //! right on the CAS that is being called. Of course, because you are
+        //! not using token serialization in your application, you should never
         //! encounter this response code. Right?
         error_token_serialization_denied,
 
         //! You will never encounter this response code.
         error_unable_to_get_user_oof_settings,
 
-        //! You tried to set the Culture property to a value that is not parsable
-        //! by the System.Globalization.CultureInfo class.
+        //! You tried to set the Culture property to a value that is not
+        //! parsable by the System.Globalization.CultureInfo class.
         error_unsupported_culture,
 
         //! MAPI property types Error, Null, Object and ObjectArray are
@@ -1624,7 +1643,8 @@ namespace ews
         //! calendar item.
         error_unsupported_mime_conversion,
 
-        //! Indicates that the property path cannot be used within a restriction.
+        //! Indicates that the property path cannot be used within a
+        //! restriction.
         error_unsupported_path_for_query,
 
         //! Indicates that the property path cannot be use for sorting or
@@ -1666,13 +1686,13 @@ namespace ews
 
         //! You will never encounter this response code. This was left over from
         //! the development cycle before the Exchange Web Services team had
-        //! implemented voice mail folder support. Yes, there was a time when all
-        //! of this was not implemented.
+        //! implemented voice mail folder support. Yes, there was a time when
+        //! all of this was not implemented.
         error_voice_mail_not_implemented,
 
-        //! You will never encounter this response code. It originally meant that
-        //! you intended to send your Web request from Arizona, but it actually
-        //! came from Minnesota instead.*
+        //! You will never encounter this response code. It originally meant
+        //! that you intended to send your Web request from Arizona, but it
+        //! actually came from Minnesota instead.*
         error_web_request_in_invalid_state,
 
         //! Indicates that there was a failure when Exchange Web Services was
