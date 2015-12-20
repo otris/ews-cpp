@@ -457,6 +457,13 @@ namespace tests
                          output[3].c_str());
         }
     }
+
+    TEST(InternalTest, HTTPErrorContainsStatusCodeString)
+    {
+        auto error = ews::http_error(404);
+        EXPECT_EQ(404, error.code());
+        EXPECT_STREQ("HTTP status code: 404 (Not Found)", error.what());
+    }
 }
 
 // vim:et ts=4 sw=4 noic cc=80
