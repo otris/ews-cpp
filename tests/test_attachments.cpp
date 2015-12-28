@@ -185,8 +185,9 @@ namespace tests
 
         EXPECT_TRUE(some_task.get_attachments().empty());
 
-        auto attachment_id = service().create_attachment(some_task,
-                                                         item_attachment);
+        auto attachment_id = service().create_attachment(
+                                                        some_task.get_item_id(),
+                                                        item_attachment);
         ASSERT_TRUE(attachment_id.valid());
         item_attachment = service().get_attachment(attachment_id);
         ews::internal::on_scope_exit remove_attachment([&]
@@ -435,7 +436,8 @@ namespace tests
                                                           "Ballmer Peak");
 
         // Attach image to email message
-        auto attachment_id = service().create_attachment(msg, file_attachment);
+        auto attachment_id = service().create_attachment(msg.get_item_id(),
+                                                         file_attachment);
         ASSERT_TRUE(attachment_id.valid());
 
         // Make sure two additional attributes of <AttachmentId> are set; only

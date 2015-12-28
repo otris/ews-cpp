@@ -5878,7 +5878,8 @@ namespace ews
 
             auto doc = parent->document();
             auto str = doc->allocate_string(name);
-            auto value_string = doc->allocate_string(value.c_str(), value.size());
+            auto value_string = doc->allocate_string(value.c_str(),
+                                                     value.size());
             auto child = doc->allocate_node(rapidxml::node_element);
             child->qname(str, std::strlen(str), str + 2);
             child->value(value_string, value.size());
@@ -10526,15 +10527,15 @@ namespace ews
         //! \param a the <tt>\<FileAttachment></tt> or
         //!        <tt>\<ItemAttachment></tt> you want to attach to
         //!        \p parent_item
-        attachment_id create_attachment(const item& parent_item,
+        attachment_id create_attachment(const item_id& parent_item,
                                         const attachment& a)
         {
             auto response = request(
                    "<m:CreateAttachment>\n"
                        "<m:ParentItemId Id=\""
-                           + parent_item.get_item_id().id()
+                           + parent_item.id()
                            + "\" ChangeKey=\""
-                           + parent_item.get_item_id().change_key()
+                           + parent_item.change_key()
                            + "\"/>\n"
                        "<m:Attachments>\n"
                            + a.to_xml() +
@@ -10555,6 +10556,9 @@ namespace ews
             return response_message.attachment_ids().front();
         }
 
+#if 0
+        // TODO
+
         //! \brief Attach one or more files (or items) to an existing item.
         //!
         //! Use this member-function when you want to create multiple
@@ -10570,6 +10574,7 @@ namespace ews
             EWS_ASSERT(false);
             return std::vector<attachment_id>();
         }
+#endif // 0
 
         //! Retrieves an attachment from the Exchange store
         attachment get_attachment(const attachment_id& id)
