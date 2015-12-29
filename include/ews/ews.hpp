@@ -4630,30 +4630,28 @@ namespace ews
 
             std::stringstream request_stream;
             request_stream <<
-"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-"<soap:Envelope\n"
-"    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-"    xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"\n"
-"    xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"\n"
-"    xmlns:m=\"http://schemas.microsoft.com/exchange/services/2006/messages\"\n"
-"    xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\">\n";
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+                "<soap:Envelope "
+                    "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+                    "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" "
+                    "xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                    "xmlns:m=\"http://schemas.microsoft.com/exchange/services/2006/messages\" "
+                    "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\">";
 
-            // Add SOAP headers if present
             if (!soap_headers.empty())
             {
-                request_stream << "<soap:Header>\n";
+                request_stream << "<soap:Header>";
                 for (const auto& header : soap_headers)
                 {
                     request_stream << header;
                 }
-                request_stream << "</soap:Header>\n";
+                request_stream << "</soap:Header>";
             }
 
-            request_stream << "<soap:Body>\n";
-            // Add the passed request
+            request_stream << "<soap:Body>";
             request_stream << soap_body;
-            request_stream << "</soap:Body>\n";
-            request_stream << "</soap:Envelope>\n";
+            request_stream << "</soap:Body>";
+            request_stream << "</soap:Envelope>";
 
 #if EWS_ENABLE_VERBOSE
             std::cerr << request_stream.str() << std::endl;
@@ -7877,13 +7875,11 @@ namespace ews
         std::string create_item_request_string() const
         {
             std::stringstream sstr;
-            sstr << "<m:CreateItem>" \
-              "<m:Items>" \
-              "<t:Task>";
-            sstr << xml().to_string() << "\n";
-            sstr << "</t:Task>" \
-              "</m:Items>" \
-              "</m:CreateItem>";
+            sstr << "<m:CreateItem>"
+                      "<m:Items>"
+                        "<t:Task>" << xml().to_string() << "</t:Task>"
+                      "</m:Items>"
+                    "</m:CreateItem>";
             return sstr.str();
         }
     };
@@ -8129,15 +8125,14 @@ namespace ews
         {
             std::stringstream sstr;
             sstr <<
-              "<CreateItem " \
-                  "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
-                  "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
-              "<Items>" \
-              "<t:Contact>";
-            sstr << xml().to_string() << "\n";
-            sstr << "</t:Contact>" \
-              "</Items>" \
-              "</CreateItem>";
+                "<m:CreateItem>"
+                  "<m:Items>"
+                    "<t:Contact>";
+            sstr << xml().to_string();
+            sstr <<
+                    "</t:Contact>"
+                  "</m:Items>"
+                "</m:CreateItem>";
             return sstr.str();
         }
 
@@ -8788,15 +8783,14 @@ namespace ews
         {
             std::stringstream sstr;
             sstr <<
-              "<CreateItem SendMeetingInvitations=\"SendToNone\" " \
-                  "xmlns=\"http://schemas.microsoft.com/exchange/services/2006/messages\" " \
-                  "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\" >" \
-              "<Items>" \
-              "<t:CalendarItem>";
-            sstr << xml().to_string() << "\n";
-            sstr << "</t:CalendarItem>" \
-              "</Items>" \
-              "</CreateItem>";
+                "<m:CreateItem SendMeetingInvitations=\"SendToNone\">"
+                  "<m:Items>"
+                    "<t:CalendarItem>";
+            sstr << xml().to_string();
+            sstr <<
+                    "</t:CalendarItem>"
+                  "</m:Items>"
+                "</m:CreateItem>";
             return sstr.str();
         }
     };
@@ -8902,14 +8896,16 @@ namespace ews
         create_item_request_string(ews::message_disposition disposition) const
         {
             std::stringstream sstr;
-            sstr << "<m:CreateItem MessageDisposition=\""
-                 << internal::enum_to_str(disposition) << "\">";
-            sstr << "<m:Items>";
-            sstr << "<t:Message>";
-            sstr << xml().to_string() << "\n";
-            sstr << "</t:Message>";
-            sstr << "</m:Items>";
-            sstr << "</m:CreateItem>";
+            sstr <<
+                "<m:CreateItem MessageDisposition=\""
+                        << internal::enum_to_str(disposition) << "\">"
+                  "<m:Items>"
+                    "<t:Message>";
+            sstr << xml().to_string();
+            sstr <<
+                    "</t:Message>"
+                  "</m:Items>"
+                "</m:CreateItem>";
             return sstr.str();
         }
     };
@@ -10282,15 +10278,15 @@ namespace ews
             using internal::delete_item_response_message;
 
             const std::string request_string =
-                "<m:DeleteItem\n"
-                "  DeleteType=\""
-                            + internal::enum_to_str(del_type) + "\"\n"
-                "  SendMeetingCancellations=\""
-                            + internal::enum_to_str(cancellations) + "\"\n"
-                "  AffectedTaskOccurrences=\""
-                            + internal::enum_to_str(affected) + "\">\n"
-                "  <m:ItemIds>" + id.to_xml("t") + "</m:ItemIds>\n"
-                "</m:DeleteItem>\n";
+                "<m:DeleteItem "
+                    "DeleteType=\""
+                                + internal::enum_to_str(del_type) + "\" "
+                    "SendMeetingCancellations=\""
+                                + internal::enum_to_str(cancellations) + "\" "
+                    "AffectedTaskOccurrences=\""
+                                + internal::enum_to_str(affected) + "\">"
+                  "<m:ItemIds>" + id.to_xml("t") + "</m:ItemIds>"
+                "</m:DeleteItem>";
 
             auto response = request(request_string);
 #ifdef EWS_ENABLE_VERBOSE
@@ -10405,12 +10401,13 @@ namespace ews
         std::vector<item_id> find_item(const folder_id& parent_folder_id)
         {
             const std::string request_string =
-"<m:FindItem Traversal=\"Shallow\">\n"
-"  <m:ItemShape>\n"
-"    <t:BaseShape>IdOnly</t:BaseShape>\n"
-"  </m:ItemShape>\n"
-"  <m:ParentFolderIds>" + parent_folder_id.to_xml("t") + "</m:ParentFolderIds>\n"
-"</m:FindItem>\n";
+                "<m:FindItem Traversal=\"Shallow\">"
+                  "<m:ItemShape>"
+                    "<t:BaseShape>IdOnly</t:BaseShape>"
+                  "</m:ItemShape>"
+                  "<m:ParentFolderIds>" + parent_folder_id.to_xml("t")
+                                        + "</m:ParentFolderIds>"
+                "</m:FindItem>";
 
             auto response = request(request_string);
 #ifdef EWS_ENABLE_VERBOSE
@@ -10440,13 +10437,15 @@ namespace ews
                                        search_expression restriction)
         {
             const std::string request_string =
-"<m:FindItem Traversal=\"Shallow\">\n"
-"  <m:ItemShape>\n"
-"    <t:BaseShape>IdOnly</t:BaseShape>\n"
-"  </m:ItemShape>\n"
-"  <m:Restriction>" + restriction.to_xml("t") + "</m:Restriction>\n"
-"  <m:ParentFolderIds>" + parent_folder_id.to_xml("t") + "</m:ParentFolderIds>\n"
-"</m:FindItem>\n";
+                "<m:FindItem Traversal=\"Shallow\">"
+                  "<m:ItemShape>"
+                    "<t:BaseShape>IdOnly</t:BaseShape>"
+                  "</m:ItemShape>"
+                  "<m:Restriction>" + restriction.to_xml("t")
+                                    + "</m:Restriction>"
+                  "<m:ParentFolderIds>" + parent_folder_id.to_xml("t")
+                                        + "</m:ParentFolderIds>"
+                "</m:FindItem>";
 
             auto response = request(request_string);
 #ifdef EWS_ENABLE_VERBOSE
@@ -10486,25 +10485,23 @@ namespace ews
             }
 
             const std::string request_string =
-                "<m:UpdateItem\n"
-                "    MessageDisposition=\"SaveOnly\"\n"
-                "    ConflictResolution=\""
-                        + internal::enum_to_str(res)
-                        + "\"\n"
-                "    SendMeetingInvitationsOrCancellations=\""
-                        + internal::enum_to_str(cancellations)
-                        + "\">\n"
-                "  <m:ItemChanges>\n"
-                "    <t:ItemChange>\n"
-                "      " + id.to_xml("t") + "\n"
-                "      <t:Updates>\n"
-                "        " + item_change_open_tag + "\n"
-                "          " + prop.to_xml("t") + "\n"
-                "        " + item_change_close_tag + "\n"
-                "      </t:Updates>\n"
-                "    </t:ItemChange>\n"
-                "  </m:ItemChanges>\n"
-                "</m:UpdateItem>\n";
+                "<m:UpdateItem "
+                    "MessageDisposition=\"SaveOnly\" "
+                    "ConflictResolution=\""
+                      + internal::enum_to_str(res) + "\" "
+                    "SendMeetingInvitationsOrCancellations=\""
+                      + internal::enum_to_str(cancellations) + "\">"
+                  "<m:ItemChanges>"
+                    "<t:ItemChange>"
+                      + id.to_xml("t") +
+                      "<t:Updates>"
+                        + item_change_open_tag
+                        + prop.to_xml("t")
+                        + item_change_close_tag +
+                      "</t:Updates>"
+                    "</t:ItemChange>"
+                  "</m:ItemChanges>"
+                "</m:UpdateItem>";
 
             auto response = request(request_string);
 #ifdef EWS_ENABLE_VERBOSE
@@ -10531,16 +10528,12 @@ namespace ews
                                         const attachment& a)
         {
             auto response = request(
-                   "<m:CreateAttachment>\n"
-                       "<m:ParentItemId Id=\""
-                           + parent_item.id()
-                           + "\" ChangeKey=\""
-                           + parent_item.change_key()
-                           + "\"/>\n"
-                       "<m:Attachments>\n"
-                           + a.to_xml() +
-                       "</m:Attachments>\n"
-                   "</m:CreateAttachment>\n");
+                   "<m:CreateAttachment>"
+                     "<m:ParentItemId Id=\""
+                         + parent_item.id() + "\" ChangeKey=\"" +
+                         parent_item.change_key() + "\"/>"
+                     "<m:Attachments>" + a.to_xml() + "</m:Attachments>"
+                   "</m:CreateAttachment>");
 
 #ifdef EWS_ENABLE_VERBOSE
             std::cerr << response.payload() << std::endl;
@@ -10580,15 +10573,15 @@ namespace ews
         attachment get_attachment(const attachment_id& id)
         {
             auto response = request(
-                "<m:GetAttachment>\n"
-                "  <m:AttachmentShape>\n"
-                "    <m:IncludeMimeContent/>\n"
-                "    <m:BodyType/>\n"
-                "    <m:FilterHtmlContent/>\n"
-                "    <m:AdditionalProperties/>\n"
-                "  </m:AttachmentShape>\n"
-                "  <m:AttachmentIds>" + id.to_xml("t") + "</m:AttachmentIds>\n"
-                "</m:GetAttachment>\n");
+                "<m:GetAttachment>"
+                  "<m:AttachmentShape>"
+                    "<m:IncludeMimeContent/>"
+                    "<m:BodyType/>"
+                    "<m:FilterHtmlContent/>"
+                    "<m:AdditionalProperties/>"
+                  "</m:AttachmentShape>"
+                  "<m:AttachmentIds>" + id.to_xml("t") + "</m:AttachmentIds>"
+                "</m:GetAttachment>");
 
 #ifdef EWS_ENABLE_VERBOSE
             std::cerr << response.payload() << std::endl;
@@ -10613,10 +10606,10 @@ namespace ews
         item_id delete_attachment(attachment&& the_attachment)
         {
             auto response = request(
-                "<m:DeleteAttachment>\n"
-                "  <m:AttachmentIds>\n" + the_attachment.id().to_xml("t")
-                        + "</m:AttachmentIds>\n"
-                "</m:DeleteAttachment>\n");
+                "<m:DeleteAttachment>"
+                  "<m:AttachmentIds>" + the_attachment.id().to_xml("t")
+                                      + "</m:AttachmentIds>"
+                "</m:DeleteAttachment>");
 #ifdef EWS_ENABLE_VERBOSE
             std::cerr << response.payload() << std::endl;
 #endif
@@ -10743,13 +10736,13 @@ namespace ews
         ItemType get_item_impl(const item_id& id, base_shape shape)
         {
             const std::string request_string =
-                "<m:GetItem>\n"
-                "  <m:ItemShape>\n"
-                "    <t:BaseShape>" + internal::enum_to_str(shape)
-                                    + "</t:BaseShape>\n"
-                "  </m:ItemShape>\n"
-                "  <m:ItemIds>" + id.to_xml("t") + "</m:ItemIds>\n"
-                "</m:GetItem>\n";
+                "<m:GetItem>"
+                  "<m:ItemShape>"
+                    "<t:BaseShape>" + internal::enum_to_str(shape)
+                                    + "</t:BaseShape>"
+                  "</m:ItemShape>"
+                  "<m:ItemIds>" + id.to_xml("t") + "</m:ItemIds>"
+                "</m:GetItem>";
 
             auto response = request(request_string);
 #ifdef EWS_ENABLE_VERBOSE
@@ -10776,21 +10769,20 @@ namespace ews
 
             std::stringstream sstr;
             sstr <<
-                "<m:GetItem>\n"
-                "  <m:ItemShape>\n"
-                "    <t:BaseShape>" << internal::enum_to_str(shape)
-                                    << "</t:BaseShape>\n"
-                "    <t:AdditionalProperties>\n";
+                "<m:GetItem>"
+                  "<m:ItemShape>"
+                    "<t:BaseShape>" << internal::enum_to_str(shape)
+                                    << "</t:BaseShape>"
+                    "<t:AdditionalProperties>";
             for (const auto& prop : additional_properties)
             {
-                //      "      <t:FieldURI FieldURI=\"item:MimeContent\"/>\n"
-                sstr << "      <t:FieldURI FieldURI=\"" << prop.field_uri() << "\"/>\n";
+                sstr << "<t:FieldURI FieldURI=\"" << prop.field_uri() << "\"/>";
             }
             sstr <<
-                "    </t:AdditionalProperties>\n"
-                "  </m:ItemShape>\n"
-                "  <m:ItemIds>" << id.to_xml("t") << "</m:ItemIds>\n"
-                "</m:GetItem>\n";
+                    "</t:AdditionalProperties>"
+                  "</m:ItemShape>"
+                  "<m:ItemIds>" << id.to_xml("t") << "</m:ItemIds>"
+                "</m:GetItem>";
 
             auto response = request(sstr.str());
 #ifdef EWS_ENABLE_VERBOSE
