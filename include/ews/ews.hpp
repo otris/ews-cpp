@@ -10210,7 +10210,7 @@ namespace ews
         {
             return get_item_impl<task>(id,
                                        base_shape::all_properties,
-                                        additional_properties);
+                                       additional_properties);
         }
 
         //! Gets a contact from the Exchange store
@@ -10222,8 +10222,9 @@ namespace ews
         //! \brief Gets a contact from the Exchange store
         //!
         //! The returned contact includes specified additional properties.
-        contact get_contact(const item_id& id,
-                            const std::vector<property_path>& additional_properties)
+        contact get_contact(
+                const item_id& id,
+                const std::vector<property_path>& additional_properties)
         {
             return get_item_impl<contact>(id,
                                           base_shape::all_properties,
@@ -10600,9 +10601,9 @@ namespace ews
 
         //! \brief Deletes given attachment from the Exchange store
         //!
-        //! Returns the item_id of the parent item from which the attachment !
-        //! was removed (also known as <em>root</em> item). This item_id contains
-        //! the updated change key of the parent item.
+        //! Returns the item_id of the parent item from which the attachment
+        //! was removed (also known as <em>root</em> item). This item_id
+        //! contains the updated change key of the parent item.
         item_id delete_attachment(attachment&& the_attachment)
         {
             auto response = request(
