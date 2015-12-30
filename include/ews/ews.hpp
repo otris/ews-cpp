@@ -10604,12 +10604,11 @@ namespace ews
         //! Returns the item_id of the parent item from which the attachment
         //! was removed (also known as <em>root</em> item). This item_id
         //! contains the updated change key of the parent item.
-        item_id delete_attachment(attachment&& the_attachment)
+        item_id delete_attachment(const attachment_id& id)
         {
             auto response = request(
                 "<m:DeleteAttachment>"
-                  "<m:AttachmentIds>" + the_attachment.id().to_xml("t")
-                                      + "</m:AttachmentIds>"
+                  "<m:AttachmentIds>" + id.to_xml("t") + "</m:AttachmentIds>"
                 "</m:DeleteAttachment>");
 #ifdef EWS_ENABLE_VERBOSE
             std::cerr << response.payload() << std::endl;
@@ -10620,7 +10619,6 @@ namespace ews
             {
                 throw exchange_error(response_message.get_response_code());
             }
-            the_attachment = attachment();
             return response_message.get_root_item_id();
         }
 

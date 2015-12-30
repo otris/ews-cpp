@@ -192,7 +192,7 @@ namespace tests
         item_attachment = service().get_attachment(attachment_id);
         ews::internal::on_scope_exit remove_attachment([&]
         {
-            service().delete_attachment(std::move(item_attachment));
+            service().delete_attachment(item_attachment.id());
         });
 
         // RootItemId should be that of the parent task
@@ -456,11 +456,8 @@ namespace tests
 
         ASSERT_NO_THROW(
         {
-            service().delete_attachment(std::move(file_attachment));
+            service().delete_attachment(file_attachment.id());
         });
-
-        // Test sink argument
-        EXPECT_FALSE(file_attachment.id().valid());
 
         // Check if it is still in store
         EXPECT_THROW(
