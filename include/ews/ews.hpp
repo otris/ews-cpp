@@ -8702,7 +8702,7 @@ namespace ews
         }
 
         //! Returns a URL for Microsoft NetShow online meeting
-        std::string get_netshow_url() const
+        std::string get_net_show_url() const
         {
             return xml().get_value_as_string("NetShowUrl");
         }
@@ -8712,7 +8712,7 @@ namespace ews
         //! Note: This property is read-writable for the organizer's calendar
         //! item. For meeting requests and for attendees' calendar items this
         //! is read-only .
-        void set_netshow_url(const std::string& url)
+        void set_net_show_url(const std::string& url)
         {
             xml().set_or_update("NetShowUrl", url);
         }
