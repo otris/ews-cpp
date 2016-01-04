@@ -8329,7 +8329,7 @@ namespace ews
         {
             const auto val = xml().get_value_as_string("LegacyFreeBusyStatus");
             // Default seems to be 'Busy' if not explicitly set
-            if (val.empty() || val == "Free")
+            if (val.empty() || val == "Busy")
             {
                 return free_busy_status::busy;
             }
@@ -8337,9 +8337,9 @@ namespace ews
             {
                 return free_busy_status::tentative;
             }
-            if (val == "Busy")
+            if (val == "Free")
             {
-                return free_busy_status::busy;
+                return free_busy_status::free;
             }
             if (val == "OOF")
             {
