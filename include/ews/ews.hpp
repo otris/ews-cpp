@@ -6365,6 +6365,12 @@ namespace ews
     class date_time final
     {
     public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        date_time() = default;
+#else
+        date_time() {}
+#endif
+
         date_time(std::string str) // intentionally not explicit
             : val_(std::move(str))
         {
@@ -6385,7 +6391,7 @@ namespace ews
     }
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<date_time>::value, "");
+    static_assert(std::is_default_constructible<date_time>::value, "");
     static_assert(std::is_copy_constructible<date_time>::value, "");
     static_assert(std::is_copy_assignable<date_time>::value, "");
     static_assert(std::is_move_constructible<date_time>::value, "");
@@ -6411,6 +6417,12 @@ namespace ews
     class duration final
     {
     public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        duration() = default;
+#else
+        duration() {}
+#endif
+
         duration(std::string str) // intentionally not explicit
             : val_(std::move(str))
         {
@@ -6431,7 +6443,7 @@ namespace ews
     }
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<duration>::value, "");
+    static_assert(std::is_default_constructible<duration>::value, "");
     static_assert(std::is_copy_constructible<duration>::value, "");
     static_assert(std::is_copy_assignable<duration>::value, "");
     static_assert(std::is_move_constructible<duration>::value, "");
