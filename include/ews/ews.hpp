@@ -6921,12 +6921,17 @@ namespace ews
     class attendee final
     {
     public:
-        explicit attendee(mailbox addr,
-                          response_type response,
-                          date_time last_response_time)
-            : mailbox_(std::move(addr)),
-              response_(std::move(response)),
+        attendee(mailbox address, response_type type,
+                 date_time last_response_time)
+            : mailbox_(std::move(address)),
+              response_type_(std::move(type)),
               last_response_time_(std::move(last_response_time))
+        {}
+
+        explicit attendee(mailbox address)
+            : mailbox_(std::move(address)),
+              response_type_(ews::response_type::unknown),
+              last_response_time_()
         {}
 
         //! Returns this attendee's e-mail address
@@ -6941,7 +6946,7 @@ namespace ews
         //! item.
         response_type get_response_type() const EWS_NOEXCEPT
         {
-            return response_;
+            return response_type_;
         }
 
         //! Returns the date and time of the latest response that was received
@@ -6962,7 +6967,7 @@ namespace ews
             sstr << "<" << pref << "Attendee>";
             sstr << mailbox_.to_xml(xmlns);
             sstr << "<" << pref << "ResponseType>"
-                 << internal::enum_to_str(response_)
+                 << internal::enum_to_str(response_type_)
                  << "</" << pref << "ResponseType>";
             sstr << "<" << pref << "LastResponseTime>"
                  << last_response_time_.to_string()
@@ -7002,7 +7007,7 @@ namespace ews
 
             ptr_to_qname = doc->allocate_string("t:ResponseType");
             auto ptr_to_value = doc->allocate_string(
-                                internal::enum_to_str(response_).c_str());
+                                internal::enum_to_str(response_type_).c_str());
             auto node = doc->allocate_node(rapidxml::node_element);
             node->qname(ptr_to_qname,
                         std::strlen("t:ResponseType"),
@@ -7080,7 +7085,7 @@ namespace ews
 
     private:
         mailbox mailbox_;
-        response_type response_;
+        response_type response_type_;
         date_time last_response_time_;
     };
 
