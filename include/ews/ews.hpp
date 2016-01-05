@@ -6900,7 +6900,12 @@ namespace ews
     static_assert(std::is_move_assignable<mailbox>::value, "");
 #endif
 
-    //! An attendee of a meeting or a meeting room.
+    //! \brief An attendee of a meeting or a meeting room.
+    //!
+    //! An attendee is just a mailbox for the most part. The other two
+    //! properties, ResponseType and LastResponseTime, are read-only properties
+    //! that usually get populated by the Exchange server and can be used to
+    //! track attendee responses.
     class attendee final
     {
     public:
@@ -8472,6 +8477,7 @@ namespace ews
         //! \brief Returns the organizer of this calendar item
         //!
         //! For meetings, the party responsible for coordinating attendance.
+        //! This is a read-only property.
         mailbox get_organizer() const
         {
             const auto organizer = xml().get_node("Organizer");
