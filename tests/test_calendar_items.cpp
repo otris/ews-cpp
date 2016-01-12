@@ -52,6 +52,33 @@ namespace tests
                   a.get_last_response_time());
     }
 
+    TEST(CalendarViewTest, Construct)
+    {
+        const auto start = ews::date_time("2016-01-12T10:00:00Z");
+        const auto end = ews::date_time("2016-01-12T12:00:00Z");
+        ews::calendar_view cv(start, end);
+        EXPECT_EQ(start, cv.get_start_date());
+        EXPECT_EQ(end, cv.get_end_date());
+        EXPECT_EQ(0, cv.get_max_entries_returned());
+        EXPECT_STREQ("<y:CalendarView StartDate=\"2016-01-12T10:00:00Z\" "
+                     "EndDate=\"2016-01-12T12:00:00Z\" />",
+                     cv.to_xml("y").c_str());
+    }
+
+    TEST(CalendarViewTest, ConstructWithMaxEntriesReturnedAttribute)
+    {
+        const auto start = ews::date_time("2016-01-12T10:00:00Z");
+        const auto end = ews::date_time("2016-01-12T12:00:00Z");
+        ews::calendar_view cv(start, end, 7);
+        EXPECT_EQ(start, cv.get_start_date());
+        EXPECT_EQ(end, cv.get_end_date());
+        EXPECT_EQ(7, cv.get_max_entries_returned());
+        EXPECT_STREQ("<m:CalendarView MaxEntriesReturned=\"7\" "
+                     "StartDate=\"2016-01-12T10:00:00Z\" "
+                     "EndDate=\"2016-01-12T12:00:00Z\" />",
+                     cv.to_xml("m").c_str());
+    }
+
     TEST_F(CalendarItemTest, GetCalendarItemWithInvalidIdThrows)
     {
         auto invalid_id = ews::item_id();
@@ -689,6 +716,61 @@ namespace tests
         auto new_id = service().update_item(cal.get_item_id(), prop);
         cal = service().get_calendar_item(new_id);
         EXPECT_STREQ("kitchen", cal.get_meeting_workspace_url().c_str());
+    }
+
+    TEST_F(CalendarItemTest, FindCalendarItemsWithCalendarViews)
+    {
+        // 10 AM - 11 AM
+        auto calitemA = ews::calendar_item();
+        calitemA.set_subject("Appointment A");
+        calitemA.set_start(ews::date_time("2016-01-12T10:00:00Z"));
+        calitemA.set_end(ews::date_time("2016-01-12T11:00:00Z"));
+        auto idA = service().create_item(calitemA);
+
+        // 11 AM - 12 PM
+        auto calitemB = ews::calendar_item();
+        calitemB.set_subject("Appointment B");
+        calitemB.set_start(ews::date_time("2016-01-12T11:00:00Z"));
+        calitemB.set_end(ews::date_time("2016-01-12T12:00:00Z"));
+        auto idB = service().create_item(calitemB);
+
+        // 12 PM - 1 PM
+        auto calitemC = ews::calendar_item();
+        calitemC.set_subject("Appointment C");
+        calitemC.set_start(ews::date_time("2016-01-12T12:00:00Z"));
+        calitemC.set_end(ews::date_time("2016-01-12T13:00:00Z"));
+        auto idC = service().create_item(calitemC);
+
+        ews::internal::on_scope_exit remove_items([&]
+        {
+            service().delete_item(idA);
+            service().delete_item(idB);
+            service().delete_item(idC);
+        });
+
+        const ews::distinguished_folder_id calendar_folder
+            = ews::standard_folder::calendar;
+        // 11 AM - 12 PM -> A, B
+        auto view1 = ews::calendar_view(
+                                ews::date_time("2016-01-12T11:00:00Z"),
+                                ews::date_time("2016-01-12T12:00:00Z"));
+        auto result = service().find_item(view1, calendar_folder);
+        ASSERT_EQ(2, result.size());
+
+        // 11:01 AM - 12 PM -> B
+        auto view2 = ews::calendar_view(
+                                ews::date_time("2016-01-12T11:01:00Z"),
+                                ews::date_time("2016-01-12T12:00:00Z"));
+        result = service().find_item(view2, calendar_folder);
+        ASSERT_EQ(1, result.size());
+        EXPECT_STREQ("Appointment B", result[0].get_subject().c_str());
+
+        // 11 AM - 12:01 PM -> A, B, C
+        auto view3 = ews::calendar_view(
+                                ews::date_time("2016-01-12T11:00:00Z"),
+                                ews::date_time("2016-01-12T12:01:00Z"));
+        result = service().find_item(view3, calendar_folder);
+        ASSERT_EQ(3, result.size());
     }
 }
 

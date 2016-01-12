@@ -5942,21 +5942,18 @@ namespace ews
 
         // Iterate over <Items> array and execute given function for each node.
         //
-        // elem: a response message element, e.g., CreateItemResponseMessage
+        // items_elem: an <Items> element
         // func: A callable that is invoked for each item in the response
         // message's <Items> array. A const rapidxml::xml_node& is passed to
         // that callable.
         template <typename Func>
-        inline void for_each_item(const rapidxml::xml_node<>& elem, Func func)
+        inline void for_each_item(const rapidxml::xml_node<>& items_elem,
+                                  Func func)
         {
-            auto items_elem =
-                elem.first_node_ns(uri<>::microsoft::messages(), "Items");
-            EWS_ASSERT(items_elem && "Expected <Items> element");
-
-            for (auto item_elem = items_elem->first_node(); item_elem;
-                 item_elem = item_elem->next_sibling())
+            for (auto elem = items_elem.first_node(); elem;
+                 elem = elem->next_sibling())
             {
-                func(*item_elem);
+                func(*elem);
             }
         }
 
@@ -6059,6 +6056,25 @@ namespace ews
                 : response_message_with_items<item_id>(cls,
                   code,
                   std::move(items))
+            {
+            }
+        };
+
+        class find_calendar_item_response_message final
+            : public response_message_with_items<calendar_item>
+        {
+        public:
+            // implemented below
+            static find_calendar_item_response_message parse(http_response&);
+
+        private:
+            find_calendar_item_response_message(
+                                            response_class cls,
+                                            response_code code,
+                                            std::vector<calendar_item> items)
+                : response_message_with_items<calendar_item>(cls,
+                    code,
+                    std::move(items))
             {
             }
         };
@@ -10159,6 +10175,76 @@ namespace ews
     static_assert(std::is_move_assignable<contains>::value, "");
 #endif
 
+    class calendar_view
+    {
+    public:
+        calendar_view(date_time start_date, date_time end_date)
+            : start_date_(std::move(start_date)),
+              end_date_(std::move(end_date)),
+              max_entries_returned_(0U),
+              max_entries_set_(false)
+        {
+        }
+
+        calendar_view(date_time start_date,
+                      date_time end_date,
+                      uint32_t max_entries_returned)
+            : start_date_(std::move(start_date)),
+              end_date_(std::move(end_date)),
+              max_entries_returned_(max_entries_returned),
+              max_entries_set_(true)
+        {
+        }
+
+        uint32_t get_max_entries_returned() const EWS_NOEXCEPT
+        {
+            return max_entries_returned_;
+        }
+
+        const date_time& get_start_date() const EWS_NOEXCEPT
+        {
+            return start_date_;
+        }
+
+        const date_time& get_end_date() const EWS_NOEXCEPT
+        {
+            return end_date_;
+        }
+
+        std::string to_xml(const char* xmlns = nullptr) const
+        {
+            std::stringstream sstr;
+            sstr << "<";
+            if (xmlns)
+            {
+                sstr << xmlns << ":";
+            }
+            sstr << "CalendarView ";
+            if (max_entries_set_)
+            {
+                sstr << "MaxEntriesReturned=\""
+                     << std::to_string(max_entries_returned_) << "\" ";
+            }
+            sstr << "StartDate=\"" << start_date_.to_string()
+                 << "\" EndDate=\"" << end_date_.to_string() << "\" />";
+            return sstr.str();
+        }
+
+    private:
+        date_time start_date_;
+        date_time end_date_;
+        uint32_t max_entries_returned_;
+        bool max_entries_set_;
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<calendar_view>::value, "");
+    static_assert(std::is_copy_constructible<calendar_view>::value, "");
+    static_assert(std::is_copy_assignable<calendar_view>::value, "");
+    static_assert(std::is_move_constructible<calendar_view>::value, "");
+    static_assert(std::is_move_assignable<calendar_view>::value, "");
+#endif
+
     //! \brief Contains the methods to perform operations on an Exchange server
     //!
     //! The service class contains all methods that can be performed on an
@@ -10439,6 +10525,37 @@ namespace ews
 #endif
             const auto response_message =
                 internal::find_item_response_message::parse(response);
+            if (!response_message.success())
+            {
+                throw exchange_error(response_message.get_response_code());
+            }
+            return response_message.items();
+        }
+
+        //! \brief Returns all calendar items in given calendar view
+        //!
+        //! Sends a \<FindItem/> operation to the server containing a
+        //! \<CalendarView/> element. It returns single calendar items and all
+        //! occurrences of recurring meetings.
+        std::vector<calendar_item> find_item(const calendar_view& view,
+                                             const folder_id& parent_folder_id)
+        {
+            const std::string request_string =
+                "<m:FindItem Traversal=\"Shallow\">"
+                  "<m:ItemShape>"
+                    "<t:BaseShape>Default</t:BaseShape>"
+                  "</m:ItemShape>"
+                  + view.to_xml("m") +
+                  "<m:ParentFolderIds>" + parent_folder_id.to_xml("t")
+                                        + "</m:ParentFolderIds>"
+                "</m:FindItem>";
+
+            auto response = request(request_string);
+#ifdef EWS_ENABLE_VERBOSE
+            std::cerr << response.payload() << std::endl;
+#endif
+            const auto response_message =
+                internal::find_calendar_item_response_message::parse(response);
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -10894,7 +11011,11 @@ namespace ews
                     "Expected <CreateItemResponseMessage>, got nullptr");
             const auto result = parse_response_class_and_code(*elem);
             auto item_ids = std::vector<item_id>();
-            for_each_item(*elem,
+            auto items_elem =
+                elem->first_node_ns(uri<>::microsoft::messages(), "Items");
+            EWS_ASSERT(items_elem && "Expected <Items> element");
+
+            for_each_item(*items_elem,
                     [&item_ids](const rapidxml::xml_node<>& item_elem)
             {
                 auto item_id_elem = item_elem.first_node();
@@ -10940,6 +11061,38 @@ namespace ews
             return find_item_response_message(result.first,
                                               result.second,
                                               std::move(items));
+        }
+
+        inline
+        find_calendar_item_response_message
+        find_calendar_item_response_message::parse(http_response& response)
+        {
+            const auto& doc = response.payload();
+            auto elem = get_element_by_qname(doc,
+                "FindItemResponseMessage",
+                uri<>::microsoft::messages());
+
+            EWS_ASSERT(elem &&
+                "Expected <FindItemResponseMessage>, got nullptr");
+            const auto result = parse_response_class_and_code(*elem);
+
+            auto root_folder = elem->first_node_ns(
+                                        uri<>::microsoft::messages(),
+                                        "RootFolder");
+
+            auto items_elem =
+                root_folder->first_node_ns(uri<>::microsoft::types(), "Items");
+            EWS_ASSERT(items_elem && "Expected <t:Items> element");
+
+            auto items = std::vector<calendar_item>();
+            for_each_item(*items_elem,
+                          [&items](const rapidxml::xml_node<>& item_elem)
+            {
+                items.emplace_back(calendar_item::from_xml_element(item_elem));
+            });
+            return find_calendar_item_response_message(result.first,
+                                                       result.second,
+                                                       std::move(items));
         }
 
         inline
@@ -10995,8 +11148,12 @@ namespace ews
             EWS_ASSERT(elem &&
                     "Expected <GetItemResponseMessage>, got nullptr");
             const auto result = parse_response_class_and_code(*elem);
+            auto items_elem =
+                elem->first_node_ns(uri<>::microsoft::messages(), "Items");
+            EWS_ASSERT(items_elem && "Expected <Items> element");
             auto items = std::vector<ItemType>();
-            for_each_item(*elem, [&items](const rapidxml::xml_node<>& item_elem)
+            for_each_item(*items_elem,
+                          [&items](const rapidxml::xml_node<>& item_elem)
             {
                 items.emplace_back(ItemType::from_xml_element(item_elem));
             });
