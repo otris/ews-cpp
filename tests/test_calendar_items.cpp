@@ -79,6 +79,29 @@ namespace tests
                      cv.to_xml("m").c_str());
     }
 
+    TEST(OccurrenceInfoTest, ConstructFromXML)
+    {
+        const char* xml =
+            "<Occurrence>"
+                "<ItemId Id=\"xyz\" ChangeKey=\"xyz\" />"
+                "<Start>2011-11-11T11:11:11Z</Start>"
+                "<End>2011-11-11T11:11:11Z</End>"
+                "<OriginalStart>2011-11-11T11:11:11Z</OriginalStart>"
+            "</Occurrence>";
+
+        std::vector<char> buf;
+        std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+        buf.push_back('\0');
+        rapidxml::xml_document<> doc;
+        doc.parse<0>(&buf[0]);
+        auto node = doc.first_node();
+
+        auto a = ews::occurrence_info::from_xml_element(*node);
+        EXPECT_EQ(ews::date_time("2011-11-11T11:11:11Z"), a.get_start());
+        EXPECT_EQ(ews::date_time("2011-11-11T11:11:11Z"), a.get_end());
+        EXPECT_EQ(ews::date_time("2011-11-11T11:11:11Z"), a.get_original_start());
+    }
+
     TEST_F(CalendarItemTest, GetCalendarItemWithInvalidIdThrows)
     {
         auto invalid_id = ews::item_id();

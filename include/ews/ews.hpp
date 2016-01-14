@@ -8300,6 +8300,119 @@ namespace ews
     static_assert(std::is_move_assignable<contact>::value, "");
 #endif
 
+    //! \brief Holds a subset of properties from an existing calendar item.
+    //!
+    //! \sa calendar_item::get_first_occurrence
+    //! \sa calendar_item::get_last_occurrence
+    //! \sa calendar_item::get_modified_occurrences
+    //! \sa calendar_item::get_deleted_occurrences
+    class occurrence_info final
+    {
+    public:
+        occurrence_info(item_id id,
+                        date_time start,
+                        date_time end,
+                        date_time original_start)
+            : item_id_(std::move(id)),
+              start_(std::move(start)),
+              end_(std::move(end)),
+              original_start_(std::move(original_start))
+        {
+        }
+
+        const item_id& get_item_id() const EWS_NOEXCEPT
+        {
+            return item_id_;
+        }
+
+        const date_time& get_start() const EWS_NOEXCEPT
+        {
+            return start_;
+        }
+
+        const date_time& get_end() const EWS_NOEXCEPT
+        {
+            return end_;
+        }
+
+        const date_time& get_original_start() const EWS_NOEXCEPT
+        {
+            return original_start_;
+        }
+
+        //! \brief Makes a occurrence_info instance from a \<FirstOccurrence>,
+        //! \<LastOccurrence>, or \<Occurrence> XML element.
+        static occurrence_info from_xml_element(const rapidxml::xml_node<>& elem)
+        {
+            using rapidxml::internal::compare;
+
+            date_time original_start;
+            date_time end;
+            date_time start;
+            item_id id;
+
+            for (auto node = elem.first_node(); node;
+                 node = node->next_sibling())
+            {
+                if (compare(node->local_name(),
+                            node->local_name_size(),
+                            "OriginalStart",
+                            std::strlen("OriginalStart")))
+                {
+                    original_start = date_time(
+                        std::string(node->value(), node->value_size()));
+                }
+                else if (compare(node->local_name(),
+                                 node->local_name_size(),
+                                 "End",
+                                 std::strlen("End")))
+                {
+                    end = date_time(
+                        std::string(node->value(), node->value_size()));
+                }
+                else if (compare(node->local_name(),
+                         node->local_name_size(),
+                         "Start",
+                         std::strlen("Start")))
+                {
+                    start = date_time(
+                        std::string(node->value(), node->value_size()));
+                }
+                else if (compare(node->local_name(),
+                         node->local_name_size(),
+                         "ItemId",
+                         std::strlen("ItemId")))
+                {
+                    id = item_id::from_xml_element(*node);
+                }
+                else
+                {
+                    throw exception(
+                        "Unexpected child element in <Mailbox>");
+                }
+            }
+
+            return occurrence_info(std::move(id),
+                                   std::move(start),
+                                   std::move(end),
+                                   std::move(original_start));
+        }
+
+    private:
+        item_id item_id_;
+        date_time start_;
+        date_time end_;
+        date_time original_start_;
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<occurrence_info>::value, "");
+    static_assert(std::is_copy_constructible<occurrence_info>::value, "");
+    static_assert(std::is_copy_assignable<occurrence_info>::value, "");
+    static_assert(std::is_move_constructible<occurrence_info>::value, "");
+    static_assert(std::is_move_assignable<occurrence_info>::value, "");
+#endif
+
     //! A calendar item in the Exchange store.
     class calendar_item final : public item
     {
