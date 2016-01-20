@@ -8571,7 +8571,7 @@ namespace ews
 
         recurrence_pattern(const recurrence_pattern&) = delete;
         recurrence_pattern& operator=(const recurrence_pattern&) = delete;
-#elif
+#else
         virtual ~recurrence_pattern() {}
 
     private:
@@ -8593,7 +8593,7 @@ namespace ews
     protected:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
         recurrence_pattern() = default;
-#elif
+#else
         recurrence_pattern() {}
 #endif
 
@@ -9194,7 +9194,7 @@ namespace ews
 
         recurrence_range(const recurrence_range&) = delete;
         recurrence_range& operator=(const recurrence_range&) = delete;
-#elif
+#else
         virtual ~recurrence_pattern() {}
 
     private:
@@ -9216,7 +9216,7 @@ namespace ews
     protected:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
         recurrence_range() = default;
-#elif
+#else
         recurrence_range() {}
 #endif
 
