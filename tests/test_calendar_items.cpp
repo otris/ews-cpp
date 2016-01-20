@@ -1,7 +1,10 @@
 #include "fixtures.hpp"
 
 #include <ews/rapidxml/rapidxml.hpp>
+#include <ews/rapidxml/rapidxml_print.hpp>
 
+#include <string>
+#include <sstream>
 #include <vector>
 #include <iterator>
 #include <memory>
@@ -97,9 +100,300 @@ namespace tests
         auto node = doc.first_node();
 
         auto a = ews::occurrence_info::from_xml_element(*node);
-        EXPECT_EQ(ews::date_time("2011-11-11T11:11:11Z"), a.get_start());
-        EXPECT_EQ(ews::date_time("2011-11-11T11:11:11Z"), a.get_end());
-        EXPECT_EQ(ews::date_time("2011-11-11T11:11:11Z"), a.get_original_start());
+        EXPECT_EQ(ews::date_time("2011-11-11T11:11:11Z"),
+                  a.get_start());
+
+        EXPECT_EQ(ews::date_time("2011-11-11T11:11:11Z"),
+                  a.get_end());
+
+        EXPECT_EQ(ews::date_time("2011-11-11T11:11:11Z"),
+                  a.get_original_start());
+    }
+
+    TEST(OccurrenceInfoTest, DefaultConstruct)
+    {
+        ews::occurrence_info a;
+        EXPECT_TRUE(a.none());
+    }
+
+    TEST(RecurrenceRangeTest, NoEnd)
+    {
+        const auto start_date = ews::date("1994-10-10");
+        ews::no_end_recurrence_range r(start_date);
+
+        const char* xml =
+            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+        std::vector<char> buf;
+        std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+        buf.push_back('\0');
+        rapidxml::xml_document<> doc;
+        doc.parse<0>(&buf[0]);
+        auto parent = doc.first_node();
+
+        std::string str;
+        rapidxml::print(std::back_inserter(str),
+            r.to_xml_element(*parent),
+            rapidxml::print_no_indenting);
+
+        EXPECT_STREQ(
+            "<t:NoEndRecurrence>"
+                "<t:StartDate>1994-10-10</t:StartDate>"
+            "</t:NoEndRecurrence>", str.c_str());
+    }
+
+    TEST(RecurrenceRangeTest, EndDate)
+    {
+        const auto start_date = ews::date("1961-08-13");
+        const auto end_date = ews::date("1989-11-09");
+        ews::end_date_recurrence_range r(start_date, end_date);
+
+        const char* xml =
+            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+        std::vector<char> buf;
+        std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+        buf.push_back('\0');
+        rapidxml::xml_document<> doc;
+        doc.parse<0>(&buf[0]);
+        auto parent = doc.first_node();
+
+        std::string str;
+        rapidxml::print(std::back_inserter(str),
+            r.to_xml_element(*parent),
+            rapidxml::print_no_indenting);
+
+        EXPECT_STREQ(
+            "<t:EndDateRecurrence>"
+                "<t:StartDate>1961-08-13</t:StartDate>"
+                "<t:EndDate>1989-11-09</t:EndDate>"
+            "</t:EndDateRecurrence>", str.c_str());
+    }
+
+    TEST(RecurrenceRangeTest, Numbered)
+    {
+        const auto start_date = ews::date("1989-01-01");
+        ews::numbered_recurrence_range r(start_date, 18);
+
+        const char* xml =
+            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+        std::vector<char> buf;
+        std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+        buf.push_back('\0');
+        rapidxml::xml_document<> doc;
+        doc.parse<0>(&buf[0]);
+        auto parent = doc.first_node();
+
+        std::string str;
+        rapidxml::print(std::back_inserter(str),
+            r.to_xml_element(*parent),
+            rapidxml::print_no_indenting);
+
+        EXPECT_STREQ(
+            "<t:NumberedRecurrence>"
+                "<t:StartDate>1989-01-01</t:StartDate>"
+                "<t:NumberOfOccurrences>18</t:NumberOfOccurrences>"
+            "</t:NumberedRecurrence>", str.c_str());
+    }
+
+    TEST(RecurrencePatternTest, AbsoluteYearly)
+    {
+        ews::absolute_yearly_recurrence r(10, ews::month::oct);
+        EXPECT_EQ(10, r.get_day_of_month());
+        EXPECT_EQ(ews::month::oct, r.get_month());
+
+        const char* xml =
+            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+        std::vector<char> buf;
+        std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+        buf.push_back('\0');
+        rapidxml::xml_document<> doc;
+        doc.parse<0>(&buf[0]);
+        auto parent = doc.first_node();
+
+        std::string str;
+        rapidxml::print(std::back_inserter(str),
+            r.to_xml_element(*parent),
+            rapidxml::print_no_indenting);
+        EXPECT_STREQ(
+            "<t:AbsoluteYearlyRecurrence>"
+                "<t:DayOfMonth>10</t:DayOfMonth>"
+                "<t:Month>October</t:Month>"
+            "</t:AbsoluteYearlyRecurrence>", str.c_str());
+    }
+
+    TEST(RecurrencePatternTest, RelativeYearly)
+    {
+        ews::relative_yearly_recurrence r(ews::day_of_week::mon,
+                                          ews::day_of_week_index::third,
+                                          ews::month::apr);
+        EXPECT_EQ(ews::day_of_week::mon, r.get_days_of_week());
+        EXPECT_EQ(ews::day_of_week_index::third, r.get_day_of_week_index());
+        EXPECT_EQ(ews::month::apr, r.get_month());
+
+        const char* xml =
+            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+        std::vector<char> buf;
+        std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+        buf.push_back('\0');
+        rapidxml::xml_document<> doc;
+        doc.parse<0>(&buf[0]);
+        auto parent = doc.first_node();
+
+        std::string str;
+        rapidxml::print(std::back_inserter(str),
+            r.to_xml_element(*parent),
+            rapidxml::print_no_indenting);
+
+        EXPECT_STREQ(
+            "<t:RelativeYearlyRecurrence>"
+                "<t:DaysOfWeek>Monday</t:DaysOfWeek>"
+                "<t:DayOfWeekIndex>Third</t:DayOfWeekIndex>"
+                "<t:Month>April</t:Month>"
+            "</t:RelativeYearlyRecurrence>", str.c_str());
+    }
+
+    TEST(RecurrencePatternTest, AbsoluteMonthly)
+    {
+        ews::absolute_monthly_recurrence r(1, 5);
+        EXPECT_EQ(1, r.get_interval());
+        EXPECT_EQ(5, r.get_days_of_month());
+
+        const char* xml =
+            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+        std::vector<char> buf;
+        std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+        buf.push_back('\0');
+        rapidxml::xml_document<> doc;
+        doc.parse<0>(&buf[0]);
+        auto parent = doc.first_node();
+
+        std::string str;
+        rapidxml::print(std::back_inserter(str),
+            r.to_xml_element(*parent),
+            rapidxml::print_no_indenting);
+
+        EXPECT_STREQ(
+            "<t:AbsoluteMonthlyRecurrence>"
+                "<t:Interval>1</t:Interval>"
+                "<t:DayOfMonth>5</t:DayOfMonth>"
+            "</t:AbsoluteMonthlyRecurrence>", str.c_str());
+    }
+
+    TEST(RecurrencePatternTest, RelativeMonthly)
+    {
+        ews::relative_monthly_recurrence r(1,
+                                           ews::day_of_week::thu,
+                                           ews::day_of_week_index::third);
+        EXPECT_EQ(1, r.get_interval());
+        EXPECT_EQ(ews::day_of_week::thu, r.get_days_of_week());
+        EXPECT_EQ(ews::day_of_week_index::third, r.get_day_of_week_index());
+
+        const char* xml =
+            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+        std::vector<char> buf;
+        std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+        buf.push_back('\0');
+        rapidxml::xml_document<> doc;
+        doc.parse<0>(&buf[0]);
+        auto parent = doc.first_node();
+
+        std::string str;
+        rapidxml::print(std::back_inserter(str),
+            r.to_xml_element(*parent),
+            rapidxml::print_no_indenting);
+
+        EXPECT_STREQ(
+            "<t:RelativeMonthlyRecurrence>"
+                "<t:Interval>1</t:Interval>"
+                "<t:DaysOfWeek>Thursday</t:DaysOfWeek>"
+                "<t:DayOfWeekIndex>Third</t:DayOfWeekIndex>"
+            "</t:RelativeMonthlyRecurrence>", str.c_str());
+    }
+
+    TEST(RecurrencePatternTest, Weekly)
+    {
+        ews::weekly_recurrence r1(1, ews::day_of_week::mon);
+        EXPECT_EQ(1, r1.get_interval());
+        ASSERT_EQ(1, r1.get_days_of_week().size());
+        EXPECT_EQ(ews::day_of_week::mon, r1.get_days_of_week().front());
+        EXPECT_EQ(ews::day_of_week::mon, r1.get_first_day_of_week());
+
+        const char* xml1 =
+            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+        std::vector<char> buf;
+        std::copy(xml1, xml1 + std::strlen(xml1), std::back_inserter(buf));
+        buf.push_back('\0');
+        rapidxml::xml_document<> doc1;
+        doc1.parse<0>(&buf[0]);
+        auto parent = doc1.first_node();
+
+        std::string str;
+        rapidxml::print(std::back_inserter(str),
+            r1.to_xml_element(*parent),
+            rapidxml::print_no_indenting);
+
+        EXPECT_STREQ(
+            "<t:WeeklyRecurrence>"
+                "<t:Interval>1</t:Interval>"
+                "<t:DaysOfWeek>Monday</t:DaysOfWeek>"
+                "<t:FirstDayOfWeek>Monday</t:FirstDayOfWeek>"
+            "</t:WeeklyRecurrence>", str.c_str());
+
+        // On multiple days
+        auto days = std::vector<ews::day_of_week>();
+        days.push_back(ews::day_of_week::thu);
+        days.push_back(ews::day_of_week::fri);
+        ews::weekly_recurrence r2(2, days, ews::day_of_week::sun);
+        EXPECT_EQ(2, r2.get_interval());
+        ASSERT_EQ(2, r2.get_days_of_week().size());
+        EXPECT_EQ(ews::day_of_week::thu, r2.get_days_of_week()[0]);
+        EXPECT_EQ(ews::day_of_week::fri, r2.get_days_of_week()[1]);
+        EXPECT_EQ(ews::day_of_week::sun, r2.get_first_day_of_week());
+
+        const char* xml2 =
+            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+        buf.clear();
+        std::copy(xml2, xml2 + std::strlen(xml2), std::back_inserter(buf));
+        buf.push_back('\0');
+        rapidxml::xml_document<> doc2;
+        doc2.parse<0>(&buf[0]);
+        parent = doc2.first_node();
+
+        str.clear();
+        rapidxml::print(std::back_inserter(str),
+            r2.to_xml_element(*parent),
+            rapidxml::print_no_indenting);
+
+        EXPECT_STREQ(
+            "<t:WeeklyRecurrence>"
+                "<t:Interval>2</t:Interval>"
+                "<t:DaysOfWeek>Thursday Friday</t:DaysOfWeek>"
+                "<t:FirstDayOfWeek>Sunday</t:FirstDayOfWeek>"
+            "</t:WeeklyRecurrence>", str.c_str());
+    }
+
+    TEST(RecurrencePatternTest, Daily)
+    {
+        ews::daily_recurrence r(3);
+        EXPECT_EQ(3, r.get_interval());
+
+        const char* xml =
+            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+        std::vector<char> buf;
+        std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+        buf.push_back('\0');
+        rapidxml::xml_document<> doc;
+        doc.parse<0>(&buf[0]);
+        auto parent = doc.first_node();
+
+        std::string str;
+        rapidxml::print(std::back_inserter(str),
+            r.to_xml_element(*parent),
+            rapidxml::print_no_indenting);
+
+        EXPECT_STREQ(
+            "<t:DailyRecurrence>"
+                "<t:Interval>3</t:Interval>"
+            "</t:DailyRecurrence>", str.c_str());
     }
 
     TEST_F(CalendarItemTest, GetCalendarItemWithInvalidIdThrows)
@@ -630,6 +924,34 @@ namespace tests
     {
         auto cal = ews::calendar_item();
         EXPECT_EQ(0, cal.get_appointment_state());
+    }
+
+    // <FirstOccurrence/>
+    TEST(OfflineCalendarItemTest, FirstOccurrencePropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_TRUE(cal.get_first_occurrence().none());
+    }
+
+    // <LastOccurrence/>
+    TEST(OfflineCalendarItemTest, LastOccurrencePropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_TRUE(cal.get_last_occurrence().none());
+    }
+
+    // <ModifiedOccurrences/>
+    TEST(OfflineCalendarItemTest, ModifiedOccurrencesPropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_TRUE(cal.get_modified_occurrences().empty());
+    }
+
+    // <DeletedOccurrences/>
+    TEST(OfflineCalendarItemTest, DeletedOccurrencesPropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_TRUE(cal.get_deleted_occurrences().empty());
     }
 
     // <ConferenceType/>

@@ -3519,6 +3519,8 @@ namespace ews
         send_to_all_and_save_copy
     };
 
+    typedef send_meeting_cancellations send_meeting_invitations;
+
     namespace internal
     {
         inline std::string enum_to_str(send_meeting_cancellations val)
@@ -6414,6 +6416,12 @@ namespace ews
     static_assert(std::is_move_assignable<date_time>::value, "");
 #endif
 
+    //! \brief A xs:date formatted string
+    //!
+    //! Exactly the same type as date_time. Used to indicate that an API
+    //! expects a date without a time value
+    typedef date_time date;
+
     //! \brief Specifies a time interval
     //!
     //! A thin wrapper around xs:duration formatted strings.
@@ -7512,6 +7520,135 @@ namespace ews
         }
     }
 
+    enum class month
+    {
+        jan,
+        feb,
+        mar,
+        apr,
+        may,
+        june,
+        july,
+        aug,
+        sept,
+        oct,
+        nov,
+        dec,
+    };
+
+    namespace internal
+    {
+        inline std::string enum_to_str(month m)
+        {
+            switch (m)
+            {
+            case month::jan:
+                return "January";
+            case month::feb:
+                return "February";
+            case month::mar:
+                return "March";
+            case month::apr:
+                return "April";
+            case month::may:
+                return "May";
+            case month::june:
+                return "June";
+            case month::july:
+                return "July";
+            case month::aug:
+                return "August";
+            case month::sept:
+                return "September";
+            case month::oct:
+                return "October";
+            case month::nov:
+                return "November";
+            case month::dec:
+                return "December";
+            default:
+                throw exception("Unexpected <Month>");
+            }
+        }
+    }
+
+    enum class day_of_week
+    {
+        sun,
+        mon,
+        tue,
+        wed,
+        thu,
+        fri,
+        sat,
+        day,
+        weekday,
+        weekend_day
+    };
+
+    namespace internal
+    {
+        inline std::string enum_to_str(day_of_week d)
+        {
+            switch (d)
+            {
+            case day_of_week::sun:
+                return "Sunday";
+            case day_of_week::mon:
+                return "Monday";
+            case day_of_week::tue:
+                return "Tuesday";
+            case day_of_week::wed:
+                return "Wednesday";
+            case day_of_week::thu:
+                return "Thursday";
+            case day_of_week::fri:
+                return "Friday";
+            case day_of_week::sat:
+                return "Saturday";
+            case day_of_week::day:
+                return "Day";
+            case day_of_week::weekday:
+                return "Weekday";
+            case day_of_week::weekend_day:
+                return "WeekendDay";
+            default:
+                throw exception("Unexpected <DaysOfWeek>");
+            }
+        }
+    }
+
+    enum class day_of_week_index
+    {
+        first,
+        second,
+        third,
+        fourth,
+        last
+    };
+
+    namespace internal
+    {
+        inline std::string enum_to_str(day_of_week_index i)
+        {
+            switch (i)
+            {
+            case day_of_week_index::first:
+                return "First";
+            case day_of_week_index::second:
+                return "Second";
+            case day_of_week_index::third:
+                return "Third";
+            case day_of_week_index::fourth:
+                return "Fourth";
+            case day_of_week_index::last:
+                return "Last";
+            default:
+                throw exception("Unexpected <DayOfWeekIndex>");
+            }
+        }
+    }
+
     //! Represents a concrete task in the Exchange store.
     class task final : public item
     {
@@ -8309,6 +8446,12 @@ namespace ews
     class occurrence_info final
     {
     public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        occurrence_info() = default;
+#else
+        occurrence_info() {}
+#endif
+
         occurrence_info(item_id id,
                         date_time start,
                         date_time end,
@@ -8318,6 +8461,12 @@ namespace ews
               end_(std::move(end)),
               original_start_(std::move(original_start))
         {
+        }
+
+        //! True if this occurrence_info is undefined
+        bool none() const EWS_NOEXCEPT
+        {
+            return !item_id_.valid();
         }
 
         const item_id& get_item_id() const EWS_NOEXCEPT
@@ -8406,11 +8555,867 @@ namespace ews
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<occurrence_info>::value, "");
+    static_assert(std::is_default_constructible<occurrence_info>::value, "");
     static_assert(std::is_copy_constructible<occurrence_info>::value, "");
     static_assert(std::is_copy_assignable<occurrence_info>::value, "");
     static_assert(std::is_move_constructible<occurrence_info>::value, "");
     static_assert(std::is_move_assignable<occurrence_info>::value, "");
+#endif
+
+    //! Abstract base class for all recurrence patterns.
+    class recurrence_pattern
+    {
+    public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        virtual ~recurrence_pattern() = default;
+
+        recurrence_pattern(const recurrence_pattern&) = delete;
+        recurrence_pattern& operator=(const recurrence_pattern&) = delete;
+#elif
+        virtual ~recurrence_pattern() {}
+
+    private:
+        recurrence_pattern(const recurrence_pattern&);
+        recurrence_pattern& operator=(const recurrence_pattern&);
+
+    public:
+#endif
+
+        //! \brief Creates a new XML element for this recurrence pattern and
+        //! appends it to given parent node.
+        //!
+        //! Returns a reference to the newly created element.
+        rapidxml::xml_node<>& to_xml_element(rapidxml::xml_node<>& parent) const
+        {
+            return this->to_xml_element_impl(parent);
+        }
+
+    protected:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        recurrence_pattern() = default;
+#elif
+        recurrence_pattern() {}
+#endif
+
+    private:
+        virtual rapidxml::xml_node<>&
+        to_xml_element_impl(rapidxml::xml_node<>&) const = 0;
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<recurrence_pattern>::value, "");
+    static_assert(!std::is_copy_constructible<recurrence_pattern>::value, "");
+    static_assert(!std::is_copy_assignable<recurrence_pattern>::value, "");
+    static_assert(!std::is_move_constructible<recurrence_pattern>::value, "");
+    static_assert(!std::is_move_assignable<recurrence_pattern>::value, "");
+#endif
+
+    //! \brief An event that occurrs annually relative to a month, week, and
+    //! day.
+    //!
+    //! Describes an annual relative recurrence, e.g., every third Monday in
+    //! April.
+    class relative_yearly_recurrence final : public recurrence_pattern
+    {
+    public:
+        relative_yearly_recurrence(day_of_week days_of_week,
+                                   day_of_week_index index,
+                                   month m)
+            : days_of_week_(days_of_week),
+              index_(index),
+              month_(m)
+        {
+        }
+
+        day_of_week get_days_of_week() const EWS_NOEXCEPT
+        {
+            return days_of_week_;
+        }
+
+        day_of_week_index get_day_of_week_index() const EWS_NOEXCEPT
+        {
+            return index_;
+        }
+
+        month get_month() const EWS_NOEXCEPT
+        {
+            return month_;
+        }
+
+    private:
+        day_of_week days_of_week_;
+        day_of_week_index index_;
+        month month_;
+
+        rapidxml::xml_node<>&
+        to_xml_element_impl(rapidxml::xml_node<>& parent) const override
+        {
+            auto doc = parent.document();
+
+            EWS_ASSERT(doc
+                && "parent node needs to be part of a document");
+
+            auto ptr_to_qname = doc->allocate_string(
+                                            "t:RelativeYearlyRecurrence");
+            auto pattern_node = doc->allocate_node(rapidxml::node_element);
+            pattern_node->qname(ptr_to_qname,
+                                std::strlen("t:RelativeYearlyRecurrence"),
+                                ptr_to_qname + 2);
+            pattern_node->namespace_uri(
+                                    internal::uri<>::microsoft::types(),
+                                    internal::uri<>::microsoft::types_size);
+
+            ptr_to_qname = doc->allocate_string("t:DaysOfWeek");
+            auto ptr_to_value = doc->allocate_string(
+                internal::enum_to_str(days_of_week_).c_str());
+            auto node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:DaysOfWeek"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            pattern_node->append_node(node);
+
+            ptr_to_qname = doc->allocate_string("t:DayOfWeekIndex");
+            ptr_to_value = doc->allocate_string(
+                internal::enum_to_str(index_).c_str());
+            node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:DayOfWeekIndex"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            pattern_node->append_node(node);
+
+            ptr_to_qname = doc->allocate_string("t:Month");
+            ptr_to_value = doc->allocate_string(
+                internal::enum_to_str(month_).c_str());
+            node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:Month"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            pattern_node->append_node(node);
+
+            parent.append_node(pattern_node);
+            return *pattern_node;
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<relative_yearly_recurrence>::value, "");
+    static_assert(!std::is_copy_constructible<relative_yearly_recurrence>::value, "");
+    static_assert(!std::is_copy_assignable<relative_yearly_recurrence>::value, "");
+    static_assert(!std::is_move_constructible<relative_yearly_recurrence>::value, "");
+    static_assert(!std::is_move_assignable<relative_yearly_recurrence>::value, "");
+#endif
+
+    //! A yearly recurrence pattern, e.g., a birthday.
+    class absolute_yearly_recurrence final : public recurrence_pattern
+    {
+    public:
+        absolute_yearly_recurrence(uint32_t day_of_month, month m)
+            : day_of_month_(day_of_month),
+              month_(m)
+        {
+        }
+
+        uint32_t get_day_of_month() const EWS_NOEXCEPT
+        {
+            return day_of_month_;
+        }
+
+        month get_month() const EWS_NOEXCEPT
+        {
+            return month_;
+        }
+
+    private:
+        uint32_t day_of_month_;
+        month month_;
+
+        rapidxml::xml_node<>&
+        to_xml_element_impl(rapidxml::xml_node<>& parent) const override
+        {
+            auto doc = parent.document();
+
+            EWS_ASSERT(doc
+                && "parent node needs to be part of a document");
+
+            auto ptr_to_qname = doc->allocate_string(
+                                                "t:AbsoluteYearlyRecurrence");
+            auto pattern_node = doc->allocate_node(rapidxml::node_element);
+            pattern_node->qname(ptr_to_qname,
+                                std::strlen("t:AbsoluteYearlyRecurrence"),
+                                ptr_to_qname + 2);
+            pattern_node->namespace_uri(
+                                    internal::uri<>::microsoft::types(),
+                                    internal::uri<>::microsoft::types_size);
+
+            ptr_to_qname = doc->allocate_string("t:DayOfMonth");
+            const auto value = std::to_string(day_of_month_);
+            auto ptr_to_value = doc->allocate_string(value.c_str());
+            auto node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:DayOfMonth"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            pattern_node->append_node(node);
+
+            ptr_to_qname = doc->allocate_string("t:Month");
+            ptr_to_value = doc->allocate_string(
+                internal::enum_to_str(month_).c_str());
+            node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:Month"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                internal::uri<>::microsoft::types_size);
+            pattern_node->append_node(node);
+
+            parent.append_node(pattern_node);
+            return *pattern_node;
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<absolute_yearly_recurrence>::value, "");
+    static_assert(!std::is_copy_constructible<absolute_yearly_recurrence>::value, "");
+    static_assert(!std::is_copy_assignable<absolute_yearly_recurrence>::value, "");
+    static_assert(!std::is_move_constructible<absolute_yearly_recurrence>::value, "");
+    static_assert(!std::is_move_assignable<absolute_yearly_recurrence>::value, "");
+#endif
+
+    //! \brief An event that occurrs on the same day each month or monthly
+    //! interval.
+    //!
+    //! A good example is payment of a rent that is due on the second of each
+    //! month.
+    //!
+    //! \code
+    //! auto rent_is_due = ews::absolute_monthly_recurrence(1, 2);
+    //! \endcode
+    //!
+    //! The \p interval parameter indicates the interval in months between
+    //! each time zone. For example, an \p interval value of 1 would yield an
+    //! appointment occurring twelve times a year, a value of 6 would produce
+    //! two occurrences a year and so on.
+    class absolute_monthly_recurrence final : public recurrence_pattern
+    {
+    public:
+        absolute_monthly_recurrence(uint32_t interval, uint32_t day_of_month)
+            : interval_(interval),
+              day_of_month_(day_of_month)
+        {
+        }
+
+        uint32_t get_interval() const EWS_NOEXCEPT
+        {
+            return interval_;
+        }
+
+        uint32_t get_days_of_month() const EWS_NOEXCEPT
+        {
+            return day_of_month_;
+        }
+
+    private:
+        uint32_t interval_;
+        uint32_t day_of_month_;
+
+        rapidxml::xml_node<>&
+        to_xml_element_impl(rapidxml::xml_node<>& parent) const override
+        {
+            auto doc = parent.document();
+
+            EWS_ASSERT(doc
+                && "parent node needs to be part of a document");
+
+            auto ptr_to_qname = doc->allocate_string(
+                                                "t:AbsoluteMonthlyRecurrence");
+            auto pattern_node = doc->allocate_node(rapidxml::node_element);
+            pattern_node->qname(ptr_to_qname,
+                                std::strlen("t:AbsoluteMonthlyRecurrence"),
+                                ptr_to_qname + 2);
+            pattern_node->namespace_uri(
+                                    internal::uri<>::microsoft::types(),
+                                    internal::uri<>::microsoft::types_size);
+
+            ptr_to_qname = doc->allocate_string("t:Interval");
+            auto ptr_to_value = doc->allocate_string(
+                std::to_string(interval_).c_str());
+            auto node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:Interval"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            pattern_node->append_node(node);
+
+            ptr_to_qname = doc->allocate_string("t:DayOfMonth");
+            ptr_to_value = doc->allocate_string(
+                                    std::to_string(day_of_month_).c_str());
+            node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:DayOfMonth"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            pattern_node->append_node(node);
+
+            parent.append_node(pattern_node);
+            return *pattern_node;
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<absolute_monthly_recurrence>::value, "");
+    static_assert(!std::is_copy_constructible<absolute_monthly_recurrence>::value, "");
+    static_assert(!std::is_copy_assignable<absolute_monthly_recurrence>::value, "");
+    static_assert(!std::is_move_constructible<absolute_monthly_recurrence>::value, "");
+    static_assert(!std::is_move_assignable<absolute_monthly_recurrence>::value, "");
+#endif
+
+    //! \brief An event that occurrs annually relative to a month, week, and
+    //! day.
+    //!
+    //! For example, if you are a member of a C++ user group that decides to
+    //! meet on the third Thursday of every month you would write
+    //!
+    //! \code
+    //! auto meetup =
+    //!        ews::relative_monthly_recurrence(1,
+    //!                                         ews::day_of_week::thu,
+    //!                                         ews::day_of_week_index::third);
+    //! \endcode
+    //!
+    //! The \p interval parameter indicates the interval in months between
+    //! each time zone. For example, an \p interval value of 1 would yield an
+    //! appointment occurring twelve times a year, a value of 6 would produce
+    //! two occurrences a year and so on.
+    class relative_monthly_recurrence final : public recurrence_pattern
+    {
+    public:
+        relative_monthly_recurrence(uint32_t interval,
+                                    day_of_week days_of_week,
+                                    day_of_week_index index)
+            : interval_(interval),
+              days_of_week_(days_of_week),
+              index_(index)
+        {
+        }
+
+        uint32_t get_interval() const EWS_NOEXCEPT
+        {
+            return interval_;
+        }
+
+        day_of_week get_days_of_week() const EWS_NOEXCEPT
+        {
+            return days_of_week_;
+        }
+
+        day_of_week_index get_day_of_week_index() const EWS_NOEXCEPT
+        {
+            return index_;
+        }
+
+    private:
+        uint32_t interval_;
+        day_of_week days_of_week_;
+        day_of_week_index index_;
+
+        rapidxml::xml_node<>&
+        to_xml_element_impl(rapidxml::xml_node<>& parent) const override
+        {
+            auto doc = parent.document();
+
+            EWS_ASSERT(doc
+                && "parent node needs to be part of a document");
+
+            auto ptr_to_qname = doc->allocate_string(
+                                                "t:RelativeMonthlyRecurrence");
+            auto pattern_node = doc->allocate_node(rapidxml::node_element);
+            pattern_node->qname(ptr_to_qname,
+                                std::strlen("t:RelativeMonthlyRecurrence"),
+                                ptr_to_qname + 2);
+            pattern_node->namespace_uri(
+                                    internal::uri<>::microsoft::types(),
+                                    internal::uri<>::microsoft::types_size);
+
+            ptr_to_qname = doc->allocate_string("t:Interval");
+            auto ptr_to_value = doc->allocate_string(
+                                        std::to_string(interval_).c_str());
+            auto node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:Interval"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            pattern_node->append_node(node);
+
+            ptr_to_qname = doc->allocate_string("t:DaysOfWeek");
+            ptr_to_value = doc->allocate_string(
+                internal::enum_to_str(days_of_week_).c_str());
+            node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:DaysOfWeek"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            pattern_node->append_node(node);
+
+            ptr_to_qname = doc->allocate_string("t:DayOfWeekIndex");
+            ptr_to_value = doc->allocate_string(
+                                    internal::enum_to_str(index_).c_str());
+            node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:DayOfWeekIndex"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            pattern_node->append_node(node);
+
+            parent.append_node(pattern_node);
+            return *pattern_node;
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<relative_monthly_recurrence>::value, "");
+    static_assert(!std::is_copy_constructible<relative_monthly_recurrence>::value, "");
+    static_assert(!std::is_copy_assignable<relative_monthly_recurrence>::value, "");
+    static_assert(!std::is_move_constructible<relative_monthly_recurrence>::value, "");
+    static_assert(!std::is_move_assignable<relative_monthly_recurrence>::value, "");
+#endif
+
+    //! \brief A weekly recurrence
+    //!
+    //! An example for a weekly recurrence is a regular meeting on a specific
+    //! day each week.
+    //!
+    //! \code
+    //! auto standup =
+    //!        ews::weekly_recurrence(1, ews::day_of_week::mon);
+    //! \endcode
+    class weekly_recurrence final : public recurrence_pattern
+    {
+    public:
+        weekly_recurrence(uint32_t interval,
+                          day_of_week days_of_week,
+                          day_of_week first_day_of_week = day_of_week::mon)
+            : interval_(interval),
+              days_of_week_(),
+              first_day_of_week_(first_day_of_week)
+        {
+            days_of_week_.push_back(days_of_week);
+        }
+
+        weekly_recurrence(uint32_t interval,
+                          std::vector<day_of_week> days_of_week,
+                          day_of_week first_day_of_week = day_of_week::mon)
+            : interval_(interval),
+              days_of_week_(std::move(days_of_week)),
+              first_day_of_week_(first_day_of_week)
+        {
+        }
+
+        uint32_t get_interval() const EWS_NOEXCEPT
+        {
+            return interval_;
+        }
+
+        const std::vector<day_of_week>& get_days_of_week() const EWS_NOEXCEPT
+        {
+            return days_of_week_;
+        }
+
+        day_of_week get_first_day_of_week() const EWS_NOEXCEPT
+        {
+            return first_day_of_week_;
+        }
+
+    private:
+        uint32_t interval_;
+        std::vector<day_of_week> days_of_week_;
+        day_of_week first_day_of_week_;
+
+        rapidxml::xml_node<>&
+        to_xml_element_impl(rapidxml::xml_node<>& parent) const override
+        {
+            using namespace internal;
+
+            auto doc = parent.document();
+
+            EWS_ASSERT(doc
+                && "parent node needs to be part of a document");
+
+            auto ptr_to_qname = doc->allocate_string("t:WeeklyRecurrence");
+            auto pattern_node = doc->allocate_node(rapidxml::node_element);
+            pattern_node->qname(ptr_to_qname,
+                                std::strlen("t:WeeklyRecurrence"),
+                                ptr_to_qname + 2);
+            pattern_node->namespace_uri(
+                                    uri<>::microsoft::types(),
+                                    uri<>::microsoft::types_size);
+
+            ptr_to_qname = doc->allocate_string("t:Interval");
+            auto ptr_to_value = doc->allocate_string(
+                std::to_string(interval_).c_str());
+            auto node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:Interval"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(uri<>::microsoft::types(),
+                                uri<>::microsoft::types_size);
+            pattern_node->append_node(node);
+
+            std::string value;
+            for (const auto& day : days_of_week_)
+            {
+                value += enum_to_str(day) + " ";
+            }
+            ptr_to_qname = doc->allocate_string("t:DaysOfWeek");
+            ptr_to_value = doc->allocate_string(value.c_str(),
+                                                value.length() - 1);
+            ptr_to_value[value.length() - 1] = '\0';
+            node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:DaysOfWeek"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(uri<>::microsoft::types(),
+                                uri<>::microsoft::types_size);
+            pattern_node->append_node(node);
+
+            ptr_to_qname = doc->allocate_string("t:FirstDayOfWeek");
+            ptr_to_value = doc->allocate_string(
+                                    enum_to_str(first_day_of_week_).c_str());
+            node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:FirstDayOfWeek"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(uri<>::microsoft::types(),
+                                uri<>::microsoft::types_size);
+            pattern_node->append_node(node);
+
+            parent.append_node(pattern_node);
+            return *pattern_node;
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<weekly_recurrence>::value, "");
+    static_assert(!std::is_copy_constructible<weekly_recurrence>::value, "");
+    static_assert(!std::is_copy_assignable<weekly_recurrence>::value, "");
+    static_assert(!std::is_move_constructible<weekly_recurrence>::value, "");
+    static_assert(!std::is_move_assignable<weekly_recurrence>::value, "");
+#endif
+
+    //! \brief Describes a daily recurring event
+    class daily_recurrence final : public recurrence_pattern
+    {
+    public:
+        explicit daily_recurrence(uint32_t interval)
+            : interval_(interval)
+        {
+        }
+
+        uint32_t get_interval() const EWS_NOEXCEPT
+        {
+            return interval_;
+        }
+
+    private:
+        uint32_t interval_;
+
+        rapidxml::xml_node<>&
+        to_xml_element_impl(rapidxml::xml_node<>& parent) const override
+        {
+            auto doc = parent.document();
+
+            EWS_ASSERT(doc
+                && "parent node needs to be part of a document");
+
+            auto ptr_to_qname = doc->allocate_string("t:DailyRecurrence");
+            auto pattern_node = doc->allocate_node(rapidxml::node_element);
+            pattern_node->qname(ptr_to_qname,
+                                std::strlen("t:DailyRecurrence"),
+                                ptr_to_qname + 2);
+            pattern_node->namespace_uri(
+                                    internal::uri<>::microsoft::types(),
+                                    internal::uri<>::microsoft::types_size);
+
+            ptr_to_qname = doc->allocate_string("t:Interval");
+            auto ptr_to_value = doc->allocate_string(
+                                            std::to_string(interval_).c_str());
+            auto node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:Interval"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            pattern_node->append_node(node);
+
+            parent.append_node(pattern_node);
+            return *pattern_node;
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<daily_recurrence>::value, "");
+    static_assert(!std::is_copy_constructible<daily_recurrence>::value, "");
+    static_assert(!std::is_copy_assignable<daily_recurrence>::value, "");
+    static_assert(!std::is_move_constructible<daily_recurrence>::value, "");
+    static_assert(!std::is_move_assignable<daily_recurrence>::value, "");
+#endif
+
+    //! Abstract base class for all recurrence ranges.
+    class recurrence_range
+    {
+    public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        virtual ~recurrence_range() = default;
+
+        recurrence_range(const recurrence_range&) = delete;
+        recurrence_range& operator=(const recurrence_range&) = delete;
+#elif
+        virtual ~recurrence_pattern() {}
+
+    private:
+        recurrence_range(const recurrence_range&);
+        recurrence_range& operator=(const recurrence_range&);
+
+    public:
+#endif
+
+        //! \brief Creates a new XML element for this recurrence range and
+        //! appends it to given parent node.
+        //!
+        //! Returns a reference to the newly created element.
+        rapidxml::xml_node<>& to_xml_element(rapidxml::xml_node<>& parent) const
+        {
+            return this->to_xml_element_impl(parent);
+        }
+
+    protected:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        recurrence_range() = default;
+#elif
+        recurrence_range() {}
+#endif
+
+    private:
+        virtual rapidxml::xml_node<>&
+        to_xml_element_impl(rapidxml::xml_node<>&) const = 0;
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<recurrence_range>::value, "");
+    static_assert(!std::is_copy_constructible<recurrence_range>::value, "");
+    static_assert(!std::is_copy_assignable<recurrence_range>::value, "");
+    static_assert(!std::is_move_constructible<recurrence_range>::value, "");
+    static_assert(!std::is_move_assignable<recurrence_range>::value, "");
+#endif
+
+    class no_end_recurrence_range final : public recurrence_range
+    {
+    public:
+        explicit no_end_recurrence_range(date start_date)
+            : start_date_(std::move(start_date))
+        {
+        }
+
+    private:
+        date start_date_;
+
+        rapidxml::xml_node<>&
+        to_xml_element_impl(rapidxml::xml_node<>& parent) const override
+        {
+            auto doc = parent.document();
+
+            EWS_ASSERT(doc
+                && "parent node needs to be part of a document");
+
+            auto ptr_to_qname = doc->allocate_string("t:NoEndRecurrence");
+            auto range_node = doc->allocate_node(rapidxml::node_element);
+            range_node->qname(ptr_to_qname,
+                                std::strlen("t:NoEndRecurrence"),
+                                ptr_to_qname + 2);
+            range_node->namespace_uri(
+                                    internal::uri<>::microsoft::types(),
+                                    internal::uri<>::microsoft::types_size);
+
+            ptr_to_qname = doc->allocate_string("t:StartDate");
+            auto ptr_to_value = doc->allocate_string(
+                                            start_date_.to_string().c_str());
+            auto node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:StartDate"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            range_node->append_node(node);
+
+            parent.append_node(range_node);
+            return *range_node;
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<no_end_recurrence_range>::value, "");
+    static_assert(!std::is_copy_constructible<no_end_recurrence_range>::value, "");
+    static_assert(!std::is_copy_assignable<no_end_recurrence_range>::value, "");
+    static_assert(!std::is_move_constructible<no_end_recurrence_range>::value, "");
+    static_assert(!std::is_move_assignable<no_end_recurrence_range>::value, "");
+#endif
+
+    class end_date_recurrence_range final : public recurrence_range
+    {
+    public:
+        end_date_recurrence_range(date start_date, date end_date)
+            : start_date_(std::move(start_date)),
+              end_date_(std::move(end_date))
+        {
+        }
+
+    private:
+        date start_date_;
+        date end_date_;
+
+        rapidxml::xml_node<>&
+        to_xml_element_impl(rapidxml::xml_node<>& parent) const override
+        {
+            auto doc = parent.document();
+
+            EWS_ASSERT(doc
+                && "parent node needs to be part of a document");
+
+            auto ptr_to_qname = doc->allocate_string("t:EndDateRecurrence");
+            auto range_node = doc->allocate_node(rapidxml::node_element);
+            range_node->qname(ptr_to_qname,
+                              std::strlen("t:EndDateRecurrence"),
+                              ptr_to_qname + 2);
+            range_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                      internal::uri<>::microsoft::types_size);
+
+            ptr_to_qname = doc->allocate_string("t:StartDate");
+            auto ptr_to_value = doc->allocate_string(
+                                            start_date_.to_string().c_str());
+            auto node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:StartDate"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            range_node->append_node(node);
+
+            ptr_to_qname = doc->allocate_string("t:EndDate");
+            ptr_to_value = doc->allocate_string(end_date_.to_string().c_str());
+            node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:EndDate"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            range_node->append_node(node);
+
+            parent.append_node(range_node);
+            return *range_node;
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<end_date_recurrence_range>::value, "");
+    static_assert(!std::is_copy_constructible<end_date_recurrence_range>::value, "");
+    static_assert(!std::is_copy_assignable<end_date_recurrence_range>::value, "");
+    static_assert(!std::is_move_constructible<end_date_recurrence_range>::value, "");
+    static_assert(!std::is_move_assignable<end_date_recurrence_range>::value, "");
+#endif
+
+    class numbered_recurrence_range final : public recurrence_range
+    {
+    public:
+        numbered_recurrence_range(date start_date,
+                                  uint32_t no_of_occurrences)
+            : start_date_(std::move(start_date)),
+              no_of_occurrences_(no_of_occurrences)
+        {
+        }
+
+    private:
+        date start_date_;
+        uint32_t no_of_occurrences_;
+
+        rapidxml::xml_node<>&
+        to_xml_element_impl(rapidxml::xml_node<>& parent) const override
+        {
+            auto doc = parent.document();
+
+            EWS_ASSERT(doc
+                && "parent node needs to be part of a document");
+
+            auto ptr_to_qname = doc->allocate_string("t:NumberedRecurrence");
+            auto range_node = doc->allocate_node(rapidxml::node_element);
+            range_node->qname(ptr_to_qname,
+                              std::strlen("t:NumberedRecurrence"),
+                              ptr_to_qname + 2);
+            range_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                      internal::uri<>::microsoft::types_size);
+
+            ptr_to_qname = doc->allocate_string("t:StartDate");
+            auto ptr_to_value = doc->allocate_string(
+                                            start_date_.to_string().c_str());
+            auto node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:StartDate"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            range_node->append_node(node);
+
+            ptr_to_qname = doc->allocate_string("t:NumberOfOccurrences");
+            ptr_to_value = doc->allocate_string(
+                                std::to_string(no_of_occurrences_).c_str());
+            node = doc->allocate_node(rapidxml::node_element);
+            node->qname(ptr_to_qname,
+                        std::strlen("t:NumberOfOccurrences"),
+                        ptr_to_qname + 2);
+            node->value(ptr_to_value);
+            node->namespace_uri(internal::uri<>::microsoft::types(),
+                                internal::uri<>::microsoft::types_size);
+            range_node->append_node(node);
+
+            parent.append_node(range_node);
+            return *range_node;
+        }
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<numbered_recurrence_range>::value, "");
+    static_assert(!std::is_copy_constructible<numbered_recurrence_range>::value, "");
+    static_assert(!std::is_copy_assignable<numbered_recurrence_range>::value, "");
+    static_assert(!std::is_move_constructible<numbered_recurrence_range>::value, "");
+    static_assert(!std::is_move_assignable<numbered_recurrence_range>::value, "");
 #endif
 
     //! A calendar item in the Exchange store.
@@ -8768,10 +9773,62 @@ namespace ews
 
         // TODO: issue #22
         // <Recurrence/>
-        // <FirstOccurrence/>
-        // <LastOccurrence/>
-        // <ModifiedOccurrences/>
-        // <DeletedOccurrences/>
+
+        occurrence_info get_first_occurrence() const
+        {
+            auto node = xml().get_node("FirstOccurrence");
+            if (!node)
+            {
+                return occurrence_info();
+            }
+            return occurrence_info::from_xml_element(*node);
+        }
+
+        occurrence_info get_last_occurrence() const
+        {
+            auto node = xml().get_node("LastOccurrence");
+            if (!node)
+            {
+                return occurrence_info();
+            }
+            return occurrence_info::from_xml_element(*node);
+        }
+
+        std::vector<occurrence_info> get_modified_occurrences() const
+        {
+            auto node = xml().get_node("ModifiedOccurrences");
+            if (!node)
+            {
+                return std::vector<occurrence_info>();
+            }
+
+            auto occurrences = std::vector<occurrence_info>();
+            for (auto occurrence = node->first_node(); occurrence;
+                 occurrence = occurrence->next_sibling())
+            {
+                occurrences.emplace_back(
+                    occurrence_info::from_xml_element(*occurrence));
+            }
+            return occurrences;
+        }
+
+        std::vector<occurrence_info> get_deleted_occurrences() const
+        {
+            auto node = xml().get_node("DeletedOccurrences");
+            if (!node)
+            {
+                return std::vector<occurrence_info>();
+            }
+
+            auto occurrences = std::vector<occurrence_info>();
+            for (auto occurrence = node->first_node(); occurrence;
+                 occurrence = occurrence->next_sibling())
+            {
+                occurrences.emplace_back(
+                    occurrence_info::from_xml_element(*occurrence));
+            }
+            return occurrences;
+        }
 
         // TODO: issue #23
         // <MeetingTimeZone/>
@@ -8931,11 +9988,14 @@ namespace ews
         }
 
         template <typename U> friend class basic_service;
-        std::string create_item_request_string() const
+        std::string create_item_request_string(
+            send_meeting_invitations meeting_invitations =
+                send_meeting_invitations::send_to_none) const
         {
             std::stringstream sstr;
             sstr <<
-                "<m:CreateItem SendMeetingInvitations=\"SendToNone\">"
+                "<m:CreateItem SendMeetingInvitations=\""
+                    + internal::enum_to_str(meeting_invitations) + "\">"
                   "<m:Items>"
                     "<t:CalendarItem>";
             sstr << xml().to_string();
@@ -9693,6 +10753,7 @@ namespace ews
     {
     public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
+        search_expression() = delete;
         ~search_expression() = default;
 #endif
 
@@ -9759,10 +10820,10 @@ namespace ews
             : func_([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
-                        const char* pref = "";
+                        auto pref = std::string();
                         if (xmlns)
                         {
-                            pref = "t:";
+                            pref = std::string(xmlns) + ":";
                         }
                         sstr << "<" << pref << term << "><" << pref;
                         sstr << "FieldURI FieldURI=\"";
@@ -9783,10 +10844,10 @@ namespace ews
             : func_([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
-                        const char* pref = "";
+                        auto pref = std::string();
                         if (xmlns)
                         {
-                            pref = "t:";
+                            pref = std::string(xmlns) + ":";
                         }
                         sstr << "<" << pref << term << "><" << pref;
                         sstr << "IndexedFieldURI FieldURI=\"";
@@ -9806,10 +10867,10 @@ namespace ews
             : func_([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
-                        const char* pref = "";
+                        auto pref = std::string();
                         if (xmlns)
                         {
-                            pref = "t:";
+                            pref = std::string(xmlns) + ":";
                         }
                         sstr << "<" << pref << term << "><" << pref;
                         sstr << "FieldURI FieldURI=\"";
@@ -10091,10 +11152,10 @@ namespace ews
             : search_expression([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
-                        const char* pref = "";
+                        auto pref = std::string();
                         if (xmlns)
                         {
-                            pref = "t:";
+                            pref = std::string(xmlns) + ":";
                         }
                         sstr << "<" << pref << "And" << ">";
                         sstr << first.to_xml(xmlns);
@@ -10123,10 +11184,10 @@ namespace ews
             : search_expression([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
-                        const char* pref = "";
+                        auto pref = std::string();
                         if (xmlns)
                         {
-                            pref = "t:";
+                            pref = std::string(xmlns) + ":";
                         }
                         sstr << "<" << pref << "Or" << ">";
                         sstr << first.to_xml(xmlns);
@@ -10154,10 +11215,10 @@ namespace ews
             : search_expression([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
-                        const char* pref = "";
+                        auto pref = std::string();
                         if (xmlns)
                         {
-                            pref = "t:";
+                            pref = std::string(xmlns) + ":";
                         }
                         sstr << "<" << pref << "Not" << ">";
                         sstr << expr.to_xml(xmlns);
@@ -10259,10 +11320,10 @@ namespace ews
             : search_expression([=](const char* xmlns) -> std::string
                     {
                         std::stringstream sstr;
-                        const char* pref = "";
+                        auto pref = std::string();
                         if (xmlns)
                         {
-                            pref = "t:";
+                            pref = std::string(xmlns) + ":";
                         }
                         sstr << "<" << pref << "Contains ";
                         sstr << "ContainmentMode=\""
@@ -10594,9 +11655,27 @@ namespace ews
         //! Exchange store
         //!
         //! Returns it's item_id if successful.
-        item_id create_item(const calendar_item& the_calendar_item)
+        item_id create_item(const calendar_item& the_calendar_item,
+                            send_meeting_invitations invitations =
+                                send_meeting_invitations::send_to_none)
         {
-            return create_item_impl(the_calendar_item);
+            using internal::create_item_response_message;
+
+            auto response = request(
+                the_calendar_item.create_item_request_string(invitations));
+
+#ifdef EWS_ENABLE_VERBOSE
+            std::cerr << response.payload() << std::endl;
+#endif
+            const auto response_message =
+                create_item_response_message::parse(response);
+            if (!response_message.success())
+            {
+                throw exchange_error(response_message.get_response_code());
+            }
+            EWS_ASSERT(!response_message.items().empty()
+                && "Expected a message item");
+            return response_message.items().front();
         }
 
         //! Creates a new message in the Exchange store
