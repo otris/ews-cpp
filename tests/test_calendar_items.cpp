@@ -62,7 +62,7 @@ namespace tests
         ews::calendar_view cv(start, end);
         EXPECT_EQ(start, cv.get_start_date());
         EXPECT_EQ(end, cv.get_end_date());
-        EXPECT_EQ(0, cv.get_max_entries_returned());
+        EXPECT_EQ(0U, cv.get_max_entries_returned());
         EXPECT_STREQ("<y:CalendarView StartDate=\"2016-01-12T10:00:00Z\" "
                      "EndDate=\"2016-01-12T12:00:00Z\" />",
                      cv.to_xml("y").c_str());
@@ -75,7 +75,7 @@ namespace tests
         ews::calendar_view cv(start, end, 7);
         EXPECT_EQ(start, cv.get_start_date());
         EXPECT_EQ(end, cv.get_end_date());
-        EXPECT_EQ(7, cv.get_max_entries_returned());
+        EXPECT_EQ(7U, cv.get_max_entries_returned());
         EXPECT_STREQ("<m:CalendarView MaxEntriesReturned=\"7\" "
                      "StartDate=\"2016-01-12T10:00:00Z\" "
                      "EndDate=\"2016-01-12T12:00:00Z\" />",
@@ -197,7 +197,7 @@ namespace tests
     TEST(RecurrencePatternTest, AbsoluteYearly)
     {
         ews::absolute_yearly_recurrence r(10, ews::month::oct);
-        EXPECT_EQ(10, r.get_day_of_month());
+        EXPECT_EQ(10U, r.get_day_of_month());
         EXPECT_EQ(ews::month::oct, r.get_month());
 
         const char* xml =
@@ -254,8 +254,8 @@ namespace tests
     TEST(RecurrencePatternTest, AbsoluteMonthly)
     {
         ews::absolute_monthly_recurrence r(1, 5);
-        EXPECT_EQ(1, r.get_interval());
-        EXPECT_EQ(5, r.get_days_of_month());
+        EXPECT_EQ(1U, r.get_interval());
+        EXPECT_EQ(5U, r.get_days_of_month());
 
         const char* xml =
             "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
@@ -283,7 +283,7 @@ namespace tests
         ews::relative_monthly_recurrence r(1,
                                            ews::day_of_week::thu,
                                            ews::day_of_week_index::third);
-        EXPECT_EQ(1, r.get_interval());
+        EXPECT_EQ(1U, r.get_interval());
         EXPECT_EQ(ews::day_of_week::thu, r.get_days_of_week());
         EXPECT_EQ(ews::day_of_week_index::third, r.get_day_of_week_index());
 
@@ -312,8 +312,8 @@ namespace tests
     TEST(RecurrencePatternTest, Weekly)
     {
         ews::weekly_recurrence r1(1, ews::day_of_week::mon);
-        EXPECT_EQ(1, r1.get_interval());
-        ASSERT_EQ(1, r1.get_days_of_week().size());
+        EXPECT_EQ(1U, r1.get_interval());
+        ASSERT_EQ(1U, r1.get_days_of_week().size());
         EXPECT_EQ(ews::day_of_week::mon, r1.get_days_of_week().front());
         EXPECT_EQ(ews::day_of_week::mon, r1.get_first_day_of_week());
 
@@ -343,8 +343,8 @@ namespace tests
         days.push_back(ews::day_of_week::thu);
         days.push_back(ews::day_of_week::fri);
         ews::weekly_recurrence r2(2, days, ews::day_of_week::sun);
-        EXPECT_EQ(2, r2.get_interval());
-        ASSERT_EQ(2, r2.get_days_of_week().size());
+        EXPECT_EQ(2U, r2.get_interval());
+        ASSERT_EQ(2U, r2.get_days_of_week().size());
         EXPECT_EQ(ews::day_of_week::thu, r2.get_days_of_week()[0]);
         EXPECT_EQ(ews::day_of_week::fri, r2.get_days_of_week()[1]);
         EXPECT_EQ(ews::day_of_week::sun, r2.get_first_day_of_week());
@@ -374,7 +374,7 @@ namespace tests
     TEST(RecurrencePatternTest, Daily)
     {
         ews::daily_recurrence r(3);
-        EXPECT_EQ(3, r.get_interval());
+        EXPECT_EQ(3U, r.get_interval());
 
         const char* xml =
             "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
@@ -1100,14 +1100,14 @@ namespace tests
                                 ews::date_time("2016-01-12T11:00:00Z"),
                                 ews::date_time("2016-01-12T12:00:00Z"));
         auto result = service().find_item(view1, calendar_folder);
-        ASSERT_EQ(2, result.size());
+        ASSERT_EQ(2U, result.size());
 
         // 11:01 AM - 12 PM -> B
         auto view2 = ews::calendar_view(
                                 ews::date_time("2016-01-12T11:01:00Z"),
                                 ews::date_time("2016-01-12T12:00:00Z"));
         result = service().find_item(view2, calendar_folder);
-        ASSERT_EQ(1, result.size());
+        ASSERT_EQ(1U, result.size());
         EXPECT_STREQ("Appointment B", result[0].get_subject().c_str());
 
         // 11 AM - 12:01 PM -> A, B, C
@@ -1115,7 +1115,7 @@ namespace tests
                                 ews::date_time("2016-01-12T11:00:00Z"),
                                 ews::date_time("2016-01-12T12:01:00Z"));
         result = service().find_item(view3, calendar_folder);
-        ASSERT_EQ(3, result.size());
+        ASSERT_EQ(3U, result.size());
     }
 }
 
