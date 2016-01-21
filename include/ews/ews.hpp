@@ -9195,7 +9195,7 @@ namespace ews
         recurrence_range(const recurrence_range&) = delete;
         recurrence_range& operator=(const recurrence_range&) = delete;
 #else
-        virtual ~recurrence_pattern() {}
+        virtual ~recurrence_range() {}
 
     private:
         recurrence_range(const recurrence_range&);
