@@ -120,9 +120,10 @@ namespace tests
     {
         const auto start_date = ews::date("1994-10-10");
         ews::no_end_recurrence_range r(start_date);
+        EXPECT_EQ(start_date, r.get_start_date());
 
         const char* xml =
-            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -139,6 +140,13 @@ namespace tests
             "<t:NoEndRecurrence>"
                 "<t:StartDate>1994-10-10</t:StartDate>"
             "</t:NoEndRecurrence>", str.c_str());
+
+        auto result = ews::recurrence_range::from_xml_element(*parent);
+        ASSERT_TRUE(result);
+        auto no_end_recurrence =
+            dynamic_cast<ews::no_end_recurrence_range*>(result.get());
+        ASSERT_TRUE(no_end_recurrence);
+        EXPECT_EQ(start_date, no_end_recurrence->get_start_date());
     }
 
     TEST(RecurrenceRangeTest, EndDate)
@@ -146,9 +154,11 @@ namespace tests
         const auto start_date = ews::date("1961-08-13");
         const auto end_date = ews::date("1989-11-09");
         ews::end_date_recurrence_range r(start_date, end_date);
+        EXPECT_EQ(start_date, r.get_start_date());
+        EXPECT_EQ(end_date, r.get_end_date());
 
         const char* xml =
-            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -166,15 +176,25 @@ namespace tests
                 "<t:StartDate>1961-08-13</t:StartDate>"
                 "<t:EndDate>1989-11-09</t:EndDate>"
             "</t:EndDateRecurrence>", str.c_str());
+
+        auto result = ews::recurrence_range::from_xml_element(*parent);
+        ASSERT_TRUE(result);
+        auto end_date_recurrence_range =
+            dynamic_cast<ews::end_date_recurrence_range*>(result.get());
+        ASSERT_TRUE(end_date_recurrence_range);
+        EXPECT_EQ(start_date, end_date_recurrence_range->get_start_date());
+        EXPECT_EQ(end_date, end_date_recurrence_range->get_end_date());
     }
 
     TEST(RecurrenceRangeTest, Numbered)
     {
         const auto start_date = ews::date("1989-01-01");
         ews::numbered_recurrence_range r(start_date, 18);
+        EXPECT_EQ(start_date, r.get_start_date());
+        EXPECT_EQ(18, r.get_number_of_occurrences());
 
         const char* xml =
-            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -192,6 +212,14 @@ namespace tests
                 "<t:StartDate>1989-01-01</t:StartDate>"
                 "<t:NumberOfOccurrences>18</t:NumberOfOccurrences>"
             "</t:NumberedRecurrence>", str.c_str());
+
+        auto result = ews::recurrence_range::from_xml_element(*parent);
+        ASSERT_TRUE(result);
+        auto numbered_recurrence_range =
+            dynamic_cast<ews::numbered_recurrence_range*>(result.get());
+        ASSERT_TRUE(numbered_recurrence_range);
+        EXPECT_EQ(start_date, numbered_recurrence_range->get_start_date());
+        EXPECT_EQ(18, numbered_recurrence_range->get_number_of_occurrences());
     }
 
     TEST(RecurrencePatternTest, AbsoluteYearly)
@@ -201,7 +229,7 @@ namespace tests
         EXPECT_EQ(ews::month::oct, r.get_month());
 
         const char* xml =
-            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -230,7 +258,7 @@ namespace tests
         EXPECT_EQ(ews::month::apr, r.get_month());
 
         const char* xml =
-            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -258,7 +286,7 @@ namespace tests
         EXPECT_EQ(5U, r.get_days_of_month());
 
         const char* xml =
-            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -288,7 +316,7 @@ namespace tests
         EXPECT_EQ(ews::day_of_week_index::third, r.get_day_of_week_index());
 
         const char* xml =
-            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -318,7 +346,7 @@ namespace tests
         EXPECT_EQ(ews::day_of_week::mon, r1.get_first_day_of_week());
 
         const char* xml1 =
-            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml1, xml1 + std::strlen(xml1), std::back_inserter(buf));
         buf.push_back('\0');
@@ -350,7 +378,7 @@ namespace tests
         EXPECT_EQ(ews::day_of_week::sun, r2.get_first_day_of_week());
 
         const char* xml2 =
-            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
         buf.clear();
         std::copy(xml2, xml2 + std::strlen(xml2), std::back_inserter(buf));
         buf.push_back('\0');
@@ -377,7 +405,7 @@ namespace tests
         EXPECT_EQ(3U, r.get_interval());
 
         const char* xml =
-            "<Root xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Root>";
+            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -450,7 +478,6 @@ namespace tests
         auto items = service().find_item(calendar_folder);
         EXPECT_EQ(initial_count, items.size());
     }
-
 
     // <Start/>
     TEST(OfflineCalendarItemTest, StartPropertyInitialValue)
@@ -924,6 +951,89 @@ namespace tests
     {
         auto cal = ews::calendar_item();
         EXPECT_EQ(0, cal.get_appointment_state());
+    }
+
+    // <Recurrence/>
+    TEST(OfflineCalendarItemTest, RecurrencePropertyInitialValue)
+    {
+        auto cal = ews::calendar_item();
+        EXPECT_FALSE(cal.get_recurrence().first);
+        EXPECT_FALSE(cal.get_recurrence().second);
+
+        // Set
+        ews::absolute_yearly_recurrence birthday(10, ews::month::oct);
+        auto start_date = ews::date_time("1994-10-10");
+        ews::no_end_recurrence_range no_end(start_date);
+
+        cal.set_recurrence(birthday, no_end);
+        auto result = cal.get_recurrence();
+        ASSERT_TRUE(result.first && result.second);
+        auto pattern1 = dynamic_cast<ews::absolute_yearly_recurrence*>(result.first.get());
+        ASSERT_TRUE(pattern1);
+        EXPECT_EQ(10, pattern1->get_day_of_month());
+        EXPECT_EQ(ews::month::oct, pattern1->get_month());
+        auto range1 = dynamic_cast<ews::no_end_recurrence_range*>(result.second.get());
+        ASSERT_TRUE(range1);
+        EXPECT_EQ(start_date, range1->get_start_date());
+
+        // Replace
+        ews::absolute_monthly_recurrence mortgage_payment(1, 5);
+        start_date = ews::date_time("2016-01-01");
+        ews::numbered_recurrence_range end(start_date, 48);
+
+        cal.set_recurrence(mortgage_payment, end);
+        result = cal.get_recurrence();
+        ASSERT_TRUE(result.first && result.second);
+        auto pattern2 = dynamic_cast<ews::absolute_monthly_recurrence*>(result.first.get());
+        ASSERT_TRUE(pattern2);
+        EXPECT_EQ(1, pattern2->get_interval());
+        EXPECT_EQ(5, pattern2->get_days_of_month());
+        auto range2 = dynamic_cast<ews::numbered_recurrence_range*>(result.second.get());
+        ASSERT_TRUE(range2);
+        EXPECT_EQ(start_date, range2->get_start_date());
+        EXPECT_EQ(48, range2->get_number_of_occurrences());
+    }
+
+    TEST_F(CalendarItemTest, GetRecurrenceProperty)
+    {
+        // From item that is not part of a series
+        auto cal = test_calendar_item();
+        auto recurrence = cal.get_recurrence();
+        EXPECT_FALSE(recurrence.first && recurrence.second);
+    }
+
+    TEST_F(CalendarItemTest, CreateRecurringSeries)
+    {
+        auto master = ews::calendar_item();
+        master.set_subject("Monthly Mortgage Payment is due");
+        master.set_start(ews::date_time("2014-12-01T00:00:00Z"));
+        master.set_end(ews::date_time("2014-12-01T00:05:00Z"));
+        master.set_recurrence(
+                ews::absolute_monthly_recurrence(1, 5),
+                ews::end_date_recurrence_range(ews::date("2015-01-01Z"),
+                                               ews::date("2037-01-01Z")));
+
+        auto master_id = service().create_item(master);
+        ews::internal::on_scope_exit remove_items([&]
+        {
+            service().delete_item(master_id);
+        });
+        master = service().get_calendar_item(master_id);
+
+        auto recurrence = master.get_recurrence();
+        ASSERT_TRUE(recurrence.first && recurrence.second);
+        auto pattern =
+            dynamic_cast<ews::absolute_monthly_recurrence*>(
+                                                    recurrence.first.get());
+        ASSERT_TRUE(pattern);
+        EXPECT_EQ(1, pattern->get_interval());
+        EXPECT_EQ(5, pattern->get_days_of_month());
+        auto range =
+            dynamic_cast<ews::end_date_recurrence_range*>(
+                                                    recurrence.second.get());
+        ASSERT_TRUE(range);
+        EXPECT_EQ(ews::date("2015-01-05Z"), range->get_start_date());
+        EXPECT_EQ(ews::date("2037-01-01Z"), range->get_end_date());
     }
 
     // <FirstOccurrence/>

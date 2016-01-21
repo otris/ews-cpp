@@ -7570,6 +7570,64 @@ namespace ews
                 throw exception("Unexpected <Month>");
             }
         }
+
+        inline month str_to_month(const std::string& str)
+        {
+            month mon;
+            if (str == "January")
+            {
+                mon = month::jan;
+            }
+            else if (str == "February")
+            {
+                mon = month::feb;
+            }
+            else if (str == "March")
+            {
+                mon = month::mar;
+            }
+            else if (str == "April")
+            {
+                mon = month::apr;
+            }
+            else if (str == "May")
+            {
+                mon = month::may;
+            }
+            else if (str == "June")
+            {
+                mon = month::june;
+            }
+            else if (str == "July")
+            {
+                mon = month::july;
+            }
+            else if (str == "August")
+            {
+                mon = month::aug;
+            }
+            else if (str == "September")
+            {
+                mon = month::sept;
+            }
+            else if (str == "October")
+            {
+                mon = month::oct;
+            }
+            else if (str == "November")
+            {
+                mon = month::nov;
+            }
+            else if (str == "December")
+            {
+                mon = month::dec;
+            }
+            else
+            {
+                throw exception("Unexpected <Month>");
+            }
+            return mon;
+        }
     }
 
     enum class day_of_week
@@ -7616,6 +7674,54 @@ namespace ews
                 throw exception("Unexpected <DaysOfWeek>");
             }
         }
+
+        inline day_of_week str_to_day_of_week(const std::string& str)
+        {
+            if (str == "Sunday")
+            {
+                return day_of_week::sun;
+            }
+            else if (str == "Monday")
+            {
+                return day_of_week::mon;
+            }
+            else if (str == "Tuesday")
+            {
+                return day_of_week::tue;
+            }
+            else if (str == "Wednesday")
+            {
+                return day_of_week::wed;
+            }
+            else if (str == "Thursday")
+            {
+                return day_of_week::thu;
+            }
+            else if (str == "Friday")
+            {
+                return day_of_week::fri;
+            }
+            else if (str == "Saturday")
+            {
+                return day_of_week::sat;
+            }
+            else if (str == "Day")
+            {
+                return day_of_week::day;
+            }
+            else if (str == "Weekday")
+            {
+                return day_of_week::weekday;
+            }
+            else if (str == "WeekendDay")
+            {
+                return day_of_week::weekend_day;
+            }
+            else
+            {
+                throw exception("Unexpected <DaysOfWeek>");
+            }
+        }
     }
 
     enum class day_of_week_index
@@ -7644,6 +7750,35 @@ namespace ews
             case day_of_week_index::last:
                 return "Last";
             default:
+                throw exception("Unexpected <DayOfWeekIndex>");
+            }
+        }
+
+        inline day_of_week_index
+        str_to_day_of_week_index(const std::string& str)
+        {
+            if (str == "First")
+            {
+                return day_of_week_index::first;
+            }
+            else if (str == "Second")
+            {
+                return day_of_week_index::second;
+            }
+            else if (str == "Third")
+            {
+                return day_of_week_index::third;
+            }
+            else if (str == "Fourth")
+            {
+                return day_of_week_index::fourth;
+            }
+            else if (str == "Last")
+            {
+                return day_of_week_index::last;
+            }
+            else
+            {
                 throw exception("Unexpected <DayOfWeekIndex>");
             }
         }
@@ -8590,6 +8725,11 @@ namespace ews
             return this->to_xml_element_impl(parent);
         }
 
+        //! \brief Makes a recurrence_pattern instance from a \<Recurrence> XML
+        //! element.
+        static std::unique_ptr<recurrence_pattern>
+        from_xml_element(const rapidxml::xml_node<>& elem); // Defined below
+
     protected:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
         recurrence_pattern() = default;
@@ -9213,6 +9353,10 @@ namespace ews
             return this->to_xml_element_impl(parent);
         }
 
+        //! Makes a recurrence_range instance from a \<Recurrence> XML element.
+        static std::unique_ptr<recurrence_range>
+        from_xml_element(const rapidxml::xml_node<>& elem); // Defined below
+
     protected:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
         recurrence_range() = default;
@@ -9239,6 +9383,11 @@ namespace ews
         explicit no_end_recurrence_range(date start_date)
             : start_date_(std::move(start_date))
         {
+        }
+
+        const date_time& get_start_date() const EWS_NOEXCEPT
+        {
+            return start_date_;
         }
 
     private:
@@ -9293,6 +9442,16 @@ namespace ews
             : start_date_(std::move(start_date)),
               end_date_(std::move(end_date))
         {
+        }
+
+        const date_time& get_start_date() const EWS_NOEXCEPT
+        {
+            return start_date_;
+        }
+
+        const date_time& get_end_date() const EWS_NOEXCEPT
+        {
+            return end_date_;
         }
 
     private:
@@ -9359,6 +9518,16 @@ namespace ews
             : start_date_(std::move(start_date)),
               no_of_occurrences_(no_of_occurrences)
         {
+        }
+
+        const date_time& get_start_date() const EWS_NOEXCEPT
+        {
+            return start_date_;
+        }
+
+        uint32_t get_number_of_occurrences() const EWS_NOEXCEPT
+        {
+            return no_of_occurrences_;
         }
 
     private:
@@ -9771,8 +9940,52 @@ namespace ews
             return val.empty() ? 0 : std::stoi(val);
         }
 
-        // TODO: issue #22
-        // <Recurrence/>
+
+        //! \brief Returns the recurrence pattern for calendar items and
+        //! meeting requests.
+        //!
+        //! The returned pointers are NULL if this calendar item is not a
+        //! recurring master.
+        std::pair<std::unique_ptr<recurrence_pattern>,
+                  std::unique_ptr<recurrence_range>>
+        get_recurrence() const
+        {
+            typedef std::pair<std::unique_ptr<recurrence_pattern>,
+                              std::unique_ptr<recurrence_range>> return_type;
+            auto node = xml().get_node("Recurrence");
+            if (!node)
+            {
+                return return_type();
+            }
+            return std::make_pair(recurrence_pattern::from_xml_element(*node),
+                                  recurrence_range::from_xml_element(*node));
+        }
+
+        //! Sets the recurrence pattern for calendar items and meeting requests
+        void set_recurrence(const recurrence_pattern& pattern,
+                            const recurrence_range& range)
+        {
+            auto doc = xml().document();
+            auto recurrence_node = xml().get_node("Recurrence");
+            if (recurrence_node)
+            {
+                // Remove existing node first
+                doc->remove_node(recurrence_node);
+            }
+
+            auto ptr_to_qname = doc->allocate_string("t:Recurrence");
+            recurrence_node = doc->allocate_node(rapidxml::node_element);
+            recurrence_node->qname(ptr_to_qname,
+                                   std::strlen("t:Recurrence"),
+                                   ptr_to_qname + 2);
+            recurrence_node->namespace_uri(
+                                    internal::uri<>::microsoft::types(),
+                                    internal::uri<>::microsoft::types_size);
+            doc->append_node(recurrence_node);
+
+            pattern.to_xml_element(*recurrence_node);
+            range.to_xml_element(*recurrence_node);
+        }
 
         occurrence_info get_first_occurrence() const
         {
@@ -12464,6 +12677,350 @@ namespace ews
         props.append_to(*attachment_node);
 
         return obj;
+    }
+
+    inline std::unique_ptr<recurrence_pattern>
+    recurrence_pattern::from_xml_element(const rapidxml::xml_node<>& elem)
+    {
+        using rapidxml::internal::compare;
+        using namespace internal;
+
+        EWS_ASSERT(std::string(elem.local_name()) == "Recurrence"
+            && "Expected a <Recurrence> element");
+
+        auto node = elem.first_node_ns(uri<>::microsoft::types(),
+                                       "AbsoluteYearlyRecurrence");
+        if (node)
+        {
+            auto mon = ews::month::jan;
+            uint32_t day_of_month = 0U;
+
+            for (auto child = node->first_node(); child;
+                 child = child->next_sibling())
+            {
+                if (compare(child->local_name(),
+                            child->local_name_size(),
+                            "Month",
+                            std::strlen("Month")))
+                {
+                    mon = str_to_month(std::string(child->value(),
+                                                   child->value_size()));
+                }
+                else if (compare(child->local_name(),
+                                 child->local_name_size(),
+                                 "DayOfMonth",
+                                 std::strlen("DayOfMonth")))
+                {
+                    day_of_month = std::stoul(
+                                        std::string(child->value(),
+                                                    child->value_size()));
+                }
+            }
+
+            return std::make_unique<absolute_yearly_recurrence>(
+                std::move(day_of_month), std::move(mon));
+        }
+
+        node = elem.first_node_ns(uri<>::microsoft::types(),
+                                  "RelativeYearlyRecurrence");
+        if (node)
+        {
+            auto mon = ews::month::jan;
+            auto index = day_of_week_index::first;
+            auto days_of_week = day_of_week::sun;
+
+            for (auto child = node->first_node(); child;
+                 child = child->next_sibling())
+            {
+                if (compare(child->local_name(),
+                            child->local_name_size(),
+                            "Month",
+                            std::strlen("Month")))
+                {
+                    mon = str_to_month(std::string(child->value(),
+                                                   child->value_size()));
+                }
+                else if (compare(child->local_name(),
+                                 child->local_name_size(),
+                                 "DayOfWeekIndex",
+                                 std::strlen("DayOfWeekIndex")))
+                {
+                    index = str_to_day_of_week_index(
+                                                    std::string(child->value(),
+                                                        child->value_size()));
+                }
+                else if (compare(child->local_name(),
+                                 child->local_name_size(),
+                                 "DaysOfWeek",
+                                 std::strlen("DaysOfWeek")))
+                {
+                    days_of_week = str_to_day_of_week(
+                                                    std::string(child->value(),
+                                                        child->value_size()));
+                }
+            }
+
+            return std::make_unique<relative_yearly_recurrence>(
+                std::move(days_of_week), std::move(index), std::move(mon));
+        }
+
+        node = elem.first_node_ns(uri<>::microsoft::types(),
+                                  "AbsoluteMonthlyRecurrence");
+        if (node)
+        {
+            uint32_t interval = 0U;
+            uint32_t day_of_month = 0U;
+
+            for (auto child = node->first_node(); child;
+                 child = child->next_sibling())
+            {
+                if (compare(child->local_name(),
+                            child->local_name_size(),
+                            "Interval",
+                            std::strlen("Interval")))
+                {
+                    interval = std::stoul(std::string(child->value(),
+                                                      child->value_size()));
+                }
+                else if (compare(child->local_name(),
+                                 child->local_name_size(),
+                                 "DayOfMonth",
+                                 std::strlen("DayOfMonth")))
+                {
+                    day_of_month = std::stoul(
+                                            std::string(child->value(),
+                                                        child->value_size()));
+                }
+            }
+
+            return std::make_unique<absolute_monthly_recurrence>(
+                std::move(interval), std::move(day_of_month));
+        }
+
+        node = elem.first_node_ns(uri<>::microsoft::types(),
+                                  "RelativeMonthlyRecurrence");
+        if (node)
+        {
+            uint32_t interval = 0U;
+            auto days_of_week = day_of_week::sun;
+            auto index = day_of_week_index::first;
+
+            for (auto child = node->first_node(); child;
+                 child = child->next_sibling())
+            {
+                if (compare(child->local_name(),
+                            child->local_name_size(),
+                            "Interval",
+                            std::strlen("Interval")))
+                {
+                    interval = std::stoul(std::string(child->value(),
+                                                      child->value_size()));
+                }
+                else if (compare(child->local_name(),
+                                 child->local_name_size(),
+                                 "DaysOfWeek",
+                                 std::strlen("DaysOfWeek")))
+                {
+                    days_of_week = str_to_day_of_week(
+                                            std::string(child->value(),
+                                                        child->value_size()));
+                }
+                else if (compare(child->local_name(),
+                                 child->local_name_size(),
+                                 "DayOfWeekIndex",
+                                 std::strlen("DayOfWeekIndex")))
+                {
+                    index = str_to_day_of_week_index(
+                                            std::string(child->value(),
+                                                        child->value_size()));
+                }
+            }
+
+            return std::make_unique<relative_monthly_recurrence>(
+                                        std::move(interval),
+                                        std::move(days_of_week),
+                                        std::move(index));
+        }
+
+        node = elem.first_node_ns(uri<>::microsoft::types(),
+                                  "WeeklyRecurrence");
+        if (node)
+        {
+            uint32_t interval = 0U;
+            auto days_of_week = std::vector<day_of_week>();
+            auto first_day_of_week = day_of_week::mon;
+
+            for (auto child = node->first_node(); child;
+                 child = child->next_sibling())
+            {
+                if (compare(child->local_name(),
+                            child->local_name_size(),
+                            "Interval",
+                            std::strlen("Interval")))
+                {
+                    interval = std::stoul(std::string(child->value(),
+                                                      child->value_size()));
+                }
+                else if (compare(child->local_name(),
+                                 child->local_name_size(),
+                                 "DaysOfWeek",
+                                 std::strlen("DaysOfWeek")))
+                {
+                    const auto list = std::string(child->value(),
+                                                  child->value_size());
+                    std::stringstream sstr(list);
+                    std::string temp;
+                    while (std::getline(sstr, temp, ' '))
+                    {
+                        days_of_week.emplace_back(str_to_day_of_week(temp));
+                    }
+                }
+                else if (compare(child->local_name(),
+                                 child->local_name_size(),
+                                 "FirstDayOfWeek",
+                                 std::strlen("FirstDayOfWeek")))
+                {
+                    first_day_of_week = str_to_day_of_week(
+                                            std::string(child->value(),
+                                                        child->value_size()));
+                }
+            }
+
+            return std::make_unique<weekly_recurrence>(
+                                                std::move(interval),
+                                                std::move(days_of_week),
+                                                std::move(first_day_of_week));
+        }
+
+        node = elem.first_node_ns(uri<>::microsoft::types(),
+                                  "DailyRecurrence");
+        if (node)
+        {
+            uint32_t interval = 0U;
+
+            for (auto child = node->first_node(); child;
+                 child = child->next_sibling())
+            {
+                if (compare(child->local_name(),
+                            child->local_name_size(),
+                            "Interval",
+                            std::strlen("Interval")))
+                {
+                    interval = std::stoul(std::string(child->value(),
+                                                      child->value_size()));
+                }
+            }
+
+            return std::make_unique<daily_recurrence>(std::move(interval));
+        }
+
+        EWS_ASSERT(false && "Expected one of "
+            "<AbsoluteYearlyRecurrence>, <RelativeYearlyRecurrence>, "
+            "<AbsoluteMonthlyRecurrence>, <RelativeMonthlyRecurrence>, "
+            "<WeeklyRecurrence>, <DailyRecurrence>");
+        return std::unique_ptr<recurrence_pattern>();
+    }
+
+    inline std::unique_ptr<recurrence_range>
+    recurrence_range::from_xml_element(const rapidxml::xml_node<>& elem)
+    {
+        using rapidxml::internal::compare;
+
+        EWS_ASSERT(std::string(elem.local_name()) == "Recurrence"
+            && "Expected a <Recurrence> element");
+
+        auto node = elem.first_node_ns(internal::uri<>::microsoft::types(),
+                                       "NoEndRecurrence");
+        if (node)
+        {
+            date_time start_date;
+
+            for (auto child = node->first_node(); child;
+                 child = child->next_sibling())
+            {
+                if (compare(child->local_name(),
+                    child->local_name_size(),
+                    "StartDate",
+                    std::strlen("StartDate")))
+                {
+                    start_date = date_time(std::string(child->value(),
+                        child->value_size()));
+                }
+            }
+
+            return std::make_unique<no_end_recurrence_range>(
+                                                        std::move(start_date));
+        }
+
+        node = elem.first_node_ns(internal::uri<>::microsoft::types(),
+                                  "EndDateRecurrence");
+        if (node)
+        {
+            date_time start_date;
+            date_time end_date;
+
+            for (auto child = node->first_node(); child;
+                 child = child->next_sibling())
+            {
+                if (compare(child->local_name(),
+                            child->local_name_size(),
+                            "StartDate",
+                            std::strlen("StartDate")))
+                {
+                    start_date = date_time(std::string(child->value(),
+                        child->value_size()));
+                }
+                else if (compare(child->local_name(),
+                                 child->local_name_size(),
+                                 "EndDate",
+                                 std::strlen("EndDate")))
+                {
+                    end_date =
+                        date_time(std::string(child->value(),
+                            child->value_size()));
+                }
+            }
+
+            return std::make_unique<end_date_recurrence_range>(
+                std::move(start_date), std::move(end_date));
+        }
+
+        node = elem.first_node_ns(internal::uri<>::microsoft::types(),
+                                  "NumberedRecurrence");
+        if (node)
+        {
+            date_time start_date;
+            uint32_t no_of_occurrences = 0U;
+
+            for (auto child = node->first_node(); child;
+                 child = child->next_sibling())
+            {
+                if (compare(child->local_name(),
+                            child->local_name_size(),
+                            "StartDate",
+                            std::strlen("StartDate")))
+                {
+                    start_date = date_time(std::string(child->value(),
+                                                       child->value_size()));
+                }
+                else if (compare(child->local_name(),
+                         child->local_name_size(),
+                         "NumberOfOccurrences",
+                         std::strlen("NumberOfOccurrences")))
+                {
+                    no_of_occurrences =
+                        std::stoul(std::string(child->value(),
+                                               child->value_size()));
+                }
+            }
+
+            return std::make_unique<numbered_recurrence_range>(
+                std::move(start_date), std::move(no_of_occurrences));
+        }
+
+        EWS_ASSERT(false && "Expected one of "
+            "<NoEndRecurrence>, <EndDateRecurrence>, <NumberedRecurrence>");
+        return std::unique_ptr<recurrence_range>();
     }
 }
 
