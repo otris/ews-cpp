@@ -12717,8 +12717,14 @@ namespace ews
                 }
             }
 
+#ifdef EWS_HAS_MAKE_UNIQUE
             return std::make_unique<absolute_yearly_recurrence>(
                 std::move(day_of_month), std::move(mon));
+#else
+            return std::unique_ptr<absolute_yearly_recurrence>(
+                new absolute_yearly_recurrence(std::move(day_of_month),
+                                               std::move(mon)));
+#endif
         }
 
         node = elem.first_node_ns(uri<>::microsoft::types(),
@@ -12760,8 +12766,15 @@ namespace ews
                 }
             }
 
+#ifdef EWS_HAS_MAKE_UNIQUE
             return std::make_unique<relative_yearly_recurrence>(
                 std::move(days_of_week), std::move(index), std::move(mon));
+#else
+            return std::unique_ptr<relative_yearly_recurrence>(
+                new relative_yearly_recurrence(std::move(days_of_week),
+                                               std::move(index),
+                                               std::move(mon)));
+#endif
         }
 
         node = elem.first_node_ns(uri<>::microsoft::types(),
@@ -12793,8 +12806,14 @@ namespace ews
                 }
             }
 
+#ifdef EWS_HAS_MAKE_UNIQUE
             return std::make_unique<absolute_monthly_recurrence>(
                 std::move(interval), std::move(day_of_month));
+#else
+            return std::unique_ptr<absolute_monthly_recurrence>(
+                new absolute_monthly_recurrence(std::move(interval),
+                                                std::move(day_of_month)));
+#endif
         }
 
         node = elem.first_node_ns(uri<>::microsoft::types(),
@@ -12836,10 +12855,17 @@ namespace ews
                 }
             }
 
+#ifdef EWS_HAS_MAKE_UNIQUE
             return std::make_unique<relative_monthly_recurrence>(
                                         std::move(interval),
                                         std::move(days_of_week),
                                         std::move(index));
+#else
+            return std::unique_ptr<relative_monthly_recurrence>(
+                new relative_monthly_recurrence(std::move(interval),
+                                                std::move(days_of_week),
+                                                std::move(index)));
+#endif
         }
 
         node = elem.first_node_ns(uri<>::microsoft::types(),
@@ -12886,10 +12912,17 @@ namespace ews
                 }
             }
 
+#ifdef EWS_HAS_MAKE_UNIQUE
             return std::make_unique<weekly_recurrence>(
                                                 std::move(interval),
                                                 std::move(days_of_week),
                                                 std::move(first_day_of_week));
+#else
+            return std::unique_ptr<weekly_recurrence>(
+                new weekly_recurrence(std::move(interval),
+                                      std::move(days_of_week),
+                                      std::move(first_day_of_week)));
+#endif
         }
 
         node = elem.first_node_ns(uri<>::microsoft::types(),
@@ -12911,7 +12944,12 @@ namespace ews
                 }
             }
 
+#ifdef EWS_HAS_MAKE_UNIQUE
             return std::make_unique<daily_recurrence>(std::move(interval));
+#else
+            return std::unique_ptr<daily_recurrence>(
+                new daily_recurrence(std::move(interval)));
+#endif
         }
 
         EWS_ASSERT(false && "Expected one of "
@@ -12948,8 +12986,13 @@ namespace ews
                 }
             }
 
+#ifdef EWS_HAS_MAKE_UNIQUE
             return std::make_unique<no_end_recurrence_range>(
                                                         std::move(start_date));
+#else
+            return std::unique_ptr<no_end_recurrence_range>(
+                new no_end_recurrence_range(std::move(start_date)));
+#endif
         }
 
         node = elem.first_node_ns(internal::uri<>::microsoft::types(),
@@ -12981,8 +13024,14 @@ namespace ews
                 }
             }
 
+#ifdef EWS_HAS_MAKE_UNIQUE
             return std::make_unique<end_date_recurrence_range>(
                 std::move(start_date), std::move(end_date));
+#else
+            return std::unique_ptr<end_date_recurrence_range>(
+                new end_date_recurrence_range(std::move(start_date),
+                                              std::move(end_date)));
+#endif
         }
 
         node = elem.first_node_ns(internal::uri<>::microsoft::types(),
@@ -13014,8 +13063,14 @@ namespace ews
                 }
             }
 
+#ifdef EWS_HAS_MAKE_UNIQUE
             return std::make_unique<numbered_recurrence_range>(
                 std::move(start_date), std::move(no_of_occurrences));
+#else
+            return std::unique_ptr<numbered_recurrence_range>(
+                new numbered_recurrence_range(std::move(start_date),
+                                              std::move(no_of_occurrences)));
+#endif
         }
 
         EWS_ASSERT(false && "Expected one of "
