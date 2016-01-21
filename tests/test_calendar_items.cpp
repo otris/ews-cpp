@@ -191,7 +191,7 @@ namespace tests
         const auto start_date = ews::date("1989-01-01");
         ews::numbered_recurrence_range r(start_date, 18);
         EXPECT_EQ(start_date, r.get_start_date());
-        EXPECT_EQ(18, r.get_number_of_occurrences());
+        EXPECT_EQ(18U, r.get_number_of_occurrences());
 
         const char* xml =
             "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
@@ -219,7 +219,7 @@ namespace tests
             dynamic_cast<ews::numbered_recurrence_range*>(result.get());
         ASSERT_TRUE(numbered_recurrence_range);
         EXPECT_EQ(start_date, numbered_recurrence_range->get_start_date());
-        EXPECT_EQ(18, numbered_recurrence_range->get_number_of_occurrences());
+        EXPECT_EQ(18U, numbered_recurrence_range->get_number_of_occurrences());
     }
 
     TEST(RecurrencePatternTest, AbsoluteYearly)
@@ -970,7 +970,7 @@ namespace tests
         ASSERT_TRUE(result.first && result.second);
         auto pattern1 = dynamic_cast<ews::absolute_yearly_recurrence*>(result.first.get());
         ASSERT_TRUE(pattern1);
-        EXPECT_EQ(10, pattern1->get_day_of_month());
+        EXPECT_EQ(10U, pattern1->get_day_of_month());
         EXPECT_EQ(ews::month::oct, pattern1->get_month());
         auto range1 = dynamic_cast<ews::no_end_recurrence_range*>(result.second.get());
         ASSERT_TRUE(range1);
@@ -986,12 +986,12 @@ namespace tests
         ASSERT_TRUE(result.first && result.second);
         auto pattern2 = dynamic_cast<ews::absolute_monthly_recurrence*>(result.first.get());
         ASSERT_TRUE(pattern2);
-        EXPECT_EQ(1, pattern2->get_interval());
-        EXPECT_EQ(5, pattern2->get_days_of_month());
+        EXPECT_EQ(1U, pattern2->get_interval());
+        EXPECT_EQ(5U, pattern2->get_days_of_month());
         auto range2 = dynamic_cast<ews::numbered_recurrence_range*>(result.second.get());
         ASSERT_TRUE(range2);
         EXPECT_EQ(start_date, range2->get_start_date());
-        EXPECT_EQ(48, range2->get_number_of_occurrences());
+        EXPECT_EQ(48U, range2->get_number_of_occurrences());
     }
 
     TEST_F(CalendarItemTest, GetRecurrenceProperty)
@@ -1026,8 +1026,8 @@ namespace tests
             dynamic_cast<ews::absolute_monthly_recurrence*>(
                                                     recurrence.first.get());
         ASSERT_TRUE(pattern);
-        EXPECT_EQ(1, pattern->get_interval());
-        EXPECT_EQ(5, pattern->get_days_of_month());
+        EXPECT_EQ(1U, pattern->get_interval());
+        EXPECT_EQ(5U, pattern->get_days_of_month());
         auto range =
             dynamic_cast<ews::end_date_recurrence_range*>(
                                                     recurrence.second.get());
