@@ -8716,6 +8716,11 @@ namespace ews
     public:
 #endif
 
+        std::string to_xml(const char* xmlns = nullptr) const
+        {
+            return this->to_xml_impl(xmlns);
+        }
+
         //! \brief Creates a new XML element for this recurrence pattern and
         //! appends it to given parent node.
         //!
@@ -8738,6 +8743,8 @@ namespace ews
 #endif
 
     private:
+        virtual std::string to_xml_impl(const char* xmlns) const = 0;
+
         virtual rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>&) const = 0;
     };
@@ -8786,6 +8793,26 @@ namespace ews
         day_of_week days_of_week_;
         day_of_week_index index_;
         month month_;
+
+        std::string to_xml_impl(const char* xmlns) const override
+        {
+            using namespace internal;
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "RelativeYearlyRecurrence>"
+                 << "<" << pref << "DaysOfWeek>" << enum_to_str(days_of_week_)
+                                << "</" << pref << "DaysOfWeek>"
+                 << "<" << pref << "DayOfWeekIndex>" << enum_to_str(index_)
+                                << "</" << pref << "DayOfWeekIndex>"
+                 << "<" << pref << "Month>" << enum_to_str(month_)
+                                << "</" << pref << "Month>"
+                 << "</" << pref << "RelativeYearlyRecurrence>";
+            return sstr.str();
+        }
 
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
@@ -8878,6 +8905,24 @@ namespace ews
         uint32_t day_of_month_;
         month month_;
 
+        std::string to_xml_impl(const char* xmlns) const override
+        {
+            using namespace internal;
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "AbsoluteYearlyRecurrence>"
+                     << "<" << pref << "DayOfMonth>" << day_of_month_
+                                    << "</" << pref << "DayOfMonth>"
+                     << "<" << pref << "Month>" << enum_to_str(month_)
+                                    << "</" << pref << "Month>"
+                 << "</" << pref << "AbsoluteYearlyRecurrence>";
+            return sstr.str();
+        }
+
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
         {
@@ -8969,6 +9014,24 @@ namespace ews
     private:
         uint32_t interval_;
         uint32_t day_of_month_;
+
+        std::string to_xml_impl(const char* xmlns) const override
+        {
+            using namespace internal;
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "AbsoluteMonthlyRecurrence>"
+                    << "<" << pref << "Interval>" << interval_
+                                << "</" << pref << "Interval>"
+                    << "<" << pref << "DayOfMonth>" << day_of_month_
+                                << "</" << pref << "DayOfMonth>"
+                 << "</" << pref << "AbsoluteMonthlyRecurrence>";
+            return sstr.str();
+        }
 
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
@@ -9073,6 +9136,27 @@ namespace ews
         uint32_t interval_;
         day_of_week days_of_week_;
         day_of_week_index index_;
+
+        std::string to_xml_impl(const char* xmlns) const override
+        {
+            using namespace internal;
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "RelativeMonthlyRecurrence>"
+                     << "<" << pref << "Interval>" << interval_
+                                    << "</" << pref << "Interval>"
+                     << "<" << pref << "DaysOfWeek>"
+                                    << enum_to_str(days_of_week_)
+                                    << "</" << pref << "DaysOfWeek>"
+                     << "<" << pref << "DayOfWeekIndex>" << enum_to_str(index_)
+                                    << "</" << pref << "DayOfWeekIndex>"
+                 << "</" << pref << "RelativeMonthlyRecurrence>";
+            return sstr.str();
+        }
 
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
@@ -9192,6 +9276,33 @@ namespace ews
         std::vector<day_of_week> days_of_week_;
         day_of_week first_day_of_week_;
 
+        std::string to_xml_impl(const char* xmlns) const override
+        {
+            using namespace internal;
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::string value;
+            for (const auto& day : days_of_week_)
+            {
+                value += enum_to_str(day) + " ";
+            }
+            value.resize(value.size() - 1);
+            std::stringstream sstr;
+            sstr << "<" << pref << "WeeklyRecurrence>"
+                     << "<" << pref << "Interval>" << interval_
+                                    << "</" << pref << "Interval>"
+                     << "<" << pref << "DaysOfWeek>" << value
+                                    << "</" << pref << "DaysOfWeek>"
+                     << "<" << pref << "FirstDayOfWeek>"
+                                    << enum_to_str(first_day_of_week_)
+                                    << "</" << pref << "FirstDayOfWeek>"
+                 << "</" << pref << "WeeklyRecurrence>";
+            return sstr.str();
+        }
+
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
         {
@@ -9283,6 +9394,22 @@ namespace ews
     private:
         uint32_t interval_;
 
+        std::string to_xml_impl(const char* xmlns) const override
+        {
+            using namespace internal;
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "DailyRecurrence>"
+                     << "<" << pref << "Interval>" << interval_
+                                    << "</" << pref << "Interval>"
+                 << "</" << pref << "DailyRecurrence>";
+            return sstr.str();
+        }
+
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
         {
@@ -9343,6 +9470,10 @@ namespace ews
 
     public:
 #endif
+        std::string to_xml(const char* xmlns=nullptr) const
+        {
+            return this->to_xml_impl(xmlns);
+        }
 
         //! \brief Creates a new XML element for this recurrence range and
         //! appends it to given parent node.
@@ -9365,6 +9496,8 @@ namespace ews
 #endif
 
     private:
+        virtual std::string to_xml_impl(const char* xmlns) const = 0;
+
         virtual rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>&) const = 0;
     };
@@ -9392,6 +9525,22 @@ namespace ews
 
     private:
         date start_date_;
+
+        std::string to_xml_impl(const char* xmlns) const override
+        {
+            using namespace internal;
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "NoEndRecurrence>"
+                     << "<" << pref << "StartDate>" << start_date_.to_string()
+                                    << "</" << pref << "StartDate>"
+                 << "</" << pref << "NoEndRecurrence>";
+            return sstr.str();
+        }
 
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
@@ -9457,6 +9606,25 @@ namespace ews
     private:
         date start_date_;
         date end_date_;
+
+        std::string to_xml_impl(const char* xmlns) const override
+        {
+            using namespace internal;
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "EndDateRecurrence>"
+                     << "<" << pref << "StartDate>" << start_date_.to_string()
+                                    << "</" << pref << "StartDate>"
+                     << "<" << pref << "EndDate>" << end_date_.to_string()
+                                    << "</" << pref << "EndDate>"
+                 << "</" << pref << "EndDateRecurrence>";
+            return sstr.str();
+        }
+
 
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
@@ -9533,6 +9701,26 @@ namespace ews
     private:
         date start_date_;
         uint32_t no_of_occurrences_;
+
+        std::string to_xml_impl(const char* xmlns) const override
+        {
+            using namespace internal;
+            auto pref = std::string();
+            if (xmlns)
+            {
+                pref = std::string(xmlns) + ":";
+            }
+            std::stringstream sstr;
+            sstr << "<" << pref << "NumberedRecurrence>"
+                     << "<" << pref << "StartDate>"
+                                    << start_date_.to_string()
+                                    << "</" << pref << "StartDate>"
+                     << "<" << pref << "NumberOfOccurrences>"
+                                    << no_of_occurrences_
+                                    << "</" << pref << "NumberOfOccurrences>"
+                 << "</" << pref << "NumberedRecurrence>";
+            return sstr.str();
+        }
 
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
@@ -10881,6 +11069,20 @@ namespace ews
             : path_(std::move(path)),
               value_(value.to_string())
         {
+        }
+
+        property(property_path path,
+                 const recurrence_pattern& pattern,
+                 const recurrence_range& range)
+            : path_(std::move(path)),
+              value_()
+        {
+            std::stringstream sstr;
+            sstr << "<t:Recurrence>"
+                     << pattern.to_xml("t")
+                     << range.to_xml("t")
+                 << "</t:Recurrence>";
+            value_ = sstr.str();
         }
 
         template <typename T>

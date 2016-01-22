@@ -257,6 +257,13 @@ namespace tests
         EXPECT_EQ(ews::day_of_week_index::third, r.get_day_of_week_index());
         EXPECT_EQ(ews::month::apr, r.get_month());
 
+        EXPECT_STREQ(
+            "<t:RelativeYearlyRecurrence>"
+                "<t:DaysOfWeek>Monday</t:DaysOfWeek>"
+                "<t:DayOfWeekIndex>Third</t:DayOfWeekIndex>"
+                "<t:Month>April</t:Month>"
+            "</t:RelativeYearlyRecurrence>", r.to_xml("t").c_str());
+
         const char* xml =
             "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
         std::vector<char> buf;
@@ -284,6 +291,12 @@ namespace tests
         ews::absolute_monthly_recurrence r(1, 5);
         EXPECT_EQ(1U, r.get_interval());
         EXPECT_EQ(5U, r.get_days_of_month());
+
+        EXPECT_STREQ(
+            "<t:AbsoluteMonthlyRecurrence>"
+                "<t:Interval>1</t:Interval>"
+                "<t:DayOfMonth>5</t:DayOfMonth>"
+            "</t:AbsoluteMonthlyRecurrence>", r.to_xml("t").c_str());
 
         const char* xml =
             "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
@@ -315,6 +328,13 @@ namespace tests
         EXPECT_EQ(ews::day_of_week::thu, r.get_days_of_week());
         EXPECT_EQ(ews::day_of_week_index::third, r.get_day_of_week_index());
 
+        EXPECT_STREQ(
+            "<t:RelativeMonthlyRecurrence>"
+                "<t:Interval>1</t:Interval>"
+                "<t:DaysOfWeek>Thursday</t:DaysOfWeek>"
+                "<t:DayOfWeekIndex>Third</t:DayOfWeekIndex>"
+            "</t:RelativeMonthlyRecurrence>", r.to_xml("t").c_str());
+
         const char* xml =
             "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
         std::vector<char> buf;
@@ -344,6 +364,13 @@ namespace tests
         ASSERT_EQ(1U, r1.get_days_of_week().size());
         EXPECT_EQ(ews::day_of_week::mon, r1.get_days_of_week().front());
         EXPECT_EQ(ews::day_of_week::mon, r1.get_first_day_of_week());
+
+        EXPECT_STREQ(
+            "<t:WeeklyRecurrence>"
+                "<t:Interval>1</t:Interval>"
+                "<t:DaysOfWeek>Monday</t:DaysOfWeek>"
+                "<t:FirstDayOfWeek>Monday</t:FirstDayOfWeek>"
+            "</t:WeeklyRecurrence>", r1.to_xml("t").c_str());
 
         const char* xml1 =
             "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
@@ -403,6 +430,11 @@ namespace tests
     {
         ews::daily_recurrence r(3);
         EXPECT_EQ(3U, r.get_interval());
+
+        EXPECT_STREQ(
+            "<t:DailyRecurrence>"
+                "<t:Interval>3</t:Interval>"
+            "</t:DailyRecurrence>", r.to_xml("t").c_str());
 
         const char* xml =
             "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
@@ -1034,6 +1066,43 @@ namespace tests
         ASSERT_TRUE(range);
         EXPECT_EQ(ews::date("2015-01-05Z"), range->get_start_date());
         EXPECT_EQ(ews::date("2037-01-01Z"), range->get_end_date());
+    }
+
+    TEST_F(CalendarItemTest, UpdateRecurringSeries)
+    {
+        auto master = ews::calendar_item();
+        master.set_subject("Monthly Mortgage Payment is due");
+        master.set_start(ews::date_time("2015-12-01T00:00:00Z"));
+        master.set_end(ews::date_time("2015-12-01T00:05:00Z"));
+        master.set_recurrence(
+            ews::absolute_monthly_recurrence(1, 5),
+            ews::end_date_recurrence_range(ews::date("2016-01-01Z"),
+                                           ews::date("2037-01-01Z")));
+
+        auto master_id = service().create_item(master);
+        ews::internal::on_scope_exit remove_items([&]
+        {
+            service().delete_item(master_id);
+        });
+        master = service().get_calendar_item(master_id);
+        EXPECT_FALSE(master.is_recurring());
+        EXPECT_EQ(ews::calendar_item_type::recurring_master,
+                  master.get_calendar_item_type());
+
+        auto prop = ews::property(
+            ews::calendar_property_path::recurrence,
+            ews::absolute_monthly_recurrence(1, 2),
+            ews::numbered_recurrence_range(ews::date("2016-01-01Z"),
+                                           4));
+
+        auto new_id = service().update_item(master.get_item_id(), prop);
+        master = service().get_calendar_item(new_id);
+        auto recurrence = master.get_recurrence();
+        auto pattern =
+            dynamic_cast<ews::absolute_monthly_recurrence*>(
+                                                    recurrence.first.get());
+        ASSERT_TRUE(pattern);
+        EXPECT_EQ(2, pattern->get_days_of_month());
     }
 
     // <FirstOccurrence/>
