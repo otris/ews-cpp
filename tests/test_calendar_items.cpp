@@ -1068,7 +1068,7 @@ namespace tests
         EXPECT_EQ(ews::date("2037-01-01Z"), range->get_end_date());
     }
 
-    TEST_F(CalendarItemTest, UpdateRecurringSeries)
+    TEST_F(CalendarItemTest, DISABLED_UpdateRecurringSeries)
     {
         auto master = ews::calendar_item();
         master.set_subject("Monthly Mortgage Payment is due");
@@ -1092,8 +1092,7 @@ namespace tests
         auto prop = ews::property(
             ews::calendar_property_path::recurrence,
             ews::absolute_monthly_recurrence(1, 2),
-            ews::numbered_recurrence_range(ews::date("2016-01-01Z"),
-                                           4));
+            ews::numbered_recurrence_range(ews::date("2016-01-01Z"), 4));
 
         auto new_id = service().update_item(master.get_item_id(), prop);
         master = service().get_calendar_item(new_id);
@@ -1102,7 +1101,7 @@ namespace tests
             dynamic_cast<ews::absolute_monthly_recurrence*>(
                                                     recurrence.first.get());
         ASSERT_TRUE(pattern);
-        EXPECT_EQ(2, pattern->get_days_of_month());
+        EXPECT_EQ(2U, pattern->get_days_of_month());
     }
 
     // <FirstOccurrence/>
