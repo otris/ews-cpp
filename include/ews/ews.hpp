@@ -4109,11 +4109,35 @@ namespace ews
         public:
 #endif
 
+            curl_ptr(curl_ptr&& other)
+                : handle_(std::move(other.handle_))
+            {
+                other.handle_ = nullptr;
+            }
+
+            curl_ptr& operator=(curl_ptr&& rhs)
+            {
+                if (&rhs != this)
+                {
+                    handle_ = std::move(rhs.handle_);
+                    rhs.handle_ = nullptr;
+                }
+                return *this;
+            }
+
             CURL* get() const EWS_NOEXCEPT { return handle_; }
 
         private:
             CURL* handle_;
         };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(std::is_default_constructible<curl_ptr>::value, "");
+    static_assert(!std::is_copy_constructible<curl_ptr>::value, "");
+    static_assert(!std::is_copy_assignable<curl_ptr>::value, "");
+    static_assert(std::is_move_constructible<curl_ptr>::value, "");
+    static_assert(std::is_move_assignable<curl_ptr>::value, "");
+#endif
 
         // RAII wrapper class around cURLs slist construct.
         class curl_string_list final
@@ -4122,6 +4146,33 @@ namespace ews
             curl_string_list() EWS_NOEXCEPT : slist_(nullptr) {}
 
             ~curl_string_list() { curl_slist_free_all(slist_); }
+
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+            curl_string_list(const curl_string_list&) = delete;
+            curl_string_list& operator=(const curl_string_list&) = delete;
+#else
+        private:
+            curl_string_list(const curl_string_list&); // N/A
+            curl_string_list& operator=(const curl_string_list&); // N/A
+
+        public:
+#endif
+
+            curl_string_list(curl_string_list&& other)
+                : slist_(std::move(other.slist_))
+            {
+                other.slist_ = nullptr;
+            }
+
+            curl_string_list& operator=(curl_string_list&& rhs)
+            {
+                if (&rhs != this)
+                {
+                    slist_ = std::move(rhs.slist_);
+                    rhs.slist_ = nullptr;
+                }
+                return *this;
+            }
 
             void append(const char* str) EWS_NOEXCEPT
             {
@@ -4133,6 +4184,14 @@ namespace ews
         private:
             curl_slist* slist_;
         };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(std::is_default_constructible<curl_string_list>::value, "");
+    static_assert(!std::is_copy_constructible<curl_string_list>::value, "");
+    static_assert(!std::is_copy_assignable<curl_string_list>::value, "");
+    static_assert(std::is_move_constructible<curl_string_list>::value, "");
+    static_assert(std::is_move_assignable<curl_string_list>::value, "");
+#endif
 
         // String constants
         // TODO: sure this can't be done easier within a header file?
@@ -4599,6 +4658,14 @@ namespace ews
             curl_string_list headers_;
         };
 
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<http_request>::value, "");
+    static_assert(!std::is_copy_constructible<http_request>::value, "");
+    static_assert(!std::is_copy_assignable<http_request>::value, "");
+    static_assert(std::is_move_constructible<http_request>::value, "");
+    static_assert(std::is_move_assignable<http_request>::value, "");
+#endif
+
         // Makes a raw SOAP request.
         //
         // url: The URL of the server to talk to.
@@ -4616,19 +4683,18 @@ namespace ews
         template <typename RequestHandler>
 #endif
         inline http_response make_raw_soap_request(
-            const std::string& url,
+            RequestHandler& handler,
             const std::string& username,
             const std::string& password,
             const std::string& domain,
             const std::string& soap_body,
             const std::vector<std::string>& soap_headers)
         {
-            RequestHandler req(url);
-            req.set_method(RequestHandler::method::POST);
-            req.set_content_type("text/xml; charset=utf-8");
+            handler.set_method(RequestHandler::method::POST);
+            handler.set_content_type("text/xml; charset=utf-8");
 
             ntlm_credentials creds(username, password, domain);
-            req.set_credentials(creds);
+            handler.set_credentials(creds);
 
             std::stringstream request_stream;
             request_stream <<
@@ -4659,7 +4725,29 @@ namespace ews
             std::cerr << request_stream.str() << std::endl;
 #endif
 
-            return req.send(request_stream.str());
+            return handler.send(request_stream.str());
+        }
+
+#ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
+        template <typename RequestHandler = http_request>
+#else
+        template <typename RequestHandler>
+#endif
+        inline http_response make_raw_soap_request(
+            const std::string& url,
+            const std::string& username,
+            const std::string& password,
+            const std::string& domain,
+            const std::string& soap_body,
+            const std::vector<std::string>& soap_headers)
+        {
+            RequestHandler handler(url);
+            return make_raw_soap_request(handler,
+                                         username,
+                                         password,
+                                         domain,
+                                         soap_body,
+                                         soap_headers);
         }
 
         // A self-contained copy of a DOM sub-tree generally used to hold
@@ -11868,14 +11956,14 @@ namespace ews
 
         //! \brief Constructs a new service with given credentials to a server
         //! specified by \p server_uri
-        basic_service(std::string server_uri,
-                      std::string domain,
-                      std::string username,
-                      std::string password)
-            : server_uri_(std::move(server_uri)),
-              domain_(std::move(domain)),
-              username_(std::move(username)),
-              password_(std::move(password)),
+        basic_service(const std::string& server_uri,
+                      const std::string& domain,
+                      const std::string& username,
+                      const std::string& password)
+            : request_handler_(server_uri),
+              domain_(domain),
+              username_(username),
+              password_(password),
               server_version_("Exchange2013_SP1")
         {
         }
@@ -12370,7 +12458,7 @@ namespace ews
         }
 
     private:
-        std::string server_uri_;
+        RequestHandler request_handler_;
         std::string domain_;
         std::string username_;
         std::string password_;
@@ -12388,12 +12476,12 @@ namespace ews
                 "<t:RequestServerVersion Version=\"" + server_version_ + "\"/>");
 
             auto response =
-                internal::make_raw_soap_request<RequestHandler>(server_uri_,
-                                                                username_,
-                                                                password_,
-                                                                domain_,
-                                                                request_string,
-                                                                soap_headers);
+                internal::make_raw_soap_request(request_handler_,
+                                                username_,
+                                                password_,
+                                                domain_,
+                                                request_string,
+                                                soap_headers);
 
             if (response.ok())
             {
@@ -12509,7 +12597,8 @@ namespace ews
         template <typename ItemType>
         ItemType get_item_impl(const item_id& id,
                                base_shape shape,
-                               const std::vector<property_path>& additional_properties)
+                               const std::vector<property_path>&
+                                   additional_properties)
         {
             EWS_ASSERT(!additional_properties.empty());
 
@@ -12572,8 +12661,8 @@ namespace ews
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(!std::is_default_constructible<service>::value, "");
-    static_assert(std::is_copy_constructible<service>::value, "");
-    static_assert(std::is_copy_assignable<service>::value, "");
+    static_assert(!std::is_copy_constructible<service>::value, "");
+    static_assert(!std::is_copy_assignable<service>::value, "");
     static_assert(std::is_move_constructible<service>::value, "");
     static_assert(std::is_move_assignable<service>::value, "");
 #endif

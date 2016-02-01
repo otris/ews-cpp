@@ -235,7 +235,7 @@ namespace tests
     TEST_F(ItemTest, NoMimeContentIfNotRequested)
     {
         auto contact = ews::contact();
-        auto s = service();
+        auto& s = service();
         const auto item_id = s.create_item(contact);
         ews::internal::on_scope_exit remove_contact([&]
         {
@@ -248,7 +248,7 @@ namespace tests
     TEST_F(ItemTest, GetMimeContentProperty)
     {
         auto contact = ews::contact();
-        auto s = service();
+        auto& s = service();
         const auto item_id = s.create_item(contact);
         ews::internal::on_scope_exit remove_contact([&]
         {
