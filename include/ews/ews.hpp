@@ -4684,18 +4684,9 @@ namespace ews
 #endif
         inline http_response make_raw_soap_request(
             RequestHandler& handler,
-            const std::string& username,
-            const std::string& password,
-            const std::string& domain,
             const std::string& soap_body,
             const std::vector<std::string>& soap_headers)
         {
-            handler.set_method(RequestHandler::method::POST);
-            handler.set_content_type("text/xml; charset=utf-8");
-
-            ntlm_credentials creds(username, password, domain);
-            handler.set_credentials(creds);
-
             std::stringstream request_stream;
             request_stream <<
                 "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
@@ -4742,10 +4733,11 @@ namespace ews
             const std::vector<std::string>& soap_headers)
         {
             RequestHandler handler(url);
+            handler.set_method(RequestHandler::method::POST);
+            handler.set_content_type("text/xml; charset=utf-8");
+            ntlm_credentials creds(username, password, domain);
+            handler.set_credentials(creds);
             return make_raw_soap_request(handler,
-                                         username,
-                                         password,
-                                         domain,
                                          soap_body,
                                          soap_headers);
         }
@@ -11946,14 +11938,6 @@ namespace ews
         basic_service() = delete;
 #endif
 
-        // FIXME: credentials are stored plain-text in memory
-        //
-        // That'll be bad. We wouldn't want random Joe at first-level support to
-        // see plain-text passwords and user-names just because the process
-        // crashed and some automatic mechanism sent a minidump over the wire.
-        // What are our options? Security-by-obscurity: we could hash
-        // credentials with a hash of the process-id or something.
-
         //! \brief Constructs a new service with given credentials to a server
         //! specified by \p server_uri
         basic_service(const std::string& server_uri,
@@ -11961,11 +11945,12 @@ namespace ews
                       const std::string& username,
                       const std::string& password)
             : request_handler_(server_uri),
-              domain_(domain),
-              username_(username),
-              password_(password),
               server_version_("Exchange2013_SP1")
         {
+            request_handler_.set_method(RequestHandler::method::POST);
+            request_handler_.set_content_type("text/xml; charset=utf-8");
+            internal::ntlm_credentials creds(username, password, domain);
+            request_handler_.set_credentials(creds);
         }
 
         //! \brief Sets the schema version that will be used in requests made
@@ -12459,9 +12444,6 @@ namespace ews
 
     private:
         RequestHandler request_handler_;
-        std::string domain_;
-        std::string username_;
-        std::string password_;
         std::string server_version_;
 
         // Helper for doing requests.  Adds the right headers, credentials, and
@@ -12477,9 +12459,6 @@ namespace ews
 
             auto response =
                 internal::make_raw_soap_request(request_handler_,
-                                                username_,
-                                                password_,
-                                                domain_,
                                                 request_string,
                                                 soap_headers);
 
