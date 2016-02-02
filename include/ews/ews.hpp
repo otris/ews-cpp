@@ -4666,17 +4666,6 @@ namespace ews
     static_assert(std::is_move_assignable<http_request>::value, "");
 #endif
 
-        // Makes a raw SOAP request.
-        //
-        // url: The URL of the server to talk to.
-        // username: The user-name of user.
-        // password: The user's secret password, plain-text.
-        // domain: The user's Windows domain.
-        // soap_body: The contents of the SOAP body (minus the body element);
-        // this is the actual EWS request.
-        // soap_headers: Any SOAP headers to add.
-        //
-        // Returns the response.
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
         template <typename RequestHandler = http_request>
 #else
@@ -4719,6 +4708,17 @@ namespace ews
             return handler.send(request_stream.str());
         }
 
+        // Makes a raw SOAP request.
+        //
+        // url: The URL of the server to talk to.
+        // username: The user-name of user.
+        // password: The user's secret password, plain-text.
+        // domain: The user's Windows domain.
+        // soap_body: The contents of the SOAP body (minus the body element);
+        // this is the actual EWS request.
+        // soap_headers: Any SOAP headers to add.
+        //
+        // Returns the response.
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
         template <typename RequestHandler = http_request>
 #else
