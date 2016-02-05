@@ -4603,7 +4603,7 @@ namespace ews
 #ifdef EWS_ENABLE_VERBOSE
                 // Print HTTP headers to stderr
                 set_option(CURLOPT_VERBOSE, 1L);
-# endif
+#endif
 
                 // Set complete request string for HTTP POST method; note: no
                 // encoding here
@@ -4647,7 +4647,7 @@ namespace ews
                 curl_easy_getinfo(handle_.get(),
                     CURLINFO_RESPONSE_CODE, &response_code);
                 response_data.emplace_back('\0');
-#if EWS_ENABLE_VERBOSE
+#ifdef EWS_ENABLE_VERBOSE
                 std::cerr << &response_data[0] << std::endl;
 #endif
                 return http_response(response_code, std::move(response_data));
@@ -4701,7 +4701,7 @@ namespace ews
             request_stream << "</soap:Body>";
             request_stream << "</soap:Envelope>";
 
-#if EWS_ENABLE_VERBOSE
+#ifdef EWS_ENABLE_VERBOSE
             std::cerr << request_stream.str() << std::endl;
 #endif
 
