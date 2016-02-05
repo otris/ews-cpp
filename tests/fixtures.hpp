@@ -300,11 +300,33 @@ namespace tests
         ews::contact contact_;
     };
 
-    struct MessageTest : public ServiceFixture
+    class MessageTest : public ServiceFixture
     {
+    public:
+        void SetUp()
+        {
+            ServiceFixture::SetUp();
+
+            message_.set_subject("Meet the Fockers");
+            const auto item_id = service().create_item(
+                                        message_,
+                                        ews::message_disposition::save_only);
+            message_ = service().get_message(item_id);
+        }
+
+        void TearDown()
+        {
+            service().delete_message(std::move(message_));
+            ServiceFixture::TearDown();
+        }
+
+        ews::message& test_message() { return message_; }
+
+    private:
+        ews::message message_;
     };
 
-    struct CalendarItemTest : public ServiceFixture
+    class CalendarItemTest : public ServiceFixture
     {
     public:
         void SetUp()

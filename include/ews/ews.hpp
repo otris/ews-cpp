@@ -10568,7 +10568,22 @@ namespace ews
         // <ConversationTopic/>
         // <From/>
         // <InternetMessageId/>
-        // <IsRead/>
+
+        //! Returns whether this message has been read
+        bool is_read() const
+        {
+            return xml().get_value_as_string("IsRead") == "true";
+        }
+
+        //! \brief Sets whether this message has been read.
+        //!
+        //! If is_read_receipt_requested() evaluates to true, updating this
+        //! property to true sends a read receipt.
+        void set_read(bool value)
+        {
+            xml().set_or_update("IsRead", value ? "true" : "false");
+        }
+
         // <IsResponseRequested/>
         // <References/>
         // <ReplyTo/>

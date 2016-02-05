@@ -50,6 +50,30 @@ namespace tests
         auto messages = service().find_item(drafts);
         EXPECT_EQ(initial_count, messages.size());
     }
+
+    // <IsRead/>
+    TEST(OfflineMessageTest, IsReadPropertyInitialValue)
+    {
+        auto msg = ews::message();
+        EXPECT_FALSE(msg.is_read());
+    }
+
+    TEST(OfflineMessageTest, SetIsReadProperty)
+    {
+        auto msg = ews::message();
+        msg.set_read(true);
+        EXPECT_TRUE(msg.is_read());
+    }
+
+    TEST_F(MessageTest, UpdateIsReadProperty)
+    {
+        auto& msg = test_message();
+        auto prop = ews::property(ews::message_property_path::is_read,
+                                  true);
+        auto new_id = service().update_item(msg.get_item_id(), prop);
+        msg = service().get_message(new_id);
+        EXPECT_TRUE(msg.is_read());
+    }
 }
 
 // vim:et ts=4 sw=4 noic cc=80
