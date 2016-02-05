@@ -323,13 +323,15 @@ namespace ews
             std::string msg = what;
             try
             {
+                const auto start = &xml[0];
                 if (points_within_array(where,
-                                        &xml[0], (&xml[0] + xml.size() + 1)))
+                                        start, (start + xml.size() + 1)))
                 {
                     enum { column_width = 79 };
-                    const auto idx = std::distance(&xml[0], where);
+                    const auto idx =
+                        static_cast<std::size_t>(std::distance(start, where));
 
-                    auto doc = std::string(&xml[0], xml.size());
+                    auto doc = std::string(start, xml.size());
                     auto lineno = 1U;
                     auto charno = 0U;
                     std::replace_if(begin(doc), end(doc), [&](char c) -> bool
