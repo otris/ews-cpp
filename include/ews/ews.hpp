@@ -4481,6 +4481,14 @@ namespace ews
                 headers_.append(str.c_str());
             }
 
+            // Set this HTTP request's content length.
+            void set_content_length(std::size_t content_length)
+            {
+                const std::string str = "Content-Length: "
+                    + std::to_string(content_length);
+                headers_.append(str.c_str());
+            }
+
             // Set credentials for authentication.
             void set_credentials(const credentials& creds)
             {
