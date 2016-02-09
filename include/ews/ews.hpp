@@ -4246,9 +4246,7 @@ namespace ews
         public:
             http_response(long code, std::vector<char>&& data)
                 : data_(std::move(data)),
-                  doc_(new rapidxml::xml_document<char>()),
-                  code_(code),
-                  parsed_(false)
+                  code_(code)
             {
                 EWS_ASSERT(!data_.empty());
             }
@@ -4270,9 +4268,7 @@ namespace ews
 
             http_response(http_response&& other)
                 : data_(std::move(other.data_)),
-                  doc_(std::move(other.doc_)),
-                  code_(std::move(other.code_)),
-                  parsed_(std::move(other.parsed_))
+                  code_(std::move(other.code_))
             {
                 other.code_ = 0U;
             }
@@ -4282,35 +4278,23 @@ namespace ews
                 if (&rhs != this)
                 {
                     data_ = std::move(rhs.data_);
-                    doc_ = std::move(rhs.doc_);
                     code_ = std::move(rhs.code_);
-                    parsed_ = std::move(rhs.parsed_);
                 }
                 return *this;
             }
 
-            // Returns the SOAP payload in this response.
-            //
-            // Parses the payload (if it hasn't already) and returns it as
-            // xml_document.
-            //
-            // Note: we are using a mutable temporary buffer internally because
-            // we are using RapidXml in destructive mode (the parser modifies
-            // source text during the parsing process). Hence, we need to make
-            // sure that parsing is done only once!
-            const rapidxml::xml_document<char>& payload()
+            // Returns a reference to the raw byte content in this HTTP
+            // response.
+            std::vector<char>& content() EWS_NOEXCEPT
             {
-                // FIXME: data race, synchronization missing, read of parsed_ and call parse()
-                // TODO: parsed_ boolean not necessary, use if (doc_) { /* ... */ }
-                if (!parsed_)
-                {
-                    on_scope_exit set_parsed([&]
-                    {
-                        parsed_ = true;
-                    });
-                    parse();
-                }
-                return *doc_;
+                return data_;
+            }
+
+            // Returns a reference to the raw byte content in this HTTP
+            // response.
+            const std::vector<char>& content() const EWS_NOEXCEPT
+            {
+                return data_;
             }
 
             // Returns the response code of the HTTP request.
@@ -4337,29 +4321,42 @@ namespace ews
             }
 
         private:
-            // Here we handle the server's response. We load the SOAP payload
-            // from response into the xml_document.
-            void parse()
+            std::vector<char> data_;            
+            long code_;
+        };
+
+        // Loads the XML content from a given HTTP response into a
+        // new xml_document and returns it.
+        //
+        // Note: we are using a mutable temporary buffer internally because
+        // we are using RapidXml in destructive mode (the parser modifies
+        // source text during the parsing process). Hence, we need to make
+        // sure that parsing is done only once!
+        inline std::unique_ptr<rapidxml::xml_document<char>>
+        parse_response(http_response&& response)
+        {
+            auto doc = std::make_unique<rapidxml::xml_document<char>>();
+            try
             {
-                try
-                {
-                    static const int flags = 0;
-                    doc_->parse<flags>(&data_[0]);
-                }
-                catch (rapidxml::parse_error& exc)
-                {
-                    // Swallow and erase type
-                    const auto msg = xml_parse_error::error_message_from(exc,
-                                                                         data_);
-                    throw xml_parse_error(msg);
-                }
+                static const int flags = 0;
+                doc->parse<flags>(&response.content()[0]);
+            }
+            catch (rapidxml::parse_error& exc)
+            {
+                // Swallow and erase type
+                const auto msg =
+                    xml_parse_error::error_message_from(exc,
+                                                        response.content());
+                throw xml_parse_error(msg);
             }
 
-            std::vector<char> data_;
-            std::unique_ptr<rapidxml::xml_document<char>> doc_;
-            long code_;
-            bool parsed_;
-        };
+#ifdef EWS_ENABLE_VERBOSE
+            std::cerr << "Response code: " << response.code()
+                      << ", Content:\n\'" << *doc << "\'" << std::endl;
+#endif
+
+            return doc;
+        }
 
         // Traverse elements, depth first, beginning with given node.
         //
@@ -4657,10 +4654,8 @@ namespace ews
                 curl_easy_getinfo(handle_.get(),
                     CURLINFO_RESPONSE_CODE, &response_code);
                 response_data.emplace_back('\0');
-#ifdef EWS_ENABLE_VERBOSE
-                std::cerr << &response_data[0] << std::endl;
-#endif
-                return http_response(response_code, std::move(response_data));
+                return http_response(std::move(response_code),
+                                     std::move(response_data));
             }
 
         private:
@@ -6121,7 +6116,7 @@ namespace ews
         {
         public:
             // implemented below
-            static create_item_response_message parse(http_response&);
+            static create_item_response_message parse(http_response&&);
 
         private:
             create_item_response_message(response_class cls,
@@ -6139,7 +6134,7 @@ namespace ews
         {
         public:
             // implemented below
-            static find_item_response_message parse(http_response&);
+            static find_item_response_message parse(http_response&&);
 
         private:
             find_item_response_message(response_class cls,
@@ -6176,7 +6171,7 @@ namespace ews
         {
         public:
             // implemented below
-            static update_item_response_message parse(http_response&);
+            static update_item_response_message parse(http_response&&);
 
         private:
             update_item_response_message(response_class cls,
@@ -6195,7 +6190,7 @@ namespace ews
         {
         public:
             // implemented below
-            static get_item_response_message parse(http_response&);
+            static get_item_response_message parse(http_response&&);
 
         private:
             get_item_response_message(response_class cls,
@@ -6213,21 +6208,14 @@ namespace ews
         {
         public:
             static
-            create_attachment_response_message parse(http_response& response)
+            create_attachment_response_message parse(http_response&& response)
             {
-                const auto& doc = response.payload();
-                auto elem = get_element_by_qname(doc,
-                                             "CreateAttachmentResponseMessage",
-                                             uri<>::microsoft::messages());
-#ifdef EWS_ENABLE_VERBOSE
-                if (!elem)
-                {
-                    std::cerr
-                        << "Parsing CreateAttachmentResponseMessage failed, "
-                        << "response code: " << response.code()
-                        << ", payload:\n\'" << doc << "\'" << std::endl;
-                }
-#endif
+                const auto doc = parse_response(std::move(response));
+                auto elem = get_element_by_qname(
+                                            *doc,
+                                            "CreateAttachmentResponseMessage",
+                                            uri<>::microsoft::messages());
+
                 EWS_ASSERT(elem &&
                     "Expected <CreateAttachmentResponseMessage>, got nullptr");
 
@@ -6283,21 +6271,14 @@ namespace ews
         {
         public:
             static
-            get_attachment_response_message parse(http_response& response)
+            get_attachment_response_message parse(http_response&& response)
             {
-                const auto& doc = response.payload();
-                auto elem = get_element_by_qname(doc,
-                                             "GetAttachmentResponseMessage",
-                                             uri<>::microsoft::messages());
-#ifdef EWS_ENABLE_VERBOSE
-                if (!elem)
-                {
-                    std::cerr
-                        << "Parsing GetAttachmentResponseMessage failed, "
-                        << "response code: " << response.code()
-                        << ", payload:\n\'" << doc << "\'" << std::endl;
-                }
-#endif
+                const auto doc = parse_response(std::move(response));
+                auto elem = get_element_by_qname(
+                                                *doc,
+                                                "GetAttachmentResponseMessage",
+                                                uri<>::microsoft::messages());
+
                 EWS_ASSERT(elem &&
                     "Expected <GetAttachmentResponseMessage>, got nullptr");
 
@@ -6341,22 +6322,12 @@ namespace ews
         class delete_item_response_message final : public response_message_base
         {
         public:
-            static delete_item_response_message parse(http_response& response)
+            static delete_item_response_message parse(http_response&& response)
             {
-                const auto& doc = response.payload();
-                auto elem = get_element_by_qname(doc,
+                const auto doc = parse_response(std::move(response));
+                auto elem = get_element_by_qname(*doc,
                                                  "DeleteItemResponseMessage",
                                                  uri<>::microsoft::messages());
-
-#ifdef EWS_ENABLE_VERBOSE
-                if (!elem)
-                {
-                    std::cerr
-                        << "Parsing DeleteItemResponseMessage failed, "
-                        << "response code: " << response.code()
-                        << ", payload:\n\'" << doc << "\'" << std::endl;
-                }
-#endif
 
                 EWS_ASSERT(elem &&
                         "Expected <DeleteItemResponseMessage>, got nullptr");
@@ -6377,23 +6348,13 @@ namespace ews
         {
         public:
             static
-            delete_attachment_response_message parse(http_response& response)
+            delete_attachment_response_message parse(http_response&& response)
             {
-                const auto& doc = response.payload();
+                const auto doc = parse_response(std::move(response));
                 auto elem =
-                    get_element_by_qname(doc,
+                    get_element_by_qname(*doc,
                                          "DeleteAttachmentResponseMessage",
                                          uri<>::microsoft::messages());
-
-#ifdef EWS_ENABLE_VERBOSE
-                if (!elem)
-                {
-                    std::cerr
-                        << "Parsing DeleteAttachmentResponseMessage failed, "
-                        << "response code: " << response.code()
-                        << ", payload:\n\'" << doc << "\'" << std::endl;
-                }
-#endif
 
                 EWS_ASSERT(elem &&
                     "Expected <DeleteAttachmentResponseMessage>, got nullptr");
@@ -12086,11 +12047,8 @@ namespace ews
                 "</m:DeleteItem>";
 
             auto response = request(request_string);
-#ifdef EWS_ENABLE_VERBOSE
-            std::cerr << response.payload() << std::endl;
-#endif
             const auto response_message =
-                delete_item_response_message::parse(response);
+                delete_item_response_message::parse(std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -12177,11 +12135,8 @@ namespace ews
             auto response = request(
                 the_calendar_item.create_item_request_string(invitations));
 
-#ifdef EWS_ENABLE_VERBOSE
-            std::cerr << response.payload() << std::endl;
-#endif
             const auto response_message =
-                create_item_response_message::parse(response);
+                create_item_response_message::parse(std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -12199,11 +12154,9 @@ namespace ews
 
             auto response =
                 request(the_message.create_item_request_string(disposition));
-#ifdef EWS_ENABLE_VERBOSE
-            std::cerr << response.payload() << std::endl;
-#endif
+
             const auto response_message =
-                create_item_response_message::parse(response);
+                create_item_response_message::parse(std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -12225,11 +12178,9 @@ namespace ews
                 "</m:FindItem>";
 
             auto response = request(request_string);
-#ifdef EWS_ENABLE_VERBOSE
-            std::cerr << response.payload() << std::endl;
-#endif
             const auto response_message =
-                internal::find_item_response_message::parse(response);
+                internal::find_item_response_message::parse(
+                                                        std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -12256,9 +12207,6 @@ namespace ews
                 "</m:FindItem>";
 
             auto response = request(request_string);
-#ifdef EWS_ENABLE_VERBOSE
-            std::cerr << response.payload() << std::endl;
-#endif
             const auto response_message =
                 internal::find_calendar_item_response_message::parse(response);
             if (!response_message.success())
@@ -12294,11 +12242,9 @@ namespace ews
                 "</m:FindItem>";
 
             auto response = request(request_string);
-#ifdef EWS_ENABLE_VERBOSE
-            std::cerr << response.payload() << std::endl;
-#endif
             const auto response_message =
-                internal::find_item_response_message::parse(response);
+                internal::find_item_response_message::parse(
+                                                        std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -12350,11 +12296,9 @@ namespace ews
                 "</m:UpdateItem>";
 
             auto response = request(request_string);
-#ifdef EWS_ENABLE_VERBOSE
-            std::cerr << response.payload() << std::endl;
-#endif
             const auto response_message =
-                internal::update_item_response_message::parse(response);
+                internal::update_item_response_message::parse(
+                                                        std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -12381,11 +12325,9 @@ namespace ews
                      "<m:Attachments>" + a.to_xml() + "</m:Attachments>"
                    "</m:CreateAttachment>");
 
-#ifdef EWS_ENABLE_VERBOSE
-            std::cerr << response.payload() << std::endl;
-#endif
             const auto response_message =
-                internal::create_attachment_response_message::parse(response);
+                internal::create_attachment_response_message::parse(
+                                                        std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -12429,12 +12371,9 @@ namespace ews
                   "<m:AttachmentIds>" + id.to_xml("t") + "</m:AttachmentIds>"
                 "</m:GetAttachment>");
 
-#ifdef EWS_ENABLE_VERBOSE
-            std::cerr << response.payload() << std::endl;
-#endif
-
             const auto response_message =
-                internal::get_attachment_response_message::parse(response);
+                internal::get_attachment_response_message::parse(
+                                                        std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -12455,11 +12394,9 @@ namespace ews
                 "<m:DeleteAttachment>"
                   "<m:AttachmentIds>" + id.to_xml("t") + "</m:AttachmentIds>"
                 "</m:DeleteAttachment>");
-#ifdef EWS_ENABLE_VERBOSE
-            std::cerr << response.payload() << std::endl;
-#endif
             const auto response_message =
-                internal::delete_attachment_response_message::parse(response);
+                internal::delete_attachment_response_message::parse(
+                                                        std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -12491,13 +12428,14 @@ namespace ews
             {
                 return response;
             }
-
-            if (response.is_soap_fault())
+            else if (response.is_soap_fault())
             {
+                std::unique_ptr<rapidxml::xml_document<char>> doc;
+
                 // Try parsing, if not already done before
                 try
                 {
-                    response.payload();
+                    doc = parse_response(std::move(response));
                 }
                 catch (xml_parse_error&)
                 {
@@ -12506,10 +12444,8 @@ namespace ews
                         "(could not parse response)");
                 }
 
-                // Parsing should be done by now
-                const auto& doc = response.payload();
                 auto elem =
-                    get_element_by_qname(doc,
+                    get_element_by_qname(*doc,
                                          "ResponseCode",
                                          internal::uri<>::microsoft::errors());
                 if (!elem)
@@ -12526,7 +12462,7 @@ namespace ews
                 {
                     // Get some more helpful details
                     elem =
-                        get_element_by_qname(doc,
+                        get_element_by_qname(*doc,
                                              "LineNumber",
                                              internal::uri<>::microsoft::types());
                     EWS_ASSERT(elem &&
@@ -12535,7 +12471,7 @@ namespace ews
                         std::stoul(std::string(elem->value(),
                                                elem->value_size()));
 
-                    elem = get_element_by_qname(doc,
+                    elem = get_element_by_qname(*doc,
                                                 "LinePosition",
                                                 internal::uri<>::microsoft::types());
                     EWS_ASSERT(elem &&
@@ -12545,7 +12481,7 @@ namespace ews
                                                elem->value_size()));
 
                     elem =
-                        get_element_by_qname(doc,
+                        get_element_by_qname(*doc,
                                              "Violation",
                                              internal::uri<>::microsoft::types());
                     EWS_ASSERT(elem &&
@@ -12557,7 +12493,7 @@ namespace ews
                 }
                 else
                 {
-                    elem = get_element_by_qname(doc, "faultstring", "");
+                    elem = get_element_by_qname(*doc, "faultstring", "");
                     EWS_ASSERT(elem &&
                             "Expected <faultstring> element in response");
                     throw soap_fault(elem->value());
@@ -12583,11 +12519,9 @@ namespace ews
                 "</m:GetItem>";
 
             auto response = request(request_string);
-#ifdef EWS_ENABLE_VERBOSE
-            std::cerr << response.payload() << std::endl;
-#endif
             const auto response_message =
-                internal::get_item_response_message<ItemType>::parse(response);
+                internal::get_item_response_message<ItemType>::parse(
+                                                        std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -12624,11 +12558,9 @@ namespace ews
                 "</m:GetItem>";
 
             auto response = request(sstr.str());
-#ifdef EWS_ENABLE_VERBOSE
-            std::cerr << response.payload() << std::endl;
-#endif
             const auto response_message =
-                internal::get_item_response_message<ItemType>::parse(response);
+                internal::get_item_response_message<ItemType>::parse(
+                                                        std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -12646,11 +12578,8 @@ namespace ews
             using internal::create_item_response_message;
 
             auto response = request(the_item.create_item_request_string());
-#ifdef EWS_ENABLE_VERBOSE
-            std::cerr << response.payload() << std::endl;
-#endif
             const auto response_message =
-                create_item_response_message::parse(response);
+                create_item_response_message::parse(std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -12688,24 +12617,12 @@ namespace ews
         // FIXME: a CreateItemResponse can contain multiple ResponseMessages
         inline
         create_item_response_message
-        create_item_response_message::parse(http_response& response)
+        create_item_response_message::parse(http_response&& response)
         {
-            const auto& doc = response.payload();
-            auto elem = get_element_by_qname(doc,
+            const auto doc = parse_response(std::move(response));
+            auto elem = get_element_by_qname(*doc,
                                              "CreateItemResponseMessage",
                                              uri<>::microsoft::messages());
-
-#ifdef EWS_ENABLE_VERBOSE
-            // FIXME: sometimes assertion fails for reasons unknown to me,
-            // temporarily log response code and XML payload here
-            if (!elem)
-            {
-                std::cerr
-                    << "Parsing CreateItemResponseMessage failed, response code: "
-                    << response.code() << ", payload:\n\'"
-                    << doc << "\'" << std::endl;
-            }
-#endif
 
             EWS_ASSERT(elem &&
                     "Expected <CreateItemResponseMessage>, got nullptr");
@@ -12730,10 +12647,10 @@ namespace ews
 
         inline
         find_item_response_message
-        find_item_response_message::parse(http_response& response)
+        find_item_response_message::parse(http_response&& response)
         {
-            const auto& doc = response.payload();
-            auto elem = get_element_by_qname(doc,
+            const auto doc = parse_response(std::move(response));
+            auto elem = get_element_by_qname(*doc,
                                              "FindItemResponseMessage",
                                              uri<>::microsoft::messages());
 
@@ -12767,10 +12684,10 @@ namespace ews
         find_calendar_item_response_message
         find_calendar_item_response_message::parse(http_response& response)
         {
-            const auto& doc = response.payload();
-            auto elem = get_element_by_qname(doc,
-                "FindItemResponseMessage",
-                uri<>::microsoft::messages());
+            const auto doc = parse_response(std::move(response));
+            auto elem = get_element_by_qname(*doc,
+                                             "FindItemResponseMessage",
+                                             uri<>::microsoft::messages());
 
             EWS_ASSERT(elem &&
                 "Expected <FindItemResponseMessage>, got nullptr");
@@ -12797,10 +12714,10 @@ namespace ews
 
         inline
         update_item_response_message
-        update_item_response_message::parse(http_response& response)
+        update_item_response_message::parse(http_response&& response)
         {
-            const auto& doc = response.payload();
-            auto elem = get_element_by_qname(doc,
+            const auto doc = parse_response(std::move(response));
+            auto elem = get_element_by_qname(*doc,
                                              "UpdateItemResponseMessage",
                                              uri<>::microsoft::messages());
 
@@ -12830,21 +12747,12 @@ namespace ews
         template <typename ItemType>
         inline
         get_item_response_message<ItemType>
-        get_item_response_message<ItemType>::parse(http_response& response)
+        get_item_response_message<ItemType>::parse(http_response&& response)
         {
-            const auto& doc = response.payload();
-            auto elem = get_element_by_qname(doc,
+            const auto doc = parse_response(std::move(response));
+            auto elem = get_element_by_qname(*doc,
                                              "GetItemResponseMessage",
                                              uri<>::microsoft::messages());
-#ifdef EWS_ENABLE_VERBOSE
-            if (!elem)
-            {
-                std::cerr
-                    << "Parsing GetItemResponseMessage failed, response code: "
-                    << response.code() << ", payload:\n\'"
-                    << doc << "\'" << std::endl;
-            }
-#endif
             EWS_ASSERT(elem &&
                     "Expected <GetItemResponseMessage>, got nullptr");
             const auto result = parse_response_class_and_code(*elem);

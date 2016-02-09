@@ -46,8 +46,8 @@ int main()
                                                             env.domain,
                                                             request,
                                                             soap_headers);
-        const auto& doc = response.payload();
-        std::cout << doc << std::endl;
+        const auto doc = parse_response(std::move(response));
+        std::cout << *doc << std::endl;
 
         // hack hack ...
 
