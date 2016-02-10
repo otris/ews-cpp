@@ -16,7 +16,7 @@ int main()
 
     try
     {
-        const auto env = ews::test::get_from_environment();
+        const auto env = ews::test::environment();
         ews::basic_credentials credentials(env.autodiscover_smtp_address,
                                            env.autodiscover_password);
 

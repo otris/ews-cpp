@@ -14,7 +14,7 @@ int main()
 
     try
     {
-        const auto env = ews::test::get_from_environment();
+        const auto env = ews::test::environment();
         auto service = ews::service(env.server_uri,
                                     env.domain,
                                     env.username,

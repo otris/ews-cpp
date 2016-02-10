@@ -17,15 +17,6 @@
 
 namespace tests
 {
-    struct environment
-    {
-        static const ews::test::credentials& credentials()
-        {
-            static auto creds = ews::test::get_from_environment();
-            return creds;
-        }
-    };
-
     // Check if cont contains the element val
     template <typename ContainerType, typename ValueType>
     inline bool contains(const ContainerType& cont, const ValueType& val)
@@ -214,18 +205,18 @@ namespace tests
         virtual void SetUp()
         {
             BaseFixture::SetUp();
-            const auto& creds = environment::credentials();
+            const auto& env = ews::test::global_data::instance().env;
 #ifdef EWS_HAS_MAKE_UNIQUE
-            service_ptr_ = std::make_unique<ews::service>(creds.server_uri,
-                                                          creds.domain,
-                                                          creds.username,
-                                                          creds.password);
+            service_ptr_ = std::make_unique<ews::service>(env.server_uri,
+                                                          env.domain,
+                                                          env.username,
+                                                          env.password);
 #else
             service_ptr_ = std::unique_ptr<ews::service>(
-                                         new ews::service(creds.server_uri,
-                                                          creds.domain,
-                                                          creds.username,
-                                                          creds.password));
+                                         new ews::service(env.server_uri,
+                                                          env.domain,
+                                                          env.username,
+                                                          env.password));
 #endif
         }
 

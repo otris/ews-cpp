@@ -6,59 +6,64 @@
 #include <stdexcept>
 #include <cstdlib>
 
-#ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable: 4996)
-#endif
-
 namespace ews
 {
     namespace test
     {
-        namespace internal
+        class environment final
         {
-            inline std::string getenv_or_throw(const char* name)
-            {
-                const char* const env = getenv(name);
-                if (env == nullptr)
-                {
-                    const auto msg
-                        = std::string("Missing environment variable ") + name;
-                    throw std::runtime_error(msg);
-                }
-                return std::string(env);
-            }
-        }
-
-        struct credentials
-        {
+        public:
             std::string domain;
             std::string username;
             std::string password;
             std::string server_uri;
             std::string autodiscover_smtp_address;
             std::string autodiscover_password;
+
+            environment()
+                : domain(getenv_or_throw("EWS_TEST_DOMAIN")),
+                  username(getenv_or_throw("EWS_TEST_USERNAME")),
+                  password(getenv_or_throw("EWS_TEST_PASSWORD")),
+                  server_uri(getenv_or_throw("EWS_TEST_URI")),
+                  autodiscover_smtp_address(getenv_or_empty_string(
+                      "EWS_TEST_AUTODISCOVER_SMTP_ADDRESS")),
+                  autodiscover_password(
+                      getenv_or_empty_string("EWS_TEST_AUTODISCOVER_PASSWORD"))
+            {
+            }
+
+        private:
+
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable : 4996)
+#endif
+            static std::string getenv_or_throw(const char* name)
+            {
+                const char* const val = getenv(name);
+                if (val == nullptr)
+                {
+                    const auto msg =
+                        std::string("Missing environment variable ") + name;
+                    throw std::runtime_error(msg);
+                }
+                return std::string(val);
+            }
+
+            static std::string getenv_or_empty_string(const char* name)
+            {
+                const char* const val = getenv(name);
+                return val == nullptr ? "" : std::string(val);
+            }
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif
         };
 
-        inline credentials get_from_environment()
-        {
-            using internal::getenv_or_throw;
-
-            credentials cred;
-            cred.domain = getenv_or_throw("EWS_TEST_DOMAIN");
-            cred.username = getenv_or_throw("EWS_TEST_USERNAME");
-            cred.password = getenv_or_throw("EWS_TEST_PASSWORD");
-            cred.server_uri = getenv_or_throw("EWS_TEST_URI");
-            cred.autodiscover_smtp_address =
-                getenv("EWS_TEST_AUTODISCOVER_SMTP_ADDRESS");
-            cred.autodiscover_password =
-                getenv("EWS_TEST_AUTODISCOVER_PASSWORD");
-            return cred;
-        }
-
-        struct global_data
+        struct global_data final
         {
             std::string assets_dir;
+            environment env;
 
             static global_data& instance()
             {
@@ -68,9 +73,5 @@ namespace ews
         };
     }
 }
-
-#ifdef _MSC_VER
-# pragma warning(pop)
-#endif
 
 // vim:et ts=4 sw=4 noic cc=80

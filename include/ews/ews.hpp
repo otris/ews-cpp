@@ -4342,7 +4342,7 @@ namespace ews
             }
 
         private:
-            std::vector<char> data_;            
+            std::vector<char> data_;
             long code_;
         };
 
@@ -5239,7 +5239,7 @@ namespace ews
     //! \param protocol Whether the internal or external URL should be returned
     //! \return The Exchange Web Services URL
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
-    template <typename RequestHandler = http_request>
+    template <typename RequestHandler = internal::http_request>
 #else
     template <typename RequestHandler>
 #endif
