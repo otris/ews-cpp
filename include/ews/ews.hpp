@@ -3878,6 +3878,19 @@ namespace ews
         favorites,
     };
 
+    //! \brief Indicates whether a user is interested in the internal or
+    //! external EWS URL when using Autodiscover.
+    //!
+    //! \sa get_exchange_web_services_url
+    enum class autodiscover_protocol
+    {
+        //! Access the EWS end-point from within the corporate firewall
+        internal,
+
+        //! Access the EWS end-point from outside of the corporate firewall
+        external
+    };
+
     //! This enumeration indicates the sensitive nature of an item; valid
     //! values are Normal, Personal, Private, and Confidential
     enum class sensitivity { normal, personal, priv, confidential };
@@ -4134,11 +4147,11 @@ namespace ews
         };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(std::is_default_constructible<curl_ptr>::value, "");
-    static_assert(!std::is_copy_constructible<curl_ptr>::value, "");
-    static_assert(!std::is_copy_assignable<curl_ptr>::value, "");
-    static_assert(std::is_move_constructible<curl_ptr>::value, "");
-    static_assert(std::is_move_assignable<curl_ptr>::value, "");
+        static_assert(std::is_default_constructible<curl_ptr>::value, "");
+        static_assert(!std::is_copy_constructible<curl_ptr>::value, "");
+        static_assert(!std::is_copy_assignable<curl_ptr>::value, "");
+        static_assert(std::is_move_constructible<curl_ptr>::value, "");
+        static_assert(std::is_move_assignable<curl_ptr>::value, "");
 #endif
 
         // RAII wrapper class around cURLs slist construct.
@@ -4188,11 +4201,11 @@ namespace ews
         };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(std::is_default_constructible<curl_string_list>::value, "");
-    static_assert(!std::is_copy_constructible<curl_string_list>::value, "");
-    static_assert(!std::is_copy_assignable<curl_string_list>::value, "");
-    static_assert(std::is_move_constructible<curl_string_list>::value, "");
-    static_assert(std::is_move_assignable<curl_string_list>::value, "");
+        static_assert(std::is_default_constructible<curl_string_list>::value, "");
+        static_assert(!std::is_copy_constructible<curl_string_list>::value, "");
+        static_assert(!std::is_copy_assignable<curl_string_list>::value, "");
+        static_assert(std::is_move_constructible<curl_string_list>::value, "");
+        static_assert(std::is_move_assignable<curl_string_list>::value, "");
 #endif
 
         // String constants
@@ -4224,7 +4237,15 @@ namespace ews
                         "http://schemas.microsoft.com/exchange/services/2006/messages";
                     return val;
                 }
+                enum { autodiscover_size = 79U };
+                static const Ch* autodiscover()
+                {
+                    static const Ch* const val =
+                        "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a";
+                    return val;
+                }
             };
+
             struct soapxml
             {
                 enum { envelope_size = 41U };
@@ -4431,25 +4452,45 @@ namespace ews
             virtual void certify(http_request*) const = 0;
         };
 
-        class ntlm_credentials final : public credentials
+    } // internal
+
+    class basic_credentials final : public internal::credentials
+    {
+    public:
+        basic_credentials(std::string username, std::string password)
+            : username_(std::move(username)),
+              password_(std::move(password))
         {
-        public:
-            ntlm_credentials(std::string username, std::string password,
-                             std::string domain)
-                : username_(std::move(username)),
-                  password_(std::move(password)),
-                  domain_(std::move(domain))
-            {
-            }
+        }
 
-        private:
-            void certify(http_request*) const override; // implemented below
+    private:
+        void certify(internal::http_request*) const override; // implemented below
 
-            std::string username_;
-            std::string password_;
-            std::string domain_;
-        };
+        std::string username_;
+        std::string password_;
+    };
 
+    class ntlm_credentials final : public internal::credentials
+    {
+    public:
+        ntlm_credentials(std::string username, std::string password,
+            std::string domain)
+            : username_(std::move(username)),
+              password_(std::move(password)),
+              domain_(std::move(domain))
+        {
+        }
+
+    private:
+        void certify(internal::http_request*) const override; // implemented below
+
+        std::string username_;
+        std::string password_;
+        std::string domain_;
+    };
+
+    namespace internal
+    {
         class http_request final
         {
         public:
@@ -5010,6 +5051,169 @@ namespace ews
         static_assert(std::is_move_assignable<xml_subtree>::value, "");
 #endif
 
+#ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
+        template <typename RequestHandler = http_request>
+#else
+        template <typename RequestHandler>
+#endif
+        inline
+        std::string get_exchange_web_services_url(
+                                        const std::string& user_smtp_address,
+                                        autodiscover_protocol protocol,
+                                        const basic_credentials& credentials,
+                                        unsigned int redirections)
+        {
+            using rapidxml::internal::compare;
+
+            // Check redirection counter. We don't want to get in an endless
+            // loop
+            if (redirections > 2)
+            {
+                throw exception("Maximum of two redirections reached");
+            }
+
+            // Check SMTP address
+            if (user_smtp_address.empty())
+            {
+                throw exception("Empty SMTP address given");
+            }
+
+            // Get user name and domain part from the SMTP address
+            const auto at_sign_idx = user_smtp_address.find_first_of("@");
+            if (at_sign_idx == std::string::npos)
+            {
+                throw exception("No valid SMTP address given");
+            }
+
+            const auto username = user_smtp_address.substr(0, at_sign_idx);
+            const auto domain = user_smtp_address.substr(
+                                                    at_sign_idx + 1,
+                                                    user_smtp_address.size());
+            const auto autodiscover_url = "https://" + domain +
+                "/autodiscover/autodiscover.xml";
+
+            // Create an Outlook provider <Autodiscover/> request
+            // TODO: fix mail address here
+            std::stringstream sstr;
+            sstr
+                << "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
+                << "<Autodiscover "
+                << "xmlns=\"http://schemas.microsoft.com/exchange/autodiscover/outlook/requestschema/2006\">"
+                << "<Request>"
+                << "<EMailAddress>" << user_smtp_address << "</EMailAddress>"
+                << "<AcceptableResponseSchema>"
+                << internal::uri<>::microsoft::autodiscover()
+                << "</AcceptableResponseSchema>"
+                << "</Request>"
+                << "</Autodiscover>";
+            const auto request_string = sstr.str();
+
+            RequestHandler handler(autodiscover_url);
+            handler.set_method(RequestHandler::method::POST);
+            handler.set_credentials(credentials);
+            handler.set_content_type("text/xml; charset=utf-8");
+            handler.set_content_length(request_string.size());
+
+#ifdef EWS_ENABLE_VERBOSE
+            std::cerr << request_string << std::endl;
+#endif
+
+            auto response = handler.send(request_string);
+            if (!response.ok())
+            {
+                throw http_error(response.code());
+            }
+
+            const auto doc = parse_response(std::move(response));
+
+            const auto protocol_string =
+                protocol == ews::autodiscover_protocol::internal ?
+                "EXCH" : "EXPR";
+
+            const auto account_node = get_element_by_qname(
+                                *doc,
+                                "Account",
+                                internal::uri<>::microsoft::autodiscover());
+            if (!account_node)
+            {
+                throw exception("Unable to parse response");
+            }
+
+            // For each protocol in the response, look for the appropriate
+            // protocol type (internal/external) and then look for the
+            // corresponding <ASUrl/> element
+
+            for (auto protocol_node = account_node->first_node();
+                 protocol_node;
+                 protocol_node = protocol_node->next_sibling())
+            {
+                if (compare(protocol_node->local_name(),
+                            protocol_node->local_name_size(),
+                            "Protocol",
+                            std::strlen("Protocol")))
+                {
+                    for (auto type_node = protocol_node->first_node();
+                         type_node;
+                         type_node = type_node->next_sibling())
+                    {
+                        if (compare(type_node->local_name(),
+                                    type_node->local_name_size(),
+                                    "Type",
+                                    std::strlen("Type"))
+                            &&
+                            compare(type_node->value(),
+                                    type_node->value_size(),
+                                    protocol_string,
+                                    std::strlen(protocol_string)))
+                        {
+                            for (auto asurl_node = protocol_node->first_node();
+                                 asurl_node;
+                                 asurl_node = asurl_node->next_sibling())
+                            {
+                                if (compare(asurl_node->local_name(),
+                                            asurl_node->local_name_size(),
+                                            "ASUrl",
+                                            std::strlen("ASUrl")))
+                                {
+                                    return std::string(
+                                            asurl_node->value(),
+                                            asurl_node->value_size());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            // If we reach this point, then either autodiscovery returned an
+            // error or there is a redirect address to retry the autodiscover
+            // lookup
+
+            for (auto redirect_node = account_node->first_node();
+                 redirect_node;
+                 redirect_node = redirect_node->next_sibling())
+            {
+                if (compare(redirect_node->local_name(),
+                            redirect_node->local_name_size(),
+                            "RedirectAddr",
+                            std::strlen("RedirectAddr")))
+                {
+                    // Retry
+                    redirections++;
+                    const auto redirect_address =
+                        std::string(redirect_node->value(),
+                                    redirect_node->value_size());
+                    return get_exchange_web_services_url<RequestHandler>(
+                                    redirect_address,
+                                    protocol,
+                                    credentials,
+                                    redirections);
+                }
+            }
+
+            throw exception("Autodiscovery failed unexpectedly");
+        }
     }
 
     //! Set-up EWS library.
@@ -5027,6 +5231,30 @@ namespace ews
     //!
     //! Note: Function is not thread-safe
     inline void tear_down() EWS_NOEXCEPT { curl_global_cleanup(); }
+
+
+    //! \brief Returns the EWS URL by querying the Autodiscover service.
+    //!
+    //! \param user_smtp_address User's primary SMTP address
+    //! \param protocol Whether the internal or external URL should be returned
+    //! \return The Exchange Web Services URL
+#ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
+    template <typename RequestHandler = http_request>
+#else
+    template <typename RequestHandler>
+#endif
+    inline
+    std::string get_exchange_web_services_url(
+                                        const std::string& user_smtp_address,
+                                        autodiscover_protocol protocol,
+                                        const basic_credentials& credentials)
+    {
+        return internal::get_exchange_web_services_url<RequestHandler>(
+                                                        user_smtp_address,
+                                                        protocol,
+                                                        credentials,
+                                                        0U);
+    }
 
     //! \brief Contains the unique identifier and change key of an item in the
     //! Exchange store.
@@ -5852,10 +6080,10 @@ namespace ews
         //! ews::service::create_attachment in order to create the attachment on
         //! the server.
         //!
-        //! \param file_path path to an existing and readable file
-        //! \param content_type the (RFC 2046) MIME content type of the
+        //! \param file_path Path to an existing and readable file
+        //! \param content_type The (RFC 2046) MIME content type of the
         //!        attachment
-        //! \param name a name for this attachment
+        //! \param name A name for this attachment
         //!
         //! On Windows you can use HKEY_CLASSES_ROOT/MIME/Database/Content Type
         //! registry hive to get the content type from a file extension. On a
@@ -11935,7 +12163,7 @@ namespace ews
         {
             request_handler_.set_method(RequestHandler::method::POST);
             request_handler_.set_content_type("text/xml; charset=utf-8");
-            internal::ntlm_credentials creds(username, password, domain);
+            ntlm_credentials creds(username, password, domain);
             request_handler_.set_credentials(creds);
         }
 
@@ -12221,8 +12449,8 @@ namespace ews
         //! Allows you to search for items that are located in a user's
         //! mailbox.
         //!
-        //! \param parent_folder_id the folder in the mailbox that is searched
-        //! \param restriction a search expression that restricts the elements
+        //! \param parent_folder_id The folder in the mailbox that is searched
+        //! \param restriction A search expression that restricts the elements
         //! returned by this operation
         //!
         //! Returns a list of items (item_ids) that match given folder and
@@ -12310,8 +12538,8 @@ namespace ews
 
         //! \brief Lets you attach a file (or another item) to an existing item.
         //!
-        //! \param parent_item an existing item in the Exchange store
-        //! \param a the <tt>\<FileAttachment></tt> or
+        //! \param parent_item An existing item in the Exchange store
+        //! \param a The <tt>\<FileAttachment></tt> or
         //!        <tt>\<ItemAttachment></tt> you want to attach to
         //!        \p parent_item
         attachment_id create_attachment(const item_id& parent_item,
@@ -12432,7 +12660,6 @@ namespace ews
             {
                 std::unique_ptr<rapidxml::xml_document<char>> doc;
 
-                // Try parsing, if not already done before
                 try
                 {
                     doc = parse_response(std::move(response));
@@ -12602,18 +12829,29 @@ namespace ews
 
     // Implementations
 
+    inline
+    void basic_credentials::certify(internal::http_request* request) const
+    {
+        EWS_ASSERT(request != nullptr);
+
+        std::string login = username_ + ":" + password_;
+        request->set_option(CURLOPT_USERPWD, login.c_str());
+        request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    }
+
+    inline
+    void ntlm_credentials::certify(internal::http_request* request) const
+    {
+        EWS_ASSERT(request != nullptr);
+
+        // CURLOPT_USERPWD: domain\username:password
+        std::string login = domain_ + "\\" + username_ + ":" + password_;
+        request->set_option(CURLOPT_USERPWD, login.c_str());
+        request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
+    }
+
     namespace internal
     {
-        inline void ntlm_credentials::certify(http_request* request) const
-        {
-            EWS_ASSERT(request != nullptr);
-
-            // CURLOPT_USERPWD: domain\username:password
-            std::string login = domain_ + "\\" + username_ + ":" + password_;
-            request->set_option(CURLOPT_USERPWD, login.c_str());
-            request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
-        }
-
         // FIXME: a CreateItemResponse can contain multiple ResponseMessages
         inline
         create_item_response_message
