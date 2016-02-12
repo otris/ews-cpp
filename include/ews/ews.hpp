@@ -4356,7 +4356,12 @@ namespace ews
         inline std::unique_ptr<rapidxml::xml_document<char>>
         parse_response(http_response&& response)
         {
+#ifdef EWS_HAS_MAKE_UNIQUE
             auto doc = std::make_unique<rapidxml::xml_document<char>>();
+#else
+            auto doc = std::unique_ptr<rapidxml::xml_document<char>>(
+                new rapidxml::xml_document<char>());
+#endif
             try
             {
                 static const int flags = 0;
@@ -5093,7 +5098,6 @@ namespace ews
                 "/autodiscover/autodiscover.xml";
 
             // Create an Outlook provider <Autodiscover/> request
-            // TODO: fix mail address here
             std::stringstream sstr;
             sstr
                 << "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
