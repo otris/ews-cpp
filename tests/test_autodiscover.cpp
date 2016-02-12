@@ -40,12 +40,81 @@ namespace tests
         void SetUp()
         {
             AssetsFixture::SetUp();
-            const auto& env = ews::test::global_data::instance().env;
-            creds_ = ews::basic_credentials(env.autodiscover_smtp_address,
-                                            env.autodiscover_password);
-            smtp_address_ = env.autodiscover_smtp_address;
+            creds_ = ews::basic_credentials("dduck@duckburg.onmicrosoft.com",
+                                            "quack");
+            smtp_address_ = "dduck@duckburg.onmicrosoft.com";
         }
     };
+
+    TEST_F(AutodiscoverTest, EmptyAddressThrows)
+    {
+        set_next_fake_response(read_file(
+            assets_dir() / "autodiscover_response.xml"));
+
+        EXPECT_THROW(
+        {
+            auto result =
+                ews::get_exchange_web_services_url<http_request_mock>(
+                    "",
+                    ews::autodiscover_protocol::internal,
+                    credentials());
+        }, ews::exception);
+    }
+
+    TEST_F(AutodiscoverTest, EmptyAddressExceptionText)
+    {
+        set_next_fake_response(read_file(
+            assets_dir() / "autodiscover_response.xml"));
+
+        try
+        {
+            auto result =
+                ews::get_exchange_web_services_url<http_request_mock>(
+                    "",
+                    ews::autodiscover_protocol::internal,
+                    credentials());
+            FAIL() << "Expected an exception";
+        }
+        catch (ews::exception& exc)
+        {
+            EXPECT_STREQ("Empty SMTP address given", exc.what());
+        }
+    }
+
+    TEST_F(AutodiscoverTest, InvalidAddressThrows)
+    {
+        set_next_fake_response(read_file(
+            assets_dir() / "autodiscover_response.xml"));
+
+        EXPECT_THROW(
+        {
+            auto result =
+                ews::get_exchange_web_services_url<http_request_mock>(
+                    "typo",
+                    ews::autodiscover_protocol::internal,
+                    credentials());
+        }, ews::exception);
+    }
+
+    TEST_F(AutodiscoverTest, InvalidAddressExceptionText)
+    {
+        set_next_fake_response(read_file(
+            assets_dir() / "autodiscover_response.xml"));
+
+        try
+        {
+            auto result =
+                ews::get_exchange_web_services_url<http_request_mock>(
+                    "typo",
+                    ews::autodiscover_protocol::internal,
+                    credentials());
+            FAIL() << "Expected an exception";
+        }
+        catch (ews::exception& exc)
+        {
+            EXPECT_STREQ("No valid SMTP address given", exc.what());
+        }
+    }
 
     TEST_F(AutodiscoverTest, GetExchangeWebServicesURL)
     {
