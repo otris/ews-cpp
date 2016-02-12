@@ -5136,6 +5136,44 @@ namespace ews
                                 internal::uri<>::microsoft::autodiscover());
             if (!account_node)
             {
+                // Check for <Error/> element
+                const auto error_node = get_element_by_qname(
+                    *doc,
+                    "Error",
+                    "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006");
+                if (error_node)
+                {
+                    std::string error_code;
+                    std::string message;
+
+                    for (auto node = error_node->first_node(); node;
+                         node = node->next_sibling())
+                    {
+                        if (compare(node->local_name(),
+                                    node->local_name_size(),
+                                    "ErrorCode",
+                                    std::strlen("ErrorCode")))
+                        {
+                            error_code = std::string(node->value(),
+                                                     node->value_size());
+                        }
+                        else if (compare(node->local_name(),
+                                         node->local_name_size(),
+                                         "Message",
+                                         std::strlen("Message")))
+                        {
+                            message = std::string(node->value(),
+                                                  node->value_size());
+                        }
+
+                        if (!error_code.empty() && !message.empty())
+                        {
+                            throw exception(message + " (error code: " +
+                                error_code + ")");
+                        }
+                    }
+                }
+
                 throw exception("Unable to parse response");
             }
 

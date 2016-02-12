@@ -1,0 +1,92 @@
+<Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006">
+        <Response xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a">
+                <User>
+                        <DisplayName>Donald Duck</DisplayName>
+                        <LegacyDN>/o=ExchangeLabs/ou=Exchange Administrative Group (FYDIBOHF23SPDLT)/cn=Recipients/cn=9f0941f88f5546569c87b8ed3a90bec9-duck</LegacyDN>
+                        <AutoDiscoverSMTPAddress>duck@duckburg.onmicrosoft.com</AutoDiscoverSMTPAddress>
+                        <DeploymentId>00de18b9-994a-4124-960a-bd8968414491</DeploymentId>
+                </User>
+                <Account>
+                        <AccountType>email</AccountType>
+                        <Action>settings</Action>
+                        <MicrosoftOnline>True</MicrosoftOnline>
+                        <Protocol>
+                                <Type>EXCH</Type>
+                                <Server>12f2c1c5-cf63-4584-a64b-e2e369b32285@duckburg.onmicrosoft.com</Server>
+                                <ServerDN>/o=ExchangeLabs/ou=Exchange Administrative Group (FYDIBOHF23SPDLT)/cn=Configuration/cn=Servers/cn=12f2c1c5-cf63-4584-a64b-e2e369b32285@duckburg.onmicrosoft.com</ServerDN>
+                                <ServerVersion>73C18193</ServerVersion>
+                                <MdbDN>/o=ExchangeLabs/ou=Exchange Administrative Group (FYDIBOHF23SPDLT)/cn=Configuration/cn=Servers/cn=12f2c1c5-cf63-4584-a64b-e2e369b32285@duckburg.onmicrosoft.com/cn=Microsoft Private MDB</MdbDN>
+                                <PublicFolderServer>outlook.office365.com</PublicFolderServer>
+                                <AuthPackage>Anonymous</AuthPackage>
+                                <ASUrl>https://outlook.office365.com/EWS/Exchange.asmx</ASUrl>
+                                <EwsUrl>https://outlook.office365.com/EWS/Exchange.asmx</EwsUrl>
+                                <EmwsUrl>https://outlook.office365.com/EWS/Exchange.asmx</EmwsUrl>
+                                <SharingUrl>https://outlook.office365.com/EWS/Exchange.asmx</SharingUrl>
+                                <EcpUrl>https://outlook.office365.com/owa/</EcpUrl>
+                                <EcpUrl-um>?path=/options/callanswering</EcpUrl-um>
+                                <EcpUrl-aggr>?path=/options/connectedaccounts</EcpUrl-aggr>
+                                <EcpUrl-mt>options/ecp/PersonalSettings/DeliveryReport.aspx?rfr=olk&amp;exsvurl=1&amp;IsOWA=&lt;IsOWA&gt;&amp;MsgID=&lt;MsgID&gt;&amp;Mbx=&lt;Mbx&gt;&amp;realm=duckburg.onmicrosoft.com</EcpUrl-mt>
+                                <EcpUrl-ret>?path=/options/retentionpolicies</EcpUrl-ret>
+                                <EcpUrl-sms>?path=/options/textmessaging</EcpUrl-sms>
+                                <EcpUrl-publish>?path=/options/calendarpublishing/id/&lt;FldID&gt;</EcpUrl-publish>
+                                <EcpUrl-photo>?path=/options/myaccount/action/photo</EcpUrl-photo>
+                                <EcpUrl-connect>?path=/options/socialnetworks&amp;ignore1=&lt;Action&gt;&amp;ignore2=&lt;Provider&gt;</EcpUrl-connect>
+                                <EcpUrl-tm>options/ecp/?rfr=olk&amp;ftr=TeamMailbox&amp;exsvurl=1&amp;realm=duckburg.onmicrosoft.com</EcpUrl-tm>
+                                <EcpUrl-tmCreating>options/ecp/?rfr=olk&amp;ftr=TeamMailboxCreating&amp;SPUrl=&lt;SPUrl&gt;&amp;Title=&lt;Title&gt;&amp;SPTMAppUrl=&lt;SPTMAppUrl&gt;&amp;exsvurl=1&amp;realm=duckburg.onmicrosoft.com</EcpUrl-tmCreating>
+                                <EcpUrl-tmEditing>options/ecp/?rfr=olk&amp;ftr=TeamMailboxEditing&amp;Id=&lt;Id&gt;&amp;exsvurl=1&amp;realm=duckburg.onmicrosoft.com</EcpUrl-tmEditing>
+                                <EcpUrl-extinstall>?path=/options/manageapps</EcpUrl-extinstall>
+                                <OOFUrl>https://outlook.office365.com/EWS/Exchange.asmx</OOFUrl>
+                                <UMUrl>https://outlook.office365.com/EWS/UM2007Legacy.asmx</UMUrl>
+                                <OABUrl>https://outlook.office365.com/OAB/646f1f11-3801-40d4-bed8-7122e3812ed4/</OABUrl>
+                                <ServerExclusiveConnect>off</ServerExclusiveConnect>
+                        </Protocol>
+                        <Protocol>
+                                <Type>EXPR</Type>
+                                <Server>outlook.office365.com</Server>
+                                <SSL>On</SSL>
+                                <AuthPackage>Basic</AuthPackage>
+                                <ASUrl>https://outlook.another.office365.com/EWS/Exchange.asmx</ASUrl>
+                                <EwsUrl>https://outlook.office365.com/EWS/Exchange.asmx</EwsUrl>
+                                <EmwsUrl>https://outlook.office365.com/EWS/Exchange.asmx</EmwsUrl>
+                                <SharingUrl>https://outlook.office365.com/EWS/Exchange.asmx</SharingUrl>
+                                <EcpUrl>https://outlook.office365.com/owa/</EcpUrl>
+                                <EcpUrl-um>?path=/options/callanswering</EcpUrl-um>
+                                <EcpUrl-aggr>?path=/options/connectedaccounts</EcpUrl-aggr>
+                                <EcpUrl-mt>options/ecp/PersonalSettings/DeliveryReport.aspx?rfr=olk&amp;exsvurl=1&amp;IsOWA=&lt;IsOWA&gt;&amp;MsgID=&lt;MsgID&gt;&amp;Mbx=&lt;Mbx&gt;&amp;realm=duckburg.onmicrosoft.com</EcpUrl-mt>
+                                <EcpUrl-ret>?path=/options/retentionpolicies</EcpUrl-ret>
+                                <EcpUrl-sms>?path=/options/textmessaging</EcpUrl-sms>
+                                <EcpUrl-publish>?path=/options/calendarpublishing/id/&lt;FldID&gt;</EcpUrl-publish>
+                                <EcpUrl-photo>?path=/options/myaccount/action/photo</EcpUrl-photo>
+                                <EcpUrl-connect>?path=/options/socialnetworks&amp;ignore1=&lt;Action&gt;&amp;ignore2=&lt;Provider&gt;</EcpUrl-connect>
+                                <EcpUrl-tm>options/ecp/?rfr=olk&amp;ftr=TeamMailbox&amp;exsvurl=1&amp;realm=duckburg.onmicrosoft.com</EcpUrl-tm>
+                                <EcpUrl-tmCreating>options/ecp/?rfr=olk&amp;ftr=TeamMailboxCreating&amp;SPUrl=&lt;SPUrl&gt;&amp;Title=&lt;Title&gt;&amp;SPTMAppUrl=&lt;SPTMAppUrl&gt;&amp;exsvurl=1&amp;realm=duckburg.onmicrosoft.com</EcpUrl-tmCreating>
+                                <EcpUrl-tmEditing>options/ecp/?rfr=olk&amp;ftr=TeamMailboxEditing&amp;Id=&lt;Id&gt;&amp;exsvurl=1&amp;realm=duckburg.onmicrosoft.com</EcpUrl-tmEditing>
+                                <EcpUrl-extinstall>?path=/options/manageapps</EcpUrl-extinstall>
+                                <OOFUrl>https://outlook.office365.com/EWS/Exchange.asmx</OOFUrl>
+                                <UMUrl>https://outlook.office365.com/EWS/UM2007Legacy.asmx</UMUrl>
+                                <OABUrl>https://outlook.office365.com/OAB/646f1f11-3801-40d4-bed8-7122e3812ed4/</OABUrl>
+                                <ServerExclusiveConnect>on</ServerExclusiveConnect>
+                                <CertPrincipalName>msstd:outlook.com</CertPrincipalName>
+                                <EwsPartnerUrl>https://outlook.office365.com/EWS/Exchange.asmx</EwsPartnerUrl>
+                                <GroupingInformation>VI1PR09</GroupingInformation>
+                        </Protocol>
+                        <Protocol>
+                                <Type>WEB</Type>
+                                <Internal>
+                                        <OWAUrl AuthenticationMethod="LiveIdFba, OAuth">https://outlook.office365.com/owa/</OWAUrl>
+                                        <Protocol>
+                                                <Type>EXCH</Type>
+                                                <ASUrl>https://outlook.office365.com/EWS/Exchange.asmx</ASUrl>
+                                        </Protocol>
+                                </Internal>
+                                <External>
+                                        <OWAUrl AuthenticationMethod="Fba">https://outlook.office365.com/owa/duckburg.onmicrosoft.com/</OWAUrl>
+                                        <Protocol>
+                                                <Type>EXPR</Type>
+                                                <ASUrl>https://outlook.office365.com/EWS/Exchange.asmx</ASUrl>
+                                        </Protocol>
+                                </External>
+                        </Protocol>
+                </Account>
+        </Response>
+</Autodiscover>

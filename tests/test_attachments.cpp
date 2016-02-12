@@ -9,37 +9,6 @@
 
 typedef rapidxml::xml_document<> xml_document;
 
-#ifdef EWS_USE_BOOST_LIBRARY
-namespace
-{
-    inline std::vector<char> read_contents(const boost::filesystem::path& path)
-    {
-        std::ifstream ifstr(path.string(),
-                            std::ifstream::in | std::ios::binary);
-        if (!ifstr.is_open())
-        {
-            throw std::runtime_error("Could not open file for reading: " +
-                    path.string());
-        }
-
-        ifstr.unsetf(std::ios::skipws);
-
-        ifstr.seekg(0, std::ios::end);
-        const auto file_size = ifstr.tellg();
-        ifstr.seekg(0, std::ios::beg);
-
-        auto contents = std::vector<char>();
-        contents.reserve(file_size);
-
-        contents.insert(begin(contents),
-                      std::istream_iterator<unsigned char>(ifstr),
-                      std::istream_iterator<unsigned char>());
-        ifstr.close();
-        return contents;
-    }
-}
-#endif // EWS_USE_BOOST_LIBRARY
-
 namespace tests
 {
     TEST(AttachmentIdTest, DefaultConstruction)
@@ -216,7 +185,7 @@ namespace tests
     {
         using ews::internal::get_element_by_qname;
 
-        std::vector<char> buf = read_contents(
+        std::vector<char> buf = read_file(
             assets_dir() / "get_attachment_response_item.xml");
         buf.push_back('\0');
         xml_document doc;
@@ -272,7 +241,7 @@ namespace tests
         using ews::internal::on_scope_exit;
 
         const auto target_path = cwd() / "output.png";
-        std::vector<char> buf = read_contents(
+        std::vector<char> buf = read_file(
                 assets_dir() / "get_attachment_response.xml");
         buf.push_back('\0');
         xml_document doc;
@@ -366,7 +335,7 @@ namespace tests
     {
         using ews::internal::get_element_by_qname;
 
-        std::vector<char> buf = read_contents(
+        std::vector<char> buf = read_file(
                 assets_dir() / "get_attachment_response.xml");
         buf.push_back('\0');
         xml_document doc;

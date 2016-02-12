@@ -11,7 +11,11 @@
 #include <ews/ews_test_support.hpp>
 #include <ews/rapidxml/rapidxml.hpp>
 #include <gtest/gtest.h>
+
 #ifdef EWS_USE_BOOST_LIBRARY
+# include <fstream>
+# include <iostream>
+# include <iterator>
 # include <boost/filesystem.hpp>
 #endif
 
@@ -31,6 +35,101 @@ namespace tests
         return std::find_if(begin(cont), end(cont), pred) != end(cont);
     }
 
+#ifdef EWS_USE_BOOST_LIBRARY
+    // Read file contents into a buffer
+    inline std::vector<char> read_file(const boost::filesystem::path& path)
+    {
+        std::ifstream ifstr(path.string(),
+                            std::ifstream::in | std::ios::binary);
+        if (!ifstr.is_open())
+        {
+            throw std::runtime_error("Could not open file for reading: " +
+                path.string());
+        }
+
+        ifstr.unsetf(std::ios::skipws);
+
+        ifstr.seekg(0, std::ios::end);
+        const auto file_size = ifstr.tellg();
+        ifstr.seekg(0, std::ios::beg);
+
+        auto contents = std::vector<char>();
+        contents.reserve(file_size);
+
+        contents.insert(begin(contents),
+                        std::istream_iterator<unsigned char>(ifstr),
+                        std::istream_iterator<unsigned char>());
+        ifstr.close();
+        return contents;
+    }
+#endif // EWS_USE_BOOST_LIBRARY
+
+    struct http_request_mock final
+    {
+        struct storage
+        {
+            static storage& instance()
+            {
+#ifdef EWS_HAS_THREAD_LOCAL_STORAGE
+                thread_local storage inst;
+#else
+                static storage inst;
+#endif
+                return inst;
+            }
+
+            std::string request_string;
+            std::vector<char> fake_response;
+        };
+
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        http_request_mock() = default;
+#else
+        http_request_mock() {}
+#endif
+
+        bool header_contains(const std::string& search_str) const
+        {
+            const auto& request_str = storage::instance().request_string;
+            const auto header_end_idx = request_str.find("</soap:Header>");
+            const auto search_str_idx = request_str.find(search_str);
+            return     search_str_idx != std::string::npos
+                    && search_str_idx < header_end_idx;
+        }
+
+        // Below same public interface as ews::internal::http_request class
+        enum class method { POST };
+
+        explicit http_request_mock(const std::string&) {}
+
+        void set_method(method) {}
+
+        void set_content_type(const std::string&) {}
+
+        void set_content_length(std::size_t) {}
+
+        void set_credentials(const ews::internal::credentials&) {}
+
+#ifdef EWS_HAS_VARIADIC_TEMPLATES
+        template <typename... Args> void set_option(CURLoption, Args...) {}
+#else
+        template <typename T1>
+        void set_option(CURLoption option, T1) {}
+
+        template <typename T1, typename T2>
+        void set_option(CURLoption option, T1, T2) {}
+#endif
+
+        ews::internal::http_response send(const std::string& request)
+        {
+            auto& s = storage::instance();
+            s.request_string = request;
+            auto response_bytes = s.fake_response;
+            return ews::internal::http_response(200,
+                                                std::move(response_bytes));
+        }
+    };
+
     // Per-test-case set-up and tear-down
     class BaseFixture : public ::testing::Test
     {
@@ -49,82 +148,6 @@ namespace tests
     class FakeServiceFixture : public BaseFixture
     {
     public:
-        struct http_request_mock final
-        {
-            struct storage
-            {
-                static storage& instance()
-                {
-#ifdef EWS_HAS_THREAD_LOCAL_STORAGE
-                    thread_local storage inst;
-#else
-                    static storage inst;
-#endif
-                    return inst;
-                }
-
-                std::string request_string;
-                std::vector<char> fake_response;
-            };
-
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
-            http_request_mock() = default;
-#else
-            http_request_mock() {}
-#endif
-
-            bool header_contains(const std::string& search_str) const
-            {
-                const auto& request_str = storage::instance().request_string;
-                const auto header_end_idx = request_str.find("</soap:Header>");
-                const auto search_str_idx = request_str.find(search_str);
-                return     search_str_idx != std::string::npos
-                        && search_str_idx < header_end_idx;
-            }
-
-            // Below same public interface as ews::internal::http_request class
-            enum class method { POST };
-
-            explicit http_request_mock(const std::string& url)
-            {
-                (void)url;
-            }
-
-            void set_method(method m)
-            {
-                (void)m;
-            }
-
-            void set_content_type(const std::string& content_type)
-            {
-                (void)content_type;
-            }
-
-            void set_credentials(const ews::internal::credentials& creds)
-            {
-                (void)creds;
-            }
-
-#ifdef EWS_HAS_VARIADIC_TEMPLATES
-            template <typename... Args> void set_option(CURLoption, Args...) {}
-#else
-            template <typename T1>
-            void set_option(CURLoption option, T1) {}
-
-            template <typename T1, typename T2>
-            void set_option(CURLoption option, T1, T2) {}
-#endif
-
-            ews::internal::http_response send(const std::string& request)
-            {
-                auto& s = storage::instance();
-                s.request_string = request;
-                auto response_bytes = s.fake_response;
-                return ews::internal::http_response(200,
-                                                    std::move(response_bytes));
-            }
-        };
-
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
         virtual ~FakeServiceFixture() = default;
 #else

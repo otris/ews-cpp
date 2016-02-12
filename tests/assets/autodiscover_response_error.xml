@@ -1,0 +1,9 @@
+<Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006">
+        <Response>
+                <Error Time="15:52:53.0115160" Id="2085925935">
+                        <ErrorCode>500</ErrorCode>
+                        <Message>The email address can&apos;t be found.</Message>
+                        <DebugData/>
+                </Error>
+        </Response>
+</Autodiscover>

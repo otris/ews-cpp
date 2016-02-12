@@ -260,6 +260,7 @@ add_executable(tests
     tests/fixtures.hpp
     tests/main.cpp
     tests/test_attachments.cpp
+    tests/test_autodiscover.cpp
     tests/test_calendar_items.cpp
     tests/test_contacts.cpp
     tests/test_folders.cpp
