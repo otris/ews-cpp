@@ -38,14 +38,14 @@ namespace tests
     {
         const char* expected = "<t:FolderId Id=\"abcde\" ChangeKey=\"edcba\"/>";
         const auto a = ews::folder_id("abcde", "edcba");
-        EXPECT_STREQ(expected, a.to_xml("t").c_str());
+        EXPECT_STREQ(expected, a.to_xml().c_str());
     }
 
     TEST(FolderTest, ToXMLWithoutChangeKey)
     {
         const char* expected = "<t:FolderId Id=\"abcde\"/>";
         const auto a = ews::folder_id("abcde");
-        EXPECT_STREQ(expected, a.to_xml("t").c_str());
+        EXPECT_STREQ(expected, a.to_xml().c_str());
     }
 
     TEST(FolderTest, DistinguishedFolderIdToXML)
@@ -53,7 +53,7 @@ namespace tests
         const char* expected = "<t:DistinguishedFolderId Id=\"contacts\"/>";
         const auto folder =
             ews::distinguished_folder_id(ews::standard_folder::contacts);
-        EXPECT_STREQ(expected, folder.to_xml("t").c_str());
+        EXPECT_STREQ(expected, folder.to_xml().c_str());
     }
 
     TEST(FolderTest, DistinguishedFolderIdToXMLWithChangeKey)
@@ -62,7 +62,7 @@ namespace tests
             "<t:DistinguishedFolderId Id=\"tasks\" ChangeKey=\"abcde\"/>";
         const auto folder =
             ews::distinguished_folder_id(ews::standard_folder::tasks, "abcde");
-        EXPECT_STREQ(expected, folder.to_xml("t").c_str());
+        EXPECT_STREQ(expected, folder.to_xml().c_str());
     }
 
     TEST(FolderTest, DistinguishedFolderIsAlwaysValid)
@@ -75,8 +75,8 @@ namespace tests
     {
         // Test conversion c'tor
         ews::distinguished_folder_id id = ews::standard_folder::inbox;
-        EXPECT_STREQ("<x:DistinguishedFolderId Id=\"inbox\"/>",
-                     id.to_xml("x").c_str());
+        EXPECT_STREQ("<t:DistinguishedFolderId Id=\"inbox\"/>",
+                     id.to_xml().c_str());
     }
 
     TEST(FolderTest, DistinguishedFolderIdAndChangeKeyAttribute)

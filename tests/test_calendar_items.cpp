@@ -20,14 +20,14 @@ namespace tests
                     ews::response_type::accept,
                     ews::date_time("2004-11-11T11:11:11Z"));
 
-        EXPECT_STREQ("<y:Attendee>"
-                       "<y:Mailbox>"
-                         "<y:EmailAddress>gaylord.focker@uchospitals.edu</y:EmailAddress>"
-                       "</y:Mailbox>"
-                       "<y:ResponseType>Accept</y:ResponseType>"
-                       "<y:LastResponseTime>2004-11-11T11:11:11Z</y:LastResponseTime>"
-                     "</y:Attendee>",
-                     a.to_xml("y").c_str());
+        EXPECT_STREQ("<t:Attendee>"
+                       "<t:Mailbox>"
+                         "<t:EmailAddress>gaylord.focker@uchospitals.edu</t:EmailAddress>"
+                       "</t:Mailbox>"
+                       "<t:ResponseType>Accept</t:ResponseType>"
+                       "<t:LastResponseTime>2004-11-11T11:11:11Z</t:LastResponseTime>"
+                     "</t:Attendee>",
+                     a.to_xml().c_str());
     }
 
     TEST(AttendeeTest, FromXML)
@@ -63,9 +63,9 @@ namespace tests
         EXPECT_EQ(start, cv.get_start_date());
         EXPECT_EQ(end, cv.get_end_date());
         EXPECT_EQ(0U, cv.get_max_entries_returned());
-        EXPECT_STREQ("<y:CalendarView StartDate=\"2016-01-12T10:00:00Z\" "
+        EXPECT_STREQ("<m:CalendarView StartDate=\"2016-01-12T10:00:00Z\" "
                      "EndDate=\"2016-01-12T12:00:00Z\" />",
-                     cv.to_xml("y").c_str());
+                     cv.to_xml().c_str());
     }
 
     TEST(CalendarViewTest, ConstructWithMaxEntriesReturnedAttribute)
@@ -79,7 +79,7 @@ namespace tests
         EXPECT_STREQ("<m:CalendarView MaxEntriesReturned=\"7\" "
                      "StartDate=\"2016-01-12T10:00:00Z\" "
                      "EndDate=\"2016-01-12T12:00:00Z\" />",
-                     cv.to_xml("m").c_str());
+                     cv.to_xml().c_str());
     }
 
     TEST(OccurrenceInfoTest, ConstructFromXML)
@@ -262,7 +262,7 @@ namespace tests
                 "<t:DaysOfWeek>Monday</t:DaysOfWeek>"
                 "<t:DayOfWeekIndex>Third</t:DayOfWeekIndex>"
                 "<t:Month>April</t:Month>"
-            "</t:RelativeYearlyRecurrence>", r.to_xml("t").c_str());
+            "</t:RelativeYearlyRecurrence>", r.to_xml().c_str());
 
         const char* xml =
             "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
@@ -296,7 +296,7 @@ namespace tests
             "<t:AbsoluteMonthlyRecurrence>"
                 "<t:Interval>1</t:Interval>"
                 "<t:DayOfMonth>5</t:DayOfMonth>"
-            "</t:AbsoluteMonthlyRecurrence>", r.to_xml("t").c_str());
+            "</t:AbsoluteMonthlyRecurrence>", r.to_xml().c_str());
 
         const char* xml =
             "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
@@ -333,7 +333,7 @@ namespace tests
                 "<t:Interval>1</t:Interval>"
                 "<t:DaysOfWeek>Thursday</t:DaysOfWeek>"
                 "<t:DayOfWeekIndex>Third</t:DayOfWeekIndex>"
-            "</t:RelativeMonthlyRecurrence>", r.to_xml("t").c_str());
+            "</t:RelativeMonthlyRecurrence>", r.to_xml().c_str());
 
         const char* xml =
             "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
@@ -370,7 +370,7 @@ namespace tests
                 "<t:Interval>1</t:Interval>"
                 "<t:DaysOfWeek>Monday</t:DaysOfWeek>"
                 "<t:FirstDayOfWeek>Monday</t:FirstDayOfWeek>"
-            "</t:WeeklyRecurrence>", r1.to_xml("t").c_str());
+            "</t:WeeklyRecurrence>", r1.to_xml().c_str());
 
         const char* xml1 =
             "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
@@ -434,7 +434,7 @@ namespace tests
         EXPECT_STREQ(
             "<t:DailyRecurrence>"
                 "<t:Interval>3</t:Interval>"
-            "</t:DailyRecurrence>", r.to_xml("t").c_str());
+            "</t:DailyRecurrence>", r.to_xml().c_str());
 
         const char* xml =
             "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";

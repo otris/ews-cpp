@@ -46,17 +46,17 @@ namespace tests
     {
         const char* expected = "<t:ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>";
         const auto a = item_id("abcde", "edcba");
-        EXPECT_STREQ(expected, a.to_xml("t").c_str());
+        EXPECT_STREQ(expected, a.to_xml().c_str());
     }
 
 #pragma warning(suppress: 6262)
     TEST(ItemIdTest, FromAndToXMLRoundTrip)
     {
-        const char* xml = "<ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>";
+        const char* xml = "<t:ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>";
         std::vector<char> buf(xml, xml + std::strlen(xml));
         buf.push_back('\0');
         xml_document doc;
-        doc.parse<0>(&buf[0]);
+        doc.parse<rapidxml::parse_no_namespace>(&buf[0]);
         auto node = doc.first_node();
         auto obj = item_id::from_xml_element(*node);
         EXPECT_STREQ(xml, obj.to_xml().c_str());
@@ -76,7 +76,7 @@ namespace tests
         EXPECT_EQ(ews::body_type::plain_text, b.type());
         EXPECT_FALSE(b.is_truncated());
         const char* const expected =
-            "<Body BodyType=\"Text\">Here is some plain text</Body>";
+            "<t:Body BodyType=\"Text\">Here is some plain text</t:Body>";
         EXPECT_STREQ(expected, b.to_xml().c_str());
     }
 
@@ -86,8 +86,8 @@ namespace tests
         EXPECT_EQ(ews::body_type::html, b.type());
         EXPECT_FALSE(b.is_truncated());
         const char* const expected =
-"<x:Body BodyType=\"HTML\"><![CDATA[<b>Here is some HTML</b>]]></x:Body>";
-        EXPECT_STREQ(expected, b.to_xml("x").c_str());
+            "<t:Body BodyType=\"HTML\"><![CDATA[<b>Here is some HTML</b>]]></t:Body>";
+        EXPECT_STREQ(expected, b.to_xml().c_str());
     }
 
     TEST(PropertyPathTest, ConstructFromURI)

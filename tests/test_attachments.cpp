@@ -74,16 +74,16 @@ namespace tests
     TEST(AttachmentIdTest, ToXMLWithNamespace)
     {
         const char* expected =
-"<ns:AttachmentId Id=\"abcde\" RootItemId=\"qwertz\" RootItemChangeKey=\"edcba\"/>";
+"<t:AttachmentId Id=\"abcde\" RootItemId=\"qwertz\" RootItemChangeKey=\"edcba\"/>";
         const auto obj =
             ews::attachment_id("abcde", ews::item_id("qwertz", "edcba"));
-        EXPECT_STREQ(expected, obj.to_xml("ns").c_str());
+        EXPECT_STREQ(expected, obj.to_xml().c_str());
     }
 
     TEST(AttachmentIdTest, ToXML)
     {
         const char* expected =
-"<AttachmentId Id=\"abcde\" RootItemId=\"qwertz\" RootItemChangeKey=\"edcba\"/>";
+"<t:AttachmentId Id=\"abcde\" RootItemId=\"qwertz\" RootItemChangeKey=\"edcba\"/>";
         const auto obj =
             ews::attachment_id("abcde", ews::item_id("qwertz", "edcba"));
         EXPECT_STREQ(expected, obj.to_xml().c_str());
@@ -92,11 +92,11 @@ namespace tests
     TEST(AttachmentIdTest, FromAndToXMLRoundTrip)
     {
         const char* xml =
-"<AttachmentId Id=\"abcde\" RootItemId=\"qwertz\" RootItemChangeKey=\"edcba\"/>";
+"<t:AttachmentId Id=\"abcde\" RootItemId=\"qwertz\" RootItemChangeKey=\"edcba\"/>";
         std::vector<char> buf(xml, xml + std::strlen(xml));
         buf.push_back('\0');
         xml_document doc;
-        doc.parse<0>(&buf[0]);
+        doc.parse<rapidxml::parse_no_namespace>(&buf[0]);
         auto node = doc.first_node();
         auto obj = ews::attachment_id::from_xml_element(*node);
         EXPECT_STREQ(xml, obj.to_xml().c_str());
