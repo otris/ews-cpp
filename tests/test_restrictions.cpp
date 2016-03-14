@@ -6,12 +6,12 @@ namespace tests
     {
         // Mode is `Substring` and comparison `Loose` by default
 
-        const char* expected = "<Contains "
+        const char* expected = "<t:Contains "
                                "ContainmentMode=\"Substring\" "
                                "ContainmentComparison=\"Loose\">"
-                               "<FieldURI FieldURI=\"item:Subject\"/>"
-                               "<Constant Value=\"Vogon poetry\"/>"
-                               "</Contains>";
+                               "<t:FieldURI FieldURI=\"item:Subject\"/>"
+                               "<t:Constant Value=\"Vogon poetry\"/>"
+                               "</t:Contains>";
 
         auto restr =
             ews::contains(ews::item_property_path::subject, "Vogon poetry");
@@ -24,20 +24,20 @@ namespace tests
         using ews::contains;
         using ews::is_equal_to;
 
-        const char* expected = "<And>"
-                               "<IsEqualTo>"
-                               "<FieldURI FieldURI=\"task:IsComplete\"/>"
-                               "<FieldURIOrConstant>"
-                               "<Constant Value=\"true\"/>"
-                               "</FieldURIOrConstant>"
-                               "</IsEqualTo>"
-                               "<Contains "
+        const char* expected = "<t:And>"
+                               "<t:IsEqualTo>"
+                               "<t:FieldURI FieldURI=\"task:IsComplete\"/>"
+                               "<t:FieldURIOrConstant>"
+                               "<t:Constant Value=\"true\"/>"
+                               "</t:FieldURIOrConstant>"
+                               "</t:IsEqualTo>"
+                               "<t:Contains "
                                "ContainmentMode=\"Substring\" "
                                "ContainmentComparison=\"Loose\">"
-                               "<FieldURI FieldURI=\"item:Subject\"/>"
-                               "<Constant Value=\"Baseball\"/>"
-                               "</Contains>"
-                               "</And>";
+                               "<t:FieldURI FieldURI=\"item:Subject\"/>"
+                               "<t:Constant Value=\"Baseball\"/>"
+                               "</t:Contains>"
+                               "</t:And>";
 
         auto restr =
             and_(is_equal_to(ews::task_property_path::is_complete, true),
@@ -52,20 +52,20 @@ namespace tests
         using ews::contains;
         using ews::is_equal_to;
 
-        const char* expected = "<Or>"
-                               "<IsEqualTo>"
-                               "<FieldURI FieldURI=\"task:IsComplete\"/>"
-                               "<FieldURIOrConstant>"
-                               "<Constant Value=\"false\"/>"
-                               "</FieldURIOrConstant>"
-                               "</IsEqualTo>"
-                               "<Contains "
+        const char* expected = "<t:Or>"
+                               "<t:IsEqualTo>"
+                               "<t:FieldURI FieldURI=\"task:IsComplete\"/>"
+                               "<t:FieldURIOrConstant>"
+                               "<t:Constant Value=\"false\"/>"
+                               "</t:FieldURIOrConstant>"
+                               "</t:IsEqualTo>"
+                               "<t:Contains "
                                "ContainmentMode=\"Substring\" "
                                "ContainmentComparison=\"Loose\">"
-                               "<FieldURI FieldURI=\"item:Subject\"/>"
-                               "<Constant Value=\"Soccer\"/>"
-                               "</Contains>"
-                               "</Or>";
+                               "<t:FieldURI FieldURI=\"item:Subject\"/>"
+                               "<t:Constant Value=\"Soccer\"/>"
+                               "</t:Contains>"
+                               "</t:Or>";
 
         auto restr =
             or_(is_equal_to(ews::task_property_path::is_complete, false),
@@ -79,14 +79,14 @@ namespace tests
         using ews::not_;
         using ews::is_equal_to;
 
-        const char* expected = "<Not>"
-                               "<IsEqualTo>"
-                               "<FieldURI FieldURI=\"task:IsComplete\"/>"
-                               "<FieldURIOrConstant>"
-                               "<Constant Value=\"true\"/>"
-                               "</FieldURIOrConstant>"
-                               "</IsEqualTo>"
-                               "</Not>";
+        const char* expected = "<t:Not>"
+                               "<t:IsEqualTo>"
+                               "<t:FieldURI FieldURI=\"task:IsComplete\"/>"
+                               "<t:FieldURIOrConstant>"
+                               "<t:Constant Value=\"true\"/>"
+                               "</t:FieldURIOrConstant>"
+                               "</t:IsEqualTo>"
+                               "</t:Not>";
 
         auto restr =
             not_(is_equal_to(ews::task_property_path::is_complete, true));
@@ -95,12 +95,12 @@ namespace tests
 
     TEST(RestrictionTest, IsEqualToBooleanConstantRendersCorrectly)
     {
-        const char* expected = "<IsEqualTo>"
-                               "<FieldURI FieldURI=\"task:IsComplete\"/>"
-                               "<FieldURIOrConstant>"
-                               "<Constant Value=\"true\"/>"
-                               "</FieldURIOrConstant>"
-                               "</IsEqualTo>";
+        const char* expected = "<t:IsEqualTo>"
+                               "<t:FieldURI FieldURI=\"task:IsComplete\"/>"
+                               "<t:FieldURIOrConstant>"
+                               "<t:Constant Value=\"true\"/>"
+                               "</t:FieldURIOrConstant>"
+                               "</t:IsEqualTo>";
 
         auto restr =
             ews::is_equal_to(ews::task_property_path::is_complete, true);
@@ -109,26 +109,26 @@ namespace tests
 
     TEST(RestrictionTest, IsEqualToBooleanConstantRendersCorrectlyWithNamespace)
     {
-        const char* expected = "<s:IsEqualTo>"
-                               "<s:FieldURI FieldURI=\"task:IsComplete\"/>"
-                               "<s:FieldURIOrConstant>"
-                               "<s:Constant Value=\"false\"/>"
-                               "</s:FieldURIOrConstant>"
-                               "</s:IsEqualTo>";
+        const char* expected = "<t:IsEqualTo>"
+                               "<t:FieldURI FieldURI=\"task:IsComplete\"/>"
+                               "<t:FieldURIOrConstant>"
+                               "<t:Constant Value=\"false\"/>"
+                               "</t:FieldURIOrConstant>"
+                               "</t:IsEqualTo>";
 
         auto restr =
             ews::is_equal_to(ews::task_property_path::is_complete, false);
-        EXPECT_STREQ(expected, restr.to_xml("s").c_str());
+        EXPECT_STREQ(expected, restr.to_xml().c_str());
     }
 
     TEST(RestrictionTest, IsEqualToStringConstantRendersCorrectly)
     {
-        const char* expected = "<IsEqualTo>"
-                               "<FieldURI FieldURI=\"folder:DisplayName\"/>"
-                               "<FieldURIOrConstant>"
-                               "<Constant Value=\"Inbox\"/>"
-                               "</FieldURIOrConstant>"
-                               "</IsEqualTo>";
+        const char* expected = "<t:IsEqualTo>"
+                               "<t:FieldURI FieldURI=\"folder:DisplayName\"/>"
+                               "<t:FieldURIOrConstant>"
+                               "<t:Constant Value=\"Inbox\"/>"
+                               "</t:FieldURIOrConstant>"
+                               "</t:IsEqualTo>";
 
         auto restr =
             ews::is_equal_to(ews::folder_property_path::display_name, "Inbox");
@@ -137,12 +137,12 @@ namespace tests
 
     TEST(RestrictionTest, IsEqualToDateTimeConstantRendersCorrectly)
     {
-        const char* expected = "<IsEqualTo>"
-                               "<FieldURI FieldURI=\"item:DateTimeCreated\"/>"
-                               "<FieldURIOrConstant>"
-                               "<Constant Value=\"2015-05-28T17:39:11Z\"/>"
-                               "</FieldURIOrConstant>"
-                               "</IsEqualTo>";
+        const char* expected = "<t:IsEqualTo>"
+                               "<t:FieldURI FieldURI=\"item:DateTimeCreated\"/>"
+                               "<t:FieldURIOrConstant>"
+                               "<t:Constant Value=\"2015-05-28T17:39:11Z\"/>"
+                               "</t:FieldURIOrConstant>"
+                               "</t:IsEqualTo>";
 
         const auto yesterday = ews::date_time("2015-05-28T17:39:11Z");
         auto restr = ews::is_equal_to(
@@ -153,14 +153,14 @@ namespace tests
     TEST(RestrictionTest,
          IndexedFieldURIIsEqualToStringConstantRendersCorrectly)
     {
-        const char* expected = "<IsEqualTo>"
-                               "<IndexedFieldURI "
+        const char* expected = "<t:IsEqualTo>"
+                               "<t:IndexedFieldURI "
                                "FieldURI=\"contacts:EmailAddress\" "
                                "FieldIndex=\"EmailAddress3\"/>"
-                               "<FieldURIOrConstant>"
-                               "<Constant Value=\"jane.dow@contoso.com\"/>"
-                               "</FieldURIOrConstant>"
-                               "</IsEqualTo>";
+                               "<t:FieldURIOrConstant>"
+                               "<t:Constant Value=\"jane.dow@contoso.com\"/>"
+                               "</t:FieldURIOrConstant>"
+                               "</t:IsEqualTo>";
 
         auto restr =
             ews::is_equal_to(ews::contact_property_path::email_address_3,
@@ -182,7 +182,7 @@ namespace tests
 
         auto restr = ews::is_equal_to(
             ews::contact_property_path::email_address_1, "bruce@willis.com");
-        EXPECT_STREQ(expected, restr.to_xml("t").c_str());
+        EXPECT_STREQ(expected, restr.to_xml().c_str());
     }
 
     TEST(RestrictionTest, IsNotEqualToBooleanConstantRendersCorrectly)
@@ -196,17 +196,17 @@ namespace tests
 
         auto restr =
             ews::is_not_equal_to(ews::task_property_path::is_complete, true);
-        EXPECT_STREQ(expected, restr.to_xml("t").c_str());
+        EXPECT_STREQ(expected, restr.to_xml().c_str());
     }
 
     TEST(RestrictionTest, IsGreaterThanIntConstantRendersCorrectly)
     {
-        const char* expected = "<IsGreaterThan>"
-                               "<FieldURI FieldURI=\"task:PercentComplete\"/>"
-                               "<FieldURIOrConstant>"
-                               "<Constant Value=\"75\"/>"
-                               "</FieldURIOrConstant>"
-                               "</IsGreaterThan>";
+        const char* expected = "<t:IsGreaterThan>"
+                               "<t:FieldURI FieldURI=\"task:PercentComplete\"/>"
+                               "<t:FieldURIOrConstant>"
+                               "<t:Constant Value=\"75\"/>"
+                               "</t:FieldURIOrConstant>"
+                               "</t:IsGreaterThan>";
 
         auto restr =
             ews::is_greater_than(ews::task_property_path::percent_complete, 75);
@@ -215,12 +215,12 @@ namespace tests
 
     TEST(RestrictionTest, IsGreaterThanOrEqualToIntConstantRendersCorrectly)
     {
-        const char* expected = "<IsGreaterThanOrEqualTo>"
-                               "<FieldURI FieldURI=\"task:PercentComplete\"/>"
-                               "<FieldURIOrConstant>"
-                               "<Constant Value=\"80\"/>"
-                               "</FieldURIOrConstant>"
-                               "</IsGreaterThanOrEqualTo>";
+        const char* expected = "<t:IsGreaterThanOrEqualTo>"
+                               "<t:FieldURI FieldURI=\"task:PercentComplete\"/>"
+                               "<t:FieldURIOrConstant>"
+                               "<t:Constant Value=\"80\"/>"
+                               "</t:FieldURIOrConstant>"
+                               "</t:IsGreaterThanOrEqualTo>";
 
         auto restr = ews::is_greater_than_or_equal_to(
             ews::task_property_path::percent_complete, 80);

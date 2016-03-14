@@ -5350,18 +5350,10 @@ namespace ews
         bool valid() const EWS_NOEXCEPT { return !id_.empty(); }
 
         //! Serializes this item_id to an XML string
-        std::string to_xml(const char* xmlns=nullptr) const
+        std::string to_xml() const
         {
-            if (xmlns)
-            {
-                return std::string("<") + xmlns + ":ItemId Id=\"" + id() +
+            return "<t:ItemId Id=\"" + id() +
                     "\" ChangeKey=\"" + change_key() + "\"/>";
-            }
-            else
-            {
-                return "<ItemId Id=\"" + id() +
-                    "\" ChangeKey=\"" + change_key() + "\"/>";
-            }
         }
 
         //! Makes an item_id instance from a <tt>\<ItemId></tt> XML element
@@ -5431,15 +5423,10 @@ namespace ews
         //! Whether this attachment_id is valid
         bool valid() const EWS_NOEXCEPT { return !id_.empty(); }
 
-        std::string to_xml(const char* xmlns=nullptr) const
+        std::string to_xml() const
         {
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
             std::stringstream sstr;
-            sstr << "<" << pref << "AttachmentId Id=\"" << id() << "\"";
+            sstr << "<t:AttachmentId Id=\"" << id() << "\"";
             if (root_item_id().valid())
             {
                 sstr << " RootItemId=\"" << root_item_id().id()
@@ -5520,9 +5507,9 @@ namespace ews
         {
         }
 
-        std::string to_xml(const char* xmlns=nullptr) const
+        std::string to_xml() const
         {
-            return this->to_xml_impl(xmlns);
+            return this->to_xml_impl();
         }
 
         //! Returns a string identifying a folder in the Exchange store
@@ -5557,15 +5544,10 @@ namespace ews
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
     protected:
-        virtual std::string to_xml_impl(const char* xmlns) const
+        virtual std::string to_xml_impl() const
         {
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
             std::stringstream sstr;
-            sstr << "<" << pref << "FolderId Id=\"" << id_;
+            sstr << "<t:" << "FolderId Id=\"" << id_;
             if (!change_key_.empty())
             {
                 sstr << "\" ChangeKey=\"" << change_key_;
@@ -5960,15 +5942,10 @@ namespace ews
         }
 
     private:
-        std::string to_xml_impl(const char* xmlns) const override
+        std::string to_xml_impl() const override
         {
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
             std::stringstream sstr;
-            sstr << "<" << pref << "DistinguishedFolderId Id=\"";
+            sstr << "<t:" << "DistinguishedFolderId Id=\"";
             sstr << id();
             if (!change_key().empty())
             {
@@ -6848,19 +6825,14 @@ namespace ews
 
         void set_content(std::string content) { content_ = std::move(content); }
 
-        std::string to_xml(const char* xmlns=nullptr) const
+        std::string to_xml() const
         {
             //FIXME: what about IsTruncated attribute?
             static const auto cdata_beg = std::string("<![CDATA[");
             static const auto cdata_end = std::string("]]>");
 
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
             std::stringstream sstr;
-            sstr << "<" << pref << "Body BodyType=\""
+            sstr << "<t:Body BodyType=\""
                  << internal::body_type_str(type());
             sstr << "\">";
             if (   type() == body_type::html
@@ -6872,7 +6844,7 @@ namespace ews
             {
                 sstr << content_;
             }
-            sstr << "</" << pref << "Body>";
+            sstr << "</t:Body>";
             return sstr.str();
         }
 
@@ -7009,43 +6981,38 @@ namespace ews
         }
 
         //! Returns the XML serialized string version of this mailbox instance
-        std::string to_xml(const char* xmlns=nullptr) const
+        std::string to_xml() const
         {
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
             std::stringstream sstr;
-            sstr << "<" << pref << "Mailbox>";
+            sstr << "<t:Mailbox>";
             if (id().valid())
             {
-                sstr << id().to_xml(xmlns);
+                sstr << id().to_xml();
             }
             else
             {
-                sstr << "<" << pref << "EmailAddress>" << value()
-                     <<"</" << pref << "EmailAddress>";
+                sstr << "<t:EmailAddress>" << value()
+                     <<"</t:EmailAddress>";
 
                 if (!name().empty())
                 {
-                    sstr << "<" << pref << "Name>" << name()
-                         << "</" << pref << "Name>";
+                    sstr << "<t:Name>" << name()
+                         << "</t:Name>";
                 }
 
                 if (!routing_type().empty())
                 {
-                    sstr << "<" << pref << "RoutingType>" << routing_type()
-                         << "</" << pref << "RoutingType>";
+                    sstr << "<t:RoutingType>" << routing_type()
+                         << "</t:RoutingType>";
                 }
 
                 if (!mailbox_type().empty())
                 {
-                    sstr << "<" << pref << "MailboxType>" << mailbox_type()
-                         << "</" << pref << "MailboxType>";
+                    sstr << "<t:MailboxType>" << mailbox_type()
+                         << "</t:MailboxType>";
                 }
             }
-            sstr << "</" << pref << "Mailbox>";
+            sstr << "</t:Mailbox>";
             return sstr.str();
         }
 
@@ -7301,23 +7268,18 @@ namespace ews
         }
 
         //! Returns the XML serialized version of this attendee instance
-        std::string to_xml(const char* xmlns=nullptr) const
+        std::string to_xml() const
         {
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
             std::stringstream sstr;
-            sstr << "<" << pref << "Attendee>";
-            sstr << mailbox_.to_xml(xmlns);
-            sstr << "<" << pref << "ResponseType>"
+            sstr << "<t:Attendee>";
+            sstr << mailbox_.to_xml();
+            sstr << "<t:ResponseType>"
                  << internal::enum_to_str(response_type_)
-                 << "</" << pref << "ResponseType>";
-            sstr << "<" << pref << "LastResponseTime>"
+                 << "</t:ResponseType>";
+            sstr << "<t:LastResponseTime>"
                  << last_response_time_.to_string()
-                 << "</" << pref << "LastResponseTime>";
-            sstr << "</" << pref << "Attendee>";
+                 << "</t:LastResponseTime>";
+            sstr << "</t:Attendee>";
             return sstr.str();
         }
 
@@ -9037,9 +8999,9 @@ namespace ews
     public:
 #endif
 
-        std::string to_xml(const char* xmlns = nullptr) const
+        std::string to_xml() const
         {
-            return this->to_xml_impl(xmlns);
+            return this->to_xml_impl();
         }
 
         //! \brief Creates a new XML element for this recurrence pattern and
@@ -9064,7 +9026,7 @@ namespace ews
 #endif
 
     private:
-        virtual std::string to_xml_impl(const char* xmlns) const = 0;
+        virtual std::string to_xml_impl() const = 0;
 
         virtual rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>&) const = 0;
@@ -9115,23 +9077,19 @@ namespace ews
         day_of_week_index index_;
         month month_;
 
-        std::string to_xml_impl(const char* xmlns) const override
+        std::string to_xml_impl() const override
         {
             using namespace internal;
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
+
             std::stringstream sstr;
-            sstr << "<" << pref << "RelativeYearlyRecurrence>"
-                 << "<" << pref << "DaysOfWeek>" << enum_to_str(days_of_week_)
-                                << "</" << pref << "DaysOfWeek>"
-                 << "<" << pref << "DayOfWeekIndex>" << enum_to_str(index_)
-                                << "</" << pref << "DayOfWeekIndex>"
-                 << "<" << pref << "Month>" << enum_to_str(month_)
-                                << "</" << pref << "Month>"
-                 << "</" << pref << "RelativeYearlyRecurrence>";
+            sstr << "<t:RelativeYearlyRecurrence>"
+                 << "<t:DaysOfWeek>" << enum_to_str(days_of_week_)
+                                << "</t:DaysOfWeek>"
+                 << "<t:DayOfWeekIndex>" << enum_to_str(index_)
+                                << "</t:DayOfWeekIndex>"
+                 << "<t:Month>" << enum_to_str(month_)
+                                << "</t:Month>"
+                 << "</t:RelativeYearlyRecurrence>";
             return sstr.str();
         }
 
@@ -9226,21 +9184,17 @@ namespace ews
         uint32_t day_of_month_;
         month month_;
 
-        std::string to_xml_impl(const char* xmlns) const override
+        std::string to_xml_impl() const override
         {
             using namespace internal;
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
+
             std::stringstream sstr;
-            sstr << "<" << pref << "AbsoluteYearlyRecurrence>"
-                     << "<" << pref << "DayOfMonth>" << day_of_month_
-                                    << "</" << pref << "DayOfMonth>"
-                     << "<" << pref << "Month>" << enum_to_str(month_)
-                                    << "</" << pref << "Month>"
-                 << "</" << pref << "AbsoluteYearlyRecurrence>";
+            sstr << "<t:AbsoluteYearlyRecurrence>"
+                     << "<t:DayOfMonth>" << day_of_month_
+                                    << "</t:DayOfMonth>"
+                     << "<t:Month>" << enum_to_str(month_)
+                                    << "</t:Month>"
+                 << "</t:AbsoluteYearlyRecurrence>";
             return sstr.str();
         }
 
@@ -9336,21 +9290,17 @@ namespace ews
         uint32_t interval_;
         uint32_t day_of_month_;
 
-        std::string to_xml_impl(const char* xmlns) const override
+        std::string to_xml_impl() const override
         {
             using namespace internal;
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
+
             std::stringstream sstr;
-            sstr << "<" << pref << "AbsoluteMonthlyRecurrence>"
-                    << "<" << pref << "Interval>" << interval_
-                                << "</" << pref << "Interval>"
-                    << "<" << pref << "DayOfMonth>" << day_of_month_
-                                << "</" << pref << "DayOfMonth>"
-                 << "</" << pref << "AbsoluteMonthlyRecurrence>";
+            sstr << "<t:AbsoluteMonthlyRecurrence>"
+                    << "<t:Interval>" << interval_
+                                << "</t:Interval>"
+                    << "<t:DayOfMonth>" << day_of_month_
+                                << "</t:DayOfMonth>"
+                 << "</t:AbsoluteMonthlyRecurrence>";
             return sstr.str();
         }
 
@@ -9458,24 +9408,20 @@ namespace ews
         day_of_week days_of_week_;
         day_of_week_index index_;
 
-        std::string to_xml_impl(const char* xmlns) const override
+        std::string to_xml_impl() const override
         {
             using namespace internal;
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
+
             std::stringstream sstr;
-            sstr << "<" << pref << "RelativeMonthlyRecurrence>"
-                     << "<" << pref << "Interval>" << interval_
-                                    << "</" << pref << "Interval>"
-                     << "<" << pref << "DaysOfWeek>"
+            sstr << "<t:RelativeMonthlyRecurrence>"
+                     << "<t:Interval>" << interval_
+                                    << "</t:Interval>"
+                     << "<t:DaysOfWeek>"
                                     << enum_to_str(days_of_week_)
-                                    << "</" << pref << "DaysOfWeek>"
-                     << "<" << pref << "DayOfWeekIndex>" << enum_to_str(index_)
-                                    << "</" << pref << "DayOfWeekIndex>"
-                 << "</" << pref << "RelativeMonthlyRecurrence>";
+                                    << "</t:DaysOfWeek>"
+                     << "<t:DayOfWeekIndex>" << enum_to_str(index_)
+                                    << "</t:DayOfWeekIndex>"
+                 << "</t:RelativeMonthlyRecurrence>";
             return sstr.str();
         }
 
@@ -9597,14 +9543,10 @@ namespace ews
         std::vector<day_of_week> days_of_week_;
         day_of_week first_day_of_week_;
 
-        std::string to_xml_impl(const char* xmlns) const override
+        std::string to_xml_impl() const override
         {
             using namespace internal;
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
+
             std::string value;
             for (const auto& day : days_of_week_)
             {
@@ -9612,15 +9554,15 @@ namespace ews
             }
             value.resize(value.size() - 1);
             std::stringstream sstr;
-            sstr << "<" << pref << "WeeklyRecurrence>"
-                     << "<" << pref << "Interval>" << interval_
-                                    << "</" << pref << "Interval>"
-                     << "<" << pref << "DaysOfWeek>" << value
-                                    << "</" << pref << "DaysOfWeek>"
-                     << "<" << pref << "FirstDayOfWeek>"
+            sstr << "<t:WeeklyRecurrence>"
+                     << "<t:Interval>" << interval_
+                                    << "</t:Interval>"
+                     << "<t:DaysOfWeek>" << value
+                                    << "</t:DaysOfWeek>"
+                     << "<t:FirstDayOfWeek>"
                                     << enum_to_str(first_day_of_week_)
-                                    << "</" << pref << "FirstDayOfWeek>"
-                 << "</" << pref << "WeeklyRecurrence>";
+                                    << "</t:FirstDayOfWeek>"
+                 << "</t:WeeklyRecurrence>";
             return sstr.str();
         }
 
@@ -9715,19 +9657,15 @@ namespace ews
     private:
         uint32_t interval_;
 
-        std::string to_xml_impl(const char* xmlns) const override
+        std::string to_xml_impl() const override
         {
             using namespace internal;
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
+
             std::stringstream sstr;
-            sstr << "<" << pref << "DailyRecurrence>"
-                     << "<" << pref << "Interval>" << interval_
-                                    << "</" << pref << "Interval>"
-                 << "</" << pref << "DailyRecurrence>";
+            sstr << "<t:DailyRecurrence>"
+                     << "<t:Interval>" << interval_
+                                    << "</t:Interval>"
+                 << "</t:DailyRecurrence>";
             return sstr.str();
         }
 
@@ -9791,9 +9729,9 @@ namespace ews
 
     public:
 #endif
-        std::string to_xml(const char* xmlns=nullptr) const
+        std::string to_xml() const
         {
-            return this->to_xml_impl(xmlns);
+            return this->to_xml_impl();
         }
 
         //! \brief Creates a new XML element for this recurrence range and
@@ -9817,7 +9755,7 @@ namespace ews
 #endif
 
     private:
-        virtual std::string to_xml_impl(const char* xmlns) const = 0;
+        virtual std::string to_xml_impl() const = 0;
 
         virtual rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>&) const = 0;
@@ -9847,19 +9785,15 @@ namespace ews
     private:
         date start_date_;
 
-        std::string to_xml_impl(const char* xmlns) const override
+        std::string to_xml_impl() const override
         {
             using namespace internal;
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
+
             std::stringstream sstr;
-            sstr << "<" << pref << "NoEndRecurrence>"
-                     << "<" << pref << "StartDate>" << start_date_.to_string()
-                                    << "</" << pref << "StartDate>"
-                 << "</" << pref << "NoEndRecurrence>";
+            sstr << "<t:NoEndRecurrence>"
+                     << "<t:StartDate>" << start_date_.to_string()
+                                    << "</t:StartDate>"
+                 << "</t:NoEndRecurrence>";
             return sstr.str();
         }
 
@@ -9928,21 +9862,17 @@ namespace ews
         date start_date_;
         date end_date_;
 
-        std::string to_xml_impl(const char* xmlns) const override
+        std::string to_xml_impl() const override
         {
             using namespace internal;
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
+
             std::stringstream sstr;
-            sstr << "<" << pref << "EndDateRecurrence>"
-                     << "<" << pref << "StartDate>" << start_date_.to_string()
-                                    << "</" << pref << "StartDate>"
-                     << "<" << pref << "EndDate>" << end_date_.to_string()
-                                    << "</" << pref << "EndDate>"
-                 << "</" << pref << "EndDateRecurrence>";
+            sstr << "<t:EndDateRecurrence>"
+                     << "<t:StartDate>" << start_date_.to_string()
+                                    << "</t:StartDate>"
+                     << "<t:EndDate>" << end_date_.to_string()
+                                    << "</t:EndDate>"
+                 << "</t:EndDateRecurrence>";
             return sstr.str();
         }
 
@@ -10023,23 +9953,19 @@ namespace ews
         date start_date_;
         uint32_t no_of_occurrences_;
 
-        std::string to_xml_impl(const char* xmlns) const override
+        std::string to_xml_impl() const override
         {
             using namespace internal;
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
+
             std::stringstream sstr;
-            sstr << "<" << pref << "NumberedRecurrence>"
-                     << "<" << pref << "StartDate>"
+            sstr << "<t:NumberedRecurrence>"
+                     << "<t:StartDate>"
                                     << start_date_.to_string()
-                                    << "</" << pref << "StartDate>"
-                     << "<" << pref << "NumberOfOccurrences>"
+                                    << "</t:StartDate>"
+                     << "<t:NumberOfOccurrences>"
                                     << no_of_occurrences_
-                                    << "</" << pref << "NumberOfOccurrences>"
-                 << "</" << pref << "NumberedRecurrence>";
+                                    << "</t:NumberOfOccurrences>"
+                 << "</t:NumberedRecurrence>";
             return sstr.str();
         }
 
@@ -11397,7 +11323,7 @@ namespace ews
 
         property(property_path path, const body& value)
             : path_(std::move(path)),
-              value_(value.to_xml("t"))
+              value_(value.to_xml())
         {
         }
 
@@ -11415,8 +11341,8 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << "<t:Recurrence>"
-                     << pattern.to_xml("t")
-                     << range.to_xml("t")
+                     << pattern.to_xml()
+                     << range.to_xml()
                  << "</t:Recurrence>";
             value_ = sstr.str();
         }
@@ -11429,7 +11355,7 @@ namespace ews
             std::stringstream sstr;
             for (const auto& elem : value)
             {
-                sstr << elem.to_xml("t");
+                sstr << elem.to_xml();
             }
             value_ = sstr.str();
         }
@@ -11446,21 +11372,17 @@ namespace ews
             value_ = sstr.str();
         }
 
-        std::string to_xml(const char* xmlns) const
+        std::string to_xml() const
         {
             std::stringstream sstr;
-            auto pref = std::string();
-            if (xmlns)
-            {
-                pref = std::string(xmlns) + ":";
-            }
-            sstr << "<" << pref << "FieldURI FieldURI=\"";
+
+            sstr << "<t:FieldURI FieldURI=\"";
             sstr << path().field_uri() << "\"/>";
-            sstr << "<" << pref << path().class_name() << ">";
-            sstr << "<" << pref << path().property_name() << ">";
+            sstr << "<t:" << path().class_name() << ">";
+            sstr << "<t:" << path().property_name() << ">";
             sstr << value_;
-            sstr << "</" << pref << path().property_name() << ">";
-            sstr << "</" << pref << path().class_name() << ">";
+            sstr << "</t:" << path().property_name() << ">";
+            sstr << "</t:" << path().class_name() << ">";
             return sstr.str();
         }
 
@@ -11508,58 +11430,50 @@ namespace ews
         ~search_expression() = default;
 #endif
 
-        std::string to_xml(const char* xmlns=nullptr) const
+        std::string to_xml() const
         {
-            return func_(xmlns);
+            return func_();
         }
 
     protected:
         explicit search_expression(
-                    std::function<std::string (const char*)>&& func)
+                    std::function<std::string ()>&& func)
             : func_(std::move(func))
         {
         }
 
         // Used by sub-classes to share common code
         search_expression(const char* term, property_path path, bool b)
-            : func_([=](const char* xmlns) -> std::string
+            : func_([=]() -> std::string
                     {
                         std::stringstream sstr;
-                        auto pref = std::string();
-                        if (xmlns)
-                        {
-                            pref = std::string(xmlns) + ":";
-                        }
-                        sstr << "<" << pref << term << "><" << pref;
-                        sstr << "FieldURI FieldURI=\"";
+
+                        sstr << "<t:" << term << ">";
+                        sstr << "<t:FieldURI FieldURI=\"";
                         sstr << path.field_uri();
-                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
-                        sstr << pref << "Constant Value=\"";
+                        sstr << "\"/><t:FieldURIOrConstant>";
+                        sstr << "<t:Constant Value=\"";
                         sstr << std::boolalpha << b;
-                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
-                        sstr << pref << term << ">";
+                        sstr << "\"/></t:FieldURIOrConstant></t:";
+                        sstr << term << ">";
                         return sstr.str();
                     })
         {
         }
 
         search_expression(const char* term, property_path path, int i)
-            : func_([=](const char* xmlns) -> std::string
+            : func_([=]() -> std::string
                     {
                         std::stringstream sstr;
-                        auto pref = std::string();
-                        if (xmlns)
-                        {
-                            pref = std::string(xmlns) + ":";
-                        }
-                        sstr << "<" << pref << term << "><" << pref;
-                        sstr << "FieldURI FieldURI=\"";
+
+                        sstr << "<t:" << term << ">";
+                        sstr << "<t:FieldURI FieldURI=\"";
                         sstr << path.field_uri();
-                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
-                        sstr << pref << "Constant Value=\"";
+                        sstr << "\"/><t:" << "FieldURIOrConstant><";
+                        sstr << "t:Constant Value=\"";
                         sstr << std::to_string(i);
-                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
-                        sstr << pref << term << ">";
+                        sstr << "\"/></t:FieldURIOrConstant></t:";
+                        sstr << term << ">";
                         return sstr.str();
                     })
         {
@@ -11568,22 +11482,18 @@ namespace ews
         search_expression(const char* term,
                           property_path path,
                           const char* str)
-            : func_([=](const char* xmlns) -> std::string
+            : func_([=]() -> std::string
                     {
                         std::stringstream sstr;
-                        auto pref = std::string();
-                        if (xmlns)
-                        {
-                            pref = std::string(xmlns) + ":";
-                        }
-                        sstr << "<" << pref << term << "><" << pref;
-                        sstr << "FieldURI FieldURI=\"";
+
+                        sstr << "<t:" << term << ">";
+                        sstr << "<t:FieldURI FieldURI=\"";
                         sstr << path.field_uri();
-                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
-                        sstr << pref << "Constant Value=\"";
+                        sstr << "\"/><t:" << "FieldURIOrConstant>";
+                        sstr << "<t:Constant Value=\"";
                         sstr << str;
-                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
-                        sstr << pref << term << ">";
+                        sstr << "\"/></t:FieldURIOrConstant></t:";
+                        sstr << term << ">";
                         return sstr.str();
                     })
         {
@@ -11592,52 +11502,44 @@ namespace ews
         search_expression(const char* term,
                           indexed_property_path path,
                           const char* str)
-            : func_([=](const char* xmlns) -> std::string
+            : func_([=]() -> std::string
                     {
                         std::stringstream sstr;
-                        auto pref = std::string();
-                        if (xmlns)
-                        {
-                            pref = std::string(xmlns) + ":";
-                        }
-                        sstr << "<" << pref << term << "><" << pref;
-                        sstr << "IndexedFieldURI FieldURI=\"";
+
+                        sstr << "<t:" << term << ">";
+                        sstr << "<t:IndexedFieldURI FieldURI=\"";
                         sstr << path.field_uri();
                         sstr << "\" FieldIndex=\"" << path.field_index();
-                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
-                        sstr << pref << "Constant Value=\"";
+                        sstr << "\"/><t:FieldURIOrConstant>";
+                        sstr << "<t:Constant Value=\"";
                         sstr << str;
-                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
-                        sstr << pref << term << ">";
+                        sstr << "\"/></t:FieldURIOrConstant></t:";
+                        sstr << term << ">";
                         return sstr.str();
                     })
         {
         }
 
         search_expression(const char* term, property_path path, date_time when)
-            : func_([=](const char* xmlns) -> std::string
+            : func_([=]() -> std::string
                     {
                         std::stringstream sstr;
-                        auto pref = std::string();
-                        if (xmlns)
-                        {
-                            pref = std::string(xmlns) + ":";
-                        }
-                        sstr << "<" << pref << term << "><" << pref;
-                        sstr << "FieldURI FieldURI=\"";
+
+                        sstr << "<t:" << term << ">";
+                        sstr << "<t:FieldURI FieldURI=\"";
                         sstr << path.field_uri();
-                        sstr << "\"/><" << pref << "FieldURIOrConstant><";
-                        sstr << pref << "Constant Value=\"";
+                        sstr << "\"/><t:FieldURIOrConstant>";
+                        sstr << "<t:Constant Value=\"";
                         sstr << when.to_string();
-                        sstr << "\"/></" << pref << "FieldURIOrConstant></";
-                        sstr << pref << term << ">";
+                        sstr << "\"/></t:FieldURIOrConstant></t:";
+                        sstr << term << ">";
                         return sstr.str();
                     })
         {
         }
 
     private:
-        std::function<std::string (const char*)> func_;
+        std::function<std::string ()> func_;
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
@@ -11900,18 +11802,14 @@ namespace ews
     {
     public:
         and_(const search_expression& first, const search_expression& second)
-            : search_expression([=](const char* xmlns) -> std::string
+            : search_expression([=]() -> std::string
                     {
                         std::stringstream sstr;
-                        auto pref = std::string();
-                        if (xmlns)
-                        {
-                            pref = std::string(xmlns) + ":";
-                        }
-                        sstr << "<" << pref << "And" << ">";
-                        sstr << first.to_xml(xmlns);
-                        sstr << second.to_xml(xmlns);
-                        sstr << "</" << pref << "And>";
+
+                        sstr << "<t:And" << ">";
+                        sstr << first.to_xml();
+                        sstr << second.to_xml();
+                        sstr << "</t:And>";
                         return sstr.str();
                     })
         {
@@ -11932,18 +11830,14 @@ namespace ews
     {
     public:
         or_(const search_expression& first, const search_expression& second)
-            : search_expression([=](const char* xmlns) -> std::string
+            : search_expression([=]() -> std::string
                     {
                         std::stringstream sstr;
-                        auto pref = std::string();
-                        if (xmlns)
-                        {
-                            pref = std::string(xmlns) + ":";
-                        }
-                        sstr << "<" << pref << "Or" << ">";
-                        sstr << first.to_xml(xmlns);
-                        sstr << second.to_xml(xmlns);
-                        sstr << "</" << pref << "Or>";
+
+                        sstr << "<t:Or" << ">";
+                        sstr << first.to_xml();
+                        sstr << second.to_xml();
+                        sstr << "</t:Or>";
                         return sstr.str();
                     })
         {
@@ -11963,17 +11857,13 @@ namespace ews
     {
     public:
         not_(const search_expression& expr)
-            : search_expression([=](const char* xmlns) -> std::string
+            : search_expression([=]() -> std::string
                     {
                         std::stringstream sstr;
-                        auto pref = std::string();
-                        if (xmlns)
-                        {
-                            pref = std::string(xmlns) + ":";
-                        }
-                        sstr << "<" << pref << "Not" << ">";
-                        sstr << expr.to_xml(xmlns);
-                        sstr << "</" << pref << "Not>";
+
+                        sstr << "<t:Not" << ">";
+                        sstr << expr.to_xml();
+                        sstr << "</t:Not>";
                         return sstr.str();
                     })
         {
@@ -12068,24 +11958,20 @@ namespace ews
                     containment_mode::substring,
                  containment_comparison comparison =
                     containment_comparison::loose)
-            : search_expression([=](const char* xmlns) -> std::string
+            : search_expression([=]() -> std::string
                     {
                         std::stringstream sstr;
-                        auto pref = std::string();
-                        if (xmlns)
-                        {
-                            pref = std::string(xmlns) + ":";
-                        }
-                        sstr << "<" << pref << "Contains ";
+
+                        sstr << "<t:Contains ";
                         sstr << "ContainmentMode=\""
                             << internal::enum_to_str(mode) << "\" ";
                         sstr << "ContainmentComparison=\""
                             << internal::enum_to_str(comparison) << "\">";
-                        sstr << "<" << pref << "FieldURI FieldURI=\"";
+                        sstr << "<t:FieldURI FieldURI=\"";
                         sstr << path.field_uri();
-                        sstr << "\"/><" << pref << "Constant Value=\"";
+                        sstr << "\"/><t:Constant Value=\"";
                         sstr << str;
-                        sstr << "\"/></" << pref << "Contains>";
+                        sstr << "\"/></t:Contains>";
                         return sstr.str();
                     })
         {
@@ -12136,15 +12022,11 @@ namespace ews
             return end_date_;
         }
 
-        std::string to_xml(const char* xmlns = nullptr) const
+        std::string to_xml() const
         {
             std::stringstream sstr;
-            sstr << "<";
-            if (xmlns)
-            {
-                sstr << xmlns << ":";
-            }
-            sstr << "CalendarView ";
+
+            sstr << "<m:CalendarView ";
             if (max_entries_set_)
             {
                 sstr << "MaxEntriesReturned=\""
@@ -12313,7 +12195,7 @@ namespace ews
                                 + internal::enum_to_str(cancellations) + "\" "
                     "AffectedTaskOccurrences=\""
                                 + internal::enum_to_str(affected) + "\">"
-                  "<m:ItemIds>" + id.to_xml("t") + "</m:ItemIds>"
+                  "<m:ItemIds>" + id.to_xml() + "</m:ItemIds>"
                 "</m:DeleteItem>";
 
             auto response = request(request_string);
@@ -12443,7 +12325,7 @@ namespace ews
                   "<m:ItemShape>"
                     "<t:BaseShape>IdOnly</t:BaseShape>"
                   "</m:ItemShape>"
-                  "<m:ParentFolderIds>" + parent_folder_id.to_xml("t")
+                  "<m:ParentFolderIds>" + parent_folder_id.to_xml()
                                         + "</m:ParentFolderIds>"
                 "</m:FindItem>";
 
@@ -12471,8 +12353,8 @@ namespace ews
                   "<m:ItemShape>"
                     "<t:BaseShape>Default</t:BaseShape>"
                   "</m:ItemShape>"
-                  + view.to_xml("m") +
-                  "<m:ParentFolderIds>" + parent_folder_id.to_xml("t")
+                  + view.to_xml() +
+                  "<m:ParentFolderIds>" + parent_folder_id.to_xml()
                                         + "</m:ParentFolderIds>"
                 "</m:FindItem>";
 
@@ -12505,9 +12387,9 @@ namespace ews
                   "<m:ItemShape>"
                     "<t:BaseShape>IdOnly</t:BaseShape>"
                   "</m:ItemShape>"
-                  "<m:Restriction>" + restriction.to_xml("t")
+                  "<m:Restriction>" + restriction.to_xml()
                                     + "</m:Restriction>"
-                  "<m:ParentFolderIds>" + parent_folder_id.to_xml("t")
+                  "<m:ParentFolderIds>" + parent_folder_id.to_xml()
                                         + "</m:ParentFolderIds>"
                 "</m:FindItem>";
 
@@ -12555,10 +12437,10 @@ namespace ews
                       + internal::enum_to_str(cancellations) + "\">"
                   "<m:ItemChanges>"
                     "<t:ItemChange>"
-                      + id.to_xml("t") +
+                      + id.to_xml() +
                       "<t:Updates>"
                         + item_change_open_tag
-                        + prop.to_xml("t")
+                        + prop.to_xml()
                         + item_change_close_tag +
                       "</t:Updates>"
                     "</t:ItemChange>"
@@ -12638,7 +12520,7 @@ namespace ews
                     "<m:FilterHtmlContent/>"
                     "<m:AdditionalProperties/>"
                   "</m:AttachmentShape>"
-                  "<m:AttachmentIds>" + id.to_xml("t") + "</m:AttachmentIds>"
+                  "<m:AttachmentIds>" + id.to_xml() + "</m:AttachmentIds>"
                 "</m:GetAttachment>");
 
             const auto response_message =
@@ -12662,7 +12544,7 @@ namespace ews
         {
             auto response = request(
                 "<m:DeleteAttachment>"
-                  "<m:AttachmentIds>" + id.to_xml("t") + "</m:AttachmentIds>"
+                  "<m:AttachmentIds>" + id.to_xml() + "</m:AttachmentIds>"
                 "</m:DeleteAttachment>");
             const auto response_message =
                 internal::delete_attachment_response_message::parse(
@@ -12784,7 +12666,7 @@ namespace ews
                     "<t:BaseShape>" + internal::enum_to_str(shape)
                                     + "</t:BaseShape>"
                   "</m:ItemShape>"
-                  "<m:ItemIds>" + id.to_xml("t") + "</m:ItemIds>"
+                  "<m:ItemIds>" + id.to_xml() + "</m:ItemIds>"
                 "</m:GetItem>";
 
             auto response = request(request_string);
@@ -12823,7 +12705,7 @@ namespace ews
             sstr <<
                     "</t:AdditionalProperties>"
                   "</m:ItemShape>"
-                  "<m:ItemIds>" << id.to_xml("t") << "</m:ItemIds>"
+                  "<m:ItemIds>" << id.to_xml() << "</m:ItemIds>"
                 "</m:GetItem>";
 
             auto response = request(sstr.str());
