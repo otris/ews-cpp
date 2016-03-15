@@ -129,36 +129,12 @@ Just add::
 to your include directives and you are good to go.
 
 Take a look at the `examples/` directory to get an idea of how the API feels.
-From 10.000ft it looks like this::
+From 10.000ft it looks like this:
 
-        +------+
-        |a task|  +---------+
-        +------+  |a message|
-                  +---------+
-           +---------------+
-           |a calendar item| +---+
-           +---------------+     |
-         +------------+          |
-         |another task|          |
-         +------------+          v
 
-                        +-----------------
-                        |service instance|
-                        +--------+-------+
-                                 |
-                                 |
-                                 |
-                           The Internet
-                                 |
-                                 |
-                                 v
+.. image:: ews-objects.png
+    :align: left
 
-                               +---+
-                               |EWS|
-                               +---+
-                          +--------------+
-                          |Exchange Store|
-                          +--------------+
 
 You have items and you have **the** service. You use the service whenever you
 want to talk to the Exchange server.
