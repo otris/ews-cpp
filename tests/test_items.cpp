@@ -178,23 +178,32 @@ namespace tests
         EXPECT_FALSE(i.get_item_id().valid());
     }
 
-    TEST(OfflineItemTest, GetAndSetBodyProperty)
+    TEST_F(ItemTest, NoMimeContentIfNotRequested)
     {
-        auto item = ews::item();
+        auto contact = ews::contact();
+        auto& s = service();
+        const auto item_id = s.create_item(contact);
+        ews::internal::on_scope_exit remove_contact([&]
+        {
+            s.delete_contact(std::move(contact));
+        });
+        contact = s.get_contact(item_id);
+        EXPECT_TRUE(contact.get_mime_content().none());
+    }
 
-        // TODO: better: what to do!? EXPECT_FALSE(item.get_body().none());
-        // boost::optional desperately missing
-
-        auto original =
-            ews::body("<p>Some of the finest Vogon poetry</p>",
-                      ews::body_type::html);
-        item.set_body(original);
-
-        auto actual = item.get_body();
-        EXPECT_EQ(original.type(), actual.type());
-        EXPECT_EQ(original.is_truncated(), actual.is_truncated());
-        EXPECT_STREQ(original.content().c_str(),
-                     actual.content().c_str());
+    TEST_F(ItemTest, GetMimeContentProperty)
+    {
+        auto contact = ews::contact();
+        auto& s = service();
+        const auto item_id = s.create_item(contact);
+        ews::internal::on_scope_exit remove_contact([&]
+        {
+            s.delete_contact(std::move(contact));
+        });
+        auto additional_properties = std::vector<ews::property_path>();
+        additional_properties.push_back(ews::item_property_path::mime_content);
+        contact = s.get_contact(item_id, additional_properties);
+        EXPECT_FALSE(contact.get_mime_content().none());
     }
 
     TEST(OfflineItemTest, GetParentFolderIdProperty)
@@ -232,34 +241,6 @@ namespace tests
         EXPECT_EQ(ews::sensitivity::personal, task.get_sensitivity());
     }
 
-    TEST_F(ItemTest, NoMimeContentIfNotRequested)
-    {
-        auto contact = ews::contact();
-        auto& s = service();
-        const auto item_id = s.create_item(contact);
-        ews::internal::on_scope_exit remove_contact([&]
-        {
-            s.delete_contact(std::move(contact));
-        });
-        contact = s.get_contact(item_id);
-        EXPECT_TRUE(contact.get_mime_content().none());
-    }
-
-    TEST_F(ItemTest, GetMimeContentProperty)
-    {
-        auto contact = ews::contact();
-        auto& s = service();
-        const auto item_id = s.create_item(contact);
-        ews::internal::on_scope_exit remove_contact([&]
-        {
-            s.delete_contact(std::move(contact));
-        });
-        auto additional_properties = std::vector<ews::property_path>();
-        additional_properties.push_back(ews::item_property_path::mime_content);
-        contact = s.get_contact(item_id, additional_properties);
-        EXPECT_FALSE(contact.get_mime_content().none());
-    }
-
     TEST_F(ItemTest, UpdateSensitivityProperty)
     {
         auto task = ews::task();
@@ -277,6 +258,323 @@ namespace tests
         item_id = service().update_item(task.get_item_id(), prop);
         task = service().get_task(item_id);
         EXPECT_EQ(ews::sensitivity::confidential, task.get_sensitivity());
+    }
+
+    TEST(OfflineItemTest, GetAndSetBodyProperty)
+    {
+        auto item = ews::item();
+
+        // TODO: better: what to do!? EXPECT_FALSE(item.get_body().none());
+        // boost::optional desperately missing
+
+        auto original =
+            ews::body("<p>Some of the finest Vogon poetry</p>",
+                      ews::body_type::html);
+        item.set_body(original);
+
+        auto actual = item.get_body();
+        EXPECT_EQ(original.type(), actual.type());
+        EXPECT_EQ(original.is_truncated(), actual.is_truncated());
+        EXPECT_STREQ(original.content().c_str(),
+                     actual.content().c_str());
+    }
+
+    // TODO: Attachments-Test
+
+    TEST(OfflineItemTest, GetDateTimeReceivedProperty)
+    {
+        const auto task = make_fake_task();
+        EXPECT_EQ(ews::date_time("2015-02-09T13:00:11Z"), task.get_date_time_received());
+    }
+
+    TEST(OfflineItemTest, GetDateTimeReceivedPropertyDefaultConstructed)
+    {
+        const auto task = ews::task();
+        EXPECT_EQ(ews::date_time(), task.get_date_time_received());
+    }
+
+    TEST_F(ItemTest, GetDateTimeReceivedProperty)
+    {
+        auto task = ews::task();
+        auto item_id = service().create_item(task);
+        ews::internal::on_scope_exit remove_task([&]
+        {
+            service().delete_task(std::move(task));
+        });
+        task = service().get_task(item_id);
+        EXPECT_TRUE(task.get_date_time_received().is_set());
+    }
+
+    TEST(OfflineItemTest, GetSizeProperty)
+    {
+        const auto task = make_fake_task();
+        EXPECT_EQ(962U, task.get_size());
+    }
+
+    TEST(OfflineItemTest, GetSizePropertyDefaultConstructed)
+    {
+        const auto task = ews::task();
+        EXPECT_EQ(0U, task.get_size());
+    }
+
+    TEST(OfflineItemTest, SetCategoriesPropertyDefaultConstructed)
+    {
+      auto task = ews::task();
+      std::vector<std::string> categories {"ham", "spam"};
+      task.set_categories(categories);
+
+      ASSERT_EQ(2, task.get_categories().size());
+      EXPECT_EQ("ham", task.get_categories()[0]);
+      EXPECT_EQ("spam", task.get_categories()[1]);
+    }
+
+    TEST(OfflineItemTest, GetCategoriesProperty)
+    {
+        const auto task = make_fake_task();
+        EXPECT_EQ(0U, task.get_categories().size());
+    }
+
+    TEST(OfflineItemTest, GetCategoriesPropertyDefaultConstructed)
+    {
+        const auto task = ews::task();
+        EXPECT_EQ(0U, task.get_categories().size());
+    }
+
+    TEST_F(ItemTest, GetCategoriesProperty)
+    {
+        auto task = ews::task();
+        std::vector<std::string> categories {"ham", "spam"};
+        task.set_categories(categories);
+        auto item_id = service().create_item(task);
+        ews::internal::on_scope_exit remove_task([&]
+        {
+            service().delete_task(std::move(task));
+        });
+        task = service().get_task(item_id);
+        ASSERT_EQ(2, task.get_categories().size());
+        EXPECT_EQ("ham", task.get_categories()[0]);
+        EXPECT_EQ("spam", task.get_categories()[1]);
+
+        // update
+        std::vector<std::string> prop_categories {"note", "info"};
+        auto prop = ews::property(ews::item_property_path::categories,
+                                  prop_categories);
+        item_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(item_id);
+        ASSERT_EQ(2, task.get_categories().size());
+        EXPECT_EQ("note", task.get_categories()[0]);
+        EXPECT_EQ("info", task.get_categories()[1]);
+    }
+
+    TEST(OfflineItemTest, GetImportanceProperty)
+    {
+        const auto task = make_fake_task();
+        EXPECT_EQ(ews::importance::normal, task.get_importance());
+    }
+
+    TEST(OfflineItemTest, GetImportancePropertyDefaultConstructed)
+    {
+        const auto task = ews::task();
+        EXPECT_EQ(ews::importance::normal, task.get_importance());
+    }
+
+    TEST(OfflineItemTest, IsSubmittedProperty)
+    {
+        const auto task = make_fake_task();
+        EXPECT_FALSE(task.is_submitted());
+    }
+
+    TEST(OfflineItemTest, IsSubmittedDefaultConstructed)
+    {
+        const auto task = ews::task();
+        EXPECT_FALSE(task.is_submitted());
+    }
+
+    TEST(OfflineItemTest, IsDraftProperty)
+    {
+        const auto task = make_fake_task();
+        EXPECT_FALSE(task.is_draft());
+    }
+
+    TEST(OfflineItemTest, IsDraftPropertyDefaultConstructed)
+    {
+        const auto task = ews::task();
+        EXPECT_FALSE(task.is_draft());
+    }
+
+    TEST(OfflineItemTest, IsFromMeProperty)
+    {
+        const auto task = make_fake_task();
+        EXPECT_FALSE(task.is_from_me());
+    }
+
+    TEST(OfflineItemTest, IsFromMeDefaultConstructed)
+    {
+        const auto task = ews::task();
+        EXPECT_FALSE(task.is_from_me());
+    }
+
+    TEST(OfflineItemTest, IsResendProperty)
+    {
+        const auto task = make_fake_task();
+        EXPECT_FALSE(task.is_resend());
+    }
+
+    TEST(OfflineItemTest, IsResendDefaultConstructed)
+    {
+        const auto task = ews::task();
+        EXPECT_FALSE(task.is_resend());
+    }
+
+    TEST(OfflineItemTest, IsUnmodifiedProperty)
+    {
+        const auto task = make_fake_task();
+        EXPECT_FALSE(task.is_unmodified());
+    }
+
+    TEST(OfflineItemTest, IsUnmodifiedDefaultConstructed)
+    {
+        const auto task = ews::task();
+        EXPECT_FALSE(task.is_unmodified());
+    }
+
+    TEST(OfflineItemTest, GetDateTimeSentProperty)
+    {
+        const auto task = make_fake_task();
+        EXPECT_EQ(ews::date_time("2015-02-09T13:00:11Z"), task.get_date_time_sent());
+    }
+
+    TEST(OfflineItemTest, GetDateTimeSentPropertyDefaultConstructed)
+    {
+        const auto task = ews::task();
+        EXPECT_EQ(ews::date_time(), task.get_date_time_sent());
+    }
+
+    TEST_F(ItemTest, GetDateTimeSentProperty)
+    {
+        auto task = ews::task();
+        auto item_id = service().create_item(task);
+        ews::internal::on_scope_exit remove_task([&]
+        {
+            service().delete_task(std::move(task));
+        });
+        task = service().get_task(item_id);
+        EXPECT_TRUE(task.get_date_time_sent().is_set());
+    }
+
+    TEST(OfflineItemTest, GetDateTimeCreatedProperty)
+    {
+        const auto task = make_fake_task();
+        EXPECT_EQ(ews::date_time("2015-02-09T13:00:11Z"), task.get_date_time_created());
+    }
+
+    TEST(OfflineItemTest, GetDateTimeCreatedPropertyDefaultConstructed)
+    {
+        const auto task = ews::task();
+        EXPECT_EQ(ews::date_time(), task.get_date_time_sent());
+    }
+
+    TEST_F(ItemTest, GetDateTimeCreatedProperty)
+    {
+        auto task = ews::task();
+        auto item_id = service().create_item(task);
+        ews::internal::on_scope_exit remove_task([&]
+        {
+            service().delete_task(std::move(task));
+        });
+        task = service().get_task(item_id);
+        EXPECT_TRUE(task.get_date_time_created().is_set());
+    }
+
+    TEST(OfflineItemTest, ReminderDueByPropertyDefaultConstructed)
+    {
+        auto task = ews::task();
+        EXPECT_EQ(ews::date_time(), task.get_reminder_due_by());
+        // set
+        task.set_reminder_due_by(ews::date_time("2012-09-11T10:00:11Z"));
+        EXPECT_EQ(ews::date_time("2012-09-11T10:00:11Z"), task.get_reminder_due_by());
+        // update
+        task.set_reminder_due_by(ews::date_time("2001-09-11T12:00:11Z"));
+        EXPECT_EQ(ews::date_time("2001-09-11T12:00:11Z"), task.get_reminder_due_by());
+    }
+
+    TEST_F(ItemTest, ReminderDueByProperty)
+    {
+        auto task = ews::task();
+        task.set_reminder_due_by(ews::date_time("2001-09-11T12:00:11Z"));
+        auto item_id = service().create_item(task);
+        ews::internal::on_scope_exit remove_task([&]
+        {
+            service().delete_task(std::move(task));
+        });
+        task = service().get_task(item_id);
+        EXPECT_EQ(ews::date_time("2001-09-11T12:00:11Z"), task.get_reminder_due_by());
+    }
+
+    TEST(OfflineItemTest, ReminderMinutesBeforeStartPropertyDefaultConstructed)
+    {
+        auto task = ews::task();
+        // empty without set
+        ASSERT_EQ(0U, task.get_reminder_minutes_before_start());
+        // set
+        task.set_reminder_minutes_before_start(999);
+        EXPECT_EQ(999, task.get_reminder_minutes_before_start());
+        // update
+        task.set_reminder_minutes_before_start(100);
+        EXPECT_EQ(100, task.get_reminder_minutes_before_start());
+    }
+
+    TEST_F(ItemTest, ReminderMinutesBeforeStartProperty)
+    {
+        auto task = ews::task();
+        // empty
+        ASSERT_EQ(0, task.get_reminder_minutes_before_start());
+        task.set_reminder_minutes_before_start(999);
+        auto item_id = service().create_item(task);
+        ews::internal::on_scope_exit remove_task([&]
+        {
+            service().delete_task(std::move(task));
+        });
+        task = service().get_task(item_id);
+        EXPECT_EQ(999, task.get_reminder_minutes_before_start());
+    }
+
+    TEST(OfflineItemTest, DisplayCcPropertyDefaultConstructed)
+    {
+        auto task = ews::task();
+        EXPECT_EQ("", task.get_display_cc());
+    }
+
+    TEST_F(ItemTest, DisplayCcProperty)
+    {
+        auto task = ews::task();
+        auto item_id = service().create_item(task);
+        ews::internal::on_scope_exit remove_task([&]
+        {
+            service().delete_task(std::move(task));
+        });
+        task = service().get_task(item_id);
+        EXPECT_EQ("", task.get_display_cc());
+        // TODO: more tests
+    }
+
+    TEST(OfflineItemTest, DisplayToPropertyDefaultConstructed)
+    {
+        auto task = ews::task();
+        EXPECT_EQ("", task.get_display_to());
+    }
+
+    TEST_F(ItemTest, DisplayToProperty)
+    {
+        auto task = ews::task();
+        auto item_id = service().create_item(task);
+        ews::internal::on_scope_exit remove_task([&]
+        {
+            service().delete_task(std::move(task));
+        });
+        task = service().get_task(item_id);
+        EXPECT_EQ("", task.get_display_to());
+        // TODO: more tests
     }
 }
 

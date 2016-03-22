@@ -3939,6 +3939,48 @@ namespace ews
         }
     }
 
+    //! This enumeration indicates the importance of an item; valid
+    //! values are Low, Normal, High
+    enum class importance { low, normal, high };
+
+    namespace internal
+    {
+        inline std::string enum_to_str(importance i)
+        {
+            switch (i)
+            {
+                case importance::low:
+                    return "Low";
+                case importance::normal:
+                    return "Normal";
+                case importance::high:
+                    return "High";
+                default:
+                    throw exception("Bad enum value");
+            }
+        }
+
+        inline importance str_to_importance(const std::string& str)
+        {
+            if (str == "Low")
+            {
+                return importance::low;
+            }
+            else if (str == "High")
+            {
+                return importance::high;
+            }
+            else if (str == "Normal")
+            {
+                return importance::normal;
+            }
+            else
+            {
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
     //! Exception thrown when a request was not successful
     class exchange_error final : public exception
     {
@@ -7604,45 +7646,135 @@ namespace ews
             return attachments;
         }
 
-        // Date/time an item was received
-        // TODO: get_date_time_received
+        //! \brief Date/Time an item was received.
+        //!
+        //! This is a read-only property.
+        date_time get_date_time_received() const
+        {
+            const auto val = xml().get_value_as_string("DateTimeReceived");
+            return !val.empty() ? date_time(val) : date_time();
+        }
 
-        // Size in bytes of an item. This is a read-only property
-        // TODO: get_size
+        //! \brief Size in bytes of an item.
+        //!
+        //! This is a read-only property. Default: 0
+        std::size_t get_size() const
+        {
+            const auto size = xml().get_value_as_string("Size");
+            return size.empty() ? 0U : std::stoul(size);
+        }
 
-        // Categories associated with an item
-        // TODO: get_categories
+        //! \brief Sets a list of categories to an item.
+        //!
+        //! A Category contains a string that identify the category to which an
+        //! item in the mailbox belongs
+        void set_categories(const std::vector<std::string>& categories)
+        {
+            auto doc = xml().document();
+            auto target_node = xml().get_node("Categories");
+            if (!target_node)
+            {
+                auto ptr_to_qname = doc->allocate_string("t:Categories");
+                target_node = doc->allocate_node(rapidxml::node_element);
+                target_node->qname(ptr_to_qname,
+                                 std::strlen("t:Categories"),
+                                 ptr_to_qname + 2);
+                target_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                         internal::uri<>::microsoft::types_size);
+                doc->append_node(target_node);
+            }
 
-        // Enumeration indicating the importance of an item; valid values
-        // are Low, Normal, and High
-        // TODO: get_importance
+            for(auto str : categories)
+            {
+                auto new_str  = doc->allocate_string(str.c_str());
+                auto new_node = doc->allocate_node(rapidxml::node_element, "t:String");
+                new_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                            internal::uri<>::microsoft::types_size);
+                new_node->value(new_str);
+
+                target_node->append_node(new_node);
+            }
+        }
+
+        //! \brief Returns the Categories associated with an item.
+        //!
+        //! Categories contain a collection that identify
+        //! the categories to which an item in the mailbox belongs
+        std::vector<std::string> get_categories() const
+        {
+            const auto categories_node = xml().get_node("Categories");
+            if (!categories_node)
+            {
+                return std::vector<std::string>();
+            }
+
+            std::vector<std::string> categories;
+            for (auto child = categories_node->first_node(); child != nullptr;
+                 child = child->next_sibling())
+            {
+                categories.emplace_back(std::string(child->value(), child->value_size()));
+            }
+            return categories;
+        }
+
+        //! Enumeration indicating the importance of an item; valid values
+        //! are Low, Normal, and High. Default: normal
+        importance get_importance() const
+        {
+            const auto val = xml().get_value_as_string("Importance");
+            return !val.empty() ? internal::str_to_importance(val)
+                                : importance::normal;
+        }
 
         // Taken from PR_IN_REPLY_TO_ID MAPI property
         // TODO: get_in_reply_to
 
-        // True if an item has been submitted for delivery
-        // TODO: get_is_submitted
+        //! True if an item has been submitted for delivery. Default: false
+        bool is_submitted() const
+        {
+            return xml().get_value_as_string("isSubmitted") == "true";
+        }
 
-        // True if an item is a draft
-        // TODO: is_draft
+        //! True if an item is a draft. Default: false
+        bool is_draft() const
+        {
+            return xml().get_value_as_string("isDraft") == "true";
+        }
 
-        // True if an item is from you
-        // TODO: is_from_me
+        //! True if an item is from you. Default: false
+        bool is_from_me() const
+        {
+            return xml().get_value_as_string("isFromMe") == "true";
+        }
 
-        // True if an item a re-send
-        // TODO: is_resend
+        //! True if an item a re-send. Default: false
+        bool is_resend() const
+        {
+            return xml().get_value_as_string("isResend") == "true";
+        }
 
-        // True if an item is unmodified
-        // TODO: is_unmodified
+        //! True if an item is unmodified. Default: false TODO: maybe better Default=true??
+        bool is_unmodified() const
+        {
+            return xml().get_value_as_string("isUnmodified") == "true";
+        }
 
         // Collection of Internet message headers associated with an item
         // TODO: get_internet_message_headers
 
-        // Date/time an item was sent
-        // TODO: get_date_time_sent
+        //! \brief Date/time an item was sent.
+        //!
+        //! This is a read-only property
+        date_time get_date_time_sent() const
+        {
+            return date_time(xml().get_value_as_string("DateTimeSent"));
+        }
 
-        // Date/time an item was created
-        // TODO: get_date_time_created
+        //! Date/time an item was created. This is a read-only property
+        date_time get_date_time_created() const
+        {
+            return date_time(xml().get_value_as_string("DateTimeCreated"));
+        }
 
         // Applicable actions for an item
         // (NonEmptyArrayOfResponseObjectsType)
@@ -7666,26 +7798,50 @@ namespace ews
             xml().set_or_update("ReminderIsSet", enabled ? "true" : "false");
         }
 
-        //! True if a reminder has been set on an item
+        //! True if a reminder has been enabled on an item
+        //! TODO: must "enabled=true" set ReminderMinutesBeforeStart to 0?
         bool is_reminder_enabled() const
         {
             return xml().get_value_as_string("ReminderIsSet") == "true";
         }
 
-        // Number of minutes before the due date that a reminder should be
-        // shown to the user
-        // TODO: get_reminder_minutes_before_start
+        //! Set the minutes before the due date that a reminder should be
+        //! shown to the user TODO: string?
+        void set_reminder_minutes_before_start(std::uint32_t minutes)
+        {
+            xml().set_or_update("ReminderMinutesBeforeStart", std::to_string(minutes));
+        }
 
-        // Concatenated string of the display names of the Cc recipients of
-        // an item; each recipient is separated by a semicolon
-        // TODO: get_display_cc
+        //! Number of minutes before the due date that a reminder should be
+        //! shown to the user TODO: string?
+        std::uint32_t get_reminder_minutes_before_start() const
+        {
+            std::string minutes = xml().get_value_as_string("ReminderMinutesBeforeStart");
+            return minutes.empty() ? 0U : std::stoul(minutes);
+        }
 
-        // Concatenated string of the display names of the To recipients of
-        // an item; each recipient is separated by a semicolon
-        // TODO: get_display_to
+        //! \brief Concatenated string of the display names of the Cc recipients of
+        //! an item.
+        //!
+        //! Each recipient is separated by a semicolon. This is a
+        //! read-only property
+        std::string get_display_cc() const
+        {
+            return xml().get_value_as_string("DisplayCc");
+        }
 
-        // True if an item has non-hidden attachments. This is a read-only
-        // property
+        //! \brief Concatenated string of the display names of the To recipients of
+        //! an item.
+        //!
+        //! Each recipient is separated by a semicolon. This is a
+        //! read-only property
+        std::string get_display_to() const
+        {
+            return xml().get_value_as_string("DisplayTo");
+        }
+
+        //! True if an item has non-hidden attachments. This is a read-only
+        //! property
         bool has_attachments() const
         {
             return xml().get_value_as_string("HasAttachments") == "true";
