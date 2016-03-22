@@ -13,6 +13,7 @@
 #include <utility>
 #include <memory>
 #include <type_traits>
+#include <cstdint>
 #include <cstddef>
 #include <cstring>
 #include <cctype>
@@ -9320,13 +9321,13 @@ namespace ews
     class absolute_yearly_recurrence final : public recurrence_pattern
     {
     public:
-        absolute_yearly_recurrence(uint32_t day_of_month, month m)
+        absolute_yearly_recurrence(std::uint32_t day_of_month, month m)
             : day_of_month_(day_of_month),
               month_(m)
         {
         }
 
-        uint32_t get_day_of_month() const EWS_NOEXCEPT
+        std::uint32_t get_day_of_month() const EWS_NOEXCEPT
         {
             return day_of_month_;
         }
@@ -9337,7 +9338,7 @@ namespace ews
         }
 
     private:
-        uint32_t day_of_month_;
+        std::uint32_t day_of_month_;
         month month_;
 
         std::string to_xml_impl() const override
@@ -9426,25 +9427,25 @@ namespace ews
     class absolute_monthly_recurrence final : public recurrence_pattern
     {
     public:
-        absolute_monthly_recurrence(uint32_t interval, uint32_t day_of_month)
+        absolute_monthly_recurrence(std::uint32_t interval, std::uint32_t day_of_month)
             : interval_(interval),
               day_of_month_(day_of_month)
         {
         }
 
-        uint32_t get_interval() const EWS_NOEXCEPT
+        std::uint32_t get_interval() const EWS_NOEXCEPT
         {
             return interval_;
         }
 
-        uint32_t get_days_of_month() const EWS_NOEXCEPT
+        std::uint32_t get_days_of_month() const EWS_NOEXCEPT
         {
             return day_of_month_;
         }
 
     private:
-        uint32_t interval_;
-        uint32_t day_of_month_;
+        std::uint32_t interval_;
+        std::uint32_t day_of_month_;
 
         std::string to_xml_impl() const override
         {
@@ -9535,7 +9536,7 @@ namespace ews
     class relative_monthly_recurrence final : public recurrence_pattern
     {
     public:
-        relative_monthly_recurrence(uint32_t interval,
+        relative_monthly_recurrence(std::uint32_t interval,
                                     day_of_week days_of_week,
                                     day_of_week_index index)
             : interval_(interval),
@@ -9544,7 +9545,7 @@ namespace ews
         {
         }
 
-        uint32_t get_interval() const EWS_NOEXCEPT
+        std::uint32_t get_interval() const EWS_NOEXCEPT
         {
             return interval_;
         }
@@ -9560,7 +9561,7 @@ namespace ews
         }
 
     private:
-        uint32_t interval_;
+        std::uint32_t interval_;
         day_of_week days_of_week_;
         day_of_week_index index_;
 
@@ -9660,7 +9661,7 @@ namespace ews
     class weekly_recurrence final : public recurrence_pattern
     {
     public:
-        weekly_recurrence(uint32_t interval,
+        weekly_recurrence(std::uint32_t interval,
                           day_of_week days_of_week,
                           day_of_week first_day_of_week = day_of_week::mon)
             : interval_(interval),
@@ -9670,7 +9671,7 @@ namespace ews
             days_of_week_.push_back(days_of_week);
         }
 
-        weekly_recurrence(uint32_t interval,
+        weekly_recurrence(std::uint32_t interval,
                           std::vector<day_of_week> days_of_week,
                           day_of_week first_day_of_week = day_of_week::mon)
             : interval_(interval),
@@ -9679,7 +9680,7 @@ namespace ews
         {
         }
 
-        uint32_t get_interval() const EWS_NOEXCEPT
+        std::uint32_t get_interval() const EWS_NOEXCEPT
         {
             return interval_;
         }
@@ -9695,7 +9696,7 @@ namespace ews
         }
 
     private:
-        uint32_t interval_;
+        std::uint32_t interval_;
         std::vector<day_of_week> days_of_week_;
         day_of_week first_day_of_week_;
 
@@ -9800,18 +9801,18 @@ namespace ews
     class daily_recurrence final : public recurrence_pattern
     {
     public:
-        explicit daily_recurrence(uint32_t interval)
+        explicit daily_recurrence(std::uint32_t interval)
             : interval_(interval)
         {
         }
 
-        uint32_t get_interval() const EWS_NOEXCEPT
+        std::uint32_t get_interval() const EWS_NOEXCEPT
         {
             return interval_;
         }
 
     private:
-        uint32_t interval_;
+        std::uint32_t interval_;
 
         std::string to_xml_impl() const override
         {
@@ -10089,7 +10090,7 @@ namespace ews
     {
     public:
         numbered_recurrence_range(date start_date,
-                                  uint32_t no_of_occurrences)
+                                  std::uint32_t no_of_occurrences)
             : start_date_(std::move(start_date)),
               no_of_occurrences_(no_of_occurrences)
         {
@@ -10100,14 +10101,14 @@ namespace ews
             return start_date_;
         }
 
-        uint32_t get_number_of_occurrences() const EWS_NOEXCEPT
+        std::uint32_t get_number_of_occurrences() const EWS_NOEXCEPT
         {
             return no_of_occurrences_;
         }
 
     private:
         date start_date_;
-        uint32_t no_of_occurrences_;
+        std::uint32_t no_of_occurrences_;
 
         std::string to_xml_impl() const override
         {
@@ -12155,7 +12156,7 @@ namespace ews
 
         calendar_view(date_time start_date,
                       date_time end_date,
-                      uint32_t max_entries_returned)
+                      std::uint32_t max_entries_returned)
             : start_date_(std::move(start_date)),
               end_date_(std::move(end_date)),
               max_entries_returned_(max_entries_returned),
@@ -12163,7 +12164,7 @@ namespace ews
         {
         }
 
-        uint32_t get_max_entries_returned() const EWS_NOEXCEPT
+        std::uint32_t get_max_entries_returned() const EWS_NOEXCEPT
         {
             return max_entries_returned_;
         }
@@ -12196,7 +12197,7 @@ namespace ews
     private:
         date_time start_date_;
         date_time end_date_;
-        uint32_t max_entries_returned_;
+        std::uint32_t max_entries_returned_;
         bool max_entries_set_;
     };
 
@@ -13214,7 +13215,7 @@ namespace ews
         if (node)
         {
             auto mon = ews::month::jan;
-            uint32_t day_of_month = 0U;
+            std::uint32_t day_of_month = 0U;
 
             for (auto child = node->first_node(); child;
                  child = child->next_sibling())
@@ -13302,8 +13303,8 @@ namespace ews
                                   "AbsoluteMonthlyRecurrence");
         if (node)
         {
-            uint32_t interval = 0U;
-            uint32_t day_of_month = 0U;
+            std::uint32_t interval = 0U;
+            std::uint32_t day_of_month = 0U;
 
             for (auto child = node->first_node(); child;
                  child = child->next_sibling())
@@ -13341,7 +13342,7 @@ namespace ews
                                   "RelativeMonthlyRecurrence");
         if (node)
         {
-            uint32_t interval = 0U;
+            std::uint32_t interval = 0U;
             auto days_of_week = day_of_week::sun;
             auto index = day_of_week_index::first;
 
@@ -13393,7 +13394,7 @@ namespace ews
                                   "WeeklyRecurrence");
         if (node)
         {
-            uint32_t interval = 0U;
+            std::uint32_t interval = 0U;
             auto days_of_week = std::vector<day_of_week>();
             auto first_day_of_week = day_of_week::mon;
 
@@ -13450,7 +13451,7 @@ namespace ews
                                   "DailyRecurrence");
         if (node)
         {
-            uint32_t interval = 0U;
+            std::uint32_t interval = 0U;
 
             for (auto child = node->first_node(); child;
                  child = child->next_sibling())
@@ -13560,7 +13561,7 @@ namespace ews
         if (node)
         {
             date_time start_date;
-            uint32_t no_of_occurrences = 0U;
+            std::uint32_t no_of_occurrences = 0U;
 
             for (auto child = node->first_node(); child;
                  child = child->next_sibling())
