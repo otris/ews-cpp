@@ -7727,8 +7727,13 @@ namespace ews
                                 : importance::normal;
         }
 
-        // Taken from PR_IN_REPLY_TO_ID MAPI property
-        // TODO: get_in_reply_to
+        //! \brief Taken from PR_IN_REPLY_TO_ID MAPI property
+        //!
+        //! This is a read-only property
+        std::string get_in_reply_to() const
+        {
+            return xml().get_value_as_string("InReplyTo");
+        }
 
         //! True if an item has been submitted for delivery. Default: false
         bool is_submitted() const
@@ -7852,8 +7857,39 @@ namespace ews
         // an item
         // TODO: get_extended_property
 
-        // Culture name associated with the body of an item
-        // TODO: get_culture
+        //! Sets the Culture name associated with the body of an item.
+        void set_culture(const std::string& str)
+        {
+            auto doc = xml().document();
+            auto target_node = xml().get_node("Culture");
+            if (!target_node)
+            {
+                auto ptr_to_qname = doc->allocate_string("t:Culture");
+                target_node = doc->allocate_node(rapidxml::node_element);
+                target_node->qname(ptr_to_qname,
+                                 std::strlen("t:Culture"),
+                                 ptr_to_qname + 2);
+                auto new_str = doc->allocate_string(str.c_str());
+                target_node->value(new_str);
+                target_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                         internal::uri<>::microsoft::types_size);
+                doc->append_node(target_node);
+            }
+            else
+            {
+                auto new_str = doc->allocate_string(str.c_str());
+                // TODO: do we need to set the namespace to existing node?
+                target_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                            internal::uri<>::microsoft::types_size);
+                target_node->value(new_str);
+            }
+        }
+
+        //! The Culture name associated with the body of an item.
+        std::string get_culture() const
+        {
+            return xml().get_value_as_string("Culture");
+        }
 
         // Following properties are beyond 2007 scope:
         //   <EffectiveRights/>

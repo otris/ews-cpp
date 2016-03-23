@@ -384,6 +384,39 @@ namespace tests
         EXPECT_EQ(ews::importance::normal, task.get_importance());
     }
 
+    TEST(OfflineItemTest, GetInReplyToPropertyDefaultConstructed)
+    {
+        const auto task = ews::task();
+        EXPECT_EQ("", task.get_in_reply_to());
+    }
+
+    TEST_F(ItemTest, GetInReplyToProperty)
+    {
+        auto task = ews::task();
+        ASSERT_EQ("", task.get_in_reply_to());
+
+        auto item_id = service().create_item(task);
+        ews::internal::on_scope_exit remove_task([&]
+        {
+            service().delete_task(std::move(task));
+        });
+        task = service().get_task(item_id);
+
+        // set
+        auto prop = ews::property(ews::item_property_path::in_reply_to,
+                                  "nobody@noreply.com");
+        item_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(item_id);
+        ASSERT_EQ("nobody@noreply.com", task.get_in_reply_to());
+
+        // update
+        prop = ews::property(ews::item_property_path::in_reply_to,
+                                  "somebody@noreply.com");
+        item_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(item_id);
+        EXPECT_EQ("somebody@noreply.com", task.get_in_reply_to());
+    }
+
     TEST(OfflineItemTest, IsSubmittedProperty)
     {
         const auto task = make_fake_task();
@@ -496,10 +529,10 @@ namespace tests
     {
         auto task = ews::task();
         EXPECT_EQ(ews::date_time(), task.get_reminder_due_by());
-        // set
+
         task.set_reminder_due_by(ews::date_time("2012-09-11T10:00:11Z"));
         EXPECT_EQ(ews::date_time("2012-09-11T10:00:11Z"), task.get_reminder_due_by());
-        // update
+
         task.set_reminder_due_by(ews::date_time("2001-09-11T12:00:11Z"));
         EXPECT_EQ(ews::date_time("2001-09-11T12:00:11Z"), task.get_reminder_due_by());
     }
@@ -580,7 +613,48 @@ namespace tests
         });
         task = service().get_task(item_id);
         EXPECT_EQ("", task.get_display_to());
-        // TODO: more tests
+    }
+
+    TEST(OfflineItemTest, CulturePropertyDefaultConstructed)
+    {
+        auto task = ews::task();
+        task.set_culture("zu-ZA");
+        EXPECT_EQ("zu-ZA", task.get_culture());
+    }
+
+    TEST(OfflineItemTest, CultureProperty)
+    {
+        auto task = make_fake_task();
+        ASSERT_EQ("en-US", task.get_culture());
+        task.set_culture("zu-ZA");
+        EXPECT_EQ("zu-ZA", task.get_culture());
+    }
+
+    TEST_F(ItemTest, CultureProperty)
+    {
+        auto task = ews::task();
+        ASSERT_EQ("", task.get_culture());
+        task.set_culture("mn-Mong-CN");
+        ASSERT_EQ("mn-Mong-CN", task.get_culture());
+
+        auto item_id = service().create_item(task);
+        ews::internal::on_scope_exit remove_task([&]
+        {
+            service().delete_task(std::move(task));
+        });
+        task = service().get_task(item_id);
+
+        auto prop = ews::property(ews::item_property_path::culture,
+                                  "zu-ZA");
+        item_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(item_id);
+        ASSERT_EQ("zu-ZA", task.get_culture());
+
+        prop = ews::property(ews::item_property_path::culture,
+                                  "yo-NG");
+        item_id = service().update_item(task.get_item_id(), prop);
+        task = service().get_task(item_id);
+        EXPECT_EQ("yo-NG", task.get_culture());
     }
 }
 
