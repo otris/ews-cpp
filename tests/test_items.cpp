@@ -320,7 +320,9 @@ namespace tests
     TEST(OfflineItemTest, SetCategoriesPropertyDefaultConstructed)
     {
       auto task = ews::task();
-      std::vector<std::string> categories {"ham", "spam"};
+      std::vector<std::string> categories;
+      categories.push_back("ham");
+      categories.push_back("spam");
       task.set_categories(categories);
 
       ASSERT_EQ(2, task.get_categories().size());
@@ -343,7 +345,9 @@ namespace tests
     TEST_F(ItemTest, GetCategoriesProperty)
     {
         auto task = ews::task();
-        std::vector<std::string> categories {"ham", "spam"};
+        std::vector<std::string> categories;
+        categories.push_back("ham");
+        categories.push_back("spam");
         task.set_categories(categories);
         auto item_id = service().create_item(task);
         ews::internal::on_scope_exit remove_task([&]
@@ -356,7 +360,9 @@ namespace tests
         EXPECT_EQ("spam", task.get_categories()[1]);
 
         // update
-        std::vector<std::string> prop_categories {"note", "info"};
+        std::vector<std::string> prop_categories;
+        prop_categories.push_back("note");
+        prop_categories.push_back("info");
         auto prop = ews::property(ews::item_property_path::categories,
                                   prop_categories);
         item_id = service().update_item(task.get_item_id(), prop);
