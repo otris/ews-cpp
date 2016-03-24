@@ -7727,8 +7727,13 @@ namespace ews
                                 : importance::normal;
         }
 
-        // Taken from PR_IN_REPLY_TO_ID MAPI property
-        // TODO: get_in_reply_to
+        //! \brief Taken from PR_IN_REPLY_TO_ID MAPI property
+        //!
+        //! This is a read-only property
+        std::string get_in_reply_to() const
+        {
+            return xml().get_value_as_string("InReplyTo");
+        }
 
         //! True if an item has been submitted for delivery. Default: false
         bool is_submitted() const
@@ -7852,8 +7857,17 @@ namespace ews
         // an item
         // TODO: get_extended_property
 
-        // Culture name associated with the body of an item
-        // TODO: get_culture
+        //! Sets the culture name associated with the body of an item.
+        void set_culture(const std::string& culture)
+        {
+            xml().set_or_update("Culture", culture);
+        }
+
+        //! The Culture name associated with the body of an item.
+        std::string get_culture() const
+        {
+            return xml().get_value_as_string("Culture");
+        }
 
         // Following properties are beyond 2007 scope:
         //   <EffectiveRights/>
