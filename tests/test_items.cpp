@@ -325,7 +325,7 @@ namespace tests
       categories.push_back("spam");
       task.set_categories(categories);
 
-      ASSERT_EQ(2, task.get_categories().size());
+      ASSERT_EQ(2U, task.get_categories().size());
       EXPECT_EQ("ham", task.get_categories()[0]);
       EXPECT_EQ("spam", task.get_categories()[1]);
     }
@@ -355,7 +355,7 @@ namespace tests
             service().delete_task(std::move(task));
         });
         task = service().get_task(item_id);
-        ASSERT_EQ(2, task.get_categories().size());
+        ASSERT_EQ(2U, task.get_categories().size());
         EXPECT_EQ("ham", task.get_categories()[0]);
         EXPECT_EQ("spam", task.get_categories()[1]);
 
@@ -367,7 +367,7 @@ namespace tests
                                   prop_categories);
         item_id = service().update_item(task.get_item_id(), prop);
         task = service().get_task(item_id);
-        ASSERT_EQ(2, task.get_categories().size());
+        ASSERT_EQ(2U, task.get_categories().size());
         EXPECT_EQ("note", task.get_categories()[0]);
         EXPECT_EQ("info", task.get_categories()[1]);
     }
@@ -557,17 +557,17 @@ namespace tests
         ASSERT_EQ(0U, task.get_reminder_minutes_before_start());
         // set
         task.set_reminder_minutes_before_start(999);
-        EXPECT_EQ(999, task.get_reminder_minutes_before_start());
+        EXPECT_EQ(999U, task.get_reminder_minutes_before_start());
         // update
         task.set_reminder_minutes_before_start(100);
-        EXPECT_EQ(100, task.get_reminder_minutes_before_start());
+        EXPECT_EQ(100U, task.get_reminder_minutes_before_start());
     }
 
     TEST_F(ItemTest, ReminderMinutesBeforeStartProperty)
     {
         auto task = ews::task();
         // empty
-        ASSERT_EQ(0, task.get_reminder_minutes_before_start());
+        ASSERT_EQ(0U, task.get_reminder_minutes_before_start());
         task.set_reminder_minutes_before_start(999);
         auto item_id = service().create_item(task);
         ews::internal::on_scope_exit remove_task([&]
@@ -575,7 +575,7 @@ namespace tests
             service().delete_task(std::move(task));
         });
         task = service().get_task(item_id);
-        EXPECT_EQ(999, task.get_reminder_minutes_before_start());
+        EXPECT_EQ(999U, task.get_reminder_minutes_before_start());
     }
 
     TEST(OfflineItemTest, DisplayCcPropertyDefaultConstructed)
