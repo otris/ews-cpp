@@ -194,7 +194,7 @@ namespace ews
                         ret += base64_chars[char_array_4[j]];
                     }
 
-                    while((i++ < 3))
+                    while ((i++ < 3))
                     {
                         ret += '=';
                     }
@@ -433,8 +433,8 @@ namespace ews
         error_ad_unavailable,
 
         //! Indicates that Exchange Web Services tried to determine the URL of a
-        //! cross forest Client Access Server (CAS) by using the AutoDiscover
-        //! service, but the call to AutoDiscover failed.
+        //! cross forest Client Access Server (CAS) by using the Autodiscover
+        //! service, but the call to Autodiscover failed.
         error_auto_discover_failed,
 
         //! The AffectedTaskOccurrences enumeration value is missing. It is
@@ -7863,7 +7863,7 @@ namespace ews
             xml().set_or_update("Culture", culture);
         }
 
-        //! The Culture name associated with the body of an item.
+        //! The culture name associated with the body of an item.
         std::string get_culture() const
         {
             return xml().get_value_as_string("Culture");
