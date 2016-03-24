@@ -618,6 +618,7 @@ namespace tests
     TEST(OfflineItemTest, CulturePropertyDefaultConstructed)
     {
         auto task = ews::task();
+        ASSERT_EQ("", task.get_culture());
         task.set_culture("zu-ZA");
         EXPECT_EQ("zu-ZA", task.get_culture());
     }

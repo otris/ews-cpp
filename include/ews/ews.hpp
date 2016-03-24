@@ -7857,32 +7857,10 @@ namespace ews
         // an item
         // TODO: get_extended_property
 
-        //! Sets the Culture name associated with the body of an item.
-        void set_culture(const std::string& str)
+        //! Sets the culture name associated with the body of an item.
+        void set_culture(const std::string& culture)
         {
-            auto doc = xml().document();
-            auto target_node = xml().get_node("Culture");
-            if (!target_node)
-            {
-                auto ptr_to_qname = doc->allocate_string("t:Culture");
-                target_node = doc->allocate_node(rapidxml::node_element);
-                target_node->qname(ptr_to_qname,
-                                 std::strlen("t:Culture"),
-                                 ptr_to_qname + 2);
-                auto new_str = doc->allocate_string(str.c_str());
-                target_node->value(new_str);
-                target_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                         internal::uri<>::microsoft::types_size);
-                doc->append_node(target_node);
-            }
-            else
-            {
-                auto new_str = doc->allocate_string(str.c_str());
-                // TODO: do we need to set the namespace to existing node?
-                target_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                            internal::uri<>::microsoft::types_size);
-                target_node->value(new_str);
-            }
+            xml().set_or_update("Culture", culture);
         }
 
         //! The Culture name associated with the body of an item.
