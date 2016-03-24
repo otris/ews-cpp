@@ -477,6 +477,31 @@ namespace tests
         EXPECT_FALSE(task.is_unmodified());
     }
 
+    TEST_F(ItemTest, GetInternetMessageHeaders)
+    {
+        auto message = ews::message();
+        message.set_subject("You are hiding again, aren't you?");
+        std::vector<ews::mailbox> recipients;
+        recipients.push_back(
+            ews::mailbox("darkwing.duck@duckburg.com")
+        );
+        message.set_to_recipients(recipients);
+        auto item_id = service().create_item(
+                message,
+                ews::message_disposition::save_only);
+        message = service().get_message(item_id);
+        recipients = message.get_to_recipients();
+        ASSERT_EQ(1U, recipients.size());
+        EXPECT_STREQ("darkwing.duck@duckburg.com",
+                     recipients.front().value().c_str());
+
+        auto task = service().get_task(item_id);
+        ASSERT_EQ(0, task.get_internet_message_headers().size());
+
+        service().delete_message(std::move(message));
+        EXPECT_TRUE(message.get_subject().empty()); // Check sink argument
+    }
+
     TEST(OfflineItemTest, GetDateTimeSentProperty)
     {
         const auto task = make_fake_task();

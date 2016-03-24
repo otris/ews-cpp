@@ -7767,8 +7767,26 @@ namespace ews
             return xml().get_value_as_string("isUnmodified") == "true";
         }
 
-        // Collection of Internet message headers associated with an item
-        // TODO: get_internet_message_headers
+        //! Collection of Internet message headers associated with an item.
+        //!
+        //! These headers are defined in RFC822, RFC1123 and RFC2822
+        //! This is a read-only property
+        std::vector<std::string> get_internet_message_headers() const
+        {
+            const auto imh_node = xml().get_node("InternetMessageHeaders");
+            if (!imh_node)
+            {
+                return std::vector<std::string>();
+            }
+
+            std::vector<std::string> imh_str;
+            for (auto child = imh_node->first_node(); child != nullptr;
+                    child = child->next_sibling())
+            {
+                imh_str.emplace_back(std::string(child->value(), child->value_size()));
+            }
+            return imh_str;
+        }
 
         //! \brief Date/time an item was sent.
         //!
