@@ -479,27 +479,13 @@ namespace tests
 
     TEST_F(ItemTest, GetInternetMessageHeaders)
     {
-        auto message = ews::message();
-        message.set_subject("You are hiding again, aren't you?");
-        std::vector<ews::mailbox> recipients;
-        recipients.push_back(
-            ews::mailbox("darkwing.duck@duckburg.com")
-        );
-        message.set_to_recipients(recipients);
-        auto item_id = service().create_item(
-                message,
-                ews::message_disposition::save_only);
-        message = service().get_message(item_id);
-        recipients = message.get_to_recipients();
-        ASSERT_EQ(1U, recipients.size());
-        EXPECT_STREQ("darkwing.duck@duckburg.com",
-                     recipients.front().value().c_str());
-
-        auto task = service().get_task(item_id);
-        ASSERT_EQ(0, task.get_internet_message_headers().size());
-
-        service().delete_message(std::move(message));
-        EXPECT_TRUE(message.get_subject().empty()); // Check sink argument
+        // TODO: Test with real sent mails. Not possible at the moment.
+        auto item_id = ews::item_id(
+        "AAMkAGUyMzlhODA1LWJjNmMtNDA3Zi05MmMyLTY5YzhiMGUzOTZiZABGAAAAAACy333R3lBgQ4hf/BNYPWikBwA5VVNr9VuwRKflbHd457lbAAAAAAENAAA5VVNr9VuwRKflbHd457lbAABjW0vmAAA=",
+                    "FwAAABYAAAA5VVNr9VuwRKflbHd457lbAABjX/nX");
+        auto message = service().get_message(item_id);
+        auto headers = message.get_internet_message_headers();
+        EXPECT_TRUE(headers.size() > 0);
     }
 
     TEST(OfflineItemTest, GetDateTimeSentProperty)
