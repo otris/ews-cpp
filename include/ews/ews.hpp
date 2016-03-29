@@ -7447,16 +7447,17 @@ namespace ews
     static_assert(std::is_move_assignable<attendee>::value, "");
 #endif
 
-    //! Represents a generic item in the Exchange store.
+    //! Represents a generic item in the Exchange store
     class item
     {
     public:
+        //! Constructs a new item
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
         item() = default;
 #else
         item() {}
 #endif
-
+        //! Constructs a new item with the given id
         explicit item(item_id id) : item_id_(std::move(id)), xml_subtree_() {}
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
@@ -7466,6 +7467,7 @@ namespace ews
         {}
 #endif
 
+        //! Returns the id of an item
         const item_id& get_item_id() const EWS_NOEXCEPT { return item_id_; }
 
         //! Base64-encoded contents of the MIME stream of this item
@@ -7527,7 +7529,7 @@ namespace ews
             xml().set_or_update("Sensitivity", internal::enum_to_str(s));
         }
 
-        //! Set the body content of an item
+        //! Sets the body content of an item
         void set_body(const body& b)
         {
             auto doc = xml().document();
@@ -7718,7 +7720,7 @@ namespace ews
             return categories;
         }
 
-        //! Enumeration indicating the importance of an item; valid values
+        //! \brief Enumeration indicating the importance of an item; valid values
         //! are Low, Normal, and High. Default: normal
         importance get_importance() const
         {
@@ -7804,22 +7806,21 @@ namespace ews
             xml().set_or_update("ReminderIsSet", enabled ? "true" : "false");
         }
 
-        //! True if a reminder has been enabled on an item
-        //! TODO: must "enabled=true" set ReminderMinutesBeforeStart to 0?
+        //! \brief True if a reminder has been enabled on an item
         bool is_reminder_enabled() const
         {
             return xml().get_value_as_string("ReminderIsSet") == "true";
         }
 
-        //! Set the minutes before the due date that a reminder should be
-        //! shown to the user TODO: string?
+        //! \brief Set the minutes before the due date that a reminder should be
+        //! shown to the user.
         void set_reminder_minutes_before_start(std::uint32_t minutes)
         {
             xml().set_or_update("ReminderMinutesBeforeStart", std::to_string(minutes));
         }
 
-        //! Number of minutes before the due date that a reminder should be
-        //! shown to the user TODO: string?
+        //! \brief Number of minutes before the due date that a reminder should be
+        //! shown to the user.
         std::uint32_t get_reminder_minutes_before_start() const
         {
             std::string minutes = xml().get_value_as_string("ReminderMinutesBeforeStart");
@@ -7846,8 +7847,9 @@ namespace ews
             return xml().get_value_as_string("DisplayTo");
         }
 
-        //! True if an item has non-hidden attachments. This is a read-only
-        //! property
+        //! \brief True if an item has non-hidden attachments.
+        //!
+        //! This is a read-only property
         bool has_attachments() const
         {
             return xml().get_value_as_string("HasAttachments") == "true";
