@@ -34,3 +34,8 @@ doc/html
 *.vcproj
 *vcproj.*.*.user
 *.ncb
+
+# KDE files
+.kateproject
+.kateproject.d/
+.directory
