@@ -64,7 +64,7 @@ Source Code
 
 ews-cpp's source code is available as a Git repository. To obtain it, type::
 
-    $ git clone git@repository.otris.de:kircher/ews-cpp.git
+    $ git clone git@gitlab.otris.de:kircher/ews-cpp.git
 
 
 Building
