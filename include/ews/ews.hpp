@@ -7447,6 +7447,39 @@ namespace ews
     static_assert(std::is_move_assignable<attendee>::value, "");
 #endif
 
+    //! Represents a internet_message_header as name/value pair
+    class internet_message_header final
+    {
+    private:
+        std::string imh_name;
+        std::string imh_value;
+
+    public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        internet_message_header()  = delete;
+#else
+        internet_message_header() {}
+#endif
+        //! An internet_message_header is read-only. Constructor keeps private.
+        internet_message_header(const std::string& name, const std::string& value)
+        {
+            imh_name  = name;
+            imh_value = value;
+        }
+
+        //! Returns the name of the internet_message_header.
+        const std::string& get_name() const
+        {
+            return imh_name;
+        }
+
+        //! Returns the value of the internet_message_header.
+        const std::string& get_value() const
+        {
+            return imh_value;
+        }
+    };
+
     //! Represents a generic item in the Exchange store
     class item
     {
@@ -7771,21 +7804,28 @@ namespace ews
         //!
         //! These headers are defined in RFC822, RFC1123 and RFC2822
         //! This is a read-only property
-        std::vector<std::string> get_internet_message_headers() const
+        std::vector<internet_message_header> get_internet_message_headers() const
         {
             const auto imh_node = xml().get_node("InternetMessageHeaders");
             if (!imh_node)
             {
-                return std::vector<std::string>();
+                return std::vector<internet_message_header>();
             }
 
-            std::vector<std::string> imh_str;
+            std::vector<internet_message_header> imh;
             for (auto child = imh_node->first_node(); child != nullptr;
                     child = child->next_sibling())
             {
-                imh_str.emplace_back(std::string(child->value(), child->value_size()));
+                imh.emplace_back
+                (
+                    internet_message_header
+                    (
+                        std::string(child->local_name(), child->local_name_size()),
+                        std::string(child->value(), child->value_size())
+                    )
+                );
             }
-            return imh_str;
+            return imh;
         }
 
         //! \brief Date/time an item was sent.
@@ -9189,7 +9229,6 @@ namespace ews
 
     public:
 #endif
-
         std::string to_xml() const
         {
             return this->to_xml_impl();
