@@ -512,6 +512,56 @@ namespace tests
         auto node = doc.first_node();
         return ews::task::from_xml_element(*node);
     }
+
+#ifdef EWS_USE_BOOST_LIBRARY
+    inline ews::message make_fake_message(const char* xml=nullptr)
+    {
+        typedef rapidxml::xml_document<> xml_document;
+
+        std::vector<char> buf;
+
+        if (xml)
+        {
+            // Load from given C-string
+
+            std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+            buf.push_back('\0');
+        }
+        else
+        {
+            // Load from file
+
+            const auto assets = boost::filesystem::path(
+                ews::test::global_data::instance().assets_dir);
+            const auto file_path = assets
+                / "undeliverable_test_mail_get_item_response.xml";
+            std::ifstream ifstr(file_path.string(),
+                std::ifstream::in | std::ios::binary);
+            if (!ifstr.is_open())
+            {
+                throw std::runtime_error("Could not open file for reading: "
+                    + file_path.string());
+            }
+            ifstr.unsetf(std::ios::skipws);
+            ifstr.seekg(0, std::ios::end);
+            const auto file_size = ifstr.tellg();
+            ifstr.seekg(0, std::ios::beg);
+            buf.reserve(file_size);
+            buf.insert(begin(buf),
+                       std::istream_iterator<char>(ifstr),
+                       std::istream_iterator<char>());
+            ifstr.close();
+        }
+
+        xml_document doc;
+        doc.parse<0>(&buf[0]);
+        auto node = ews::internal::get_element_by_qname(
+            doc,
+            "Message",
+            ews::internal::uri<>::microsoft::types());
+        return ews::message::from_xml_element(*node);
+    }
+#endif // EWS_USE_BOOST_LIBRARY
 }
 
 // vim:et ts=4 sw=4 noic cc=80
