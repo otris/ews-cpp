@@ -476,18 +476,20 @@ namespace tests
         const auto task = ews::task();
         EXPECT_FALSE(task.is_unmodified());
     }
-
+#ifdef EWS_USE_BOOST_LIBRARY
     TEST_F(ItemTest, GetInternetMessageHeaders)
     {
-        // TODO: Test with real sent mails. Not possible at the moment.
-        auto item_id = ews::item_id(
-        "AAMkAGUyMzlhODA1LWJjNmMtNDA3Zi05MmMyLTY5YzhiMGUzOTZiZABGAAAAAACy333R3lBgQ4hf/BNYPWikBwA5VVNr9VuwRKflbHd457lbAAAAAAENAAA5VVNr9VuwRKflbHd457lbAABjW0vmAAA=",
-                    "FwAAABYAAAA5VVNr9VuwRKflbHd457lbAABjX/nX");
-        auto message = service().get_message(item_id);
+        auto message = make_fake_message();
         auto headers = message.get_internet_message_headers();
-        EXPECT_TRUE(headers.size() > 0);
-    }
+        ASSERT_TRUE(headers.size() > 0);
+        for(auto header : headers)
+        {
+            ASSERT_TRUE(header.get_name().size() > 0);
+            ASSERT_TRUE(header.get_value().size() > 0);
+        }
 
+    }
+#endif // EWS_USE_BOOST_LIBRARY
     TEST(OfflineItemTest, GetDateTimeSentProperty)
     {
         const auto task = make_fake_task();
