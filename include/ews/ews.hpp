@@ -7447,6 +7447,38 @@ namespace ews
     static_assert(std::is_move_assignable<attendee>::value, "");
 #endif
 
+    //! Represents a internet_message_header as name/value pair
+    class internet_message_header final
+    {
+    public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        internet_message_header()  = delete;
+#else
+        internet_message_header() {}
+#endif
+        //! Constructor to initialize an internet_message_header with the right values
+        internet_message_header(const std::string& name, const std::string& value)
+                : header_name_(std::move(name)),
+                header_value_(std::move(value))
+        {}
+
+        //! Returns the name of the internet_message_header.
+        const std::string& get_name() const EWS_NOEXCEPT
+        {
+            return header_name_;
+        }
+
+        //! Returns the value of the internet_message_header.
+        const std::string& get_value() const EWS_NOEXCEPT
+        {
+            return header_value_;
+        }
+
+    private:
+        std::string header_name_;
+        std::string header_value_;
+    };
+
     //! Represents a generic item in the Exchange store
     class item
     {
@@ -7767,8 +7799,34 @@ namespace ews
             return xml().get_value_as_string("isUnmodified") == "true";
         }
 
-        // Collection of Internet message headers associated with an item
-        // TODO: get_internet_message_headers
+        //! \brief Collection of Internet message headers associated with an item.
+        //!
+        //! These headers are defined in RFC822, RFC1123 and RFC2822
+        //! This is a read-only property
+        std::vector<internet_message_header> get_internet_message_headers() const
+        {
+            const auto imh_node = xml().get_node("InternetMessageHeaders");
+            if (!imh_node)
+            {
+                return std::vector<internet_message_header>();
+            }
+
+            std::vector<internet_message_header> imh;
+            for (auto child = imh_node->first_node(); child != nullptr;
+                    child = child->next_sibling())
+            {
+                imh.emplace_back
+                (
+                    internet_message_header
+                    (
+                        std::string(child->first_attribute()->value(),
+                                    child->first_attribute()->value_size()),
+                        std::string(child->value(), child->value_size())
+                    )
+                );
+            }
+            return imh;
+        }
 
         //! \brief Date/time an item was sent.
         //!
