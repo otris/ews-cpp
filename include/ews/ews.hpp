@@ -7450,34 +7450,33 @@ namespace ews
     //! Represents a internet_message_header as name/value pair
     class internet_message_header final
     {
-    private:
-        std::string imh_name;
-        std::string imh_value;
-
     public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
         internet_message_header()  = delete;
 #else
         internet_message_header() {}
 #endif
-        //! An internet_message_header is read-only. Constructor keeps private.
+        //! Constructor to initialize an internet_message_header with the right values
         internet_message_header(const std::string& name, const std::string& value)
-        {
-            imh_name  = name;
-            imh_value = value;
-        }
+                : header_name_(std::move(name)),
+                header_value_(std::move(value))
+        {}
 
         //! Returns the name of the internet_message_header.
-        const std::string& get_name() const
+        const std::string& get_name() const EWS_NOEXCEPT
         {
-            return imh_name;
+            return header_name_;
         }
 
         //! Returns the value of the internet_message_header.
-        const std::string& get_value() const
+        const std::string& get_value() const EWS_NOEXCEPT
         {
-            return imh_value;
+            return header_value_;
         }
+
+    private:
+        std::string header_name_;
+        std::string header_value_;
     };
 
     //! Represents a generic item in the Exchange store
@@ -7800,7 +7799,7 @@ namespace ews
             return xml().get_value_as_string("isUnmodified") == "true";
         }
 
-        //! Collection of Internet message headers associated with an item.
+        //! \brief Collection of Internet message headers associated with an item.
         //!
         //! These headers are defined in RFC822, RFC1123 and RFC2822
         //! This is a read-only property
@@ -7820,7 +7819,8 @@ namespace ews
                 (
                     internet_message_header
                     (
-                        std::string(child->local_name(), child->local_name_size()),
+                        std::string(child->first_attribute()->value(),
+                                    child->first_attribute()->value_size()),
                         std::string(child->value(), child->value_size())
                     )
                 );
@@ -9229,6 +9229,7 @@ namespace ews
 
     public:
 #endif
+
         std::string to_xml() const
         {
             return this->to_xml_impl();
