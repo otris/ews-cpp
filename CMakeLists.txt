@@ -146,7 +146,7 @@ include_directories(${GTEST_INCLUDE_DIR})
 # Boost is optional as it is only used by some test cases
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
-set(Boost_UES_STATIC_RUNTIME OFF)
+set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.53 COMPONENTS system filesystem)
 if(Boost_FOUND)
     add_definitions(-DEWS_USE_BOOST_LIBRARY -DBOOST_FILESYSTEM_NO_DEPRECATED)
