@@ -679,6 +679,258 @@ namespace tests
         EXPECT_EQ("", task.get_display_to());
     }
 
+    TEST(OfflineExtendedFieldUriTest, DistPropertySetIdNameRoundTrip)
+    {
+        // 1. based on distinguished_property_set_id and property_name
+        const char* xml = "<t:ExtendedFieldURI "
+                          "DistinguishedPropertySetId=\"PublicStrings\" "
+                          "PropertyName=\"ShoeSize\" "
+                          "PropertyType=\"Float\"/>";
+        std::vector<char> buf(xml, xml + std::strlen(xml));
+        buf.push_back('\0');
+
+        xml_document doc;
+        doc.parse<rapidxml::parse_no_namespace>(&buf[0]);
+        auto node = doc.first_node();
+        auto obj = ews::extended_field_uri::from_xml_element(*node);
+        EXPECT_STREQ("PublicStrings",
+                     obj.get_distinguished_property_set_id().c_str());
+        EXPECT_STREQ("", obj.get_property_set_id().c_str());
+        EXPECT_STREQ("", obj.get_property_tag().c_str());
+        EXPECT_STREQ("ShoeSize", obj.get_property_name().c_str());
+        EXPECT_STREQ("", obj.get_property_id().c_str());
+        EXPECT_STREQ("Float", obj.get_property_type().c_str());
+    }
+
+    TEST(OfflineExtendedFieldUriTest, DistPropertySetIdIdRoundTrip)
+    {
+        // 2. based on distinguished_property_set_id and property_id
+        const char* xml = "<t:ExtendedFieldURI "
+                          "DistinguishedPropertySetId=\"PublicStrings\" "
+                          "PropertyId=\"42\" "
+                          "PropertyType=\"Boolean\"/>";
+        std::vector<char> buf(xml, xml + std::strlen(xml));
+        buf.push_back('\0');
+
+        xml_document doc;
+        doc.parse<rapidxml::parse_no_namespace>(&buf[0]);
+        auto node = doc.first_node();
+        auto obj = ews::extended_field_uri::from_xml_element(*node);
+        EXPECT_STREQ("PublicStrings",
+                     obj.get_distinguished_property_set_id().c_str());
+        EXPECT_STREQ("", obj.get_property_set_id().c_str());
+        EXPECT_STREQ("", obj.get_property_tag().c_str());
+        EXPECT_STREQ("", obj.get_property_name().c_str());
+        EXPECT_STREQ("42", obj.get_property_id().c_str());
+        EXPECT_STREQ("Boolean", obj.get_property_type().c_str());
+    }
+    TEST(OfflineExtendedFieldUriTest, PropertySetIdIdRoundTrip)
+    {
+        // 3. based on property_set_id and property_id
+        const char* xml =
+            "<t:ExtendedFieldURI "
+            "PropertySetId=\"24040483-cda4-4521-bb5f-a83fac4d19a4\" "
+            "PropertyId=\"2\" "
+            "PropertyType=\"IntegerArray\"/>";
+        std::vector<char> buf(xml, xml + std::strlen(xml));
+        buf.push_back('\0');
+
+        xml_document doc;
+        doc.parse<rapidxml::parse_no_namespace>(&buf[0]);
+        auto node = doc.first_node();
+        auto obj = ews::extended_field_uri::from_xml_element(*node);
+        EXPECT_STREQ("", obj.get_distinguished_property_set_id().c_str());
+        EXPECT_STREQ("24040483-cda4-4521-bb5f-a83fac4d19a4",
+                     obj.get_property_set_id().c_str());
+        EXPECT_STREQ("", obj.get_property_tag().c_str());
+        EXPECT_STREQ("", obj.get_property_name().c_str());
+        EXPECT_STREQ("2", obj.get_property_id().c_str());
+        EXPECT_STREQ("IntegerArray", obj.get_property_type().c_str());
+    }
+    TEST(OfflineExtendedFieldUriTest, PropertySetIdNameRoundTrip)
+    {
+        // 4. based on property_set_id and property_name
+        const char* xml =
+            "<t:ExtendedFieldURI "
+            "PropertySetId=\"24040483-cda4-4521-bb5f-a83fac4d19a4\" "
+            "PropertyName=\"Rumpelstiltskin\" "
+            "PropertyType=\"Integer\"/>";
+        std::vector<char> buf(xml, xml + std::strlen(xml));
+        buf.push_back('\0');
+
+        xml_document doc;
+        doc.parse<rapidxml::parse_no_namespace>(&buf[0]);
+        auto node = doc.first_node();
+        auto obj = ews::extended_field_uri::from_xml_element(*node);
+        EXPECT_STREQ("", obj.get_distinguished_property_set_id().c_str());
+        EXPECT_STREQ("24040483-cda4-4521-bb5f-a83fac4d19a4",
+                     obj.get_property_set_id().c_str());
+        EXPECT_STREQ("", obj.get_property_tag().c_str());
+        EXPECT_STREQ("Rumpelstiltskin", obj.get_property_name().c_str());
+        EXPECT_STREQ("", obj.get_property_id().c_str());
+        EXPECT_STREQ("Integer", obj.get_property_type().c_str());
+    }
+
+    TEST(OfflineExtendedFieldUriTest, PropertyTagRoundTrip)
+    {
+        // 5. based on property_tag
+        const char* xml = "<t:ExtendedFieldURI "
+                          "PropertyTag=\"0x0036\" "
+                          "PropertyType=\"Binary\"/>";
+        std::vector<char> buf(xml, xml + std::strlen(xml));
+        buf.push_back('\0');
+
+        xml_document doc;
+        doc.parse<rapidxml::parse_no_namespace>(&buf[0]);
+        auto node = doc.first_node();
+        auto obj = ews::extended_field_uri::from_xml_element(*node);
+        EXPECT_STREQ("", obj.get_distinguished_property_set_id().c_str());
+        EXPECT_STREQ("", obj.get_property_set_id().c_str());
+        EXPECT_STREQ("0x0036", obj.get_property_tag().c_str());
+        EXPECT_STREQ("", obj.get_property_name().c_str());
+        EXPECT_STREQ("", obj.get_property_id().c_str());
+        EXPECT_STREQ("Binary", obj.get_property_type().c_str());
+    }
+
+    TEST(OfflineExtendedPropertyTest, ExtendedProperty)
+    {
+        auto msg = ews::message();
+
+        std::vector<std::string> values;
+        values.push_back("a lonesome violine string");
+
+        ews::extended_field_uri field_uri(
+            ews::extended_field_uri::property_set_id(
+                "24040483-cda4-4521-bb5f-a83fac4d19a4"),
+            ews::extended_field_uri::property_id("2"),
+            ews::extended_field_uri::property_type("String"));
+
+        ews::extended_property prop(field_uri, values);
+        msg.set_extended_property(prop); // properties are set
+
+        auto ep_actual = msg.get_extended_properties();
+        ASSERT_FALSE(ep_actual.empty());
+        auto efu_actual = ep_actual[0].get_extended_field_uri();
+
+        EXPECT_STREQ("",
+                     efu_actual.get_distinguished_property_set_id().c_str());
+        EXPECT_STREQ("24040483-cda4-4521-bb5f-a83fac4d19a4",
+                     efu_actual.get_property_set_id().c_str());
+        EXPECT_STREQ("", efu_actual.get_property_tag().c_str());
+        EXPECT_STREQ("", efu_actual.get_property_name().c_str());
+        EXPECT_STREQ("2", efu_actual.get_property_id().c_str());
+        EXPECT_STREQ("String", efu_actual.get_property_type().c_str());
+
+        msg = ews::message(); // ???
+        field_uri = ews::extended_field_uri(
+            ews::extended_field_uri::property_tag("0x0036"),
+            ews::extended_field_uri::property_type("Integer"));
+
+        prop = ews::extended_property(field_uri, values);
+        msg.set_extended_property(prop);
+        ep_actual = msg.get_extended_properties();
+        ASSERT_FALSE(ep_actual.empty());
+        efu_actual = ep_actual[0].get_extended_field_uri();
+
+        EXPECT_STREQ("",
+                     efu_actual.get_distinguished_property_set_id().c_str());
+        EXPECT_STREQ("", efu_actual.get_property_set_id().c_str());
+        EXPECT_STREQ("0x0036", efu_actual.get_property_tag().c_str());
+        EXPECT_STREQ("", efu_actual.get_property_name().c_str());
+        EXPECT_STREQ("", efu_actual.get_property_id().c_str());
+        EXPECT_STREQ("Integer", efu_actual.get_property_type().c_str());
+    }
+
+    TEST_F(ItemTest, ExtendedProperty)
+    {
+        auto msg =
+            ews::message(); // see book "Exchange Server 2007 - EWS" p.538
+
+        // Set some constructors, send and get the properties back from Server
+        // 1. based on property_set_id and property_id
+        std::vector<ews::extended_field_uri> all_field_uri;
+        ews::extended_field_uri field_uri1(
+            ews::extended_field_uri::property_set_id(
+                "24040483-cda4-4521-bb5f-a83fac4d19a4"),
+            ews::extended_field_uri::property_id("2"),
+            ews::extended_field_uri::property_type("StringArray"));
+        std::vector<std::string> values;
+        values.push_back("first string");
+        values.push_back("second string");
+        values.push_back("third string");
+        ews::extended_property prop(field_uri1, values);
+        msg.set_extended_property(prop);
+        // 2. based on property_tag
+        values.clear();
+        values.push_back("12345");
+        ews::extended_field_uri field_uri2(
+            ews::extended_field_uri::property_tag("0x0036"),
+            ews::extended_field_uri::property_type("Integer"));
+        prop = ews::extended_property(field_uri2, values);
+        msg.set_extended_property(prop);
+        // 3. based on distinguished_property_set_id and property_name
+        values.clear();
+        values.push_back("12");
+        ews::extended_field_uri field_uri3(
+            ews::extended_field_uri::distinguished_property_set_id(
+                "PublicStrings"),
+            "ShoeSize", ews::extended_field_uri::property_type("Float"));
+        prop = ews::extended_property(field_uri3, values);
+        msg.set_extended_property(prop);
+
+        auto item_id = service().create_item(
+            msg,                                  // message with all properties
+            ews::message_disposition::save_only); // created
+
+        ews::internal::on_scope_exit remove_msg(
+            [&] // make sure to remove msg
+            { service().delete_message(std::move(msg)); });
+        // set all field_uris we want to receive
+        all_field_uri.push_back(field_uri1);
+        all_field_uri.push_back(field_uri2);
+        all_field_uri.push_back(field_uri3);
+        msg = service().get_message(item_id, all_field_uri);
+
+        auto ep_actual = msg.get_extended_properties();
+        ASSERT_TRUE(ep_actual.size() == 3);
+
+        auto efu_actual = ep_actual[0].get_extended_field_uri();
+        EXPECT_STREQ("first string", ep_actual[0].get_values()[0].c_str());
+        EXPECT_STREQ("second string", ep_actual[0].get_values()[1].c_str());
+        EXPECT_STREQ("third string", ep_actual[0].get_values()[2].c_str());
+        EXPECT_STREQ("",
+                     efu_actual.get_distinguished_property_set_id().c_str());
+        EXPECT_STREQ("24040483-cda4-4521-bb5f-a83fac4d19a4",
+                     efu_actual.get_property_set_id().c_str());
+        EXPECT_STREQ("", efu_actual.get_property_tag().c_str());
+        EXPECT_STREQ("", efu_actual.get_property_name().c_str());
+        EXPECT_STREQ("2", efu_actual.get_property_id().c_str());
+        EXPECT_STREQ("StringArray", efu_actual.get_property_type().c_str());
+
+        efu_actual = ep_actual[1].get_extended_field_uri();
+        EXPECT_STREQ("12345", ep_actual[1].get_values()[0].c_str());
+        EXPECT_STREQ("",
+                     efu_actual.get_distinguished_property_set_id().c_str());
+        EXPECT_STREQ("", efu_actual.get_property_set_id().c_str());
+        EXPECT_STREQ("0x36", efu_actual.get_property_tag().c_str()); // Exchange
+                                                                     // removes
+                                                                     // leading
+                                                                     // zeroes
+        EXPECT_STREQ("", efu_actual.get_property_name().c_str());
+        EXPECT_STREQ("", efu_actual.get_property_id().c_str());
+        EXPECT_STREQ("Integer", efu_actual.get_property_type().c_str());
+
+        efu_actual = ep_actual[2].get_extended_field_uri();
+        EXPECT_STREQ("12", ep_actual[2].get_values()[0].c_str());
+        EXPECT_STREQ("PublicStrings",
+                     efu_actual.get_distinguished_property_set_id().c_str());
+        EXPECT_STREQ("", efu_actual.get_property_set_id().c_str());
+        EXPECT_STREQ("", efu_actual.get_property_tag().c_str());
+        EXPECT_STREQ("ShoeSize", efu_actual.get_property_name().c_str());
+        EXPECT_STREQ("", efu_actual.get_property_id().c_str());
+        EXPECT_STREQ("Float", efu_actual.get_property_type().c_str());
+    }
+
     TEST(OfflineItemTest, CulturePropertyDefaultConstructed)
     {
         auto task = ews::task();
