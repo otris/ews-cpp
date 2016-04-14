@@ -39,3 +39,11 @@ doc/html
 .kateproject
 .kateproject.d/
 .directory
+
+# Eclipse files
+.project
+.cproject
+.settings/
+
+# ctags
+tags
