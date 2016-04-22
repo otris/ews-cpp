@@ -44,7 +44,8 @@
 # endif
 #endif // !NDEBUG
 
-//! Contains all classes, functions, and enumerations of this library
+//! Contains all classes, functions, and enumerations of this library to
+//! handle Microsoft Exchange Web Services.
 namespace ews
 {
     namespace internal
@@ -283,7 +284,15 @@ namespace ews
     }
 
     //! The ResponseClass attribute of a ResponseMessage
-    enum class response_class { error, success, warning };
+    enum class response_class
+    {
+        //! an error has occured
+        error,
+        //! everything went fine
+        success,
+        //! something strange but not fatal happend
+        warning
+    };
 
     //! Base-class for all exceptions thrown by this library
     class exception : public std::runtime_error
@@ -404,11 +413,11 @@ namespace ews
         }
     };
 
-    //! Response code enum describes status information about a request
+    //! \brief Response code enum describes status information about a request
     enum class response_code
     {
+        //! No error occured.
         no_error,
-
         //! Calling account does not have the rights to perform the action
         //! requested.
         error_access_denied,
@@ -3354,7 +3363,7 @@ namespace ews
         }
     }
 
-    //! Represents the RequestServerVersion element
+    //! Represents the <tt>\<RequestServerVersion\></tt> element
     enum class server_version
     {
         //! Target the schema files for the initial release version of
@@ -3445,9 +3454,18 @@ namespace ews
         }
     }
 
-    //! Identifies the set of properties that a GetItem or GetFolder method
+    //! \brief Identifies the set of properties that a GetItem or GetFolder method
     //! call should return
-    enum class base_shape { id_only, default_shape, all_properties };
+    enum class base_shape
+    {
+        //! Returns only the item or folder ID.
+        id_only,
+        //! Returns a set of properties that are defined as the default
+        //! for the item or folder.
+        default_shape,
+        //! Returns all the properties used by the Exchange Business Logic layer to construct a folder.
+        all_properties
+    };
 
     namespace internal
     {
@@ -3463,11 +3481,18 @@ namespace ews
         }
     }
 
-    //! Describes how items are deleted from the Exchange store.
+    //! \brief Describes how items are deleted from the Exchange store.
     //!
     //! Side note: we do not provide SoftDelete because that does not make much
     //! sense from an EWS perspective
-    enum class delete_type { hard_delete, move_to_deleted_items };
+    enum class delete_type
+    {
+        //! This item indicates real deletion
+        hard_delete,
+
+        //! This item indicates move to "trash"
+        move_to_deleted_items
+    };
 
     namespace internal
     {
@@ -3485,9 +3510,13 @@ namespace ews
         }
     }
 
+    //! Indicates which occurrence of a recurring task should be deleted.
     enum class affected_task_occurrences
     {
+        //! Occurres to all
         all_occurrences,
+
+        //! Occures only to specified
         specified_occurrence_only
     };
 
@@ -3507,6 +3536,7 @@ namespace ews
         }
     }
 
+    //! Describes how a meeting will be canceled
     enum class send_meeting_cancellations
     {
         //! The calendar item is deleted without sending a cancellation message
@@ -3542,7 +3572,7 @@ namespace ews
         }
     }
 
-    //! The type of conflict resolution to try during an UpdateItem method call.
+    //! \brief The type of conflict resolution to try during an UpdateItem method call.
     //!
     //! The default value is AutoResolve.
     enum class conflict_resolution
@@ -3580,7 +3610,7 @@ namespace ews
         }
     }
 
-    //! \<CreateItem> and \<UpdateItem> methods use this attribute. Only
+    //! \brief <tt>\<CreateItem\></tt> and <tt>\<UpdateItem\></tt> methods use this attribute. Only
     //! applicable to e-mail messages
     enum class message_disposition
     {
@@ -3614,6 +3644,7 @@ namespace ews
         }
     }
 
+    //! Gets the free/busy status that is associated with the event
     enum class free_busy_status
     {
         //! The time slot is open for other events
@@ -3657,6 +3688,7 @@ namespace ews
         }
     }
 
+    //! The CalendarItemType class represents an Exchange calendar item.
     enum class calendar_item_type
     {
         //! The item is not associated with a recurring calendar item; default
@@ -3673,13 +3705,21 @@ namespace ews
         recurring_master
     };
 
+    //! \brief The ResponseType element represents the type of recipient response that
+    //! is received for a meeting.
     enum class response_type
     {
+        //! The response type is unknown.
         unknown,
+        //! Indicates an organizer response type.
         organizer,
+        //! Meeting is tentative accepted.
         tentative,
+        //! Meeting is accepted.
         accept,
+        //! Meeting is declined.
         decline,
+        //! Indicates that no response is received.
         no_response_received
     };
 
@@ -3739,7 +3779,7 @@ namespace ews
         }
     }
 
-    //! Well known folder names enumeration. Usually rendered to XML as
+    //! \brief Well known folder names enumeration. Usually rendered to XML as
     //! <tt>\<DistinguishedFolderId></tt> element.
     enum class standard_folder
     {
@@ -3892,9 +3932,18 @@ namespace ews
         external
     };
 
-    //! This enumeration indicates the sensitive nature of an item; valid
-    //! values are Normal, Personal, Private, and Confidential
-    enum class sensitivity { normal, personal, priv, confidential };
+    //! This enumeration indicates the sensitivity of an item.
+    enum class sensitivity
+    {
+        //! The item has a normal sensitivity.
+        normal,
+        //! The item is personal.
+        personal,
+        //! The item is private.
+        priv,
+        //! The item is confidential.
+        confidential
+    };
 
     namespace internal
     {
@@ -3940,9 +3989,17 @@ namespace ews
         }
     }
 
-    //! This enumeration indicates the importance of an item; valid
+    //! \brief This enumeration indicates the importance of an item; valid
     //! values are Low, Normal, High
-    enum class importance { low, normal, high };
+    enum class importance
+    {
+        //! Low importance.
+        low,
+        //! Normal importance.
+        normal,
+        //! High importance.
+        high
+    };
 
     namespace internal
     {
@@ -4502,6 +4559,13 @@ namespace ews
 
     } // internal
 
+    //! \brief This class contains the credentials for basic authentication.
+    //!
+    //! Basic authentication provides a, well, basic level of security for your
+    //! client application. Microsoft  recommends that all new applications use
+    //! either NTLM or the OAuth protocol for authentication; however,
+    //! basic authentication can be the correct choice for your application in
+    //! some circumstances.
     class basic_credentials final : public internal::credentials
     {
     public:
@@ -4518,6 +4582,12 @@ namespace ews
         std::string password_;
     };
 
+    //! \brief This class contains the credentials for basic authentication.
+    //!
+    //! NTLM authentication is only available for Exchange on-premises servers.
+    //! For applications that run inside the corporate firewall, integration
+    //! of NTLM authentication provides a built-in means to authenticate your
+    //! Application.
     class ntlm_credentials final : public internal::credentials
     {
     public:
@@ -5341,8 +5411,8 @@ namespace ews
                                                         0U);
     }
 
-    //! \brief Contains the unique identifier and change key of an item in the
-    //! Exchange store.
+    //! \brief Contains the unique identifier and change key of an generic item
+    //!  in the Exchange store.
     //!
     //! The ID uniquely identifies a concrete item throughout the Exchange
     //! store and is not expected to change as long as the item exists. The
@@ -5399,7 +5469,7 @@ namespace ews
                     "\" ChangeKey=\"" + change_key() + "\"/>";
         }
 
-        //! Makes an item_id instance from a <tt>\<ItemId></tt> XML element
+        //! Makes an item_id instance from an <tt>\<ItemId></tt> XML element
         static item_id from_xml_element(const rapidxml::xml_node<>& elem)
         {
             auto id_attr = elem.first_attribute("Id");
@@ -5427,7 +5497,10 @@ namespace ews
     static_assert(std::is_move_assignable<item_id>::value, "");
 #endif
 
-    //! Contains the unique identifier of an attachment.
+    //! \brief Contains the unique identifier of an attachment.
+    //!
+    //! The AttachmentId element identifies an item or an file attachment.
+    //! This element is used in CreateAttachment responses.
     class attachment_id final
     {
     public:
@@ -5455,7 +5528,7 @@ namespace ews
         //!
         //! The root item is the item that contains the attachment.
         //!
-        //! Note: the returned item_id is only valid and meaningful when you
+        //! \note: the returned item_id is only valid and meaningful when you
         //! obtained this attachment_id in a call to \ref
         //! service::create_attachment.
         const item_id& root_item_id() const EWS_NOEXCEPT
@@ -6816,7 +6889,19 @@ namespace ews
 #endif
 
     //! Specifies the type of a <tt>\<Body></tt> element
-    enum class body_type { best, plain_text, html };
+    enum class body_type
+    {
+        //! The response will return the richest available content of body text.
+        //! This is useful if it is unknown whether the content is text or HTML.
+        //! The returned body will be text if the stored body is plain text.
+        //! Otherwise, the response will return HTML if the stored body is in
+        //! either HTML or RTF format. This is the default value.
+        best,
+        //! The response will return an item body as HTML.
+        plain_text,
+        //! The response will return an item body as plain text.
+        html
+    };
 
     namespace internal
     {
@@ -6832,75 +6917,75 @@ namespace ews
         }
     }
 
-    //! \brief Represents the actual body content of a message.
-    //!
-    //! This can be of type Best, HTML, or plain-text. See EWS XML elements
-    //! documentation on MSDN.
-    class body final
+//! \brief Represents the actual <tt>\<Body></tt> content of a message.
+//!
+//! This can be of type Best, HTML, or plain-text.
+//! See EWS XML elements documentation on MSDN.
+class body final
+{
+public:
+    // Creates an empty body element; body_type is plain-text
+    body()
+        : content_(),
+          type_(body_type::plain_text),
+          is_truncated_(false)
     {
-    public:
-        // Creates an empty body element; body_type is plain-text
-        body()
-            : content_(),
-              type_(body_type::plain_text),
-              is_truncated_(false)
+    }
+
+    // Creates a new body element with given content and type
+    explicit body(std::string content,
+                  body_type type = body_type::plain_text)
+        : content_(std::move(content)),
+          type_(type),
+          is_truncated_(false)
+    {
+    }
+
+    body_type type() const EWS_NOEXCEPT { return type_; }
+
+    void set_type(body_type type) { type_ = type; }
+
+    bool is_truncated() const EWS_NOEXCEPT { return is_truncated_; }
+
+    void set_truncated(bool truncated) { is_truncated_ = truncated; }
+
+    const std::string& content() const EWS_NOEXCEPT { return content_; }
+
+    void set_content(std::string content) { content_ = std::move(content); }
+
+    std::string to_xml() const
+    {
+        //FIXME: what about IsTruncated attribute?
+        static const auto cdata_beg = std::string("<![CDATA[");
+        static const auto cdata_end = std::string("]]>");
+
+        std::stringstream sstr;
+        sstr << "<t:Body BodyType=\""
+             << internal::body_type_str(type());
+        sstr << "\">";
+        if (   type() == body_type::html
+            && !(content_.compare(0, cdata_beg.length(), cdata_beg) == 0))
         {
+            sstr << cdata_beg << content_ << cdata_end;
         }
-
-        // Creates a new body element with given content and type
-        explicit body(std::string content,
-                      body_type type = body_type::plain_text)
-            : content_(std::move(content)),
-              type_(type),
-              is_truncated_(false)
+        else
         {
+            sstr << content_;
         }
+        sstr << "</t:Body>";
+        return sstr.str();
+    }
 
-        body_type type() const EWS_NOEXCEPT { return type_; }
-
-        void set_type(body_type type) { type_ = type; }
-
-        bool is_truncated() const EWS_NOEXCEPT { return is_truncated_; }
-
-        void set_truncated(bool truncated) { is_truncated_ = truncated; }
-
-        const std::string& content() const EWS_NOEXCEPT { return content_; }
-
-        void set_content(std::string content) { content_ = std::move(content); }
-
-        std::string to_xml() const
-        {
-            //FIXME: what about IsTruncated attribute?
-            static const auto cdata_beg = std::string("<![CDATA[");
-            static const auto cdata_end = std::string("]]>");
-
-            std::stringstream sstr;
-            sstr << "<t:Body BodyType=\""
-                 << internal::body_type_str(type());
-            sstr << "\">";
-            if (   type() == body_type::html
-                && !(content_.compare(0, cdata_beg.length(), cdata_beg) == 0))
-            {
-                sstr << cdata_beg << content_ << cdata_end;
-            }
-            else
-            {
-                sstr << content_;
-            }
-            sstr << "</t:Body>";
-            return sstr.str();
-        }
-
-    private:
-        std::string content_;
-        body_type type_;
-        bool is_truncated_;
-    };
+private:
+    std::string content_;
+    body_type type_;
+    bool is_truncated_;
+};
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(std::is_default_constructible<body>::value, "");
-    static_assert(std::is_copy_constructible<body>::value, "");
-    static_assert(std::is_copy_assignable<body>::value, "");
+static_assert(std::is_default_constructible<body>::value, "");
+static_assert(std::is_copy_constructible<body>::value, "");
+static_assert(std::is_copy_assignable<body>::value, "");
     static_assert(std::is_move_constructible<body>::value, "");
     static_assert(std::is_move_assignable<body>::value, "");
 #endif
@@ -7447,7 +7532,7 @@ namespace ews
     static_assert(std::is_move_assignable<attendee>::value, "");
 #endif
 
-    //! Represents a internet_message_header as name/value pair
+    //! Represents an <tt>\<InternetMessageHeader\></tt> as name/value pair
     class internet_message_header final
     {
     public:
@@ -7459,7 +7544,7 @@ namespace ews
         //! Constructor to initialize an internet_message_header with the right values
         internet_message_header(const std::string& name, const std::string& value)
                 : header_name_(std::move(name)),
-                header_value_(std::move(value))
+                  header_value_(std::move(value))
         {}
 
         //! Returns the name of the internet_message_header.
@@ -7479,7 +7564,7 @@ namespace ews
         std::string header_value_;
     };
 
-    //! Represents a generic item in the Exchange store
+    //! Represents a generic <tt>\<Item></tt> in the Exchange store
     class item
     {
     public:
@@ -7967,15 +8052,21 @@ namespace ews
     static_assert(std::is_move_assignable<item>::value, "");
 #endif
 
-    //! Enumeration value indicating whether the delegated task was accepted
-    //! or not.
+    //! \brief This  value indicating whether the delegated task was accepted
+    //! or not. This is a read-only property.
     enum class delegation_state
     {
+        //! TODO: write this!
         no_match,
+        //! The task is owned new.
         own_new,
+        //! The task is owned.
         owned,
+        //! The task was accepted.
         accepted,
+        //! The task was declined.
         declined,
+        //! TODO: write this!
         max
     };
 
@@ -8003,12 +8094,18 @@ namespace ews
         }
     }
 
+    //! Specifies the <tt>\<Status></tt> of a task item.
     enum class status
     {
+        //! The task is not started
         not_started,
+        //! The task is started and in progress
         in_progress,
+        //! The task is completed
         completed,
+        //! The Task is waiting on other
         waiting_on_others,
+        //! The Task is deferred
         deferred
     };
 
@@ -8034,19 +8131,32 @@ namespace ews
         }
     }
 
+    //! The Month element describes the month when a yearly recurring item occurs.
     enum class month
     {
+        //! January
         jan,
+        //! February
         feb,
+        //! March
         mar,
+        //! April
         apr,
+        //! May
         may,
+        //! June
         june,
+        //! July
         july,
+        //! August
         aug,
+        //! September
         sept,
+        //! October
         oct,
+        //! November
         nov,
+        //! December
         dec,
     };
 
@@ -8144,17 +8254,28 @@ namespace ews
         }
     }
 
+    //! This element contains the selection of working days
     enum class day_of_week
     {
+        //! Sunday
         sun,
+        //! Monday
         mon,
+        //! Tuesday
         tue,
+        //! Wednesday
         wed,
+        //! Thursday
         thu,
+        //! Friday
         fri,
+        //! Saturday
         sat,
+        //!  day
         day,
+        //! A weekday
         weekday,
+        //! A day weekend
         weekend_day
     };
 
@@ -8238,12 +8359,24 @@ namespace ews
         }
     }
 
+    //! \brief This element describes which week in a month is used in a
+    //! relative recurrence pattern.
+    //!
+    //! For example, the second Monday of a month may occur in the third week
+    //! of that month. If a month starts on a Friday, the first week of the
+    //! month only contains a few days and does not contain a Monday.
+    //! Therefore, the first Monday would have to occur in the second week.
     enum class day_of_week_index
     {
+        //! The first occurence of a day within a month.
         first,
+        //! The second occurence of a day within a month.
         second,
+        //! The third occurence of a day within a month.
         third,
+        //! The fourth occurence of a day within a month.
         fourth,
+        //! The last occurence of a day within a month.
         last
     };
 
@@ -10000,6 +10133,7 @@ namespace ews
     static_assert(!std::is_move_assignable<recurrence_range>::value, "");
 #endif
 
+    //! Represents recurrence range with no end date.
     class no_end_recurrence_range final : public recurrence_range
     {
     public:
@@ -10070,6 +10204,7 @@ namespace ews
     static_assert(!std::is_move_assignable<no_end_recurrence_range>::value, "");
 #endif
 
+    //! Represents recurrence range with end date.
     class end_date_recurrence_range final : public recurrence_range
     {
     public:
@@ -10160,6 +10295,7 @@ namespace ews
     static_assert(!std::is_move_assignable<end_date_recurrence_range>::value, "");
 #endif
 
+    //! Represents a numbered recurrence range.
     class numbered_recurrence_range final : public recurrence_range
     {
     public:
@@ -10253,7 +10389,7 @@ namespace ews
     static_assert(!std::is_move_assignable<numbered_recurrence_range>::value, "");
 #endif
 
-    //! A calendar item in the Exchange store.
+    //! Represents a calendar item in the Exchange store.
     class calendar_item final : public item
     {
     public:
@@ -10263,6 +10399,7 @@ namespace ews
         calendar_item() {}
 #endif
 
+        //! Creates an <tt>\<CalendarItem\></tt>
         explicit calendar_item(item_id id) : item(id) {}
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
@@ -10653,6 +10790,7 @@ namespace ews
             range.to_xml_element(*recurrence_node);
         }
 
+        //! Returns the first occurrence
         occurrence_info get_first_occurrence() const
         {
             auto node = xml().get_node("FirstOccurrence");
@@ -10663,6 +10801,7 @@ namespace ews
             return occurrence_info::from_xml_element(*node);
         }
 
+        //! Returns the last occurence
         occurrence_info get_last_occurrence() const
         {
             auto node = xml().get_node("LastOccurrence");
@@ -10673,6 +10812,7 @@ namespace ews
             return occurrence_info::from_xml_element(*node);
         }
 
+        //! Returns the modified occurrences
         std::vector<occurrence_info> get_modified_occurrences() const
         {
             auto node = xml().get_node("ModifiedOccurrences");
@@ -10691,6 +10831,7 @@ namespace ews
             return occurrences;
         }
 
+        //! Returns the deleted occurrences
         std::vector<occurrence_info> get_deleted_occurrences() const
         {
             auto node = xml().get_node("DeletedOccurrences");
@@ -11118,6 +11259,7 @@ namespace ews
     static_assert(std::is_move_assignable<property_path>::value, "");
 #endif
 
+    //! Defines the path to indexed properties
     class indexed_property_path : public property_path
     {
     public:
@@ -12115,10 +12257,18 @@ namespace ews
     //! \sa contains
     enum class containment_mode
     {
+        //! The comparison is between the full string and the constant.
+        //! The property value and the supplied constant are exactly the same.
         full_string,
+        //! The comparison is between the string prefix and the constant.
         prefixed,
+        //! The comparison is between a substring of the string and the constant.
         substring,
+        //! The comparison is between a prefix on individual words in the string
+        //! and the constant.
         prefix_on_words,
+        //! The comparison is between an exact phrase in the string and the
+        //! constant.
         exact_phrase
     };
 
@@ -12150,9 +12300,13 @@ namespace ews
     //! \sa contains
     enum class containment_comparison
     {
+        //! The strings must exactly be the same.
         exact,
+        //! The comparsion is caseinsensitiv.
         ignore_case,
+        //! Non-spacing-characters will be ignored.
         ignore_non_spacing_characters,
+        //! TODO: write this!
         loose,
     };
 
@@ -12217,6 +12371,8 @@ namespace ews
     static_assert(std::is_move_assignable<contains>::value, "");
 #endif
 
+    //! \brief Represents a date range view of appointments in calendar folder search
+    //! operations.
     class calendar_view
     {
     public:
