@@ -10,8 +10,7 @@ This library provides a native and platform-independent way to use EWS in your
 C++ application.
 
 
-.. image:: ews-overview.png
-    :align: left
+<img src="ews-overview.png" width=80%>
 
 
 Supported Compilers
@@ -132,8 +131,7 @@ Take a look at the `examples/` directory to get an idea of how the API feels.
 From 10.000ft it looks like this:
 
 
-.. image:: ews-objects.png
-    :align: left
+<img src="ews-objects.png" width=80%>
 
 
 You have items and you have **the** service. You use the service whenever you
