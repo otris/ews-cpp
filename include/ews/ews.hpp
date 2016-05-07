@@ -7542,7 +7542,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
         internet_message_header() {}
 #endif
         //! Constructor to initialize an internet_message_header with the right values
-        internet_message_header(const std::string& name, const std::string& value)
+        internet_message_header(std::string name, std::string value)
                 : header_name_(std::move(name)),
                   header_value_(std::move(value))
         {}
@@ -7563,6 +7563,14 @@ static_assert(std::is_copy_assignable<body>::value, "");
         std::string header_name_;
         std::string header_value_;
     };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<internet_message_header>::value, "");
+    static_assert(std::is_copy_constructible<internet_message_header>::value, "");
+    static_assert(std::is_copy_assignable<internet_message_header>::value, "");
+    static_assert(std::is_move_constructible<internet_message_header>::value, "");
+    static_assert(std::is_move_assignable<internet_message_header>::value, "");
+#endif
 
     //! Represents a generic <tt>\<Item></tt> in the Exchange store
     class item
