@@ -1,5 +1,4 @@
-README
-======
+# README
 
 EWS is an API that third-party programmers can use to communicate with
 Microsoft Exchange Server. The API exists since Exchange Server 2007 and is
@@ -13,8 +12,7 @@ C++ application.
 <img src="ews-overview.png" width=80%>
 
 
-Supported Compilers
--------------------
+## Supported Compilers
 
 * Visual Studio 2012
 * Visual Studio 2013
@@ -23,8 +21,7 @@ Supported Compilers
 * GCC 4.8 with libstdc++
 
 
-Supported Operating Systems
----------------------------
+## Supported Operating Systems
 
 * Microsoft Windows 8.1 and Windows 10
 * Mac OS X 10.10
@@ -33,81 +30,81 @@ Supported Operating Systems
 * SLES12
 
 
-Supported Microsoft Exchange Server Versions
---------------------------------------------
+## Supported Microsoft Exchange Server Versions
 
 * Microsoft Exchange Server 2013 SP1
 
 
-Run-time Dependencies
----------------------
+## Run-time Dependencies
 
 * libcurl, at least version 7.22
 
 
-Note Windows Users
-------------------
+## Note Windows Users
 
 You can obtain an up-to-date and easy-to-use binary distribution of libcurl
-from here:
-
-    http://www.confusedbycode.com/curl/
+from here: [confusedbycode.com/curl](http://www.confusedbycode.com/curl/)
 
 Additionally, you probably need to tell CMake where to find it. Just set
 `CMAKE_PREFIX_PATH` to the path where you installed libcurl (e.g.
 ``C:\Program Files\cURL``) and re-configure.
 
 
-Source Code
------------
+## Source Code
 
-ews-cpp's source code is available as a Git repository. To obtain it, type::
+ews-cpp's source code is available as a Git repository. To obtain it, type:
 
-    $ git clone git@gitlab.otris.de:kircher/ews-cpp.git
+```bash
+git clone git@gitlab.otris.de:kircher/ews-cpp.git
+```
 
 
-Building
---------
+## Building
 
 The library is header-only. So there is no need to build anything. Just copy the
 `include/ews/` directory wherever you may like.
 
 To build the accompanied tests with debugging symbols and address sanitizer
-enabled do something like this::
+enabled do something like this
 
-    $ cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_ASAN=ON path/to/source/
-    $ make
+```bash
+cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_ASAN=ON path/to/source/
+make
+```
 
 Type `make help` to see more configuration options.
 
 
-API Docs
---------
+## API Docs
 
-Use the `doc` target to create the API documentation with Doxygen.  Type::
+Use the `doc` target to create the API documentation with Doxygen.  Type:
 
-    $ make doc
-    $ open html/index.html
+```bash
+make doc
+open html/index.html
+```
 
 
-Test Suite
-----------
+## Test Suite
 
 Export the following environment variables in order to run individual examples
-or the test suite::
+or the test suite:
 
-    EWS_TEST_DOMAIN
-    EWS_TEST_USERNAME
-    EWS_TEST_PASSWORD
-    EWS_TEST_URI
+```bash
+EWS_TEST_DOMAIN
+EWS_TEST_USERNAME
+EWS_TEST_PASSWORD
+EWS_TEST_URI
+```
 
-Once you've build the project, you can run the test suite with::
+Once you've build the project, you can run the test suite with:
 
-    $ ./tests
+```bash
+./tests
+```
 
 
-Design Notes
-------------
+## Design Notes
 
 ews-cpp is written in a "modern C++" way:
 
@@ -118,16 +115,21 @@ ews-cpp is written in a "modern C++" way:
 * Coding conventions inspired by Boost
 
 
-API
----
+## API
 
-Just add::
+Just add:
 
-    #include <ews/ews.hpp>
+```c++
+#include <ews/ews.hpp>
+```
 
 to your include directives and you are good to go.
 
 Take a look at the `examples/` directory to get an idea of how the API feels.
+ews-cpp is a thin wrapper around Microsoft's EWS API. You will need to refer to
+the [EWS reference for
+Exchange](https://msdn.microsoft.com/en-us/library/office/bb204119%28v=exchg.150%29.aspx)
+for all available parameters to pass and all available attributes on items.
 From 10.000ft it looks like this:
 
 
@@ -157,4 +159,4 @@ Cons:
   effort here
 
 
-# vim:et sw=4 ts=4
+<!-- vim:et sw=4 ts=4 -->
