@@ -144,7 +144,11 @@ set(GTEST_LIBRARIES gtest)
 include_directories(${GTEST_INCLUDE_DIR})
 
 # Boost is optional as it is only used by some test cases
-set(Boost_USE_STATIC_LIBS ON)
+if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+    set(Boost_USE_STATIC_LIBS ON)
+else()
+    set(Boost_USE_STATIC_LIBS OFF)
+endif()
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.53 COMPONENTS system filesystem)
