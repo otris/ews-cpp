@@ -7532,7 +7532,18 @@ static_assert(std::is_copy_assignable<body>::value, "");
     static_assert(std::is_move_assignable<attendee>::value, "");
 #endif
 
-    //! Represents an <tt>\<InternetMessageHeader\></tt> as name/value pair
+    //! \brief Represents an <tt>\<InternetMessageHeader\></tt> property.
+    //!
+    //! An instance of this class describes a single name-value pair as it is
+    //! found in a message's header, essentially as defined in RFC 5322 and it's
+    //! former revisions.
+    //!
+    //! Most standard fields are already covered by EWS properties (e.g., the
+    //! destination address fields "To:", "Cc:", and "Bcc:"), however, because
+    //! users are allowed to define custom header fields as the seem fit, you
+    //! can directly access message headers.
+    //!
+    //! \sa message::get_internet_message_headers
     class internet_message_header final
     {
     public:
@@ -7541,19 +7552,19 @@ static_assert(std::is_copy_assignable<body>::value, "");
 #else
         internet_message_header() {}
 #endif
-        //! Constructor to initialize an internet_message_header with the right values
+        //! Constructs a header filed with given values
         internet_message_header(std::string name, std::string value)
                 : header_name_(std::move(name)),
                   header_value_(std::move(value))
         {}
 
-        //! Returns the name of the internet_message_header.
+        //! Returns the name of the header field
         const std::string& get_name() const EWS_NOEXCEPT
         {
             return header_name_;
         }
 
-        //! Returns the value of the internet_message_header.
+        //! Returns the value of the header field
         const std::string& get_value() const EWS_NOEXCEPT
         {
             return header_value_;
@@ -7892,33 +7903,34 @@ static_assert(std::is_copy_assignable<body>::value, "");
             return xml().get_value_as_string("isUnmodified") == "true";
         }
 
-        //! \brief Collection of Internet message headers associated with an item.
+        //! \brief Returns a collection of Internet message headers associated
+        //! with this item.
         //!
-        //! These headers are defined in RFC822, RFC1123 and RFC2822
-        //! This is a read-only property
+        //! This is a read-only property.
+        //!
+        //! \sa internet_message_header
         std::vector<internet_message_header> get_internet_message_headers() const
         {
-            const auto imh_node = xml().get_node("InternetMessageHeaders");
-            if (!imh_node)
+            const auto node = xml().get_node("InternetMessageHeaders");
+            if (!node)
             {
                 return std::vector<internet_message_header>();
             }
 
-            std::vector<internet_message_header> imh;
-            for (auto child = imh_node->first_node(); child != nullptr;
-                    child = child->next_sibling())
+            std::vector<internet_message_header> headers;
+            for (auto child = node->first_node(); child != nullptr;
+                 child = child->next_sibling())
             {
-                imh.emplace_back
-                (
-                    internet_message_header
-                    (
-                        std::string(child->first_attribute()->value(),
-                                    child->first_attribute()->value_size()),
-                        std::string(child->value(), child->value_size())
-                    )
-                );
+                auto field = std::string(
+                        child->first_attribute()->value(),
+                        child->first_attribute()->value_size());
+                auto value = std::string(child->value(), child->value_size());
+
+                headers.emplace_back(
+                    internet_message_header(std::move(field), std::move(value)));
             }
-            return imh;
+
+            return headers;
         }
 
         //! \brief Date/time an item was sent.
