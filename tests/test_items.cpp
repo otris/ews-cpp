@@ -472,61 +472,61 @@ namespace tests
         auto headers = message.get_internet_message_headers();
         ASSERT_FALSE(headers.empty());
 
-        std::vector<ews::internet_message_header> headers_expected;
-        headers_expected.push_back(ews::internet_message_header(
+        std::vector<ews::internet_message_header> expected_headers;
+        expected_headers.push_back(ews::internet_message_header(
             "Received",
             "from duckburg2013.otris.de (192.168.4.234) "
             "by duckburg2013.otris.de (192.168.4.234) "
             "with Microsoft SMTP Server (TLS) id 15.0.847.32 "
             "via Mailbox Transport; Sun, 7 Feb 2016 12:12:49 +0100"));
-        headers_expected.push_back(
+        expected_headers.push_back(
             ews::internet_message_header("MIME-Version", "1.0"));
-        headers_expected.push_back(ews::internet_message_header(
+        expected_headers.push_back(ews::internet_message_header(
             "Date", "Sun, 7 Feb 2016 12:12:31 +0100"));
-        headers_expected.push_back(
+        expected_headers.push_back(
             ews::internet_message_header("Content-Type", "multipart/report"));
-        headers_expected.push_back(ews::internet_message_header(
+        expected_headers.push_back(ews::internet_message_header(
             "X-MS-Exchange-Organization-SCL", "-1"));
-        headers_expected.push_back(
+        expected_headers.push_back(
             ews::internet_message_header("Content-Language", "en-US"));
-        headers_expected.push_back(ews::internet_message_header(
+        expected_headers.push_back(ews::internet_message_header(
             "Message-ID",
             "<28b94593-526c-42d8-b49b-257f04f15083@duckburg2013.otris.de>"));
-        headers_expected.push_back(ews::internet_message_header(
+        expected_headers.push_back(ews::internet_message_header(
             "In-Reply-To",
             "<c829d7b23a1b4c138c0b58d80b97b595@duckburg2013.otris.de>"));
-        headers_expected.push_back(ews::internet_message_header(
+        expected_headers.push_back(ews::internet_message_header(
             "References",
             "<c829d7b23a1b4c138c0b58d80b97b595@duckburg2013.otris.de>"));
-        headers_expected.push_back(
+        expected_headers.push_back(
             ews::internet_message_header("Thread-Topic", "Test mail"));
-        headers_expected.push_back(ews::internet_message_header(
+        expected_headers.push_back(ews::internet_message_header(
             "Thread-Index", "AQHRYAVXv4yEkT9GTECGcXS3Z6t3OJ8gcNbs"));
-        headers_expected.push_back(ews::internet_message_header(
+        expected_headers.push_back(ews::internet_message_header(
             "Subject", "Undeliverable: Test mail"));
-        headers_expected.push_back(
+        expected_headers.push_back(
             ews::internet_message_header("Auto-Submitted", "auto-replied"));
-        headers_expected.push_back(ews::internet_message_header(
+        expected_headers.push_back(ews::internet_message_header(
             "X-MS-Exchange-Organization-AuthSource", "duckburg2013.otris.de"));
-        headers_expected.push_back(ews::internet_message_header(
+        expected_headers.push_back(ews::internet_message_header(
             "X-MS-Exchange-Organization-AuthAs", "Internal"));
-        headers_expected.push_back(ews::internet_message_header(
+        expected_headers.push_back(ews::internet_message_header(
             "X-MS-Exchange-Organization-AuthMechanism", "05"));
-        headers_expected.push_back(ews::internet_message_header(
+        expected_headers.push_back(ews::internet_message_header(
             "X-MS-Exchange-Organization-Network-Message-Id",
             "6b449cb6-88e2-4a17-acde-08d32faf931b"));
-        headers_expected.push_back(
+        expected_headers.push_back(
             ews::internet_message_header("Return-Path", "<>"));
 
-        auto it_headers_expected = headers_expected.begin();
-        for (auto it_headers : headers)
+        auto expected = expected_headers.cbegin();
+        for (const auto& header : headers)
         {
-            ASSERT_FALSE(it_headers.get_name().empty());
-            ASSERT_FALSE(it_headers.get_value().empty());
+            ASSERT_FALSE(header.get_name().empty());
+            ASSERT_FALSE(header.get_value().empty());
 
-            EXPECT_EQ(it_headers_expected->get_name(), it_headers.get_name());
-            EXPECT_EQ(it_headers_expected->get_value(), it_headers.get_value());
-            it_headers_expected++;
+            EXPECT_EQ(expected->get_name(), header.get_name());
+            EXPECT_EQ(expected->get_value(), header.get_value());
+            expected++;
         }
     }
 #endif // EWS_USE_BOOST_LIBRARY

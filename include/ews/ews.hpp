@@ -5304,6 +5304,10 @@ namespace ews
             const auto username = user_smtp_address.substr(0, at_sign_idx);
             const auto domain = user_smtp_address.substr(
                 at_sign_idx + 1, user_smtp_address.size());
+
+            // It is important that we use an HTTPS end-point here because we
+            // authenticate with HTTP basic auth; specifically we send the
+            // passphrase in plain-text
             const auto autodiscover_url =
                 "https://" + domain + "/autodiscover/autodiscover.xml";
 
