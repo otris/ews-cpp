@@ -5410,6 +5410,7 @@ namespace ews
     //!
     //! \param user_smtp_address User's primary SMTP address
     //! \param protocol Whether the internal or external URL should be returned
+    //! \param credentials The user's credentials
     //! \return The Exchange Web Services URL
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
     template <typename RequestHandler = internal::http_request>
@@ -12417,7 +12418,7 @@ namespace ews
         //! Non-spacing characters will be ignored during comparison
         ignore_non_spacing_characters,
 
-        //! This is \ref ignore_case and \ref ignore_non_spacing_characters
+        //! This is \ref containment_comparison::ignore_case and \ref containment_comparison::ignore_non_spacing_characters
         loose,
     };
 
@@ -12485,7 +12486,7 @@ namespace ews
     //! \brief A range view of appointments in a calendar.
     //!
     //! Represents a date range view of appointments in calendar folder search
-    //! operations!.
+    //! operations.
     class calendar_view
     {
     public:
