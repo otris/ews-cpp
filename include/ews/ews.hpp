@@ -44,8 +44,7 @@
 # endif
 #endif // !NDEBUG
 
-//! Contains all classes, functions, and enumerations of this library to
-//! handle Microsoft Exchange Web Services.
+//! Contains all classes, functions, and enumerations of this library
 namespace ews
 {
     namespace internal
@@ -286,11 +285,13 @@ namespace ews
     //! The ResponseClass attribute of a ResponseMessage
     enum class response_class
     {
-        //! an error has occured
+        //! An error has occurred
         error,
-        //! everything went fine
+
+        //! Everything went fine
         success,
-        //! something strange but not fatal happend
+
+        //! Something strange but not fatal happened
         warning
     };
 
@@ -416,8 +417,9 @@ namespace ews
     //! \brief Response code enum describes status information about a request
     enum class response_code
     {
-        //! No error occured.
+        //! No error occurred
         no_error,
+
         //! Calling account does not have the rights to perform the action
         //! requested.
         error_access_denied,
@@ -3363,7 +3365,8 @@ namespace ews
         }
     }
 
-    //! Represents the <tt>\<RequestServerVersion\></tt> element
+    //! \brief Defines the different values for the
+    //! <tt>\<RequestServerVersion\></tt> element.
     enum class server_version
     {
         //! Target the schema files for the initial release version of
@@ -3454,16 +3457,20 @@ namespace ews
         }
     }
 
-    //! \brief Identifies the set of properties that a GetItem or GetFolder method
-    //! call should return
+    //! \brief Specifies the set of properties that a GetItem or GetFolder
+    //! method call will return.
     enum class base_shape
     {
-        //! Returns only the item or folder ID.
+        //! Return only the item or folder ID
         id_only,
-        //! Returns a set of properties that are defined as the default
-        //! for the item or folder.
+
+        //! Return the default set of properties
         default_shape,
-        //! Returns all the properties used by the Exchange Business Logic layer to construct a folder.
+
+        //! \brief Return (nearly) all properties.
+        //!
+        //! Note that some properties still need to be explicitly requested as
+        //! additional properties.
         all_properties
     };
 
@@ -3484,13 +3491,13 @@ namespace ews
     //! \brief Describes how items are deleted from the Exchange store.
     //!
     //! Side note: we do not provide SoftDelete because that does not make much
-    //! sense from an EWS perspective
+    //! sense from an EWS perspective.
     enum class delete_type
     {
-        //! This item indicates real deletion
+        //! The item is removed immediately from the user's mailbox
         hard_delete,
 
-        //! This item indicates move to "trash"
+        //! The item is moved to a dedicated "Trash" folder
         move_to_deleted_items
     };
 
@@ -3510,13 +3517,13 @@ namespace ews
         }
     }
 
-    //! Indicates which occurrence of a recurring task should be deleted.
+    //! Indicates which occurrences of a recurring series should be deleted
     enum class affected_task_occurrences
     {
-        //! Occurres to all
+        //! Apply an operation to all occurrences in the series
         all_occurrences,
 
-        //! Occures only to specified
+        //! Apply an operation only to the specified occurrence
         specified_occurrence_only
     };
 
@@ -3572,7 +3579,8 @@ namespace ews
         }
     }
 
-    //! \brief The type of conflict resolution to try during an UpdateItem method call.
+    //! \brief The type of conflict resolution to try during an UpdateItem
+    //! method call.
     //!
     //! The default value is AutoResolve.
     enum class conflict_resolution
@@ -3611,7 +3619,7 @@ namespace ews
     }
 
     //! \brief <tt>\<CreateItem\></tt> and <tt>\<UpdateItem\></tt> methods use this attribute. Only
-    //! applicable to e-mail messages
+    //! applicable to email messages
     enum class message_disposition
     {
         //! Save the message in a specified folder or in the Drafts folder if
@@ -3989,15 +3997,18 @@ namespace ews
         }
     }
 
-    //! \brief This enumeration indicates the importance of an item; valid
-    //! values are Low, Normal, High
+    //! \brief This enumeration indicates the importance of an item.
+    //!
+    //! Valid values are Low, Normal, High.
     enum class importance
     {
-        //! Low importance.
+        //! Low importance
         low,
-        //! Normal importance.
+
+        //! Normal importance
         normal,
-        //! High importance.
+
+        //! High importance
         high
     };
 
@@ -4556,16 +4567,18 @@ namespace ews
 #endif
             virtual void certify(http_request*) const = 0;
         };
+    }
 
-    } // internal
-
-    //! \brief This class contains the credentials for basic authentication.
+    //! \brief This class allows HTTP basic authentication.
     //!
-    //! Basic authentication provides a, well, basic level of security for your
-    //! client application. Microsoft  recommends that all new applications use
-    //! either NTLM or the OAuth protocol for authentication; however,
-    //! basic authentication can be the correct choice for your application in
-    //! some circumstances.
+    //! Basic authentication allows a client application to authenticate with
+    //! username and password. \b Important: Because the password is transmitted
+    //! to the server in plain-text, this method is \b not secure unless you
+    //! provide some form of transport layer security.
+    //!
+    //! However, basic authentication can be the correct choice for your
+    //! application in some circumstances, e.g., for debugging purposes, if your
+    //! application communicates via TLS encrypted HTTP.
     class basic_credentials final : public internal::credentials
     {
     public:
@@ -4576,18 +4589,22 @@ namespace ews
         }
 
     private:
-        void certify(internal::http_request*) const override; // implemented below
+        // Implemented below
+        void certify(internal::http_request*) const override;
 
         std::string username_;
         std::string password_;
     };
 
-    //! \brief This class contains the credentials for basic authentication.
+    //! \brief This class allows NTLM authentication.
     //!
     //! NTLM authentication is only available for Exchange on-premises servers.
-    //! For applications that run inside the corporate firewall, integration
-    //! of NTLM authentication provides a built-in means to authenticate your
-    //! Application.
+    //!
+    //! For applications that run inside the corporate firewall, NTLM
+    //! authentication provides a built-in means to authenticate against an
+    //! Exchange server. However, because NTLM requires the client to store the
+    //! user's password in plain-text for the entire session, it is not the
+    //! safest method to use.
     class ntlm_credentials final : public internal::credentials
     {
     public:
@@ -4600,7 +4617,8 @@ namespace ews
         }
 
     private:
-        void certify(internal::http_request*) const override; // implemented below
+         // Implemented below
+        void certify(internal::http_request*) const override;
 
         std::string username_;
         std::string password_;
@@ -5411,22 +5429,22 @@ namespace ews
                                                         0U);
     }
 
-    //! \brief Contains the unique identifier and change key of an generic item
-    //!  in the Exchange store.
+    //! \brief The unique identifier and change key of an item in the
+    //! Exchange store.
     //!
     //! The ID uniquely identifies a concrete item throughout the Exchange
     //! store and is not expected to change as long as the item exists. The
-    //! change key on the other hand identifies a specific version of an item. It
-    //! is expected to be changed whenever a property of the item is changed. The
-    //! change key is used for synchronization purposes on the server. You only
-    //! need to take care that the change key you include in a service call is
-    //! the most current one.
+    //! change key on the other hand identifies a specific version of an item.
+    //! It is expected to be changed whenever a property of the item is
+    //! changed. The change key is used for synchronization purposes on the
+    //! server. You only need to take care that the change key you include in a
+    //! service call is the most current one.
     //!
-    //! Instances of this class are somewhat immutable. You can default construct
-    //! an item_id in which case valid() will always return false. (Default
-    //! construction is needed because we need item and it's sub-classes to be
-    //! default constructible.) Only item_ids that come from an Exchange store
-    //! are considered to be valid.
+    //! Instances of this class are somewhat immutable. You can default
+    //! construct an item_id in which case valid() will always return false.
+    //! (Default construction is needed because we need item and it's
+    //! sub-classes to be default constructible.) Only item_ids that come from
+    //! an Exchange store are considered to be valid.
     class item_id final
     {
     public:
@@ -5499,8 +5517,8 @@ namespace ews
 
     //! \brief Contains the unique identifier of an attachment.
     //!
-    //! The AttachmentId element identifies an item or an file attachment.
-    //! This element is used in CreateAttachment responses.
+    //! The AttachmentId element identifies an item or file attachment. This
+    //! element is used in CreateAttachment responses.
     class attachment_id final
     {
     public:
@@ -6891,15 +6909,18 @@ namespace ews
     //! Specifies the type of a <tt>\<Body></tt> element
     enum class body_type
     {
-        //! The response will return the richest available content of body text.
+        //! \brief The response will return the richest available content.
+        //!
         //! This is useful if it is unknown whether the content is text or HTML.
-        //! The returned body will be text if the stored body is plain text.
+        //! The returned body will be text if the stored body is plain-text.
         //! Otherwise, the response will return HTML if the stored body is in
-        //! either HTML or RTF format. This is the default value.
+        //! either HTML or RTF format. This is usually the default value.
         best,
-        //! The response will return an item body as HTML.
+
+        //! The response will return an item body as plain-text
         plain_text,
-        //! The response will return an item body as plain text.
+
+        //! The response will return an item body as HTML
         html
     };
 
@@ -6917,75 +6938,74 @@ namespace ews
         }
     }
 
-//! \brief Represents the actual <tt>\<Body></tt> content of a message.
-//!
-//! This can be of type Best, HTML, or plain-text.
-//! See EWS XML elements documentation on MSDN.
-class body final
-{
-public:
-    // Creates an empty body element; body_type is plain-text
-    body()
-        : content_(),
-          type_(body_type::plain_text),
-          is_truncated_(false)
+    //! \brief Represents the actual content of a message.
+    //!
+    //! A \<Body/> element can be of type Best, HTML, or plain-text.
+    class body final
     {
-    }
-
-    // Creates a new body element with given content and type
-    explicit body(std::string content,
-                  body_type type = body_type::plain_text)
-        : content_(std::move(content)),
-          type_(type),
-          is_truncated_(false)
-    {
-    }
-
-    body_type type() const EWS_NOEXCEPT { return type_; }
-
-    void set_type(body_type type) { type_ = type; }
-
-    bool is_truncated() const EWS_NOEXCEPT { return is_truncated_; }
-
-    void set_truncated(bool truncated) { is_truncated_ = truncated; }
-
-    const std::string& content() const EWS_NOEXCEPT { return content_; }
-
-    void set_content(std::string content) { content_ = std::move(content); }
-
-    std::string to_xml() const
-    {
-        //FIXME: what about IsTruncated attribute?
-        static const auto cdata_beg = std::string("<![CDATA[");
-        static const auto cdata_end = std::string("]]>");
-
-        std::stringstream sstr;
-        sstr << "<t:Body BodyType=\""
-             << internal::body_type_str(type());
-        sstr << "\">";
-        if (   type() == body_type::html
-            && !(content_.compare(0, cdata_beg.length(), cdata_beg) == 0))
+    public:
+        //! Creates an empty body element; body_type is plain-text
+        body()
+            : content_(),
+              type_(body_type::plain_text),
+              is_truncated_(false)
         {
-            sstr << cdata_beg << content_ << cdata_end;
         }
-        else
-        {
-            sstr << content_;
-        }
-        sstr << "</t:Body>";
-        return sstr.str();
-    }
 
-private:
-    std::string content_;
-    body_type type_;
-    bool is_truncated_;
-};
+        //! Creates a new body element with given content and type
+        explicit body(std::string content,
+                      body_type type = body_type::plain_text)
+            : content_(std::move(content)),
+              type_(type),
+              is_truncated_(false)
+        {
+        }
+
+        body_type type() const EWS_NOEXCEPT { return type_; }
+
+        void set_type(body_type type) { type_ = type; }
+
+        bool is_truncated() const EWS_NOEXCEPT { return is_truncated_; }
+
+        void set_truncated(bool truncated) { is_truncated_ = truncated; }
+
+        const std::string& content() const EWS_NOEXCEPT { return content_; }
+
+        void set_content(std::string content) { content_ = std::move(content); }
+
+        std::string to_xml() const
+        {
+            //FIXME: what about IsTruncated attribute?
+            static const auto cdata_beg = std::string("<![CDATA[");
+            static const auto cdata_end = std::string("]]>");
+
+            std::stringstream sstr;
+            sstr << "<t:Body BodyType=\""
+                 << internal::body_type_str(type());
+            sstr << "\">";
+            if (   type() == body_type::html
+                && !(content_.compare(0, cdata_beg.length(), cdata_beg) == 0))
+            {
+                sstr << cdata_beg << content_ << cdata_end;
+            }
+            else
+            {
+                sstr << content_;
+            }
+            sstr << "</t:Body>";
+            return sstr.str();
+        }
+
+    private:
+        std::string content_;
+        body_type type_;
+        bool is_truncated_;
+    };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<body>::value, "");
-static_assert(std::is_copy_constructible<body>::value, "");
-static_assert(std::is_copy_assignable<body>::value, "");
+    static_assert(std::is_default_constructible<body>::value, "");
+    static_assert(std::is_copy_constructible<body>::value, "");
+    static_assert(std::is_copy_assignable<body>::value, "");
     static_assert(std::is_move_constructible<body>::value, "");
     static_assert(std::is_move_assignable<body>::value, "");
 #endif
@@ -7043,9 +7063,9 @@ static_assert(std::is_copy_assignable<body>::value, "");
     static_assert(std::is_move_assignable<mime_content>::value, "");
 #endif
 
-    //! \brief Identifies a SMTP mailbox
+    //! \brief Represents a SMTP mailbox.
     //!
-    //! Identifies a fully resolved e-mail address. Usually represents a
+    //! Identifies a fully resolved email address. Usually represents a
     //! contact's email address, a message recipient, or the organizer of a
     //! meeting.
     class mailbox final
@@ -7089,20 +7109,25 @@ static_assert(std::is_copy_assignable<body>::value, "");
         // TODO: rename
         const item_id& id() const EWS_NOEXCEPT { return id_; }
 
-        //! Returns the e-mail address
+        //! Returns the email address
         const std::string& value() const EWS_NOEXCEPT { return value_; }
 
-        //! Defines the name of the mailbox user; optional
+        //! \brief Returns the name of the mailbox user.
+        //!
+        //! This attribute is optional.
         const std::string& name() const EWS_NOEXCEPT { return name_; }
 
-        //! Defines the routing that is used for the mailbox, attribute is
-        //! optional. Default is SMTP
+        //! \brief Returns the routing type.
+        //
+        //! This attribute is optional. Default is SMTP
         const std::string& routing_type() const EWS_NOEXCEPT
         {
             return routing_type_;
         }
 
-        //! Defines the mailbox type of a mailbox user; optional
+        //! \brief Returns the mailbox type.
+        //!
+        //! This attribute is optional.
         const std::string& mailbox_type() const EWS_NOEXCEPT
         {
             return mailbox_type_;
@@ -7374,7 +7399,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
               last_response_time_()
         {}
 
-        //! Returns this attendee's e-mail address
+        //! Returns this attendee's email address
         const mailbox& get_mailbox() const EWS_NOEXCEPT
         {
             return mailbox_;
@@ -7665,7 +7690,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
             xml().set_or_update("Sensitivity", internal::enum_to_str(s));
         }
 
-        //! Sets the body content of an item
+        //! Sets the body of this item
         void set_body(const body& b)
         {
             auto doc = xml().document();
@@ -7707,7 +7732,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
             doc->append_node(body_node);
         }
 
-        //! Returns the body contents of an item
+        //! Returns the body of this item
         body get_body() const
         {
             using rapidxml::internal::compare;
@@ -7765,7 +7790,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
             return b;
         }
 
-        //! Returns the items or files that are attached to this item.
+        //! Returns the items or files that are attached to this item
         std::vector<attachment> get_attachments() const
         {
             //TODO: support attachment hierarchies
@@ -7803,10 +7828,13 @@ static_assert(std::is_copy_assignable<body>::value, "");
             return size.empty() ? 0U : std::stoul(size);
         }
 
-        //! \brief Sets a list of categories to an item.
+        //! \brief Sets this item's categories.
         //!
-        //! A Category contains a string that identify the category to which an
-        //! item in the mailbox belongs
+        //! A category is a short user-defined string that groups items with
+        //! the same category together. An item can have none or multiple
+        //! categories assigned. Think of tags or Google Mail labels.
+        //!
+        //! \sa item::get_categories
         void set_categories(const std::vector<std::string>& categories)
         {
             auto doc = xml().document();
@@ -7835,10 +7863,9 @@ static_assert(std::is_copy_assignable<body>::value, "");
             }
         }
 
-        //! \brief Returns the Categories associated with an item.
+        //! \brief Returns the categories associated with this item.
         //!
-        //! Categories contain a collection that identify
-        //! the categories to which an item in the mailbox belongs
+        //! \sa item::set_categories
         std::vector<std::string> get_categories() const
         {
             const auto categories_node = xml().get_node("Categories");
@@ -7856,8 +7883,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
             return categories;
         }
 
-        //! \brief Enumeration indicating the importance of an item; valid values
-        //! are Low, Normal, and High. Default: normal
+        //! Returns the importance of this item
         importance get_importance() const
         {
             const auto val = xml().get_value_as_string("Importance");
@@ -7865,39 +7891,50 @@ static_assert(std::is_copy_assignable<body>::value, "");
                                 : importance::normal;
         }
 
-        //! \brief Taken from PR_IN_REPLY_TO_ID MAPI property
+        //! \brief Returns the identifier of the item to which this item is a
+        //! reply.
         //!
-        //! This is a read-only property
+        //! This is a read-only property.
         std::string get_in_reply_to() const
         {
             return xml().get_value_as_string("InReplyTo");
         }
 
-        //! True if an item has been submitted for delivery. Default: false
+        //! \brief True if this item has been submitted for delivery.
+        //!
+        //! Default: false.
         bool is_submitted() const
         {
             return xml().get_value_as_string("isSubmitted") == "true";
         }
 
-        //! True if an item is a draft. Default: false
+        //! \brief True if this item is a draft.
+        //!
+        //! Default: false
         bool is_draft() const
         {
             return xml().get_value_as_string("isDraft") == "true";
         }
 
-        //! True if an item is from you. Default: false
+        //! \brief True if this item is from you.
+        //!
+        //! Default: false.
         bool is_from_me() const
         {
             return xml().get_value_as_string("isFromMe") == "true";
         }
 
-        //! True if an item a re-send. Default: false
+        //! \brief True if this item a re-send.
+        //!
+        //! Default: false
         bool is_resend() const
         {
             return xml().get_value_as_string("isResend") == "true";
         }
 
-        //! True if an item is unmodified. Default: false TODO: maybe better Default=true??
+        //! \brief True if this item is unmodified.
+        //!
+        //! Default: false TODO: maybe better default == true?
         bool is_unmodified() const
         {
             return xml().get_value_as_string("isUnmodified") == "true";
@@ -7933,102 +7970,110 @@ static_assert(std::is_copy_assignable<body>::value, "");
             return headers;
         }
 
-        //! \brief Date/time an item was sent.
+        //! \brief Returns the date/time this item was sent.
         //!
-        //! This is a read-only property
+        //! This is a read-only property.
         date_time get_date_time_sent() const
         {
             return date_time(xml().get_value_as_string("DateTimeSent"));
         }
 
-        //! Date/time an item was created. This is a read-only property
+        //! \brief Returns the date/time this item was created.
+        //!
+        //! This is a read-only property.
         date_time get_date_time_created() const
         {
             return date_time(xml().get_value_as_string("DateTimeCreated"));
         }
 
-        // Applicable actions for an item
+        // Applicable response actions for this item
         // (NonEmptyArrayOfResponseObjectsType)
         // TODO: get_response_objects
 
-        //! Set due date of an item; used for reminders
+        //! \brief Sets the due date of this item.
+        //!
+        //! Used for reminders.
         void set_reminder_due_by(const date_time& due_by)
         {
             xml().set_or_update("ReminderDueBy", due_by.to_string());
         }
 
-        //! Returns the due date of an item; used for reminders
+        //! \brief Returns the due date of this item
+        //!
+        //! \sa item::set_reminder_due_by
         date_time get_reminder_due_by() const
         {
             return date_time(xml().get_value_as_string("ReminderDueBy"));
         }
 
-        //! Set a reminder on an item
+        //! Set a reminder on this item
         void set_reminder_enabled(bool enabled)
         {
             xml().set_or_update("ReminderIsSet", enabled ? "true" : "false");
         }
 
-        //! \brief True if a reminder has been enabled on an item
+        //! True if a reminder has been enabled on this item
         bool is_reminder_enabled() const
         {
             return xml().get_value_as_string("ReminderIsSet") == "true";
         }
 
-        //! \brief Set the minutes before the due date that a reminder should be
+        //! \brief Sets the minutes before due date that a reminder should be
         //! shown to the user.
         void set_reminder_minutes_before_start(std::uint32_t minutes)
         {
             xml().set_or_update("ReminderMinutesBeforeStart", std::to_string(minutes));
         }
 
-        //! \brief Number of minutes before the due date that a reminder should be
-        //! shown to the user.
+        //! \brief Returns the number of minutes before due date that a
+        //! reminder should be shown to the user.
         std::uint32_t get_reminder_minutes_before_start() const
         {
             std::string minutes = xml().get_value_as_string("ReminderMinutesBeforeStart");
             return minutes.empty() ? 0U : std::stoul(minutes);
         }
 
-        //! \brief Concatenated string of the display names of the Cc recipients of
-        //! an item.
+        //! \brief Returns a nice string containing all Cc: recipients of this
+        //! item.
         //!
-        //! Each recipient is separated by a semicolon. This is a
-        //! read-only property
+        //! The \<DisplayCc/> property is a concatenated string of the display
+        //! names of the Cc: recipients of an item. Each recipient is separated
+        //! by a semicolon. This is a read-only property.
         std::string get_display_cc() const
         {
             return xml().get_value_as_string("DisplayCc");
         }
 
-        //! \brief Concatenated string of the display names of the To recipients of
-        //! an item.
+        //! \brief Returns a nice string containing all To: recipients of this
+        //! item.
         //!
-        //! Each recipient is separated by a semicolon. This is a
-        //! read-only property
+        //! The \<DisplayTo/> property is a concatenated string of the display
+        //! names of all the To: recipients of an item. Each recipient is
+        //! separated by a semicolon. This is a read-only property.
         std::string get_display_to() const
         {
             return xml().get_value_as_string("DisplayTo");
         }
 
-        //! \brief True if an item has non-hidden attachments.
+        //! \brief True if this item has non-hidden attachments.
         //!
-        //! This is a read-only property
+        //! This is a read-only property.
         bool has_attachments() const
         {
             return xml().get_value_as_string("HasAttachments") == "true";
         }
 
         // List of zero or more extended properties that are requested for
-        // an item
+        // this item
         // TODO: get_extended_property
 
-        //! Sets the culture name associated with the body of an item.
+        //! Sets the culture name associated with the body of this item
         void set_culture(const std::string& culture)
         {
             xml().set_or_update("Culture", culture);
         }
 
-        //! The culture name associated with the body of an item.
+        //! Returns the culture name associated with the body of this item
         std::string get_culture() const
         {
             return xml().get_value_as_string("Culture");
@@ -8072,21 +8117,29 @@ static_assert(std::is_copy_assignable<body>::value, "");
     static_assert(std::is_move_assignable<item>::value, "");
 #endif
 
-    //! \brief This  value indicating whether the delegated task was accepted
-    //! or not. This is a read-only property.
+    //! \brief Describes the state of a delegated task.
+    //!
+    //! Values indicate whether the delegated task was accepted or not.
     enum class delegation_state
     {
-        //! TODO: write this!
+        //! \brief The task is not a delegated task, or the task request has
+        //! been created but not sent
         no_match,
-        //! The task is owned new.
+
+        //! \brief The task is new and the request has been sent, but the
+        //! delegate has no yet responded to the task
         own_new,
-        //! The task is owned.
+
+        //! Should not be used
         owned,
-        //! The task was accepted.
+
+        //! The task was accepted by the delegate
         accepted,
-        //! The task was declined.
+
+        //! The task was declined by the delegate
         declined,
-        //! TODO: write this!
+
+        //! Should not be used
         max
     };
 
@@ -8114,18 +8167,22 @@ static_assert(std::is_copy_assignable<body>::value, "");
         }
     }
 
-    //! Specifies the <tt>\<Status></tt> of a task item.
+    //! Specifies the status of a task item
     enum class status
     {
         //! The task is not started
         not_started,
+
         //! The task is started and in progress
         in_progress,
+
         //! The task is completed
         completed,
-        //! The Task is waiting on other
+
+        //! The task is waiting on other
         waiting_on_others,
-        //! The Task is deferred
+
+        //! The task is deferred
         deferred
     };
 
@@ -8151,31 +8208,42 @@ static_assert(std::is_copy_assignable<body>::value, "");
         }
     }
 
-    //! The Month element describes the month when a yearly recurring item occurs.
+    //! Describes the month when a yearly recurring item occurs
     enum class month
     {
         //! January
         jan,
+
         //! February
         feb,
+
         //! March
         mar,
+
         //! April
         apr,
+
         //! May
         may,
+
         //! June
         june,
+
         //! July
         july,
+
         //! August
         aug,
+
         //! September
         sept,
+
         //! October
         oct,
+
         //! November
         nov,
+
         //! December
         dec,
     };
@@ -8274,27 +8342,36 @@ static_assert(std::is_copy_assignable<body>::value, "");
         }
     }
 
-    //! This element contains the selection of working days
+    //! Describes working days
     enum class day_of_week
     {
         //! Sunday
         sun,
+
         //! Monday
         mon,
+
         //! Tuesday
         tue,
+
         //! Wednesday
         wed,
+
         //! Thursday
         thu,
+
         //! Friday
         fri,
+
         //! Saturday
         sat,
-        //!  day
+
+        //! Any day
         day,
+
         //! A weekday
         weekday,
+
         //! A day weekend
         weekend_day
     };
@@ -8388,15 +8465,19 @@ static_assert(std::is_copy_assignable<body>::value, "");
     //! Therefore, the first Monday would have to occur in the second week.
     enum class day_of_week_index
     {
-        //! The first occurence of a day within a month.
+        //! The first occurrence of a day within a month
         first,
-        //! The second occurence of a day within a month.
+
+        //! The second occurrence of a day within a month
         second,
-        //! The third occurence of a day within a month.
+
+        //! The third occurrence of a day within a month
         third,
-        //! The fourth occurence of a day within a month.
+
+        //! The fourth occurrence of a day within a month
         fourth,
-        //! The last occurence of a day within a month.
+
+        //! The last occurrence of a day within a month
         last
     };
 
@@ -8451,7 +8532,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
         }
     }
 
-    //! Represents a concrete task in the Exchange store.
+    //! Represents a concrete task in the Exchange store
     class task final : public item
     {
     public:
@@ -8926,7 +9007,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
         // The company that the contact is affiliated with
         // TODO: get_company_name
 
-        //! A collection of e-mail addresses for the contact
+        //! A collection of email addresses for the contact
         std::vector<mailbox> get_email_addresses() const
         {
             const auto addresses = xml().get_node("EmailAddresses");
@@ -10153,7 +10234,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
     static_assert(!std::is_move_assignable<recurrence_range>::value, "");
 #endif
 
-    //! Represents recurrence range with no end date.
+    //! Represents recurrence range with no end date
     class no_end_recurrence_range final : public recurrence_range
     {
     public:
@@ -10224,7 +10305,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
     static_assert(!std::is_move_assignable<no_end_recurrence_range>::value, "");
 #endif
 
-    //! Represents recurrence range with end date.
+    //! Represents recurrence range with end date
     class end_date_recurrence_range final : public recurrence_range
     {
     public:
@@ -10315,7 +10396,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
     static_assert(!std::is_move_assignable<end_date_recurrence_range>::value, "");
 #endif
 
-    //! Represents a numbered recurrence range.
+    //! Represents a numbered recurrence range
     class numbered_recurrence_range final : public recurrence_range
     {
     public:
@@ -10409,7 +10490,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
     static_assert(!std::is_move_assignable<numbered_recurrence_range>::value, "");
 #endif
 
-    //! Represents a calendar item in the Exchange store.
+    //! Represents a calendar item in the Exchange store
     class calendar_item final : public item
     {
     public:
@@ -10419,7 +10500,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
         calendar_item() {}
 #endif
 
-        //! Creates an <tt>\<CalendarItem\></tt>
+        //! Creates a <tt>\<CalendarItem\></tt> with given id
         explicit calendar_item(item_id id) : item(id) {}
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
@@ -10821,7 +10902,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
             return occurrence_info::from_xml_element(*node);
         }
 
-        //! Returns the last occurence
+        //! Returns the last occurrence
         occurrence_info get_last_occurrence() const
         {
             auto node = xml().get_node("LastOccurrence");
@@ -11055,7 +11136,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
     static_assert(std::is_move_assignable<calendar_item>::value, "");
 #endif
 
-    //! A message item in the Exchange store.
+    //! A message item in the Exchange store
     class message final : public item
     {
     public:
@@ -12271,24 +12352,30 @@ static_assert(std::is_copy_assignable<body>::value, "");
     static_assert(std::is_move_assignable<not_>::value, "");
 #endif
 
-    //! \brief This enumeration indicates which parts of a text value are
-    //! compared to a supplied constant value.
+    //! \brief Specifies which parts of a text value are compared to a
+    //! supplied constant value.
     //!
     //! \sa contains
     enum class containment_mode
     {
-        //! The comparison is between the full string and the constant.
+        //! \brief The comparison is between the full string and the constant.
+        //!
         //! The property value and the supplied constant are exactly the same.
         full_string,
-        //! The comparison is between the string prefix and the constant.
+
+        //! The comparison is between the string prefix and the constant
         prefixed,
-        //! The comparison is between a substring of the string and the constant.
-        substring,
-        //! The comparison is between a prefix on individual words in the string
-        //! and the constant.
-        prefix_on_words,
-        //! The comparison is between an exact phrase in the string and the
+
+        //! \brief The comparison is between a sub-string of the string and the
         //! constant.
+        substring,
+
+        //! \brief The comparison is between a prefix on individual words in
+        //! the string and the constant.
+        prefix_on_words,
+
+        //! \brief The comparison is between an exact phrase in the string and
+        //! the constant.
         exact_phrase
     };
 
@@ -12320,13 +12407,16 @@ static_assert(std::is_copy_assignable<body>::value, "");
     //! \sa contains
     enum class containment_comparison
     {
-        //! The strings must exactly be the same.
+        //! The strings must exactly be the same
         exact,
-        //! The comparsion is caseinsensitiv.
+
+        //! The comparison is case-insensitive
         ignore_case,
-        //! Non-spacing-characters will be ignored.
+
+        //! Non-spacing characters will be ignored during comparison
         ignore_non_spacing_characters,
-        //! TODO: write this!
+
+        //! This is \ref ignore_case and \ref ignore_non_spacing_characters
         loose,
     };
 
@@ -12350,7 +12440,7 @@ static_assert(std::is_copy_assignable<body>::value, "");
         }
     }
 
-    //! \brief Check if a text property contains a substring
+    //! \brief Check if a text property contains a sub-string
     //!
     //! A search filter that allows you to do text searches on string
     //! properties.
@@ -12391,8 +12481,10 @@ static_assert(std::is_copy_assignable<body>::value, "");
     static_assert(std::is_move_assignable<contains>::value, "");
 #endif
 
-    //! \brief Represents a date range view of appointments in calendar folder search
-    //! operations.
+    //! \brief A range view of appointments in a calendar.
+    //!
+    //! Represents a date range view of appointments in calendar folder search
+    //! operations!.
     class calendar_view
     {
     public:
