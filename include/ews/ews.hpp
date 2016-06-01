@@ -7848,12 +7848,11 @@ namespace ews
                                  ptr_to_qname + 2);
                 target_node->namespace_uri(internal::uri<>::microsoft::types(),
                                          internal::uri<>::microsoft::types_size);
-                doc->append_node(target_node);
             }
 
-            for(auto str : categories)
+            for (const auto& category : categories)
             {
-                auto new_str  = doc->allocate_string(str.c_str());
+                auto new_str  = doc->allocate_string(category.c_str());
                 auto new_node = doc->allocate_node(rapidxml::node_element, "t:String");
                 new_node->namespace_uri(internal::uri<>::microsoft::types(),
                                             internal::uri<>::microsoft::types_size);
@@ -7861,6 +7860,8 @@ namespace ews
 
                 target_node->append_node(new_node);
             }
+
+            doc->append_node(target_node);
         }
 
         //! \brief Returns the categories associated with this item.
