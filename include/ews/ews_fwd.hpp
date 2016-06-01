@@ -1,9 +1,9 @@
 #pragma once
 
 #ifdef EWS_HAS_NOEXCEPT_SPECIFIER
-# define EWS_NOEXCEPT noexcept
+#define EWS_NOEXCEPT noexcept
 #else
-# define EWS_NOEXCEPT
+#define EWS_NOEXCEPT
 #endif
 
 // Forward declarations

@@ -1,22 +1,22 @@
 #pragma once
 
+#include <algorithm>
+#include <cctype>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <exception>
+#include <fstream>
+#include <functional>
+#include <ios>
+#include <iterator>
+#include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <string>
-#include <vector>
-#include <sstream>
-#include <fstream>
-#include <ios>
-#include <algorithm>
-#include <iterator>
-#include <functional>
-#include <utility>
-#include <memory>
 #include <type_traits>
-#include <cstdint>
-#include <cstddef>
-#include <cstring>
-#include <cctype>
+#include <utility>
+#include <vector>
 
 #include <curl/curl.h>
 
@@ -25,8 +25,8 @@
 
 // Print more detailed error messages, HTTP request/response etc to stderr
 #ifdef EWS_ENABLE_VERBOSE
-# include <iostream>
-# include <ostream>
+#include <iostream>
+#include <ostream>
 #endif
 
 #include "ews_fwd.hpp"
@@ -37,11 +37,11 @@
 // during compilation.
 #define EWS_ASSERT(expr) ((void)0)
 #ifndef NDEBUG
-# ifdef EWS_ENABLE_ASSERTS
-#  include <cassert>
-#  undef EWS_ASSERT
-#  define EWS_ASSERT(expr) assert(expr)
-# endif
+#ifdef EWS_ENABLE_ASSERTS
+#include <cassert>
+#undef EWS_ASSERT
+#define EWS_ASSERT(expr) assert(expr)
+#endif
 #endif // !NDEBUG
 
 //! Contains all classes, functions, and enumerations of this library
@@ -56,7 +56,8 @@ namespace ews
             template <typename Function>
             on_scope_exit(Function destructor_function) try
                 : func_(std::move(destructor_function))
-            {}
+            {
+            }
             catch (std::exception&)
             {
                 destructor_function();
@@ -68,7 +69,7 @@ namespace ews
             on_scope_exit& operator=(const on_scope_exit&) = delete;
 #else
         private:
-            on_scope_exit(const on_scope_exit&); // Never defined
+            on_scope_exit(const on_scope_exit&);            // Never defined
             on_scope_exit& operator=(const on_scope_exit&); // Never defined
 
         public:
@@ -164,12 +165,14 @@ namespace ews
                     char_array_3[i++] = *(bufit++);
                     if (i == 3)
                     {
-                        char_array_4[0] =  (char_array_3[0] & 0xfc) >> 2;
-                        char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-                        char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
-                        char_array_4[3] =   char_array_3[2] & 0x3f;
+                        char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+                        char_array_4[1] = ((char_array_3[0] & 0x03) << 4) +
+                                          ((char_array_3[1] & 0xf0) >> 4);
+                        char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) +
+                                          ((char_array_3[2] & 0xc0) >> 6);
+                        char_array_4[3] = char_array_3[2] & 0x3f;
 
-                        for(i = 0; (i < 4); i++)
+                        for (i = 0; (i < 4); i++)
                         {
                             ret += base64_chars[char_array_4[i]];
                         }
@@ -179,15 +182,17 @@ namespace ews
 
                 if (i)
                 {
-                    for(j = i; j < 3; j++)
+                    for (j = i; j < 3; j++)
                     {
                         char_array_3[j] = '\0';
                     }
 
-                    char_array_4[0] =  (char_array_3[0] & 0xfc) >> 2;
-                    char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-                    char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
-                    char_array_4[3] =   char_array_3[2] & 0x3f;
+                    char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+                    char_array_4[1] = ((char_array_3[0] & 0x03) << 4) +
+                                      ((char_array_3[1] & 0xf0) >> 4);
+                    char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) +
+                                      ((char_array_3[2] & 0xc0) >> 6);
+                    char_array_4[3] = char_array_3[2] & 0x3f;
 
                     for (j = 0; (j < i + 1); j++)
                     {
@@ -203,8 +208,8 @@ namespace ews
                 return ret;
             }
 
-            inline
-            std::vector<unsigned char> decode(const std::string& encoded_string)
+            inline std::vector<unsigned char>
+            decode(const std::string& encoded_string)
             {
                 const auto& base64_chars = valid_chars();
                 auto in_len = encoded_string.size();
@@ -215,9 +220,8 @@ namespace ews
                 unsigned char char_array_3[3];
                 std::vector<unsigned char> ret;
 
-                while (   in_len--
-                       && (encoded_string[in] != '=')
-                       && is_base64(encoded_string[in]))
+                while (in_len-- && (encoded_string[in] != '=') &&
+                       is_base64(encoded_string[in]))
                 {
                     char_array_4[i++] = encoded_string[in];
                     in++;
@@ -230,9 +234,12 @@ namespace ews
                                 base64_chars.find(char_array_4[i]));
                         }
 
-                        char_array_3[0] =  (char_array_4[0] << 2)        + ((char_array_4[1] & 0x30) >> 4);
-                        char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-                        char_array_3[2] = ((char_array_4[2] & 0x3) << 6) +   char_array_4[3];
+                        char_array_3[0] = (char_array_4[0] << 2) +
+                                          ((char_array_4[1] & 0x30) >> 4);
+                        char_array_3[1] = ((char_array_4[1] & 0xf) << 4) +
+                                          ((char_array_4[2] & 0x3c) >> 2);
+                        char_array_3[2] =
+                            ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
 
                         for (i = 0; (i < 3); i++)
                         {
@@ -255,9 +262,12 @@ namespace ews
                             base64_chars.find(char_array_4[j]));
                     }
 
-                    char_array_3[0] =  (char_array_4[0] << 2)        + ((char_array_4[1] & 0x30) >> 4);
-                    char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-                    char_array_3[2] = ((char_array_4[2] & 0x3) << 6) +   char_array_4[3];
+                    char_array_3[0] = (char_array_4[0] << 2) +
+                                      ((char_array_4[1] & 0x30) >> 4);
+                    char_array_3[1] = ((char_array_4[1] & 0xf) << 4) +
+                                      ((char_array_4[2] & 0x3c) >> 2);
+                    char_array_3[2] =
+                        ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
 
                     for (j = 0; (j < i - 1); j++)
                     {
@@ -267,15 +277,14 @@ namespace ews
 
                 return ret;
             }
-
         }
 
         template <typename T>
         inline bool points_within_array(T* p, T* begin, T* end)
         {
             // Not 100% sure if this works in each and every case
-            return std::greater_equal<T*>()(p, begin)
-                && std::less<T*>()(p, end);
+            return std::greater_equal<T*>()(p, begin) &&
+                   std::less<T*>()(p, end);
         }
 
         // Forward declarations
@@ -299,10 +308,10 @@ namespace ews
     class exception : public std::runtime_error
     {
     public:
-        explicit exception(const std::string& what)
-            : std::runtime_error(what)
+        explicit exception(const std::string& what) : std::runtime_error(what)
         {
         }
+
         explicit exception(const char* what) : std::runtime_error(what) {}
     };
 
@@ -310,16 +319,12 @@ namespace ews
     class xml_parse_error final : public exception
     {
     public:
-        explicit xml_parse_error(const std::string& what)
-            : exception(what)
-        {
-        }
+        explicit xml_parse_error(const std::string& what) : exception(what) {}
         explicit xml_parse_error(const char* what) : exception(what) {}
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
-        static
-        std::string error_message_from(const rapidxml::parse_error& exc,
-                                       const std::vector<char>& xml)
+        static std::string error_message_from(const rapidxml::parse_error& exc,
+                                              const std::vector<char>& xml)
         {
             using internal::points_within_array;
 
@@ -335,29 +340,29 @@ namespace ews
             try
             {
                 const auto start = &xml[0];
-                if (points_within_array(where,
-                                        start, (start + xml.size() + 1)))
+                if (points_within_array(where, start, (start + xml.size() + 1)))
                 {
-                    enum { column_width = 79 };
+                    enum {column_width = 79};
                     const auto idx =
                         static_cast<std::size_t>(std::distance(start, where));
 
                     auto doc = std::string(start, xml.size());
                     auto lineno = 1U;
                     auto charno = 0U;
-                    std::replace_if(begin(doc), end(doc), [&](char c) -> bool
-                    {
-                        charno++;
-                        if (c == '\n')
-                        {
-                            if (charno < idx)
-                            {
-                                lineno++;
-                            }
-                            return true;
-                        }
-                        return false;
-                    }, ' ');
+                    std::replace_if(begin(doc), end(doc),
+                                    [&](char c) -> bool {
+                                        charno++;
+                                        if (c == '\n')
+                                        {
+                                            if (charno < idx)
+                                            {
+                                                lineno++;
+                                            }
+                                            return true;
+                                        }
+                                        return false;
+                                    },
+                                    ' ');
 
                     // 0-termini probably got replaced by xml_document::parse
                     std::replace(begin(doc), end(doc), '\0', '>');
@@ -366,7 +371,7 @@ namespace ews
                     doc = std::string(doc.data(), doc.length() - 1);
 
                     // Construct message
-                    msg  = "in line " + std::to_string(lineno) + ":\n";
+                    msg = "in line " + std::to_string(lineno) + ":\n";
                     msg += what + '\n';
                     const auto pr = shorten(doc, idx, column_width);
                     const auto line = pr.first;
@@ -394,8 +399,7 @@ namespace ews
             return str.substr(0, end + 1);
         }
 
-        static
-        std::pair<std::string, std::size_t>
+        static std::pair<std::string, std::size_t>
         shorten(const std::string& str, std::size_t at, std::size_t columns)
         {
             at = std::min(at, str.length());
@@ -404,8 +408,9 @@ namespace ews
                 return std::make_pair(str, at);
             }
 
-            const auto start = std::max(at - (columns / 2), static_cast<std::size_t>(0));
-            const auto end   = std::min(at + (columns / 2), str.length());
+            const auto start =
+                std::max(at - (columns / 2), static_cast<std::size_t>(0));
+            const auto end = std::min(at + (columns / 2), str.length());
             EWS_ASSERT(start < end);
             std::string line;
             std::copy(&str[start], &str[end], std::back_inserter(line));
@@ -1001,7 +1006,8 @@ namespace ews
         //! The property that you are trying to append to does not support
         //! appending. Currently, the only properties that support appending
         //! are:
-        //! \li Recipient collections (ToRecipients, CcRecipients, BccRecipients)
+        //! \li Recipient collections (ToRecipients, CcRecipients,
+        //! BccRecipients)
         //! \li Attendee collections (RequiredAttendees, OptionalAttendees,
         //! Resources)
         //! \li Body
@@ -1775,7 +1781,8 @@ namespace ews
             }
             if (str == "ErrorCalendarCannotMoveOrCopyOccurrence")
             {
-                return response_code::error_calendar_cannot_move_or_copy_occurrence;
+                return response_code::
+                    error_calendar_cannot_move_or_copy_occurrence;
             }
             if (str == "ErrorCalendarCannotUpdateDeletedItem")
             {
@@ -1783,11 +1790,13 @@ namespace ews
             }
             if (str == "ErrorCalendarCannotUseIdForOccurrenceId")
             {
-                return response_code::error_calendar_cannot_use_id_for_occurrence_id;
+                return response_code::
+                    error_calendar_cannot_use_id_for_occurrence_id;
             }
             if (str == "ErrorCalendarCannotUseIdForRecurringMasterId")
             {
-                return response_code::error_calendar_cannot_use_id_for_recurring_master_id;
+                return response_code::
+                    error_calendar_cannot_use_id_for_recurring_master_id;
             }
             if (str == "ErrorCalendarDurationIsTooLong")
             {
@@ -1795,11 +1804,13 @@ namespace ews
             }
             if (str == "ErrorCalendarEndDateIsEarlierThanStartDate")
             {
-                return response_code::error_calendar_end_date_is_earlier_than_start_date;
+                return response_code::
+                    error_calendar_end_date_is_earlier_than_start_date;
             }
             if (str == "ErrorCalendarFolderIsInvalidForCalendarView")
             {
-                return response_code::error_calendar_folder_is_invalid_for_calendar_view;
+                return response_code::
+                    error_calendar_folder_is_invalid_for_calendar_view;
             }
             if (str == "ErrorCalendarInvalidAttributeValue")
             {
@@ -1807,11 +1818,13 @@ namespace ews
             }
             if (str == "ErrorCalendarInvalidDayForTimeChangePattern")
             {
-                return response_code::error_calendar_invalid_day_for_time_change_pattern;
+                return response_code::
+                    error_calendar_invalid_day_for_time_change_pattern;
             }
             if (str == "ErrorCalendarInvalidDayForWeeklyRecurrence")
             {
-                return response_code::error_calendar_invalid_day_for_weekly_recurrence;
+                return response_code::
+                    error_calendar_invalid_day_for_weekly_recurrence;
             }
             if (str == "ErrorCalendarInvalidPropertyState")
             {
@@ -1867,11 +1880,13 @@ namespace ews
             }
             if (str == "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange")
             {
-                return response_code::error_calendar_occurrence_index_is_out_of_recurrence_range;
+                return response_code::
+                    error_calendar_occurrence_index_is_out_of_recurrence_range;
             }
             if (str == "ErrorCalendarOccurrenceIsDeletedFromRecurrence")
             {
-                return response_code::error_calendar_occurrence_is_deleted_from_recurrence;
+                return response_code::
+                    error_calendar_occurrence_is_deleted_from_recurrence;
             }
             if (str == "ErrorCalendarOutOfRange")
             {
@@ -1883,15 +1898,18 @@ namespace ews
             }
             if (str == "ErrorCannotCreateCalendarItemInNonCalendarFolder")
             {
-                return response_code::error_cannot_create_calendar_item_in_non_calendar_folder;
+                return response_code::
+                    error_cannot_create_calendar_item_in_non_calendar_folder;
             }
             if (str == "ErrorCannotCreateContactInNonContactsFolder")
             {
-                return response_code::error_cannot_create_contact_in_non_contacts_folder;
+                return response_code::
+                    error_cannot_create_contact_in_non_contacts_folder;
             }
             if (str == "ErrorCannotCreateTaskInNonTaskFolder")
             {
-                return response_code::error_cannot_create_task_in_non_task_folder;
+                return response_code::
+                    error_cannot_create_task_in_non_task_folder;
             }
             if (str == "ErrorCannotDeleteObject")
             {
@@ -1919,7 +1937,8 @@ namespace ews
             }
             if (str == "ErrorChangeKeyRequiredForWriteOperations")
             {
-                return response_code::error_change_key_required_for_write_operations;
+                return response_code::
+                    error_change_key_required_for_write_operations;
             }
             if (str == "ErrorConnectionFailed")
             {
@@ -1939,7 +1958,8 @@ namespace ews
             }
             if (str == "ErrorCreateManagedFolderPartialCompletion")
             {
-                return response_code::error_create_managed_folder_partial_completion;
+                return response_code::
+                    error_create_managed_folder_partial_completion;
             }
             if (str == "ErrorCreateSubfolderAccessDenied")
             {
@@ -2015,7 +2035,8 @@ namespace ews
             }
             if (str == "ErrorGetServerSecurityDescriptorFailed")
             {
-                return response_code::error_get_server_security_descriptor_failed;
+                return response_code::
+                    error_get_server_security_descriptor_failed;
             }
             if (str == "ErrorImpersonateUserDenied")
             {
@@ -2063,7 +2084,8 @@ namespace ews
             }
             if (str == "ErrorInvalidAttachmentSubfilterTextFilter")
             {
-                return response_code::error_invalid_attachment_subfilter_text_filter;
+                return response_code::
+                    error_invalid_attachment_subfilter_text_filter;
             }
             if (str == "ErrorInvalidAuthorizationContext")
             {
@@ -2087,7 +2109,8 @@ namespace ews
             }
             if (str == "ErrorInvalidExchangeImpersonationHeaderData")
             {
-                return response_code::error_invalid_exchange_impersonation_header_data;
+                return response_code::
+                    error_invalid_exchange_impersonation_header_data;
             }
             if (str == "ErrorInvalidExcludesRestriction")
             {
@@ -2095,7 +2118,8 @@ namespace ews
             }
             if (str == "ErrorInvalidExpressionTypeForSubFilter")
             {
-                return response_code::error_invalid_expression_type_for_sub_filter;
+                return response_code::
+                    error_invalid_expression_type_for_sub_filter;
             }
             if (str == "ErrorInvalidExtendedProperty")
             {
@@ -2111,7 +2135,8 @@ namespace ews
             }
             if (str == "ErrorInvalidFractionalPagingParameters")
             {
-                return response_code::error_invalid_fractional_paging_parameters;
+                return response_code::
+                    error_invalid_fractional_paging_parameters;
             }
             if (str == "ErrorInvalidFreeBusyViewType")
             {
@@ -2135,11 +2160,13 @@ namespace ews
             }
             if (str == "ErrorInvalidIdNotAnItemAttachmentId")
             {
-                return response_code::error_invalid_id_not_an_item_attachment_id;
+                return response_code::
+                    error_invalid_id_not_an_item_attachment_id;
             }
             if (str == "ErrorInvalidIdReturnedByResolveNames")
             {
-                return response_code::error_invalid_id_returned_by_resolve_names;
+                return response_code::
+                    error_invalid_id_returned_by_resolve_names;
             }
             if (str == "ErrorInvalidIdStoreObjectIdTooLong")
             {
@@ -2147,7 +2174,8 @@ namespace ews
             }
             if (str == "ErrorInvalidIdTooManyAttachmentLevels")
             {
-                return response_code::error_invalid_id_too_many_attachment_levels;
+                return response_code::
+                    error_invalid_id_too_many_attachment_levels;
             }
             if (str == "ErrorInvalidIdXml")
             {
@@ -2163,39 +2191,48 @@ namespace ews
             }
             if (str == "ErrorInvalidItemForOperationCreateItemAttachment")
             {
-                return response_code::error_invalid_item_for_operation_create_item_attachment;
+                return response_code::
+                    error_invalid_item_for_operation_create_item_attachment;
             }
             if (str == "ErrorInvalidItemForOperationCreateItem")
             {
-                return response_code::error_invalid_item_for_operation_create_item;
+                return response_code::
+                    error_invalid_item_for_operation_create_item;
             }
             if (str == "ErrorInvalidItemForOperationAcceptItem")
             {
-                return response_code::error_invalid_item_for_operation_accept_item;
+                return response_code::
+                    error_invalid_item_for_operation_accept_item;
             }
             if (str == "ErrorInvalidItemForOperationCancelItem")
             {
-                return response_code::error_invalid_item_for_operation_cancel_item;
+                return response_code::
+                    error_invalid_item_for_operation_cancel_item;
             }
             if (str == "ErrorInvalidItemForOperationDeclineItem")
             {
-                return response_code::error_invalid_item_for_operation_decline_item;
+                return response_code::
+                    error_invalid_item_for_operation_decline_item;
             }
             if (str == "ErrorInvalidItemForOperationExpandDL")
             {
-                return response_code::error_invalid_item_for_operation_expand_dl;
+                return response_code::
+                    error_invalid_item_for_operation_expand_dl;
             }
             if (str == "ErrorInvalidItemForOperationRemoveItem")
             {
-                return response_code::error_invalid_item_for_operation_remove_item;
+                return response_code::
+                    error_invalid_item_for_operation_remove_item;
             }
             if (str == "ErrorInvalidItemForOperationSendItem")
             {
-                return response_code::error_invalid_item_for_operation_send_item;
+                return response_code::
+                    error_invalid_item_for_operation_send_item;
             }
             if (str == "ErrorInvalidItemForOperationTentative")
             {
-                return response_code::error_invalid_item_for_operation_tentative;
+                return response_code::
+                    error_invalid_item_for_operation_tentative;
             }
             if (str == "ErrorInvalidManagedFolderProperty")
             {
@@ -2263,7 +2300,8 @@ namespace ews
             }
             if (str == "ErrorInvalidPropertyUpdateSentMessage")
             {
-                return response_code::error_invalid_property_update_sent_message;
+                return response_code::
+                    error_invalid_property_update_sent_message;
             }
             if (str == "ErrorInvalidPullSubscriptionId")
             {
@@ -2283,7 +2321,8 @@ namespace ews
             }
             if (str == "ErrorInvalidRecipientSubfilterComparison")
             {
-                return response_code::error_invalid_recipient_subfilter_comparison;
+                return response_code::
+                    error_invalid_recipient_subfilter_comparison;
             }
             if (str == "ErrorInvalidRecipientSubfilterOrder")
             {
@@ -2291,7 +2330,8 @@ namespace ews
             }
             if (str == "ErrorInvalidRecipientSubfilterTextFilter")
             {
-                return response_code::error_invalid_recipient_subfilter_text_filter;
+                return response_code::
+                    error_invalid_recipient_subfilter_text_filter;
             }
             if (str == "ErrorInvalidReferenceItem")
             {
@@ -2339,11 +2379,13 @@ namespace ews
             }
             if (str == "ErrorInvalidSubfilterTypeNotAttendeeType")
             {
-                return response_code::error_invalid_subfilter_type_not_attendee_type;
+                return response_code::
+                    error_invalid_subfilter_type_not_attendee_type;
             }
             if (str == "ErrorInvalidSubfilterTypeNotRecipientType")
             {
-                return response_code::error_invalid_subfilter_type_not_recipient_type;
+                return response_code::
+                    error_invalid_subfilter_type_not_recipient_type;
             }
             if (str == "ErrorInvalidSubscription")
             {
@@ -2407,7 +2449,8 @@ namespace ews
             }
             if (str == "ErrorLegacyMailboxFreeBusyViewTypeNotMerged")
             {
-                return response_code::error_legacy_mailbox_free_busy_view_type_not_merged;
+                return response_code::
+                    error_legacy_mailbox_free_busy_view_type_not_merged;
             }
             if (str == "ErrorLocalServerObjectNotFound")
             {
@@ -2459,7 +2502,8 @@ namespace ews
             }
             if (str == "ErrorMeetingSuggestionGenerationFailed")
             {
-                return response_code::error_meeting_suggestion_generation_failed;
+                return response_code::
+                    error_meeting_suggestion_generation_failed;
             }
             if (str == "ErrorMessageDispositionRequired")
             {
@@ -2491,7 +2535,8 @@ namespace ews
             }
             if (str == "ErrorMissingEmailAddressForManagedFolder")
             {
-                return response_code::error_missing_email_address_for_managed_folder;
+                return response_code::
+                    error_missing_email_address_for_managed_folder;
             }
             if (str == "ErrorMissingInformationEmailAddress")
             {
@@ -2499,11 +2544,13 @@ namespace ews
             }
             if (str == "ErrorMissingInformationReferenceItemId")
             {
-                return response_code::error_missing_information_reference_item_id;
+                return response_code::
+                    error_missing_information_reference_item_id;
             }
             if (str == "ErrorMissingItemForCreateItemAttachment")
             {
-                return response_code::error_missing_item_for_create_item_attachment;
+                return response_code::
+                    error_missing_item_for_create_item_attachment;
             }
             if (str == "ErrorMissingManagedFolderId")
             {
@@ -2555,7 +2602,8 @@ namespace ews
             }
             if (str == "ErrorNoPropertyTagForCustomProperties")
             {
-                return response_code::error_no_property_tag_for_custom_properties;
+                return response_code::
+                    error_no_property_tag_for_custom_properties;
             }
             if (str == "ErrorNotEnoughMemory")
             {
@@ -2603,7 +2651,8 @@ namespace ews
             }
             if (str == "ErrorPublicFolderRequestProcessingFailed")
             {
-                return response_code::error_public_folder_request_processing_failed;
+                return response_code::
+                    error_public_folder_request_processing_failed;
             }
             if (str == "ErrorPublicFolderServerNotFound")
             {
@@ -2683,7 +2732,8 @@ namespace ews
             }
             if (str == "ErrorSendMeetingInvitationsOrCancellationsRequired")
             {
-                return response_code::error_send_meeting_invitations_or_cancellations_required;
+                return response_code::
+                    error_send_meeting_invitations_or_cancellations_required;
             }
             if (str == "ErrorSendMeetingInvitationsRequired")
             {
@@ -2711,7 +2761,8 @@ namespace ews
             }
             if (str == "ErrorSubscriptionDelegateAccessNotSupported")
             {
-                return response_code::error_subscription_delegate_access_not_supported;
+                return response_code::
+                    error_subscription_delegate_access_not_supported;
             }
             if (str == "ErrorSubscriptionNotFound")
             {
@@ -2817,550 +2868,564 @@ namespace ews
         {
             switch (code)
             {
-                case response_code::no_error:
-                    return "NoError";
-                case response_code::error_access_denied:
-                    return "ErrorAccessDenied";
-                case response_code::error_account_disabled:
-                    return "ErrorAccountDisabled";
-                case response_code::error_address_space_not_found:
-                    return "ErrorAddressSpaceNotFound";
-                case response_code::error_ad_operation:
-                    return "ErrorADOperation";
-                case response_code::error_ad_session_filter:
-                    return "ErrorADSessionFilter";
-                case response_code::error_ad_unavailable:
-                    return "ErrorADUnavailable";
-                case response_code::error_auto_discover_failed:
-                    return "ErrorAutoDiscoverFailed";
-                case response_code::error_affected_task_occurrences_required:
-                    return "ErrorAffectedTaskOccurrencesRequired";
-                case response_code::error_attachment_size_limit_exceeded:
-                    return "ErrorAttachmentSizeLimitExceeded";
-                case response_code::error_availability_config_not_found:
-                    return "ErrorAvailabilityConfigNotFound";
-                case response_code::error_batch_processing_stopped:
-                    return "ErrorBatchProcessingStopped";
-                case response_code::error_calendar_cannot_move_or_copy_occurrence:
-                    return "ErrorCalendarCannotMoveOrCopyOccurrence";
-                case response_code::error_calendar_cannot_update_deleted_item:
-                    return "ErrorCalendarCannotUpdateDeletedItem";
-                case response_code::error_calendar_cannot_use_id_for_occurrence_id:
-                    return "ErrorCalendarCannotUseIdForOccurrenceId";
-                case response_code::error_calendar_cannot_use_id_for_recurring_master_id:
-                    return "ErrorCalendarCannotUseIdForRecurringMasterId";
-                case response_code::error_calendar_duration_is_too_long:
-                    return "ErrorCalendarDurationIsTooLong";
-                case response_code::error_calendar_end_date_is_earlier_than_start_date:
-                    return "ErrorCalendarEndDateIsEarlierThanStartDate";
-                case response_code::error_calendar_folder_is_invalid_for_calendar_view:
-                    return "ErrorCalendarFolderIsInvalidForCalendarView";
-                case response_code::error_calendar_invalid_attribute_value:
-                    return "ErrorCalendarInvalidAttributeValue";
-                case response_code::error_calendar_invalid_day_for_time_change_pattern:
-                    return "ErrorCalendarInvalidDayForTimeChangePattern";
-                case response_code::error_calendar_invalid_day_for_weekly_recurrence:
-                    return "ErrorCalendarInvalidDayForWeeklyRecurrence";
-                case response_code::error_calendar_invalid_property_state:
-                    return "ErrorCalendarInvalidPropertyState";
-                case response_code::error_calendar_invalid_property_value:
-                    return "ErrorCalendarInvalidPropertyValue";
-                case response_code::error_calendar_invalid_recurrence:
-                    return "ErrorCalendarInvalidRecurrence";
-                case response_code::error_calendar_invalid_time_zone:
-                    return "ErrorCalendarInvalidTimeZone";
-                case response_code::error_calendar_is_delegated_for_accept:
-                    return "ErrorCalendarIsDelegatedForAccept";
-                case response_code::error_calendar_is_delegated_for_decline:
-                    return "ErrorCalendarIsDelegatedForDecline";
-                case response_code::error_calendar_is_delegated_for_remove:
-                    return "ErrorCalendarIsDelegatedForRemove";
-                case response_code::error_calendar_is_delegated_for_tentative:
-                    return "ErrorCalendarIsDelegatedForTentative";
-                case response_code::error_calendar_is_not_organizer:
-                    return "ErrorCalendarIsNotOrganizer";
-                case response_code::error_calendar_is_organizer_for_accept:
-                    return "ErrorCalendarIsOrganizerForAccept";
-                case response_code::error_calendar_is_organizer_for_decline:
-                    return "ErrorCalendarIsOrganizerForDecline";
-                case response_code::error_calendar_is_organizer_for_remove:
-                    return "ErrorCalendarIsOrganizerForRemove";
-                case response_code::error_calendar_is_organizer_for_tentative:
-                    return "ErrorCalendarIsOrganizerForTentative";
-                case response_code::error_calendar_occurrence_index_is_out_of_recurrence_range:
-                    return "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange";
-                case response_code::error_calendar_occurrence_is_deleted_from_recurrence:
-                    return "ErrorCalendarOccurrenceIsDeletedFromRecurrence";
-                case response_code::error_calendar_out_of_range:
-                    return "ErrorCalendarOutOfRange";
-                case response_code::error_calendar_view_range_too_big:
-                    return "ErrorCalendarViewRangeTooBig";
-                case response_code::error_cannot_create_calendar_item_in_non_calendar_folder:
-                    return "ErrorCannotCreateCalendarItemInNonCalendarFolder";
-                case response_code::error_cannot_create_contact_in_non_contacts_folder:
-                    return "ErrorCannotCreateContactInNonContactsFolder";
-                case response_code::error_cannot_create_task_in_non_task_folder:
-                    return "ErrorCannotCreateTaskInNonTaskFolder";
-                case response_code::error_cannot_delete_object:
-                    return "ErrorCannotDeleteObject";
-                case response_code::error_cannot_delete_task_occurrence:
-                    return "ErrorCannotDeleteTaskOccurrence";
-                case response_code::error_cannot_open_file_attachment:
-                    return "ErrorCannotOpenFileAttachment";
-                case response_code::error_cannot_use_folder_id_for_item_id:
-                    return "ErrorCannotUseFolderIdForItemId";
-                case response_code::error_cannot_user_item_id_for_folder_id:
-                    return "ErrorCannotUserItemIdForFolderId";
-                case response_code::error_change_key_required:
-                    return "ErrorChangeKeyRequired";
-                case response_code::error_change_key_required_for_write_operations:
-                    return "ErrorChangeKeyRequiredForWriteOperations";
-                case response_code::error_connection_failed:
-                    return "ErrorConnectionFailed";
-                case response_code::error_content_conversion_failed:
-                    return "ErrorContentConversionFailed";
-                case response_code::error_corrupt_data:
-                    return "ErrorCorruptData";
-                case response_code::error_create_item_access_denied:
-                    return "ErrorCreateItemAccessDenied";
-                case response_code::error_create_managed_folder_partial_completion:
-                    return "ErrorCreateManagedFolderPartialCompletion";
-                case response_code::error_create_subfolder_access_denied:
-                    return "ErrorCreateSubfolderAccessDenied";
-                case response_code::error_cross_mailbox_move_copy:
-                    return "ErrorCrossMailboxMoveCopy";
-                case response_code::error_data_size_limit_exceeded:
-                    return "ErrorDataSizeLimitExceeded";
-                case response_code::error_data_source_operation:
-                    return "ErrorDataSourceOperation";
-                case response_code::error_delete_distinguished_folder:
-                    return "ErrorDeleteDistinguishedFolder";
-                case response_code::error_delete_items_failed:
-                    return "ErrorDeleteItemsFailed";
-                case response_code::error_duplicate_input_folder_names:
-                    return "ErrorDuplicateInputFolderNames";
-                case response_code::error_email_address_mismatch:
-                    return "ErrorEmailAddressMismatch";
-                case response_code::error_event_not_found:
-                    return "ErrorEventNotFound";
-                case response_code::error_expired_subscription:
-                    return "ErrorExpiredSubscription";
-                case response_code::error_folder_corrupt:
-                    return "ErrorFolderCorrupt";
-                case response_code::error_folder_not_found:
-                    return "ErrorFolderNotFound";
-                case response_code::error_folder_property_request_failed:
-                    return "ErrorFolderPropertyRequestFailed";
-                case response_code::error_folder_save:
-                    return "ErrorFolderSave";
-                case response_code::error_folder_save_failed:
-                    return "ErrorFolderSaveFailed";
-                case response_code::error_folder_save_property_error:
-                    return "ErrorFolderSavePropertyError";
-                case response_code::error_folder_exists:
-                    return "ErrorFolderExists";
-                case response_code::error_free_busy_generation_failed:
-                    return "ErrorFreeBusyGenerationFailed";
-                case response_code::error_get_server_security_descriptor_failed:
-                    return "ErrorGetServerSecurityDescriptorFailed";
-                case response_code::error_impersonate_user_denied:
-                    return "ErrorImpersonateUserDenied";
-                case response_code::error_impersonation_denied:
-                    return "ErrorImpersonationDenied";
-                case response_code::error_impersonation_failed:
-                    return "ErrorImpersonationFailed";
-                case response_code::error_incorrect_update_property_count:
-                    return "ErrorIncorrectUpdatePropertyCount";
-                case response_code::error_individual_mailbox_limit_reached:
-                    return "ErrorIndividualMailboxLimitReached";
-                case response_code::error_insufficient_resources:
-                    return "ErrorInsufficientResources";
-                case response_code::error_internal_server_error:
-                    return "ErrorInternalServerError";
-                case response_code::error_internal_server_transient_error:
-                    return "ErrorInternalServerTransientError";
-                case response_code::error_invalid_access_level:
-                    return "ErrorInvalidAccessLevel";
-                case response_code::error_invalid_attachment_id:
-                    return "ErrorInvalidAttachmentId";
-                case response_code::error_invalid_attachment_subfilter:
-                    return "ErrorInvalidAttachmentSubfilter";
-                case response_code::error_invalid_attachment_subfilter_text_filter:
-                    return "ErrorInvalidAttachmentSubfilterTextFilter";
-                case response_code::error_invalid_authorization_context:
-                    return "ErrorInvalidAuthorizationContext";
-                case response_code::error_invalid_change_key:
-                    return "ErrorInvalidChangeKey";
-                case response_code::error_invalid_client_security_context:
-                    return "ErrorInvalidClientSecurityContext";
-                case response_code::error_invalid_complete_date:
-                    return "ErrorInvalidCompleteDate";
-                case response_code::error_invalid_cross_forest_credentials:
-                    return "ErrorInvalidCrossForestCredentials";
-                case response_code::error_invalid_exchange_impersonation_header_data:
-                    return "ErrorInvalidExchangeImpersonationHeaderData";
-                case response_code::error_invalid_excludes_restriction:
-                    return "ErrorInvalidExcludesRestriction";
-                case response_code::error_invalid_expression_type_for_sub_filter:
-                    return "ErrorInvalidExpressionTypeForSubFilter";
-                case response_code::error_invalid_extended_property:
-                    return "ErrorInvalidExtendedProperty";
-                case response_code::error_invalid_extended_property_value:
-                    return "ErrorInvalidExtendedPropertyValue";
-                case response_code::error_invalid_folder_id:
-                    return "ErrorInvalidFolderId";
-                case response_code::error_invalid_fractional_paging_parameters:
-                    return "ErrorInvalidFractionalPagingParameters";
-                case response_code::error_invalid_free_busy_view_type:
-                    return "ErrorInvalidFreeBusyViewType";
-                case response_code::error_invalid_id:
-                    return "ErrorInvalidId";
-                case response_code::error_invalid_id_empty:
-                    return "ErrorInvalidIdEmpty";
-                case response_code::error_invalid_id_malformed:
-                    return "ErrorInvalidIdMalformed";
-                case response_code::error_invalid_id_moniker_too_long:
-                    return "ErrorInvalidIdMonikerTooLong";
-                case response_code::error_invalid_id_not_an_item_attachment_id:
-                    return "ErrorInvalidIdNotAnItemAttachmentId";
-                case response_code::error_invalid_id_returned_by_resolve_names:
-                    return "ErrorInvalidIdReturnedByResolveNames";
-                case response_code::error_invalid_id_store_object_id_too_long:
-                    return "ErrorInvalidIdStoreObjectIdTooLong";
-                case response_code::error_invalid_id_too_many_attachment_levels:
-                    return "ErrorInvalidIdTooManyAttachmentLevels";
-                case response_code::error_invalid_id_xml:
-                    return "ErrorInvalidIdXml";
-                case response_code::error_invalid_indexed_paging_parameters:
-                    return "ErrorInvalidIndexedPagingParameters";
-                case response_code::error_invalid_internet_header_child_nodes:
-                    return "ErrorInvalidInternetHeaderChildNodes";
-                case response_code::error_invalid_item_for_operation_create_item_attachment:
-                    return "ErrorInvalidItemForOperationCreateItemAttachment";
-                case response_code::error_invalid_item_for_operation_create_item:
-                    return "ErrorInvalidItemForOperationCreateItem";
-                case response_code::error_invalid_item_for_operation_accept_item:
-                    return "ErrorInvalidItemForOperationAcceptItem";
-                case response_code::error_invalid_item_for_operation_cancel_item:
-                    return "ErrorInvalidItemForOperationCancelItem";
-                case response_code::error_invalid_item_for_operation_decline_item:
-                    return "ErrorInvalidItemForOperationDeclineItem";
-                case response_code::error_invalid_item_for_operation_expand_dl:
-                    return "ErrorInvalidItemForOperationExpandDL";
-                case response_code::error_invalid_item_for_operation_remove_item:
-                    return "ErrorInvalidItemForOperationRemoveItem";
-                case response_code::error_invalid_item_for_operation_send_item:
-                    return "ErrorInvalidItemForOperationSendItem";
-                case response_code::error_invalid_item_for_operation_tentative:
-                    return "ErrorInvalidItemForOperationTentative";
-                case response_code::error_invalid_managed_folder_property:
-                    return "ErrorInvalidManagedFolderProperty";
-                case response_code::error_invalid_managed_folder_quota:
-                    return "ErrorInvalidManagedFolderQuota";
-                case response_code::error_invalid_managed_folder_size:
-                    return "ErrorInvalidManagedFolderSize";
-                case response_code::error_invalid_merged_free_busy_interval:
-                    return "ErrorInvalidMergedFreeBusyInterval";
-                case response_code::error_invalid_name_for_name_resolution:
-                    return "ErrorInvalidNameForNameResolution";
-                case response_code::error_invalid_network_service_context:
-                    return "ErrorInvalidNetworkServiceContext";
-                case response_code::error_invalid_oof_parameter:
-                    return "ErrorInvalidOofParameter";
-                case response_code::error_invalid_paging_max_rows:
-                    return "ErrorInvalidPagingMaxRows";
-                case response_code::error_invalid_parent_folder:
-                    return "ErrorInvalidParentFolder";
-                case response_code::error_invalid_percent_complete_value:
-                    return "ErrorInvalidPercentCompleteValue";
-                case response_code::error_invalid_property_append:
-                    return "ErrorInvalidPropertyAppend";
-                case response_code::error_invalid_property_delete:
-                    return "ErrorInvalidPropertyDelete";
-                case response_code::error_invalid_property_for_exists:
-                    return "ErrorInvalidPropertyForExists";
-                case response_code::error_invalid_property_for_operation:
-                    return "ErrorInvalidPropertyForOperation";
-                case response_code::error_invalid_property_request:
-                    return "ErrorInvalidPropertyRequest";
-                case response_code::error_invalid_property_set:
-                    return "ErrorInvalidPropertySet";
-                case response_code::error_invalid_property_update_sent_message:
-                    return "ErrorInvalidPropertyUpdateSentMessage";
-                case response_code::error_invalid_pull_subscription_id:
-                    return "ErrorInvalidPullSubscriptionId";
-                case response_code::error_invalid_push_subscription_url:
-                    return "ErrorInvalidPushSubscriptionUrl";
-                case response_code::error_invalid_recipients:
-                    return "ErrorInvalidRecipients";
-                case response_code::error_invalid_recipient_subfilter:
-                    return "ErrorInvalidRecipientSubfilter";
-                case response_code::error_invalid_recipient_subfilter_comparison:
-                    return "ErrorInvalidRecipientSubfilterComparison";
-                case response_code::error_invalid_recipient_subfilter_order:
-                    return "ErrorInvalidRecipientSubfilterOrder";
-                case response_code::error_invalid_recipient_subfilter_text_filter:
-                    return "ErrorInvalidRecipientSubfilterTextFilter";
-                case response_code::error_invalid_reference_item:
-                    return "ErrorInvalidReferenceItem";
-                case response_code::error_invalid_request:
-                    return "ErrorInvalidRequest";
-                case response_code::error_invalid_restriction:
-                    return "ErrorInvalidRestriction";
-                case response_code::error_invalid_routing_type:
-                    return "ErrorInvalidRoutingType";
-                case response_code::error_invalid_scheduled_oof_duration:
-                    return "ErrorInvalidScheduledOofDuration";
-                case response_code::error_invalid_security_descriptor:
-                    return "ErrorInvalidSecurityDescriptor";
-                case response_code::error_invalid_send_item_save_settings:
-                    return "ErrorInvalidSendItemSaveSettings";
-                case response_code::error_invalid_serialized_access_token:
-                    return "ErrorInvalidSerializedAccessToken";
-                case response_code::error_invalid_sid:
-                    return "ErrorInvalidSid";
-                case response_code::error_invalid_smtp_address:
-                    return "ErrorInvalidSmtpAddress";
-                case response_code::error_invalid_subfilter_type:
-                    return "ErrorInvalidSubfilterType";
-                case response_code::error_invalid_subfilter_type_not_attendee_type:
-                    return "ErrorInvalidSubfilterTypeNotAttendeeType";
-                case response_code::error_invalid_subfilter_type_not_recipient_type:
-                    return "ErrorInvalidSubfilterTypeNotRecipientType";
-                case response_code::error_invalid_subscription:
-                    return "ErrorInvalidSubscription";
-                case response_code::error_invalid_sync_state_data:
-                    return "ErrorInvalidSyncStateData";
-                case response_code::error_invalid_time_interval:
-                    return "ErrorInvalidTimeInterval";
-                case response_code::error_invalid_user_oof_settings:
-                    return "ErrorInvalidUserOofSettings";
-                case response_code::error_invalid_user_principal_name:
-                    return "ErrorInvalidUserPrincipalName";
-                case response_code::error_invalid_user_sid:
-                    return "ErrorInvalidUserSid";
-                case response_code::error_invalid_user_sid_missing_upn:
-                    return "ErrorInvalidUserSidMissingUPN";
-                case response_code::error_invalid_value_for_property:
-                    return "ErrorInvalidValueForProperty";
-                case response_code::error_invalid_watermark:
-                    return "ErrorInvalidWatermark";
-                case response_code::error_irresolvable_conflict:
-                    return "ErrorIrresolvableConflict";
-                case response_code::error_item_corrupt:
-                    return "ErrorItemCorrupt";
-                case response_code::error_item_not_found:
-                    return "ErrorItemNotFound";
-                case response_code::error_item_property_request_failed:
-                    return "ErrorItemPropertyRequestFailed";
-                case response_code::error_item_save:
-                    return "ErrorItemSave";
-                case response_code::error_item_save_property_error:
-                    return "ErrorItemSavePropertyError";
-                case response_code::error_legacy_mailbox_free_busy_view_type_not_merged:
-                    return "ErrorLegacyMailboxFreeBusyViewTypeNotMerged";
-                case response_code::error_local_server_object_not_found:
-                    return "ErrorLocalServerObjectNotFound";
-                case response_code::error_logon_as_network_service_failed:
-                    return "ErrorLogonAsNetworkServiceFailed";
-                case response_code::error_mailbox_configuration:
-                    return "ErrorMailboxConfiguration";
-                case response_code::error_mailbox_data_array_empty:
-                    return "ErrorMailboxDataArrayEmpty";
-                case response_code::error_mailbox_data_array_too_big:
-                    return "ErrorMailboxDataArrayTooBig";
-                case response_code::error_mailbox_logon_failed:
-                    return "ErrorMailboxLogonFailed";
-                case response_code::error_mailbox_move_in_progress:
-                    return "ErrorMailboxMoveInProgress";
-                case response_code::error_mailbox_store_unavailable:
-                    return "ErrorMailboxStoreUnavailable";
-                case response_code::error_mail_recipient_not_found:
-                    return "ErrorMailRecipientNotFound";
-                case response_code::error_managed_folder_already_exists:
-                    return "ErrorManagedFolderAlreadyExists";
-                case response_code::error_managed_folder_not_found:
-                    return "ErrorManagedFolderNotFound";
-                case response_code::error_managed_folders_root_failure:
-                    return "ErrorManagedFoldersRootFailure";
-                case response_code::error_meeting_suggestion_generation_failed:
-                    return "ErrorMeetingSuggestionGenerationFailed";
-                case response_code::error_message_disposition_required:
-                    return "ErrorMessageDispositionRequired";
-                case response_code::error_message_size_exceeded:
-                    return "ErrorMessageSizeExceeded";
-                case response_code::error_mime_content_conversion_failed:
-                    return "ErrorMimeContentConversionFailed";
-                case response_code::error_mime_content_invalid:
-                    return "ErrorMimeContentInvalid";
-                case response_code::error_mime_content_invalid_base64_string:
-                    return "ErrorMimeContentInvalidBase64String";
-                case response_code::error_missing_argument:
-                    return "ErrorMissingArgument";
-                case response_code::error_missing_email_address:
-                    return "ErrorMissingEmailAddress";
-                case response_code::error_missing_email_address_for_managed_folder:
-                    return "ErrorMissingEmailAddressForManagedFolder";
-                case response_code::error_missing_information_email_address:
-                    return "ErrorMissingInformationEmailAddress";
-                case response_code::error_missing_information_reference_item_id:
-                    return "ErrorMissingInformationReferenceItemId";
-                case response_code::error_missing_item_for_create_item_attachment:
-                    return "ErrorMissingItemForCreateItemAttachment";
-                case response_code::error_missing_managed_folder_id:
-                    return "ErrorMissingManagedFolderId";
-                case response_code::error_missing_recipients:
-                    return "ErrorMissingRecipients";
-                case response_code::error_move_copy_failed:
-                    return "ErrorMoveCopyFailed";
-                case response_code::error_move_distinguished_folder:
-                    return "ErrorMoveDistinguishedFolder";
-                case response_code::error_name_resolution_multiple_results:
-                    return "ErrorNameResolutionMultipleResults";
-                case response_code::error_name_resolution_no_mailbox:
-                    return "ErrorNameResolutionNoMailbox";
-                case response_code::error_name_resolution_no_results:
-                    return "ErrorNameResolutionNoResults";
-                case response_code::error_no_calendar:
-                    return "ErrorNoCalendar";
-                case response_code::error_no_folder_class_override:
-                    return "ErrorNoFolderClassOverride";
-                case response_code::error_no_free_busy_access:
-                    return "ErrorNoFreeBusyAccess";
-                case response_code::error_non_existent_mailbox:
-                    return "ErrorNonExistentMailbox";
-                case response_code::error_non_primary_smtp_address:
-                    return "ErrorNonPrimarySmtpAddress";
-                case response_code::error_no_property_tag_for_custom_properties:
-                    return "ErrorNoPropertyTagForCustomProperties";
-                case response_code::error_not_enough_memory:
-                    return "ErrorNotEnoughMemory";
-                case response_code::error_object_type_changed:
-                    return "ErrorObjectTypeChanged";
-                case response_code::error_occurrence_crossing_boundary:
-                    return "ErrorOccurrenceCrossingBoundary";
-                case response_code::error_occurrence_time_span_too_big:
-                    return "ErrorOccurrenceTimeSpanTooBig";
-                case response_code::error_parent_folder_id_required:
-                    return "ErrorParentFolderIdRequired";
-                case response_code::error_parent_folder_not_found:
-                    return "ErrorParentFolderNotFound";
-                case response_code::error_password_change_required:
-                    return "ErrorPasswordChangeRequired";
-                case response_code::error_password_expired:
-                    return "ErrorPasswordExpired";
-                case response_code::error_property_update:
-                    return "ErrorPropertyUpdate";
-                case response_code::error_property_validation_failure:
-                    return "ErrorPropertyValidationFailure";
-                case response_code::error_proxy_request_not_allowed:
-                    return "ErrorProxyRequestNotAllowed";
-                case response_code::error_public_folder_request_processing_failed:
-                    return "ErrorPublicFolderRequestProcessingFailed";
-                case response_code::error_public_folder_server_not_found:
-                    return "ErrorPublicFolderServerNotFound";
-                case response_code::error_query_filter_too_long:
-                    return "ErrorQueryFilterTooLong";
-                case response_code::error_quota_exceeded:
-                    return "ErrorQuotaExceeded";
-                case response_code::error_read_events_failed:
-                    return "ErrorReadEventsFailed";
-                case response_code::error_read_receipt_not_pending:
-                    return "ErrorReadReceiptNotPending";
-                case response_code::error_recurrence_end_date_too_big:
-                    return "ErrorRecurrenceEndDateTooBig";
-                case response_code::error_recurrence_has_no_occurrence:
-                    return "ErrorRecurrenceHasNoOccurrence";
-                case response_code::error_request_aborted:
-                    return "ErrorRequestAborted";
-                case response_code::error_request_stream_too_big:
-                    return "ErrorRequestStreamTooBig";
-                case response_code::error_required_property_missing:
-                    return "ErrorRequiredPropertyMissing";
-                case response_code::error_response_schema_validation:
-                    return "ErrorResponseSchemaValidation";
-                case response_code::error_restriction_too_long:
-                    return "ErrorRestrictionTooLong";
-                case response_code::error_restriction_too_complex:
-                    return "ErrorRestrictionTooComplex";
-                case response_code::error_result_set_too_big:
-                    return "ErrorResultSetTooBig";
-                case response_code::error_saved_item_folder_not_found:
-                    return "ErrorSavedItemFolderNotFound";
-                case response_code::error_schema_validation:
-                    return "ErrorSchemaValidation";
-                case response_code::error_search_folder_not_initialized:
-                    return "ErrorSearchFolderNotInitialized";
-                case response_code::error_send_as_denied:
-                    return "ErrorSendAsDenied";
-                case response_code::error_send_meeting_cancellations_required:
-                    return "ErrorSendMeetingCancellationsRequired";
-                case response_code::error_send_meeting_invitations_or_cancellations_required:
-                    return "ErrorSendMeetingInvitationsOrCancellationsRequired";
-                case response_code::error_send_meeting_invitations_required:
-                    return "ErrorSendMeetingInvitationsRequired";
-                case response_code::error_sent_meeting_request_update:
-                    return "ErrorSentMeetingRequestUpdate";
-                case response_code::error_sent_task_request_update:
-                    return "ErrorSentTaskRequestUpdate";
-                case response_code::error_server_busy:
-                    return "ErrorServerBusy";
-                case response_code::error_stale_object:
-                    return "ErrorStaleObject";
-                case response_code::error_subscription_access_denied:
-                    return "ErrorSubscriptionAccessDenied";
-                case response_code::error_subscription_delegate_access_not_supported:
-                    return "ErrorSubscriptionDelegateAccessNotSupported";
-                case response_code::error_subscription_not_found:
-                    return "ErrorSubscriptionNotFound";
-                case response_code::error_sync_folder_not_found:
-                    return "ErrorSyncFolderNotFound";
-                case response_code::error_time_interval_too_big:
-                    return "ErrorTimeIntervalTooBig";
-                case response_code::error_to_folder_not_found:
-                    return "ErrorToFolderNotFound";
-                case response_code::error_token_serialization_denied:
-                    return "ErrorTokenSerializationDenied";
-                case response_code::error_unable_to_get_user_oof_settings:
-                    return "ErrorUnableToGetUserOofSettings";
-                case response_code::error_unsupported_culture:
-                    return "ErrorUnsupportedCulture";
-                case response_code::error_unsupported_mapi_property_type:
-                    return "ErrorUnsupportedMapiPropertyType";
-                case response_code::error_unsupported_mime_conversion:
-                    return "ErrorUnsupportedMimeConversion";
-                case response_code::error_unsupported_path_for_query:
-                    return "ErrorUnsupportedPathForQuery";
-                case response_code::error_unsupported_path_for_sort_group:
-                    return "ErrorUnsupportedPathForSortGroup";
-                case response_code::error_unsupported_property_definition:
-                    return "ErrorUnsupportedPropertyDefinition";
-                case response_code::error_unsupported_query_filter:
-                    return "ErrorUnsupportedQueryFilter";
-                case response_code::error_unsupported_recurrence:
-                    return "ErrorUnsupportedRecurrence";
-                case response_code::error_unsupported_sub_filter:
-                    return "ErrorUnsupportedSubFilter";
-                case response_code::error_unsupported_type_for_conversion:
-                    return "ErrorUnsupportedTypeForConversion";
-                case response_code::error_update_property_mismatch:
-                    return "ErrorUpdatePropertyMismatch";
-                case response_code::error_virus_detected:
-                    return "ErrorVirusDetected";
-                case response_code::error_virus_message_deleted:
-                    return "ErrorVirusMessageDeleted";
-                case response_code::error_voice_mail_not_implemented:
-                    return "ErrorVoiceMailNotImplemented";
-                case response_code::error_web_request_in_invalid_state:
-                    return "ErrorWebRequestInInvalidState";
-                case response_code::error_win32_interop_error:
-                    return "ErrorWin32InteropError";
-                case response_code::error_working_hours_save_failed:
-                    return "ErrorWorkingHoursSaveFailed";
-                case response_code::error_working_hours_xml_malformed:
-                    return "ErrorWorkingHoursXmlMalformed";
-                default:
-                    throw exception("Unrecognized response code");
+            case response_code::no_error:
+                return "NoError";
+            case response_code::error_access_denied:
+                return "ErrorAccessDenied";
+            case response_code::error_account_disabled:
+                return "ErrorAccountDisabled";
+            case response_code::error_address_space_not_found:
+                return "ErrorAddressSpaceNotFound";
+            case response_code::error_ad_operation:
+                return "ErrorADOperation";
+            case response_code::error_ad_session_filter:
+                return "ErrorADSessionFilter";
+            case response_code::error_ad_unavailable:
+                return "ErrorADUnavailable";
+            case response_code::error_auto_discover_failed:
+                return "ErrorAutoDiscoverFailed";
+            case response_code::error_affected_task_occurrences_required:
+                return "ErrorAffectedTaskOccurrencesRequired";
+            case response_code::error_attachment_size_limit_exceeded:
+                return "ErrorAttachmentSizeLimitExceeded";
+            case response_code::error_availability_config_not_found:
+                return "ErrorAvailabilityConfigNotFound";
+            case response_code::error_batch_processing_stopped:
+                return "ErrorBatchProcessingStopped";
+            case response_code::error_calendar_cannot_move_or_copy_occurrence:
+                return "ErrorCalendarCannotMoveOrCopyOccurrence";
+            case response_code::error_calendar_cannot_update_deleted_item:
+                return "ErrorCalendarCannotUpdateDeletedItem";
+            case response_code::error_calendar_cannot_use_id_for_occurrence_id:
+                return "ErrorCalendarCannotUseIdForOccurrenceId";
+            case response_code::
+                error_calendar_cannot_use_id_for_recurring_master_id:
+                return "ErrorCalendarCannotUseIdForRecurringMasterId";
+            case response_code::error_calendar_duration_is_too_long:
+                return "ErrorCalendarDurationIsTooLong";
+            case response_code::
+                error_calendar_end_date_is_earlier_than_start_date:
+                return "ErrorCalendarEndDateIsEarlierThanStartDate";
+            case response_code::
+                error_calendar_folder_is_invalid_for_calendar_view:
+                return "ErrorCalendarFolderIsInvalidForCalendarView";
+            case response_code::error_calendar_invalid_attribute_value:
+                return "ErrorCalendarInvalidAttributeValue";
+            case response_code::
+                error_calendar_invalid_day_for_time_change_pattern:
+                return "ErrorCalendarInvalidDayForTimeChangePattern";
+            case response_code::
+                error_calendar_invalid_day_for_weekly_recurrence:
+                return "ErrorCalendarInvalidDayForWeeklyRecurrence";
+            case response_code::error_calendar_invalid_property_state:
+                return "ErrorCalendarInvalidPropertyState";
+            case response_code::error_calendar_invalid_property_value:
+                return "ErrorCalendarInvalidPropertyValue";
+            case response_code::error_calendar_invalid_recurrence:
+                return "ErrorCalendarInvalidRecurrence";
+            case response_code::error_calendar_invalid_time_zone:
+                return "ErrorCalendarInvalidTimeZone";
+            case response_code::error_calendar_is_delegated_for_accept:
+                return "ErrorCalendarIsDelegatedForAccept";
+            case response_code::error_calendar_is_delegated_for_decline:
+                return "ErrorCalendarIsDelegatedForDecline";
+            case response_code::error_calendar_is_delegated_for_remove:
+                return "ErrorCalendarIsDelegatedForRemove";
+            case response_code::error_calendar_is_delegated_for_tentative:
+                return "ErrorCalendarIsDelegatedForTentative";
+            case response_code::error_calendar_is_not_organizer:
+                return "ErrorCalendarIsNotOrganizer";
+            case response_code::error_calendar_is_organizer_for_accept:
+                return "ErrorCalendarIsOrganizerForAccept";
+            case response_code::error_calendar_is_organizer_for_decline:
+                return "ErrorCalendarIsOrganizerForDecline";
+            case response_code::error_calendar_is_organizer_for_remove:
+                return "ErrorCalendarIsOrganizerForRemove";
+            case response_code::error_calendar_is_organizer_for_tentative:
+                return "ErrorCalendarIsOrganizerForTentative";
+            case response_code::
+                error_calendar_occurrence_index_is_out_of_recurrence_range:
+                return "ErrorCalendarOccurrenceIndexIsOutOfRecurrenceRange";
+            case response_code::
+                error_calendar_occurrence_is_deleted_from_recurrence:
+                return "ErrorCalendarOccurrenceIsDeletedFromRecurrence";
+            case response_code::error_calendar_out_of_range:
+                return "ErrorCalendarOutOfRange";
+            case response_code::error_calendar_view_range_too_big:
+                return "ErrorCalendarViewRangeTooBig";
+            case response_code::
+                error_cannot_create_calendar_item_in_non_calendar_folder:
+                return "ErrorCannotCreateCalendarItemInNonCalendarFolder";
+            case response_code::
+                error_cannot_create_contact_in_non_contacts_folder:
+                return "ErrorCannotCreateContactInNonContactsFolder";
+            case response_code::error_cannot_create_task_in_non_task_folder:
+                return "ErrorCannotCreateTaskInNonTaskFolder";
+            case response_code::error_cannot_delete_object:
+                return "ErrorCannotDeleteObject";
+            case response_code::error_cannot_delete_task_occurrence:
+                return "ErrorCannotDeleteTaskOccurrence";
+            case response_code::error_cannot_open_file_attachment:
+                return "ErrorCannotOpenFileAttachment";
+            case response_code::error_cannot_use_folder_id_for_item_id:
+                return "ErrorCannotUseFolderIdForItemId";
+            case response_code::error_cannot_user_item_id_for_folder_id:
+                return "ErrorCannotUserItemIdForFolderId";
+            case response_code::error_change_key_required:
+                return "ErrorChangeKeyRequired";
+            case response_code::error_change_key_required_for_write_operations:
+                return "ErrorChangeKeyRequiredForWriteOperations";
+            case response_code::error_connection_failed:
+                return "ErrorConnectionFailed";
+            case response_code::error_content_conversion_failed:
+                return "ErrorContentConversionFailed";
+            case response_code::error_corrupt_data:
+                return "ErrorCorruptData";
+            case response_code::error_create_item_access_denied:
+                return "ErrorCreateItemAccessDenied";
+            case response_code::error_create_managed_folder_partial_completion:
+                return "ErrorCreateManagedFolderPartialCompletion";
+            case response_code::error_create_subfolder_access_denied:
+                return "ErrorCreateSubfolderAccessDenied";
+            case response_code::error_cross_mailbox_move_copy:
+                return "ErrorCrossMailboxMoveCopy";
+            case response_code::error_data_size_limit_exceeded:
+                return "ErrorDataSizeLimitExceeded";
+            case response_code::error_data_source_operation:
+                return "ErrorDataSourceOperation";
+            case response_code::error_delete_distinguished_folder:
+                return "ErrorDeleteDistinguishedFolder";
+            case response_code::error_delete_items_failed:
+                return "ErrorDeleteItemsFailed";
+            case response_code::error_duplicate_input_folder_names:
+                return "ErrorDuplicateInputFolderNames";
+            case response_code::error_email_address_mismatch:
+                return "ErrorEmailAddressMismatch";
+            case response_code::error_event_not_found:
+                return "ErrorEventNotFound";
+            case response_code::error_expired_subscription:
+                return "ErrorExpiredSubscription";
+            case response_code::error_folder_corrupt:
+                return "ErrorFolderCorrupt";
+            case response_code::error_folder_not_found:
+                return "ErrorFolderNotFound";
+            case response_code::error_folder_property_request_failed:
+                return "ErrorFolderPropertyRequestFailed";
+            case response_code::error_folder_save:
+                return "ErrorFolderSave";
+            case response_code::error_folder_save_failed:
+                return "ErrorFolderSaveFailed";
+            case response_code::error_folder_save_property_error:
+                return "ErrorFolderSavePropertyError";
+            case response_code::error_folder_exists:
+                return "ErrorFolderExists";
+            case response_code::error_free_busy_generation_failed:
+                return "ErrorFreeBusyGenerationFailed";
+            case response_code::error_get_server_security_descriptor_failed:
+                return "ErrorGetServerSecurityDescriptorFailed";
+            case response_code::error_impersonate_user_denied:
+                return "ErrorImpersonateUserDenied";
+            case response_code::error_impersonation_denied:
+                return "ErrorImpersonationDenied";
+            case response_code::error_impersonation_failed:
+                return "ErrorImpersonationFailed";
+            case response_code::error_incorrect_update_property_count:
+                return "ErrorIncorrectUpdatePropertyCount";
+            case response_code::error_individual_mailbox_limit_reached:
+                return "ErrorIndividualMailboxLimitReached";
+            case response_code::error_insufficient_resources:
+                return "ErrorInsufficientResources";
+            case response_code::error_internal_server_error:
+                return "ErrorInternalServerError";
+            case response_code::error_internal_server_transient_error:
+                return "ErrorInternalServerTransientError";
+            case response_code::error_invalid_access_level:
+                return "ErrorInvalidAccessLevel";
+            case response_code::error_invalid_attachment_id:
+                return "ErrorInvalidAttachmentId";
+            case response_code::error_invalid_attachment_subfilter:
+                return "ErrorInvalidAttachmentSubfilter";
+            case response_code::error_invalid_attachment_subfilter_text_filter:
+                return "ErrorInvalidAttachmentSubfilterTextFilter";
+            case response_code::error_invalid_authorization_context:
+                return "ErrorInvalidAuthorizationContext";
+            case response_code::error_invalid_change_key:
+                return "ErrorInvalidChangeKey";
+            case response_code::error_invalid_client_security_context:
+                return "ErrorInvalidClientSecurityContext";
+            case response_code::error_invalid_complete_date:
+                return "ErrorInvalidCompleteDate";
+            case response_code::error_invalid_cross_forest_credentials:
+                return "ErrorInvalidCrossForestCredentials";
+            case response_code::
+                error_invalid_exchange_impersonation_header_data:
+                return "ErrorInvalidExchangeImpersonationHeaderData";
+            case response_code::error_invalid_excludes_restriction:
+                return "ErrorInvalidExcludesRestriction";
+            case response_code::error_invalid_expression_type_for_sub_filter:
+                return "ErrorInvalidExpressionTypeForSubFilter";
+            case response_code::error_invalid_extended_property:
+                return "ErrorInvalidExtendedProperty";
+            case response_code::error_invalid_extended_property_value:
+                return "ErrorInvalidExtendedPropertyValue";
+            case response_code::error_invalid_folder_id:
+                return "ErrorInvalidFolderId";
+            case response_code::error_invalid_fractional_paging_parameters:
+                return "ErrorInvalidFractionalPagingParameters";
+            case response_code::error_invalid_free_busy_view_type:
+                return "ErrorInvalidFreeBusyViewType";
+            case response_code::error_invalid_id:
+                return "ErrorInvalidId";
+            case response_code::error_invalid_id_empty:
+                return "ErrorInvalidIdEmpty";
+            case response_code::error_invalid_id_malformed:
+                return "ErrorInvalidIdMalformed";
+            case response_code::error_invalid_id_moniker_too_long:
+                return "ErrorInvalidIdMonikerTooLong";
+            case response_code::error_invalid_id_not_an_item_attachment_id:
+                return "ErrorInvalidIdNotAnItemAttachmentId";
+            case response_code::error_invalid_id_returned_by_resolve_names:
+                return "ErrorInvalidIdReturnedByResolveNames";
+            case response_code::error_invalid_id_store_object_id_too_long:
+                return "ErrorInvalidIdStoreObjectIdTooLong";
+            case response_code::error_invalid_id_too_many_attachment_levels:
+                return "ErrorInvalidIdTooManyAttachmentLevels";
+            case response_code::error_invalid_id_xml:
+                return "ErrorInvalidIdXml";
+            case response_code::error_invalid_indexed_paging_parameters:
+                return "ErrorInvalidIndexedPagingParameters";
+            case response_code::error_invalid_internet_header_child_nodes:
+                return "ErrorInvalidInternetHeaderChildNodes";
+            case response_code::
+                error_invalid_item_for_operation_create_item_attachment:
+                return "ErrorInvalidItemForOperationCreateItemAttachment";
+            case response_code::error_invalid_item_for_operation_create_item:
+                return "ErrorInvalidItemForOperationCreateItem";
+            case response_code::error_invalid_item_for_operation_accept_item:
+                return "ErrorInvalidItemForOperationAcceptItem";
+            case response_code::error_invalid_item_for_operation_cancel_item:
+                return "ErrorInvalidItemForOperationCancelItem";
+            case response_code::error_invalid_item_for_operation_decline_item:
+                return "ErrorInvalidItemForOperationDeclineItem";
+            case response_code::error_invalid_item_for_operation_expand_dl:
+                return "ErrorInvalidItemForOperationExpandDL";
+            case response_code::error_invalid_item_for_operation_remove_item:
+                return "ErrorInvalidItemForOperationRemoveItem";
+            case response_code::error_invalid_item_for_operation_send_item:
+                return "ErrorInvalidItemForOperationSendItem";
+            case response_code::error_invalid_item_for_operation_tentative:
+                return "ErrorInvalidItemForOperationTentative";
+            case response_code::error_invalid_managed_folder_property:
+                return "ErrorInvalidManagedFolderProperty";
+            case response_code::error_invalid_managed_folder_quota:
+                return "ErrorInvalidManagedFolderQuota";
+            case response_code::error_invalid_managed_folder_size:
+                return "ErrorInvalidManagedFolderSize";
+            case response_code::error_invalid_merged_free_busy_interval:
+                return "ErrorInvalidMergedFreeBusyInterval";
+            case response_code::error_invalid_name_for_name_resolution:
+                return "ErrorInvalidNameForNameResolution";
+            case response_code::error_invalid_network_service_context:
+                return "ErrorInvalidNetworkServiceContext";
+            case response_code::error_invalid_oof_parameter:
+                return "ErrorInvalidOofParameter";
+            case response_code::error_invalid_paging_max_rows:
+                return "ErrorInvalidPagingMaxRows";
+            case response_code::error_invalid_parent_folder:
+                return "ErrorInvalidParentFolder";
+            case response_code::error_invalid_percent_complete_value:
+                return "ErrorInvalidPercentCompleteValue";
+            case response_code::error_invalid_property_append:
+                return "ErrorInvalidPropertyAppend";
+            case response_code::error_invalid_property_delete:
+                return "ErrorInvalidPropertyDelete";
+            case response_code::error_invalid_property_for_exists:
+                return "ErrorInvalidPropertyForExists";
+            case response_code::error_invalid_property_for_operation:
+                return "ErrorInvalidPropertyForOperation";
+            case response_code::error_invalid_property_request:
+                return "ErrorInvalidPropertyRequest";
+            case response_code::error_invalid_property_set:
+                return "ErrorInvalidPropertySet";
+            case response_code::error_invalid_property_update_sent_message:
+                return "ErrorInvalidPropertyUpdateSentMessage";
+            case response_code::error_invalid_pull_subscription_id:
+                return "ErrorInvalidPullSubscriptionId";
+            case response_code::error_invalid_push_subscription_url:
+                return "ErrorInvalidPushSubscriptionUrl";
+            case response_code::error_invalid_recipients:
+                return "ErrorInvalidRecipients";
+            case response_code::error_invalid_recipient_subfilter:
+                return "ErrorInvalidRecipientSubfilter";
+            case response_code::error_invalid_recipient_subfilter_comparison:
+                return "ErrorInvalidRecipientSubfilterComparison";
+            case response_code::error_invalid_recipient_subfilter_order:
+                return "ErrorInvalidRecipientSubfilterOrder";
+            case response_code::error_invalid_recipient_subfilter_text_filter:
+                return "ErrorInvalidRecipientSubfilterTextFilter";
+            case response_code::error_invalid_reference_item:
+                return "ErrorInvalidReferenceItem";
+            case response_code::error_invalid_request:
+                return "ErrorInvalidRequest";
+            case response_code::error_invalid_restriction:
+                return "ErrorInvalidRestriction";
+            case response_code::error_invalid_routing_type:
+                return "ErrorInvalidRoutingType";
+            case response_code::error_invalid_scheduled_oof_duration:
+                return "ErrorInvalidScheduledOofDuration";
+            case response_code::error_invalid_security_descriptor:
+                return "ErrorInvalidSecurityDescriptor";
+            case response_code::error_invalid_send_item_save_settings:
+                return "ErrorInvalidSendItemSaveSettings";
+            case response_code::error_invalid_serialized_access_token:
+                return "ErrorInvalidSerializedAccessToken";
+            case response_code::error_invalid_sid:
+                return "ErrorInvalidSid";
+            case response_code::error_invalid_smtp_address:
+                return "ErrorInvalidSmtpAddress";
+            case response_code::error_invalid_subfilter_type:
+                return "ErrorInvalidSubfilterType";
+            case response_code::error_invalid_subfilter_type_not_attendee_type:
+                return "ErrorInvalidSubfilterTypeNotAttendeeType";
+            case response_code::error_invalid_subfilter_type_not_recipient_type:
+                return "ErrorInvalidSubfilterTypeNotRecipientType";
+            case response_code::error_invalid_subscription:
+                return "ErrorInvalidSubscription";
+            case response_code::error_invalid_sync_state_data:
+                return "ErrorInvalidSyncStateData";
+            case response_code::error_invalid_time_interval:
+                return "ErrorInvalidTimeInterval";
+            case response_code::error_invalid_user_oof_settings:
+                return "ErrorInvalidUserOofSettings";
+            case response_code::error_invalid_user_principal_name:
+                return "ErrorInvalidUserPrincipalName";
+            case response_code::error_invalid_user_sid:
+                return "ErrorInvalidUserSid";
+            case response_code::error_invalid_user_sid_missing_upn:
+                return "ErrorInvalidUserSidMissingUPN";
+            case response_code::error_invalid_value_for_property:
+                return "ErrorInvalidValueForProperty";
+            case response_code::error_invalid_watermark:
+                return "ErrorInvalidWatermark";
+            case response_code::error_irresolvable_conflict:
+                return "ErrorIrresolvableConflict";
+            case response_code::error_item_corrupt:
+                return "ErrorItemCorrupt";
+            case response_code::error_item_not_found:
+                return "ErrorItemNotFound";
+            case response_code::error_item_property_request_failed:
+                return "ErrorItemPropertyRequestFailed";
+            case response_code::error_item_save:
+                return "ErrorItemSave";
+            case response_code::error_item_save_property_error:
+                return "ErrorItemSavePropertyError";
+            case response_code::
+                error_legacy_mailbox_free_busy_view_type_not_merged:
+                return "ErrorLegacyMailboxFreeBusyViewTypeNotMerged";
+            case response_code::error_local_server_object_not_found:
+                return "ErrorLocalServerObjectNotFound";
+            case response_code::error_logon_as_network_service_failed:
+                return "ErrorLogonAsNetworkServiceFailed";
+            case response_code::error_mailbox_configuration:
+                return "ErrorMailboxConfiguration";
+            case response_code::error_mailbox_data_array_empty:
+                return "ErrorMailboxDataArrayEmpty";
+            case response_code::error_mailbox_data_array_too_big:
+                return "ErrorMailboxDataArrayTooBig";
+            case response_code::error_mailbox_logon_failed:
+                return "ErrorMailboxLogonFailed";
+            case response_code::error_mailbox_move_in_progress:
+                return "ErrorMailboxMoveInProgress";
+            case response_code::error_mailbox_store_unavailable:
+                return "ErrorMailboxStoreUnavailable";
+            case response_code::error_mail_recipient_not_found:
+                return "ErrorMailRecipientNotFound";
+            case response_code::error_managed_folder_already_exists:
+                return "ErrorManagedFolderAlreadyExists";
+            case response_code::error_managed_folder_not_found:
+                return "ErrorManagedFolderNotFound";
+            case response_code::error_managed_folders_root_failure:
+                return "ErrorManagedFoldersRootFailure";
+            case response_code::error_meeting_suggestion_generation_failed:
+                return "ErrorMeetingSuggestionGenerationFailed";
+            case response_code::error_message_disposition_required:
+                return "ErrorMessageDispositionRequired";
+            case response_code::error_message_size_exceeded:
+                return "ErrorMessageSizeExceeded";
+            case response_code::error_mime_content_conversion_failed:
+                return "ErrorMimeContentConversionFailed";
+            case response_code::error_mime_content_invalid:
+                return "ErrorMimeContentInvalid";
+            case response_code::error_mime_content_invalid_base64_string:
+                return "ErrorMimeContentInvalidBase64String";
+            case response_code::error_missing_argument:
+                return "ErrorMissingArgument";
+            case response_code::error_missing_email_address:
+                return "ErrorMissingEmailAddress";
+            case response_code::error_missing_email_address_for_managed_folder:
+                return "ErrorMissingEmailAddressForManagedFolder";
+            case response_code::error_missing_information_email_address:
+                return "ErrorMissingInformationEmailAddress";
+            case response_code::error_missing_information_reference_item_id:
+                return "ErrorMissingInformationReferenceItemId";
+            case response_code::error_missing_item_for_create_item_attachment:
+                return "ErrorMissingItemForCreateItemAttachment";
+            case response_code::error_missing_managed_folder_id:
+                return "ErrorMissingManagedFolderId";
+            case response_code::error_missing_recipients:
+                return "ErrorMissingRecipients";
+            case response_code::error_move_copy_failed:
+                return "ErrorMoveCopyFailed";
+            case response_code::error_move_distinguished_folder:
+                return "ErrorMoveDistinguishedFolder";
+            case response_code::error_name_resolution_multiple_results:
+                return "ErrorNameResolutionMultipleResults";
+            case response_code::error_name_resolution_no_mailbox:
+                return "ErrorNameResolutionNoMailbox";
+            case response_code::error_name_resolution_no_results:
+                return "ErrorNameResolutionNoResults";
+            case response_code::error_no_calendar:
+                return "ErrorNoCalendar";
+            case response_code::error_no_folder_class_override:
+                return "ErrorNoFolderClassOverride";
+            case response_code::error_no_free_busy_access:
+                return "ErrorNoFreeBusyAccess";
+            case response_code::error_non_existent_mailbox:
+                return "ErrorNonExistentMailbox";
+            case response_code::error_non_primary_smtp_address:
+                return "ErrorNonPrimarySmtpAddress";
+            case response_code::error_no_property_tag_for_custom_properties:
+                return "ErrorNoPropertyTagForCustomProperties";
+            case response_code::error_not_enough_memory:
+                return "ErrorNotEnoughMemory";
+            case response_code::error_object_type_changed:
+                return "ErrorObjectTypeChanged";
+            case response_code::error_occurrence_crossing_boundary:
+                return "ErrorOccurrenceCrossingBoundary";
+            case response_code::error_occurrence_time_span_too_big:
+                return "ErrorOccurrenceTimeSpanTooBig";
+            case response_code::error_parent_folder_id_required:
+                return "ErrorParentFolderIdRequired";
+            case response_code::error_parent_folder_not_found:
+                return "ErrorParentFolderNotFound";
+            case response_code::error_password_change_required:
+                return "ErrorPasswordChangeRequired";
+            case response_code::error_password_expired:
+                return "ErrorPasswordExpired";
+            case response_code::error_property_update:
+                return "ErrorPropertyUpdate";
+            case response_code::error_property_validation_failure:
+                return "ErrorPropertyValidationFailure";
+            case response_code::error_proxy_request_not_allowed:
+                return "ErrorProxyRequestNotAllowed";
+            case response_code::error_public_folder_request_processing_failed:
+                return "ErrorPublicFolderRequestProcessingFailed";
+            case response_code::error_public_folder_server_not_found:
+                return "ErrorPublicFolderServerNotFound";
+            case response_code::error_query_filter_too_long:
+                return "ErrorQueryFilterTooLong";
+            case response_code::error_quota_exceeded:
+                return "ErrorQuotaExceeded";
+            case response_code::error_read_events_failed:
+                return "ErrorReadEventsFailed";
+            case response_code::error_read_receipt_not_pending:
+                return "ErrorReadReceiptNotPending";
+            case response_code::error_recurrence_end_date_too_big:
+                return "ErrorRecurrenceEndDateTooBig";
+            case response_code::error_recurrence_has_no_occurrence:
+                return "ErrorRecurrenceHasNoOccurrence";
+            case response_code::error_request_aborted:
+                return "ErrorRequestAborted";
+            case response_code::error_request_stream_too_big:
+                return "ErrorRequestStreamTooBig";
+            case response_code::error_required_property_missing:
+                return "ErrorRequiredPropertyMissing";
+            case response_code::error_response_schema_validation:
+                return "ErrorResponseSchemaValidation";
+            case response_code::error_restriction_too_long:
+                return "ErrorRestrictionTooLong";
+            case response_code::error_restriction_too_complex:
+                return "ErrorRestrictionTooComplex";
+            case response_code::error_result_set_too_big:
+                return "ErrorResultSetTooBig";
+            case response_code::error_saved_item_folder_not_found:
+                return "ErrorSavedItemFolderNotFound";
+            case response_code::error_schema_validation:
+                return "ErrorSchemaValidation";
+            case response_code::error_search_folder_not_initialized:
+                return "ErrorSearchFolderNotInitialized";
+            case response_code::error_send_as_denied:
+                return "ErrorSendAsDenied";
+            case response_code::error_send_meeting_cancellations_required:
+                return "ErrorSendMeetingCancellationsRequired";
+            case response_code::
+                error_send_meeting_invitations_or_cancellations_required:
+                return "ErrorSendMeetingInvitationsOrCancellationsRequired";
+            case response_code::error_send_meeting_invitations_required:
+                return "ErrorSendMeetingInvitationsRequired";
+            case response_code::error_sent_meeting_request_update:
+                return "ErrorSentMeetingRequestUpdate";
+            case response_code::error_sent_task_request_update:
+                return "ErrorSentTaskRequestUpdate";
+            case response_code::error_server_busy:
+                return "ErrorServerBusy";
+            case response_code::error_stale_object:
+                return "ErrorStaleObject";
+            case response_code::error_subscription_access_denied:
+                return "ErrorSubscriptionAccessDenied";
+            case response_code::
+                error_subscription_delegate_access_not_supported:
+                return "ErrorSubscriptionDelegateAccessNotSupported";
+            case response_code::error_subscription_not_found:
+                return "ErrorSubscriptionNotFound";
+            case response_code::error_sync_folder_not_found:
+                return "ErrorSyncFolderNotFound";
+            case response_code::error_time_interval_too_big:
+                return "ErrorTimeIntervalTooBig";
+            case response_code::error_to_folder_not_found:
+                return "ErrorToFolderNotFound";
+            case response_code::error_token_serialization_denied:
+                return "ErrorTokenSerializationDenied";
+            case response_code::error_unable_to_get_user_oof_settings:
+                return "ErrorUnableToGetUserOofSettings";
+            case response_code::error_unsupported_culture:
+                return "ErrorUnsupportedCulture";
+            case response_code::error_unsupported_mapi_property_type:
+                return "ErrorUnsupportedMapiPropertyType";
+            case response_code::error_unsupported_mime_conversion:
+                return "ErrorUnsupportedMimeConversion";
+            case response_code::error_unsupported_path_for_query:
+                return "ErrorUnsupportedPathForQuery";
+            case response_code::error_unsupported_path_for_sort_group:
+                return "ErrorUnsupportedPathForSortGroup";
+            case response_code::error_unsupported_property_definition:
+                return "ErrorUnsupportedPropertyDefinition";
+            case response_code::error_unsupported_query_filter:
+                return "ErrorUnsupportedQueryFilter";
+            case response_code::error_unsupported_recurrence:
+                return "ErrorUnsupportedRecurrence";
+            case response_code::error_unsupported_sub_filter:
+                return "ErrorUnsupportedSubFilter";
+            case response_code::error_unsupported_type_for_conversion:
+                return "ErrorUnsupportedTypeForConversion";
+            case response_code::error_update_property_mismatch:
+                return "ErrorUpdatePropertyMismatch";
+            case response_code::error_virus_detected:
+                return "ErrorVirusDetected";
+            case response_code::error_virus_message_deleted:
+                return "ErrorVirusMessageDeleted";
+            case response_code::error_voice_mail_not_implemented:
+                return "ErrorVoiceMailNotImplemented";
+            case response_code::error_web_request_in_invalid_state:
+                return "ErrorWebRequestInInvalidState";
+            case response_code::error_win32_interop_error:
+                return "ErrorWin32InteropError";
+            case response_code::error_working_hours_save_failed:
+                return "ErrorWorkingHoursSaveFailed";
+            case response_code::error_working_hours_xml_malformed:
+                return "ErrorWorkingHoursXmlMalformed";
+            default:
+                throw exception("Unrecognized response code");
             }
         }
     }
@@ -3401,22 +3466,22 @@ namespace ews
         {
             switch (vers)
             {
-                case server_version::exchange_2007:
-                    return "Exchange2007";
-                case server_version::exchange_2007_sp1:
-                    return "Exchange2007_SP1";
-                case server_version::exchange_2010:
-                    return "Exchange2010";
-                case server_version::exchange_2010_sp1:
-                    return "Exchange2010_SP1";
-                case server_version::exchange_2010_sp2:
-                    return "Exchange2010_SP2";
-                case server_version::exchange_2013:
-                    return "Exchange2013";
-                case server_version::exchange_2013_sp1:
-                    return "Exchange2013_SP1";
-                default:
-                    throw exception("Bad enum value");
+            case server_version::exchange_2007:
+                return "Exchange2007";
+            case server_version::exchange_2007_sp1:
+                return "Exchange2007_SP1";
+            case server_version::exchange_2010:
+                return "Exchange2010";
+            case server_version::exchange_2010_sp1:
+                return "Exchange2010_SP1";
+            case server_version::exchange_2010_sp2:
+                return "Exchange2010_SP2";
+            case server_version::exchange_2013:
+                return "Exchange2013";
+            case server_version::exchange_2013_sp1:
+                return "Exchange2013_SP1";
+            default:
+                throw exception("Bad enum value");
             }
         }
 
@@ -3480,10 +3545,14 @@ namespace ews
         {
             switch (shape)
             {
-                case base_shape::id_only:        return "IdOnly";
-                case base_shape::default_shape:  return "Default";
-                case base_shape::all_properties: return "AllProperties";
-                default: throw exception("Bad enum value");
+            case base_shape::id_only:
+                return "IdOnly";
+            case base_shape::default_shape:
+                return "Default";
+            case base_shape::all_properties:
+                return "AllProperties";
+            default:
+                throw exception("Bad enum value");
             }
         }
     }
@@ -3507,12 +3576,12 @@ namespace ews
         {
             switch (d)
             {
-                case delete_type::hard_delete:
-                    return "HardDelete";
-                case delete_type::move_to_deleted_items:
-                    return "MoveToDeletedItems";
-                default:
-                    throw exception("Bad enum value");
+            case delete_type::hard_delete:
+                return "HardDelete";
+            case delete_type::move_to_deleted_items:
+                return "MoveToDeletedItems";
+            default:
+                throw exception("Bad enum value");
             }
         }
     }
@@ -3533,12 +3602,12 @@ namespace ews
         {
             switch (val)
             {
-                case affected_task_occurrences::all_occurrences:
-                    return "AllOccurrences";
-                case affected_task_occurrences::specified_occurrence_only:
-                    return "SpecifiedOccurrenceOnly";
-                default:
-                    throw exception("Bad enum value");
+            case affected_task_occurrences::all_occurrences:
+                return "AllOccurrences";
+            case affected_task_occurrences::specified_occurrence_only:
+                return "SpecifiedOccurrenceOnly";
+            default:
+                throw exception("Bad enum value");
             }
         }
     }
@@ -3567,14 +3636,14 @@ namespace ews
         {
             switch (val)
             {
-                case send_meeting_cancellations::send_to_none:
-                    return "SendToNone";
-                case send_meeting_cancellations::send_only_to_all:
-                    return "SendOnlyToAll";
-                case send_meeting_cancellations::send_to_all_and_save_copy:
-                    return "SendToAllAndSaveCopy";
-                default:
-                    throw exception("Bad enum value");
+            case send_meeting_cancellations::send_to_none:
+                return "SendToNone";
+            case send_meeting_cancellations::send_only_to_all:
+                return "SendOnlyToAll";
+            case send_meeting_cancellations::send_to_all_and_save_copy:
+                return "SendToAllAndSaveCopy";
+            default:
+                throw exception("Bad enum value");
             }
         }
     }
@@ -3606,19 +3675,20 @@ namespace ews
         {
             switch (val)
             {
-                case conflict_resolution::never_overwrite:
-                    return "NeverOverwrite";
-                case conflict_resolution::auto_resolve:
-                    return "AutoResolve";
-                case conflict_resolution::always_overwrite:
-                    return "AlwaysOverwrite";
-                default:
-                    throw exception("Bad enum value");
+            case conflict_resolution::never_overwrite:
+                return "NeverOverwrite";
+            case conflict_resolution::auto_resolve:
+                return "AutoResolve";
+            case conflict_resolution::always_overwrite:
+                return "AlwaysOverwrite";
+            default:
+                throw exception("Bad enum value");
             }
         }
     }
 
-    //! \brief <tt>\<CreateItem\></tt> and <tt>\<UpdateItem\></tt> methods use this attribute. Only
+    //! \brief <tt>\<CreateItem\></tt> and <tt>\<UpdateItem\></tt> methods use
+    //! this attribute. Only
     //! applicable to email messages
     enum class message_disposition
     {
@@ -3640,14 +3710,14 @@ namespace ews
         {
             switch (val)
             {
-                case message_disposition::save_only:
-                    return "SaveOnly";
-                case message_disposition::send_only:
-                    return "SendOnly";
-                case message_disposition::send_and_save_copy:
-                    return "SendAndSaveCopy";
-                default:
-                    throw exception("Bad enum value");
+            case message_disposition::save_only:
+                return "SaveOnly";
+            case message_disposition::send_only:
+                return "SendOnly";
+            case message_disposition::send_and_save_copy:
+                return "SendAndSaveCopy";
+            default:
+                throw exception("Bad enum value");
             }
         }
     }
@@ -3713,7 +3783,8 @@ namespace ews
         recurring_master
     };
 
-    //! \brief The ResponseType element represents the type of recipient response that
+    //! \brief The ResponseType element represents the type of recipient
+    //! response that
     //! is received for a meeting.
     enum class response_type
     {
@@ -3863,7 +3934,8 @@ namespace ews
         archive_deleted_items,
 
         //! Represents the archive Inbox folder. Caution: only versions of
-        //! Exchange starting with build number 15.00.0913.09 include this folder
+        //! Exchange starting with build number 15.00.0913.09 include this
+        //! folder
         archive_inbox,
 
         //! The root of the Recoverable Items folder hierarchy in the archive
@@ -3959,16 +4031,16 @@ namespace ews
         {
             switch (s)
             {
-                case sensitivity::normal:
-                    return "Normal";
-                case sensitivity::personal:
-                    return "Personal";
-                case sensitivity::priv:
-                    return "Private";
-                case sensitivity::confidential:
-                    return "Confidential";
-                default:
-                    throw exception("Bad enum value");
+            case sensitivity::normal:
+                return "Normal";
+            case sensitivity::personal:
+                return "Personal";
+            case sensitivity::priv:
+                return "Private";
+            case sensitivity::confidential:
+                return "Confidential";
+            default:
+                throw exception("Bad enum value");
             }
         }
 
@@ -4018,14 +4090,14 @@ namespace ews
         {
             switch (i)
             {
-                case importance::low:
-                    return "Low";
-                case importance::normal:
-                    return "Normal";
-                case importance::high:
-                    return "High";
-                default:
-                    throw exception("Bad enum value");
+            case importance::low:
+                return "Low";
+            case importance::normal:
+                return "Normal";
+            case importance::high:
+                return "High";
+            default:
+                throw exception("Bad enum value");
             }
         }
 
@@ -4055,8 +4127,7 @@ namespace ews
     {
     public:
         explicit exchange_error(response_code code)
-            : exception(internal::enum_to_str(code)),
-              code_(code)
+            : exception(internal::enum_to_str(code)), code_(code)
         {
         }
 
@@ -4072,46 +4143,86 @@ namespace ews
         {
             switch (status_code)
             {
-                case 100: return "Continue";
-                case 101: return "Switching Protocols";
-                case 200: return "OK";
-                case 201: return "Created";
-                case 202: return "Accepted";
-                case 203: return "Non-Authoritative Information";
-                case 204: return "No Content";
-                case 205: return "Reset Content";
-                case 206: return "Partial Content";
-                case 300: return "Multiple Choices";
-                case 301: return "Moved Permanently";
-                case 302: return "Found";
-                case 303: return "See Other";
-                case 304: return "Not Modified";
-                case 305: return "Use Proxy";
-                case 307: return "Temporary Redirect";
-                case 400: return "Bad Request";
-                case 401: return "Unauthorized";
-                case 402: return "Payment Required";
-                case 403: return "Forbidden";
-                case 404: return "Not Found";
-                case 405: return "Method Not Allowed";
-                case 406: return "Not Acceptable";
-                case 407: return "Proxy Authentication Required";
-                case 408: return "Request Timeout";
-                case 409: return "Conflict";
-                case 410: return "Gone";
-                case 411: return "Length Required";
-                case 412: return "Precondition Failed";
-                case 413: return "Request Entity Too Large";
-                case 414: return "Request-URI Too Long";
-                case 415: return "Unsupported Media Type";
-                case 416: return "Requested Range Not Satisfiable";
-                case 417: return "Expectation Failed";
-                case 500: return "Internal Server Error";
-                case 501: return "Not Implemented";
-                case 502: return "Bad Gateway";
-                case 503: return "Service Unavailable";
-                case 504: return "Gateway Timeout";
-                case 505: return "HTTP Version Not Supported";
+            case 100:
+                return "Continue";
+            case 101:
+                return "Switching Protocols";
+            case 200:
+                return "OK";
+            case 201:
+                return "Created";
+            case 202:
+                return "Accepted";
+            case 203:
+                return "Non-Authoritative Information";
+            case 204:
+                return "No Content";
+            case 205:
+                return "Reset Content";
+            case 206:
+                return "Partial Content";
+            case 300:
+                return "Multiple Choices";
+            case 301:
+                return "Moved Permanently";
+            case 302:
+                return "Found";
+            case 303:
+                return "See Other";
+            case 304:
+                return "Not Modified";
+            case 305:
+                return "Use Proxy";
+            case 307:
+                return "Temporary Redirect";
+            case 400:
+                return "Bad Request";
+            case 401:
+                return "Unauthorized";
+            case 402:
+                return "Payment Required";
+            case 403:
+                return "Forbidden";
+            case 404:
+                return "Not Found";
+            case 405:
+                return "Method Not Allowed";
+            case 406:
+                return "Not Acceptable";
+            case 407:
+                return "Proxy Authentication Required";
+            case 408:
+                return "Request Timeout";
+            case 409:
+                return "Conflict";
+            case 410:
+                return "Gone";
+            case 411:
+                return "Length Required";
+            case 412:
+                return "Precondition Failed";
+            case 413:
+                return "Request Entity Too Large";
+            case 414:
+                return "Request-URI Too Long";
+            case 415:
+                return "Unsupported Media Type";
+            case 416:
+                return "Requested Range Not Satisfiable";
+            case 417:
+                return "Expectation Failed";
+            case 500:
+                return "Internal Server Error";
+            case 501:
+                return "Not Implemented";
+            case 502:
+                return "Bad Gateway";
+            case 503:
+                return "Service Unavailable";
+            case 504:
+                return "Gateway Timeout";
+            case 505:
+                return "HTTP Version Not Supported";
             }
             return "";
         }
@@ -4123,7 +4234,8 @@ namespace ews
     public:
         explicit http_error(long status_code)
             : exception("HTTP status code: " + std::to_string(status_code) +
-                " (" + internal::http_status_code_to_str(status_code) + ")"),
+                        " (" + internal::http_status_code_to_str(status_code) +
+                        ")"),
               code_(status_code)
         {
         }
@@ -4158,8 +4270,7 @@ namespace ews
                                 unsigned long line_position,
                                 std::string violation)
             : soap_fault("The request failed schema validation"),
-              violation_(std::move(violation)),
-              line_pos_(line_position),
+              violation_(std::move(violation)), line_pos_(line_position),
               line_no_(line_number)
         {
         }
@@ -4185,10 +4296,7 @@ namespace ews
         class curl_error final : public exception
         {
         public:
-            explicit curl_error(const std::string& what)
-                : exception(what)
-            {
-            }
+            explicit curl_error(const std::string& what) : exception(what) {}
             explicit curl_error(const char* what) : exception(what) {}
         };
 
@@ -4223,20 +4331,19 @@ namespace ews
 
             ~curl_ptr() { curl_easy_cleanup(handle_); }
 
-            // Could use curl_easy_duphandle for copying
+// Could use curl_easy_duphandle for copying
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
             curl_ptr(const curl_ptr&) = delete;
             curl_ptr& operator=(const curl_ptr&) = delete;
 #else
         private:
-            curl_ptr(const curl_ptr&); // Never defined
+            curl_ptr(const curl_ptr&);            // Never defined
             curl_ptr& operator=(const curl_ptr&); // Never defined
 
         public:
 #endif
 
-            curl_ptr(curl_ptr&& other)
-                : handle_(std::move(other.handle_))
+            curl_ptr(curl_ptr&& other) : handle_(std::move(other.handle_))
             {
                 other.handle_ = nullptr;
             }
@@ -4278,7 +4385,7 @@ namespace ews
             curl_string_list& operator=(const curl_string_list&) = delete;
 #else
         private:
-            curl_string_list(const curl_string_list&); // N/A
+            curl_string_list(const curl_string_list&);            // N/A
             curl_string_list& operator=(const curl_string_list&); // N/A
 
         public:
@@ -4312,7 +4419,8 @@ namespace ews
         };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-        static_assert(std::is_default_constructible<curl_string_list>::value, "");
+        static_assert(std::is_default_constructible<curl_string_list>::value,
+                      "");
         static_assert(!std::is_copy_constructible<curl_string_list>::value, "");
         static_assert(!std::is_copy_assignable<curl_string_list>::value, "");
         static_assert(std::is_move_constructible<curl_string_list>::value, "");
@@ -4327,39 +4435,56 @@ namespace ews
         {
             struct microsoft
             {
-                enum { errors_size = 58U };
+                enum
+                {
+                    errors_size = 58U
+                };
                 static const Ch* errors()
                 {
-                    static const Ch* val =
-                        "http://schemas.microsoft.com/exchange/services/2006/errors";
+                    static const Ch* val = "http://schemas.microsoft.com/"
+                                           "exchange/services/2006/errors";
                     return val;
                 }
-                enum { types_size = 57U };
+                enum
+                {
+                    types_size = 57U
+                };
                 static const Ch* types()
                 {
-                    static const Ch* const val =
-                        "http://schemas.microsoft.com/exchange/services/2006/types";
+                    static const Ch* const val = "http://schemas.microsoft.com/"
+                                                 "exchange/services/2006/types";
                     return val;
                 }
-                enum { messages_size = 60U };
+                enum
+                {
+                    messages_size = 60U
+                };
                 static const Ch* messages()
                 {
-                    static const Ch* const val =
-                        "http://schemas.microsoft.com/exchange/services/2006/messages";
+                    static const Ch* const val = "http://schemas.microsoft.com/"
+                                                 "exchange/services/2006/"
+                                                 "messages";
                     return val;
                 }
-                enum { autodiscover_size = 79U };
+                enum
+                {
+                    autodiscover_size = 79U
+                };
                 static const Ch* autodiscover()
                 {
-                    static const Ch* const val =
-                        "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a";
+                    static const Ch* const val = "http://schemas.microsoft.com/"
+                                                 "exchange/autodiscover/"
+                                                 "outlook/responseschema/2006a";
                     return val;
                 }
             };
 
             struct soapxml
             {
-                enum { envelope_size = 41U };
+                enum
+                {
+                    envelope_size = 41U
+                };
                 static const Ch* envelope()
                 {
                     static const Ch* const val =
@@ -4377,8 +4502,7 @@ namespace ews
         {
         public:
             http_response(long code, std::vector<char>&& data)
-                : data_(std::move(data)),
-                  code_(code)
+                : data_(std::move(data)), code_(code)
             {
                 EWS_ASSERT(!data_.empty());
             }
@@ -4392,15 +4516,14 @@ namespace ews
             http_response() {}
 
         private:
-            http_response(const http_response&); // Never defined
+            http_response(const http_response&);            // Never defined
             http_response& operator=(const http_response&); // Never defined
 
         public:
 #endif
 
             http_response(http_response&& other)
-                : data_(std::move(other.data_)),
-                  code_(std::move(other.code_))
+                : data_(std::move(other.data_)), code_(std::move(other.code_))
             {
                 other.code_ = 0U;
             }
@@ -4417,10 +4540,7 @@ namespace ews
 
             // Returns a reference to the raw byte content in this HTTP
             // response.
-            std::vector<char>& content() EWS_NOEXCEPT
-            {
-                return data_;
-            }
+            std::vector<char>& content() EWS_NOEXCEPT { return data_; }
 
             // Returns a reference to the raw byte content in this HTTP
             // response.
@@ -4430,10 +4550,7 @@ namespace ews
             }
 
             // Returns the response code of the HTTP request.
-            long code() const EWS_NOEXCEPT
-            {
-                return code_;
-            }
+            long code() const EWS_NOEXCEPT { return code_; }
 
             // Returns whether the response is a SOAP fault.
             //
@@ -4441,16 +4558,10 @@ namespace ews
             // indicates that the entire request failed (not just a normal EWS
             // error). This can happen e.g. when the request we sent was not
             // schema compliant.
-            bool is_soap_fault() const EWS_NOEXCEPT
-            {
-                return code() == 500U;
-            }
+            bool is_soap_fault() const EWS_NOEXCEPT { return code() == 500U; }
 
             // Returns whether the HTTP response code is 200 (OK).
-            bool ok() const EWS_NOEXCEPT
-            {
-                return code() == 200U;
-            }
+            bool ok() const EWS_NOEXCEPT { return code() == 200U; }
 
         private:
             std::vector<char> data_;
@@ -4481,9 +4592,8 @@ namespace ews
             catch (rapidxml::parse_error& exc)
             {
                 // Swallow and erase type
-                const auto msg =
-                    xml_parse_error::error_message_from(exc,
-                                                        response.content());
+                const auto msg = xml_parse_error::error_message_from(
+                    exc, response.content());
                 throw xml_parse_error(msg);
             }
 
@@ -4535,19 +4645,13 @@ namespace ews
             rapidxml::xml_node<>* element = nullptr;
             const auto local_name_len = std::strlen(local_name);
             const auto namespace_uri_len = std::strlen(namespace_uri);
-            traverse_elements(node, [&](rapidxml::xml_node<>& elem) -> bool
-            {
+            traverse_elements(node, [&](rapidxml::xml_node<>& elem) -> bool {
                 using rapidxml::internal::compare;
 
-                if (compare(elem.namespace_uri(),
-                            elem.namespace_uri_size(),
-                            namespace_uri,
-                            namespace_uri_len)
-                    &&
-                    compare(elem.local_name(),
-                            elem.local_name_size(),
-                            local_name,
-                            local_name_len))
+                if (compare(elem.namespace_uri(), elem.namespace_uri_size(),
+                            namespace_uri, namespace_uri_len) &&
+                    compare(elem.local_name(), elem.local_name_size(),
+                            local_name, local_name_len))
                 {
                     element = std::addressof(elem);
                     return true;
@@ -4583,8 +4687,7 @@ namespace ews
     {
     public:
         basic_credentials(std::string username, std::string password)
-            : username_(std::move(username)),
-              password_(std::move(password))
+            : username_(std::move(username)), password_(std::move(password))
         {
         }
 
@@ -4609,15 +4712,14 @@ namespace ews
     {
     public:
         ntlm_credentials(std::string username, std::string password,
-            std::string domain)
-            : username_(std::move(username)),
-              password_(std::move(password)),
+                         std::string domain)
+            : username_(std::move(username)), password_(std::move(password)),
               domain_(std::move(domain))
         {
         }
 
     private:
-         // Implemented below
+        // Implemented below
         void certify(internal::http_request*) const override;
 
         std::string username_;
@@ -4658,8 +4760,8 @@ namespace ews
             // Set this HTTP request's content length.
             void set_content_length(std::size_t content_length)
             {
-                const std::string str = "Content-Length: "
-                    + std::to_string(content_length);
+                const std::string str =
+                    "Content-Length: " + std::to_string(content_length);
                 headers_.append(str.c_str());
             }
 
@@ -4678,8 +4780,8 @@ namespace ews
             template <typename... Args>
             void set_option(CURLoption option, Args... args)
             {
-                auto retcode = curl_easy_setopt(
-                    handle_.get(), option, std::forward<Args>(args)...);
+                auto retcode = curl_easy_setopt(handle_.get(), option,
+                                                std::forward<Args>(args)...);
                 switch (retcode)
                 {
                 case CURLE_OK:
@@ -4699,8 +4801,7 @@ namespace ews
                 };
             }
 #else
-            template <typename T1>
-            void set_option(CURLoption option, T1 arg1)
+            template <typename T1> void set_option(CURLoption option, T1 arg1)
             {
                 auto retcode = curl_easy_setopt(handle_.get(), option, arg1);
                 switch (retcode)
@@ -4725,10 +4826,8 @@ namespace ews
             template <typename T1, typename T2>
             void set_option(CURLoption option, T1 arg1, T2 arg2)
             {
-                auto retcode = curl_easy_setopt(handle_.get(),
-                                                option,
-                                                arg1,
-                                                arg2);
+                auto retcode =
+                    curl_easy_setopt(handle_.get(), option, arg1, arg2);
                 switch (retcode)
                 {
                 case CURLE_OK:
@@ -4757,12 +4856,11 @@ namespace ews
             // the data is encoded the way you want the server to receive it.
             http_response send(const std::string& request)
             {
-                auto callback =
-                    [](char* ptr, std::size_t size, std::size_t nmemb,
-                       void* userdata) -> std::size_t
-                {
-                    std::vector<char>* buf
-                        = reinterpret_cast<std::vector<char>*>(userdata);
+                auto callback = [](char* ptr, std::size_t size,
+                                   std::size_t nmemb,
+                                   void* userdata) -> std::size_t {
+                    std::vector<char>* buf =
+                        reinterpret_cast<std::vector<char>*>(userdata);
                     const auto realsize = size * nmemb;
                     try
                     {
@@ -4804,22 +4902,22 @@ namespace ews
                     CURLOPT_WRITEFUNCTION,
                     static_cast<std::size_t (*)(char*, std::size_t, std::size_t,
                                                 void*)>(callback));
-                set_option(CURLOPT_WRITEDATA,
-                        std::addressof(response_data));
+                set_option(CURLOPT_WRITEDATA, std::addressof(response_data));
 
 #ifdef EWS_DISABLE_TLS_CERT_VERIFICATION
                 // Turn-off verification of the server's authenticity
                 set_option(CURLOPT_SSL_VERIFYPEER, 0L);
                 set_option(CURLOPT_SSL_VERIFYHOST, 0L);
 
-                // Warn in release builds
-# ifdef NDEBUG
-#  ifdef _MSC_VER
-#   pragma message("warning: TLS verification of the server's authenticity is disabled")
-#  else
-#   warning "TLS verification of the server's authenticity is disabled"
-#  endif
-# endif
+// Warn in release builds
+#ifdef NDEBUG
+#ifdef _MSC_VER
+#pragma message(                                                               \
+    "warning: TLS verification of the server's authenticity is disabled")
+#else
+#warning "TLS verification of the server's authenticity is disabled"
+#endif
+#endif
 #endif
 
                 auto retcode = curl_easy_perform(handle_.get());
@@ -4828,8 +4926,8 @@ namespace ews
                     throw make_curl_error("curl_easy_perform", retcode);
                 }
                 long response_code = 0U;
-                curl_easy_getinfo(handle_.get(),
-                    CURLINFO_RESPONSE_CODE, &response_code);
+                curl_easy_getinfo(handle_.get(), CURLINFO_RESPONSE_CODE,
+                                  &response_code);
                 response_data.emplace_back('\0');
                 return http_response(std::move(response_code),
                                      std::move(response_data));
@@ -4841,11 +4939,11 @@ namespace ews
         };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<http_request>::value, "");
-    static_assert(!std::is_copy_constructible<http_request>::value, "");
-    static_assert(!std::is_copy_assignable<http_request>::value, "");
-    static_assert(std::is_move_constructible<http_request>::value, "");
-    static_assert(std::is_move_assignable<http_request>::value, "");
+        static_assert(!std::is_default_constructible<http_request>::value, "");
+        static_assert(!std::is_copy_constructible<http_request>::value, "");
+        static_assert(!std::is_copy_assignable<http_request>::value, "");
+        static_assert(std::is_move_constructible<http_request>::value, "");
+        static_assert(std::is_move_assignable<http_request>::value, "");
 #endif
 
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
@@ -4853,20 +4951,22 @@ namespace ews
 #else
         template <typename RequestHandler>
 #endif
-        inline http_response make_raw_soap_request(
-            RequestHandler& handler,
-            const std::string& soap_body,
-            const std::vector<std::string>& soap_headers)
+        inline http_response
+        make_raw_soap_request(RequestHandler& handler,
+                              const std::string& soap_body,
+                              const std::vector<std::string>& soap_headers)
         {
             std::stringstream request_stream;
-            request_stream <<
-                "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
-                "<soap:Envelope "
-                    "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
-                    "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" "
-                    "xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" "
-                    "xmlns:m=\"http://schemas.microsoft.com/exchange/services/2006/messages\" "
-                    "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\">";
+            request_stream
+                << "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+                   "<soap:Envelope "
+                   "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+                   "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" "
+                   "xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                   "xmlns:m=\"http://schemas.microsoft.com/exchange/services/"
+                   "2006/messages\" "
+                   "xmlns:t=\"http://schemas.microsoft.com/exchange/services/"
+                   "2006/types\">";
 
             if (!soap_headers.empty())
             {
@@ -4890,27 +4990,25 @@ namespace ews
             return handler.send(request_stream.str());
         }
 
-        // Makes a raw SOAP request.
-        //
-        // url: The URL of the server to talk to.
-        // username: The user-name of user.
-        // password: The user's secret password, plain-text.
-        // domain: The user's Windows domain.
-        // soap_body: The contents of the SOAP body (minus the body element);
-        // this is the actual EWS request.
-        // soap_headers: Any SOAP headers to add.
-        //
-        // Returns the response.
+// Makes a raw SOAP request.
+//
+// url: The URL of the server to talk to.
+// username: The user-name of user.
+// password: The user's secret password, plain-text.
+// domain: The user's Windows domain.
+// soap_body: The contents of the SOAP body (minus the body element);
+// this is the actual EWS request.
+// soap_headers: Any SOAP headers to add.
+//
+// Returns the response.
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
         template <typename RequestHandler = http_request>
 #else
         template <typename RequestHandler>
 #endif
         inline http_response make_raw_soap_request(
-            const std::string& url,
-            const std::string& username,
-            const std::string& password,
-            const std::string& domain,
+            const std::string& url, const std::string& username,
+            const std::string& password, const std::string& domain,
             const std::string& soap_body,
             const std::vector<std::string>& soap_headers)
         {
@@ -4919,9 +5017,7 @@ namespace ews
             handler.set_content_type("text/xml; charset=utf-8");
             ntlm_credentials creds(username, password, domain);
             handler.set_credentials(creds);
-            return make_raw_soap_request(handler,
-                                         soap_body,
-                                         soap_headers);
+            return make_raw_soap_request(handler, soap_body, soap_headers);
         }
 
         // A self-contained copy of a DOM sub-tree generally used to hold
@@ -4944,15 +5040,13 @@ namespace ews
         public:
             // Default constructible because item class (and it's descendants)
             // need to be
-            xml_subtree()
-                : rawdata_(),
-                  doc_(new rapidxml::xml_document<char>)
-            {}
+            xml_subtree() : rawdata_(), doc_(new rapidxml::xml_document<char>)
+            {
+            }
 
             explicit xml_subtree(const rapidxml::xml_node<char>& origin,
-                                 std::size_t size_hint=0U)
-                : rawdata_(),
-                  doc_(new rapidxml::xml_document<char>)
+                                 std::size_t size_hint = 0U)
+                : rawdata_(), doc_(new rapidxml::xml_document<char>)
             {
                 reparse(origin, size_hint);
             }
@@ -4975,8 +5069,7 @@ namespace ews
             }
 
             xml_subtree(const xml_subtree& other)
-                : rawdata_(),
-                  doc_(new rapidxml::xml_document<char>)
+                : rawdata_(), doc_(new rapidxml::xml_document<char>)
             {
                 reparse(*other.doc_, other.rawdata_.size());
             }
@@ -5000,8 +5093,7 @@ namespace ews
             rapidxml::xml_node<char>*
             get_node(const char* node_name) const EWS_NOEXCEPT
             {
-                return get_element_by_qname(*doc_,
-                                            node_name,
+                return get_element_by_qname(*doc_, node_name,
                                             uri<>::microsoft::types());
             }
 
@@ -5019,9 +5111,8 @@ namespace ews
             std::string get_value_as_string(const char* node_name) const
             {
                 const auto node = get_node(node_name);
-                return node ?
-                      std::string(node->value(), node->value_size())
-                    : "";
+                return node ? std::string(node->value(), node->value_size())
+                            : "";
             }
 
             void set_or_update(const std::string& node_name,
@@ -5029,13 +5120,10 @@ namespace ews
             {
                 using rapidxml::internal::compare;
 
-                auto oldnode = get_element_by_qname(*doc_,
-                                                    node_name.c_str(),
+                auto oldnode = get_element_by_qname(*doc_, node_name.c_str(),
                                                     uri<>::microsoft::types());
-                if (oldnode && compare(node_value.c_str(),
-                                       node_value.length(),
-                                       oldnode->value(),
-                                       oldnode->value_size()))
+                if (oldnode && compare(node_value.c_str(), node_value.length(),
+                                       oldnode->value(), oldnode->value_size()))
                 {
                     // Nothing to do
                     return;
@@ -5050,8 +5138,7 @@ namespace ews
                 // destructed either
 
                 auto newnode = doc_->allocate_node(rapidxml::node_element);
-                newnode->qname(ptr_to_qname,
-                               node_qname.length(),
+                newnode->qname(ptr_to_qname, node_qname.length(),
                                ptr_to_qname + 2);
                 newnode->value(ptr_to_value);
                 newnode->namespace_uri(uri<>::microsoft::types(),
@@ -5071,8 +5158,7 @@ namespace ews
             std::string to_string() const
             {
                 std::string str;
-                rapidxml::print(std::back_inserter(str),
-                                *doc_,
+                rapidxml::print(std::back_inserter(str), *doc_,
                                 rapidxml::print_no_indenting);
                 return str;
             }
@@ -5098,17 +5184,19 @@ namespace ews
                 : public rapidxml::internal::xml_namespace_processor<char>
             {
                 struct scope
-                    : public rapidxml::internal::xml_namespace_processor<char>::scope
+                    : public rapidxml::internal::xml_namespace_processor<
+                          char>::scope
                 {
                     explicit scope(xml_namespace_processor& processor)
-                        : rapidxml::internal::xml_namespace_processor<char>::scope(processor)
+                        : rapidxml::internal::xml_namespace_processor<
+                              char>::scope(processor)
                     {
                         static auto nsattr = make_namespace_attribute();
                         add_namespace_prefix(&nsattr);
                     }
 
-                    static
-                    rapidxml::xml_attribute<char> make_namespace_attribute()
+                    static rapidxml::xml_attribute<char>
+                    make_namespace_attribute()
                     {
                         static const char* const name = "t";
                         static const char* const value =
@@ -5125,8 +5213,7 @@ namespace ews
                          std::size_t size_hint)
             {
                 rawdata_.reserve(size_hint);
-                rapidxml::print(std::back_inserter(rawdata_),
-                                source,
+                rapidxml::print(std::back_inserter(rawdata_), source,
                                 rapidxml::print_no_indenting);
                 rawdata_.emplace_back('\0');
 
@@ -5138,9 +5225,9 @@ namespace ews
                 doc_->parse_ns<0, custom_namespace_processor>(&rawdata_[0]);
             }
 
-            static
-            rapidxml::xml_node<>* deep_copy(rapidxml::xml_document<>* target_doc,
-                                            const rapidxml::xml_node<>* source)
+            static rapidxml::xml_node<>*
+            deep_copy(rapidxml::xml_document<>* target_doc,
+                      const rapidxml::xml_node<>* source)
             {
                 EWS_ASSERT(target_doc);
                 EWS_ASSERT(source);
@@ -5149,30 +5236,24 @@ namespace ews
 
                 // Copy name and value
                 auto name = target_doc->allocate_string(source->name());
-                newnode->qname(name,
-                               source->name_size(),
-                               source->local_name());
+                newnode->qname(name, source->name_size(), source->local_name());
 
                 auto value = target_doc->allocate_string(source->value());
                 newnode->value(value, source->value_size());
 
                 // Copy child nodes and attributes
-                for (auto child = source->first_node();
-                     child;
+                for (auto child = source->first_node(); child;
                      child = child->next_sibling())
                 {
                     newnode->append_node(deep_copy(target_doc, child));
                 }
 
-                for (auto attr = source->first_attribute();
-                     attr;
+                for (auto attr = source->first_attribute(); attr;
                      attr = attr->next_attribute())
                 {
-                    newnode->append_attribute(
-                        target_doc->allocate_attribute(attr->name(),
-                                                       attr->value(),
-                                                       attr->name_size(),
-                                                       attr->value_size()));
+                    newnode->append_attribute(target_doc->allocate_attribute(
+                        attr->name(), attr->value(), attr->name_size(),
+                        attr->value_size()));
                 }
 
                 return newnode;
@@ -5192,12 +5273,11 @@ namespace ews
 #else
         template <typename RequestHandler>
 #endif
-        inline
-        std::string get_exchange_web_services_url(
-                                        const std::string& user_smtp_address,
-                                        autodiscover_protocol protocol,
-                                        const basic_credentials& credentials,
-                                        unsigned int redirections)
+        inline std::string
+        get_exchange_web_services_url(const std::string& user_smtp_address,
+                                      autodiscover_protocol protocol,
+                                      const basic_credentials& credentials,
+                                      unsigned int redirections)
         {
             using rapidxml::internal::compare;
 
@@ -5223,24 +5303,23 @@ namespace ews
 
             const auto username = user_smtp_address.substr(0, at_sign_idx);
             const auto domain = user_smtp_address.substr(
-                                                    at_sign_idx + 1,
-                                                    user_smtp_address.size());
-            const auto autodiscover_url = "https://" + domain +
-                "/autodiscover/autodiscover.xml";
+                at_sign_idx + 1, user_smtp_address.size());
+            const auto autodiscover_url =
+                "https://" + domain + "/autodiscover/autodiscover.xml";
 
             // Create an Outlook provider <Autodiscover/> request
             std::stringstream sstr;
-            sstr
-                << "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
-                << "<Autodiscover "
-                << "xmlns=\"http://schemas.microsoft.com/exchange/autodiscover/outlook/requestschema/2006\">"
-                << "<Request>"
-                << "<EMailAddress>" << user_smtp_address << "</EMailAddress>"
-                << "<AcceptableResponseSchema>"
-                << internal::uri<>::microsoft::autodiscover()
-                << "</AcceptableResponseSchema>"
-                << "</Request>"
-                << "</Autodiscover>";
+            sstr << "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
+                 << "<Autodiscover "
+                 << "xmlns=\"http://schemas.microsoft.com/exchange/"
+                    "autodiscover/outlook/requestschema/2006\">"
+                 << "<Request>"
+                 << "<EMailAddress>" << user_smtp_address << "</EMailAddress>"
+                 << "<AcceptableResponseSchema>"
+                 << internal::uri<>::microsoft::autodiscover()
+                 << "</AcceptableResponseSchema>"
+                 << "</Request>"
+                 << "</Autodiscover>";
             const auto request_string = sstr.str();
 
             RequestHandler handler(autodiscover_url);
@@ -5262,20 +5341,17 @@ namespace ews
             const auto doc = parse_response(std::move(response));
 
             const auto protocol_string =
-                protocol == ews::autodiscover_protocol::internal ?
-                "EXCH" : "EXPR";
+                protocol == ews::autodiscover_protocol::internal ? "EXCH"
+                                                                 : "EXPR";
 
             const auto account_node = get_element_by_qname(
-                                *doc,
-                                "Account",
-                                internal::uri<>::microsoft::autodiscover());
+                *doc, "Account", internal::uri<>::microsoft::autodiscover());
             if (!account_node)
             {
                 // Check for <Error/> element
                 const auto error_node = get_element_by_qname(
-                    *doc,
-                    "Error",
-                    "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006");
+                    *doc, "Error", "http://schemas.microsoft.com/exchange/"
+                                   "autodiscover/responseschema/2006");
                 if (error_node)
                 {
                     std::string error_code;
@@ -5284,27 +5360,24 @@ namespace ews
                     for (auto node = error_node->first_node(); node;
                          node = node->next_sibling())
                     {
-                        if (compare(node->local_name(),
-                                    node->local_name_size(),
-                                    "ErrorCode",
-                                    std::strlen("ErrorCode")))
+                        if (compare(node->local_name(), node->local_name_size(),
+                                    "ErrorCode", std::strlen("ErrorCode")))
                         {
-                            error_code = std::string(node->value(),
-                                                     node->value_size());
+                            error_code =
+                                std::string(node->value(), node->value_size());
                         }
                         else if (compare(node->local_name(),
-                                         node->local_name_size(),
-                                         "Message",
+                                         node->local_name_size(), "Message",
                                          std::strlen("Message")))
                         {
-                            message = std::string(node->value(),
-                                                  node->value_size());
+                            message =
+                                std::string(node->value(), node->value_size());
                         }
 
                         if (!error_code.empty() && !message.empty())
                         {
                             throw exception(message + " (error code: " +
-                                error_code + ")");
+                                            error_code + ")");
                         }
                     }
                 }
@@ -5316,26 +5389,20 @@ namespace ews
             // protocol type (internal/external) and then look for the
             // corresponding <ASUrl/> element
 
-            for (auto protocol_node = account_node->first_node();
-                 protocol_node;
+            for (auto protocol_node = account_node->first_node(); protocol_node;
                  protocol_node = protocol_node->next_sibling())
             {
                 if (compare(protocol_node->local_name(),
-                            protocol_node->local_name_size(),
-                            "Protocol",
+                            protocol_node->local_name_size(), "Protocol",
                             std::strlen("Protocol")))
                 {
                     for (auto type_node = protocol_node->first_node();
-                         type_node;
-                         type_node = type_node->next_sibling())
+                         type_node; type_node = type_node->next_sibling())
                     {
                         if (compare(type_node->local_name(),
-                                    type_node->local_name_size(),
-                                    "Type",
-                                    std::strlen("Type"))
-                            &&
-                            compare(type_node->value(),
-                                    type_node->value_size(),
+                                    type_node->local_name_size(), "Type",
+                                    std::strlen("Type")) &&
+                            compare(type_node->value(), type_node->value_size(),
                                     protocol_string,
                                     std::strlen(protocol_string)))
                         {
@@ -5345,12 +5412,11 @@ namespace ews
                             {
                                 if (compare(asurl_node->local_name(),
                                             asurl_node->local_name_size(),
-                                            "ASUrl",
-                                            std::strlen("ASUrl")))
+                                            "ASUrl", std::strlen("ASUrl")))
                                 {
                                     return std::string(
-                                            asurl_node->value(),
-                                            asurl_node->value_size());
+                                        asurl_node->value(),
+                                        asurl_node->value_size());
                                 }
                             }
                         }
@@ -5358,30 +5424,23 @@ namespace ews
                 }
             }
 
-
             // If we reach this point, then either autodiscovery returned an
             // error or there is a redirect address to retry the autodiscover
             // lookup
 
-            for (auto redirect_node = account_node->first_node();
-                 redirect_node;
+            for (auto redirect_node = account_node->first_node(); redirect_node;
                  redirect_node = redirect_node->next_sibling())
             {
                 if (compare(redirect_node->local_name(),
-                            redirect_node->local_name_size(),
-                            "RedirectAddr",
+                            redirect_node->local_name_size(), "RedirectAddr",
                             std::strlen("RedirectAddr")))
                 {
                     // Retry
                     redirections++;
-                    const auto redirect_address =
-                        std::string(redirect_node->value(),
-                                    redirect_node->value_size());
+                    const auto redirect_address = std::string(
+                        redirect_node->value(), redirect_node->value_size());
                     return get_exchange_web_services_url<RequestHandler>(
-                                    redirect_address,
-                                    protocol,
-                                    credentials,
-                                    redirections);
+                        redirect_address, protocol, credentials, redirections);
                 }
             }
 
@@ -5405,29 +5464,24 @@ namespace ews
     //! Note: Function is not thread-safe
     inline void tear_down() EWS_NOEXCEPT { curl_global_cleanup(); }
 
-
-    //! \brief Returns the EWS URL by querying the Autodiscover service.
-    //!
-    //! \param user_smtp_address User's primary SMTP address
-    //! \param protocol Whether the internal or external URL should be returned
-    //! \param credentials The user's credentials
-    //! \return The Exchange Web Services URL
+//! \brief Returns the EWS URL by querying the Autodiscover service.
+//!
+//! \param user_smtp_address User's primary SMTP address
+//! \param protocol Whether the internal or external URL should be returned
+//! \param credentials The user's credentials
+//! \return The Exchange Web Services URL
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
     template <typename RequestHandler = internal::http_request>
 #else
     template <typename RequestHandler>
 #endif
-    inline
-    std::string get_exchange_web_services_url(
-                                        const std::string& user_smtp_address,
-                                        autodiscover_protocol protocol,
-                                        const basic_credentials& credentials)
+    inline std::string
+    get_exchange_web_services_url(const std::string& user_smtp_address,
+                                  autodiscover_protocol protocol,
+                                  const basic_credentials& credentials)
     {
         return internal::get_exchange_web_services_url<RequestHandler>(
-                                                        user_smtp_address,
-                                                        protocol,
-                                                        credentials,
-                                                        0U);
+            user_smtp_address, protocol, credentials, 0U);
     }
 
     //! \brief The unique identifier and change key of an item in the
@@ -5457,17 +5511,14 @@ namespace ews
 #endif
 
         //! Constructs an <tt>\<ItemId></tt> from given \p id string.
-        explicit item_id(std::string id)
-            : id_(std::move(id)),
-              change_key_()
-        {}
+        explicit item_id(std::string id) : id_(std::move(id)), change_key_() {}
 
         //! \brief Constructs an <tt>\<ItemId></tt> from given identifier and
         //! change key.
         item_id(std::string id, std::string change_key)
-            : id_(std::move(id)),
-              change_key_(std::move(change_key))
-        {}
+            : id_(std::move(id)), change_key_(std::move(change_key))
+        {
+        }
 
         //! Returns the identifier.
         const std::string& id() const EWS_NOEXCEPT { return id_; }
@@ -5484,8 +5535,8 @@ namespace ews
         //! Serializes this item_id to an XML string
         std::string to_xml() const
         {
-            return "<t:ItemId Id=\"" + id() +
-                    "\" ChangeKey=\"" + change_key() + "\"/>";
+            return "<t:ItemId Id=\"" + id() + "\" ChangeKey=\"" + change_key() +
+                   "\"/>";
         }
 
         //! Makes an item_id instance from an <tt>\<ItemId></tt> XML element
@@ -5496,8 +5547,8 @@ namespace ews
             auto id = std::string(id_attr->value(), id_attr->value_size());
             auto ckey_attr = elem.first_attribute("ChangeKey");
             EWS_ASSERT(ckey_attr && "Missing attribute ChangeKey in <ItemId>");
-            auto ckey = std::string(ckey_attr->value(),
-                    ckey_attr->value_size());
+            auto ckey =
+                std::string(ckey_attr->value(), ckey_attr->value_size());
             return item_id(std::move(id), std::move(ckey));
         }
 
@@ -5533,9 +5584,9 @@ namespace ews
         explicit attachment_id(std::string id) : id_(std::move(id)) {}
 
         attachment_id(std::string id, item_id root_item_id)
-            : id_(std::move(id)),
-              root_item_id_(std::move(root_item_id))
-        {}
+            : id_(std::move(id)), root_item_id_(std::move(root_item_id))
+        {
+        }
 #endif
 
         //! Returns the string representing the unique identifier of an
@@ -5584,22 +5635,21 @@ namespace ews
             auto root_item_id_attr = elem.first_attribute("RootItemId");
             if (root_item_id_attr)
             {
-                root_item_id =
-                    std::string(root_item_id_attr->value(),
-                                root_item_id_attr->value_size());
+                root_item_id = std::string(root_item_id_attr->value(),
+                                           root_item_id_attr->value_size());
                 auto root_item_ckey_attr =
                     elem.first_attribute("RootItemChangeKey");
-                EWS_ASSERT(root_item_ckey_attr
-                        && "Expected attribute RootItemChangeKey");
+                EWS_ASSERT(root_item_ckey_attr &&
+                           "Expected attribute RootItemChangeKey");
                 root_item_ckey = std::string(root_item_ckey_attr->value(),
                                              root_item_ckey_attr->value_size());
             }
 
-            return root_item_id.empty() ?
-                   attachment_id(std::move(id)) :
-                   attachment_id(std::move(id),
-                                 item_id(std::move(root_item_id),
-                                         std::move(root_item_ckey)));
+            return root_item_id.empty()
+                       ? attachment_id(std::move(id))
+                       : attachment_id(std::move(id),
+                                       item_id(std::move(root_item_id),
+                                               std::move(root_item_ckey)));
         }
 
     private:
@@ -5630,22 +5680,16 @@ namespace ews
         virtual ~folder_id() {}
 #endif
 
-        explicit folder_id(std::string id)
-            : id_(std::move(id)),
-              change_key_()
+        explicit folder_id(std::string id) : id_(std::move(id)), change_key_()
         {
         }
 
         folder_id(std::string id, std::string change_key)
-            : id_(std::move(id)),
-              change_key_(std::move(change_key))
+            : id_(std::move(id)), change_key_(std::move(change_key))
         {
         }
 
-        std::string to_xml() const
-        {
-            return this->to_xml_impl();
-        }
+        std::string to_xml() const { return this->to_xml_impl(); }
 
         //! Returns a string identifying a folder in the Exchange store
         const std::string& id() const EWS_NOEXCEPT { return id_; }
@@ -5664,15 +5708,15 @@ namespace ews
         {
             auto id_attr = elem.first_attribute("Id");
             EWS_ASSERT(id_attr &&
-                    "Expected <ParentFolderId> to have an Id attribute");
+                       "Expected <ParentFolderId> to have an Id attribute");
             auto id = std::string(id_attr->value(), id_attr->value_size());
 
             std::string change_key;
             auto ck_attr = elem.first_attribute("ChangeKey");
             if (ck_attr)
             {
-                change_key = std::string(ck_attr->value(),
-                                         ck_attr->value_size());
+                change_key =
+                    std::string(ck_attr->value(), ck_attr->value_size());
             }
             return folder_id(std::move(id), std::move(change_key));
         }
@@ -5682,7 +5726,8 @@ namespace ews
         virtual std::string to_xml_impl() const
         {
             std::stringstream sstr;
-            sstr << "<t:" << "FolderId Id=\"" << id_;
+            sstr << "<t:"
+                 << "FolderId Id=\"" << id_;
             if (!change_key_.empty())
             {
                 sstr << "\" ChangeKey=\"" << change_key_;
@@ -6080,7 +6125,8 @@ namespace ews
         std::string to_xml_impl() const override
         {
             std::stringstream sstr;
-            sstr << "<t:" << "DistinguishedFolderId Id=\"";
+            sstr << "<t:"
+                 << "DistinguishedFolderId Id=\"";
             sstr << id();
             if (!change_key().empty())
             {
@@ -6092,10 +6138,13 @@ namespace ews
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<distinguished_folder_id>::value, "");
-    static_assert(std::is_copy_constructible<distinguished_folder_id>::value, "");
+    static_assert(
+        !std::is_default_constructible<distinguished_folder_id>::value, "");
+    static_assert(std::is_copy_constructible<distinguished_folder_id>::value,
+                  "");
     static_assert(std::is_copy_assignable<distinguished_folder_id>::value, "");
-    static_assert(std::is_move_constructible<distinguished_folder_id>::value, "");
+    static_assert(std::is_move_constructible<distinguished_folder_id>::value,
+                  "");
     static_assert(std::is_move_assignable<distinguished_folder_id>::value, "");
 #endif
 
@@ -6103,7 +6152,6 @@ namespace ews
     class attachment final
     {
     public:
-
         // Note that we are careful to avoid use of get_element_by_qname() here
         // because it might return elements of the enclosed item and not what
         // we'd expect
@@ -6118,19 +6166,14 @@ namespace ews
             file
         };
 
-        attachment()
-            : xml_(),
-              type_(type::item)
-        {
-        }
+        attachment() : xml_(), type_(type::item) {}
 
         //! Returns this attachment's attachment_id
         attachment_id id() const
         {
             const auto node = get_node("AttachmentId");
-            return node ?
-                  attachment_id::from_xml_element(*node)
-                : attachment_id();
+            return node ? attachment_id::from_xml_element(*node)
+                        : attachment_id();
         }
 
         //! Returns the attachment's name
@@ -6200,8 +6243,8 @@ namespace ews
                         "Could not open file for writing: no file name given");
                 }
 
-                throw exception(
-                        "Could not open file for writing: " + file_path);
+                throw exception("Could not open file for writing: " +
+                                file_path);
             }
 
             std::copy(begin(raw_bytes), end(raw_bytes),
@@ -6211,21 +6254,19 @@ namespace ews
         }
 
         //! Returns this attachment serialized to XML
-        std::string to_xml() const
-        {
-            return xml_.to_string();
-        }
+        std::string to_xml() const { return xml_.to_string(); }
 
         //! Constructs an attachment from a given XML element \p elem.
         static attachment from_xml_element(const rapidxml::xml_node<>& elem)
         {
-            const auto elem_name = std::string(elem.local_name(),
-                                               elem.local_name_size());
-            EWS_ASSERT((elem_name == "FileAttachment"
-                     || elem_name == "ItemAttachment")
-                    && "Expected <FileAttachment> or <ItemAttachment>");
-            return attachment(elem_name == "FileAttachment" ?
-                    type::file : type::item, internal::xml_subtree(elem));
+            const auto elem_name =
+                std::string(elem.local_name(), elem.local_name_size());
+            EWS_ASSERT((elem_name == "FileAttachment" ||
+                        elem_name == "ItemAttachment") &&
+                       "Expected <FileAttachment> or <ItemAttachment>");
+            return attachment(elem_name == "FileAttachment" ? type::file
+                                                            : type::item,
+                              internal::xml_subtree(elem));
         }
 
         //! \brief Creates a new <tt>\<FileAttachment></tt> from a given file.
@@ -6243,16 +6284,15 @@ namespace ews
         //! registry hive to get the content type from a file extension. On a
         //! UNIX see magic(5) and file(1).
         static attachment from_file(const std::string& file_path,
-                                    std::string content_type,
-                                    std::string name)
+                                    std::string content_type, std::string name)
         {
             // Try open file
             std::ifstream ifstr(file_path,
                                 std::ifstream::in | std::ios::binary);
             if (!ifstr.is_open())
             {
-                throw exception(
-                        "Could not open file for reading: " + file_path);
+                throw exception("Could not open file for reading: " +
+                                file_path);
             }
 
             // Stop eating newlines in binary mode
@@ -6283,28 +6323,30 @@ namespace ews
             auto str = doc->allocate_string("t:FileAttachment");
             auto attachment_node = doc->allocate_node(rapidxml::node_element);
             attachment_node->qname(str, std::strlen(str), str + 2);
-            attachment_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                   internal::uri<>::microsoft::types_size);
+            attachment_node->namespace_uri(
+                internal::uri<>::microsoft::types(),
+                internal::uri<>::microsoft::types_size);
             doc->append_node(attachment_node);
 
             append_child_node(attachment_node, "t:Name", name);
             append_child_node(attachment_node, "t:ContentType", content_type);
             append_child_node(attachment_node, "t:Content", content);
-            append_child_node(attachment_node, "t:Size", std::to_string(buffer.size()));
+            append_child_node(attachment_node, "t:Size",
+                              std::to_string(buffer.size()));
 
             return obj;
         }
 
-        static attachment
-        from_item(const item& the_item, const std::string& name); // implemented below
+        static attachment from_item(const item& the_item,
+                                    const std::string& name); // implemented
+                                                              // below
 
     private:
         internal::xml_subtree xml_;
         type type_;
 
         attachment(type&& t, internal::xml_subtree&& xml)
-            : xml_(std::move(xml)),
-              type_(std::move(t))
+            : xml_(std::move(xml)), type_(std::move(t))
         {
         }
 
@@ -6322,10 +6364,8 @@ namespace ews
             for (auto child = attachment_node->first_node(); child != nullptr;
                  child = child->next_sibling())
             {
-                if (compare(child->local_name(),
-                            child->local_name_size(),
-                            local_name,
-                            std::strlen(local_name)))
+                if (compare(child->local_name(), child->local_name_size(),
+                            local_name, std::strlen(local_name)))
                 {
                     node = child;
                     break;
@@ -6336,17 +6376,16 @@ namespace ews
 
         // Helper function used in from_item, from_file. Creates a new node
         // with given name and value and appends it to given parent
-        static
-        rapidxml::xml_node<>* append_child_node(rapidxml::xml_node<>* parent,
-                                              const char* name,
-                                              const std::string& value)
+        static rapidxml::xml_node<>*
+        append_child_node(rapidxml::xml_node<>* parent, const char* name,
+                          const std::string& value)
         {
             EWS_ASSERT(parent);
 
             auto doc = parent->document();
             auto str = doc->allocate_string(name);
-            auto value_string = doc->allocate_string(value.c_str(),
-                                                     value.size());
+            auto value_string =
+                doc->allocate_string(value.c_str(), value.size());
             auto child = doc->allocate_node(rapidxml::node_element);
             child->qname(str, std::strlen(str), str + 2);
             child->value(value_string, value.size());
@@ -6376,16 +6415,12 @@ namespace ews
             auto cls = response_class::success;
             auto response_class_attr = elem.first_attribute("ResponseClass");
             if (compare(response_class_attr->value(),
-                        response_class_attr->value_size(),
-                        "Error",
-                        5))
+                        response_class_attr->value_size(), "Error", 5))
             {
                 cls = response_class::error;
             }
             else if (compare(response_class_attr->value(),
-                             response_class_attr->value_size(),
-                             "Warning",
-                             7))
+                             response_class_attr->value_size(), "Warning", 7))
             {
                 cls = response_class::warning;
             }
@@ -6398,11 +6433,10 @@ namespace ews
             auto code = response_code::no_error;
             if (cls != response_class::success)
             {
-                auto response_code_elem =
-                    elem.first_node_ns(uri<>::microsoft::messages(),
-                                       "ResponseCode");
-                EWS_ASSERT(response_code_elem
-                        && "Expected <ResponseCode> element");
+                auto response_code_elem = elem.first_node_ns(
+                    uri<>::microsoft::messages(), "ResponseCode");
+                EWS_ASSERT(response_code_elem &&
+                           "Expected <ResponseCode> element");
                 code = str_to_response_code(response_code_elem->value());
             }
 
@@ -6431,8 +6465,7 @@ namespace ews
         {
         public:
             response_message_base(response_class cls, response_code code)
-                : cls_(cls),
-                  code_(code)
+                : cls_(cls), code_(code)
             {
             }
 
@@ -6476,11 +6509,9 @@ namespace ews
         public:
             typedef ItemType item_type;
 
-            response_message_with_items(response_class cls,
-                                        response_code code,
+            response_message_with_items(response_class cls, response_code code,
                                         std::vector<item_type> items)
-                : response_message_base(cls, code),
-                  items_(std::move(items))
+                : response_message_base(cls, code), items_(std::move(items))
             {
             }
 
@@ -6501,11 +6532,9 @@ namespace ews
             static create_item_response_message parse(http_response&&);
 
         private:
-            create_item_response_message(response_class cls,
-                                         response_code code,
+            create_item_response_message(response_class cls, response_code code,
                                          std::vector<item_id> items)
-                : response_message_with_items<item_id>(cls,
-                                                       code,
+                : response_message_with_items<item_id>(cls, code,
                                                        std::move(items))
             {
             }
@@ -6519,12 +6548,10 @@ namespace ews
             static find_item_response_message parse(http_response&&);
 
         private:
-            find_item_response_message(response_class cls,
-                                       response_code code,
+            find_item_response_message(response_class cls, response_code code,
                                        std::vector<item_id> items)
-                : response_message_with_items<item_id>(cls,
-                  code,
-                  std::move(items))
+                : response_message_with_items<item_id>(cls, code,
+                                                       std::move(items))
             {
             }
         };
@@ -6538,12 +6565,10 @@ namespace ews
 
         private:
             find_calendar_item_response_message(
-                                            response_class cls,
-                                            response_code code,
-                                            std::vector<calendar_item> items)
-                : response_message_with_items<calendar_item>(cls,
-                    code,
-                    std::move(items))
+                response_class cls, response_code code,
+                std::vector<calendar_item> items)
+                : response_message_with_items<calendar_item>(cls, code,
+                                                             std::move(items))
             {
             }
         };
@@ -6556,12 +6581,10 @@ namespace ews
             static update_item_response_message parse(http_response&&);
 
         private:
-            update_item_response_message(response_class cls,
-                                       response_code code,
-                                       std::vector<item_id> items)
-                : response_message_with_items<item_id>(cls,
-                  code,
-                  std::move(items))
+            update_item_response_message(response_class cls, response_code code,
+                                         std::vector<item_id> items)
+                : response_message_with_items<item_id>(cls, code,
+                                                       std::move(items))
             {
             }
         };
@@ -6575,11 +6598,9 @@ namespace ews
             static get_item_response_message parse(http_response&&);
 
         private:
-            get_item_response_message(response_class cls,
-                                      response_code code,
+            get_item_response_message(response_class cls, response_code code,
                                       std::vector<ItemType> items)
-                : response_message_with_items<ItemType>(cls,
-                                                        code,
+                : response_message_with_items<ItemType>(cls, code,
                                                         std::move(items))
             {
             }
@@ -6589,44 +6610,39 @@ namespace ews
             : public response_message_base
         {
         public:
-            static
-            create_attachment_response_message parse(http_response&& response)
+            static create_attachment_response_message
+            parse(http_response&& response)
             {
                 const auto doc = parse_response(std::move(response));
                 auto elem = get_element_by_qname(
-                                            *doc,
-                                            "CreateAttachmentResponseMessage",
-                                            uri<>::microsoft::messages());
+                    *doc, "CreateAttachmentResponseMessage",
+                    uri<>::microsoft::messages());
 
-                EWS_ASSERT(elem &&
+                EWS_ASSERT(
+                    elem &&
                     "Expected <CreateAttachmentResponseMessage>, got nullptr");
 
                 const auto cls_and_code = parse_response_class_and_code(*elem);
 
-                auto attachments_element =
-                    elem->first_node_ns(uri<>::microsoft::messages(),
-                                        "Attachments");
-                EWS_ASSERT(attachments_element
-                        && "Expected <Attachments> element");
+                auto attachments_element = elem->first_node_ns(
+                    uri<>::microsoft::messages(), "Attachments");
+                EWS_ASSERT(attachments_element &&
+                           "Expected <Attachments> element");
 
                 auto ids = std::vector<attachment_id>();
                 for (auto attachment_elem = attachments_element->first_node();
                      attachment_elem;
                      attachment_elem = attachment_elem->next_sibling())
                 {
-                    auto attachment_id_elem =
-                        attachment_elem->first_node_ns(uri<>::microsoft::types(),
-                                                       "AttachmentId");
-                    EWS_ASSERT(attachment_id_elem
-                            && "Expected <AttachmentId> in response");
+                    auto attachment_id_elem = attachment_elem->first_node_ns(
+                        uri<>::microsoft::types(), "AttachmentId");
+                    EWS_ASSERT(attachment_id_elem &&
+                               "Expected <AttachmentId> in response");
                     ids.emplace_back(
-                            attachment_id::from_xml_element(
-                                                    *attachment_id_elem));
+                        attachment_id::from_xml_element(*attachment_id_elem));
                 }
                 return create_attachment_response_message(
-                                    cls_and_code.first,
-                                    cls_and_code.second,
-                                    std::move(ids));
+                    cls_and_code.first, cls_and_code.second, std::move(ids));
             }
 
             const std::vector<attachment_id>&
@@ -6637,9 +6653,8 @@ namespace ews
 
         private:
             create_attachment_response_message(
-                                    response_class cls,
-                                    response_code code,
-                                    std::vector<attachment_id> attachment_ids)
+                response_class cls, response_code code,
+                std::vector<attachment_id> attachment_ids)
                 : response_message_base(cls, code),
                   ids_(std::move(attachment_ids))
             {
@@ -6652,32 +6667,31 @@ namespace ews
             : public response_message_base
         {
         public:
-            static
-            get_attachment_response_message parse(http_response&& response)
+            static get_attachment_response_message
+            parse(http_response&& response)
             {
                 const auto doc = parse_response(std::move(response));
-                auto elem = get_element_by_qname(
-                                                *doc,
-                                                "GetAttachmentResponseMessage",
-                                                uri<>::microsoft::messages());
+                auto elem =
+                    get_element_by_qname(*doc, "GetAttachmentResponseMessage",
+                                         uri<>::microsoft::messages());
 
-                EWS_ASSERT(elem &&
+                EWS_ASSERT(
+                    elem &&
                     "Expected <GetAttachmentResponseMessage>, got nullptr");
 
                 const auto cls_and_code = parse_response_class_and_code(*elem);
 
-                auto attachments_element =
-                    elem->first_node_ns(uri<>::microsoft::messages(),
-                                        "Attachments");
-                EWS_ASSERT(attachments_element
-                        && "Expected <Attachments> element");
+                auto attachments_element = elem->first_node_ns(
+                    uri<>::microsoft::messages(), "Attachments");
+                EWS_ASSERT(attachments_element &&
+                           "Expected <Attachments> element");
                 auto attachments = std::vector<attachment>();
                 for (auto attachment_elem = attachments_element->first_node();
                      attachment_elem;
                      attachment_elem = attachment_elem->next_sibling())
                 {
                     attachments.emplace_back(
-                            attachment::from_xml_element(*attachment_elem));
+                        attachment::from_xml_element(*attachment_elem));
                 }
                 return get_attachment_response_message(cls_and_code.first,
                                                        cls_and_code.second,
@@ -6707,12 +6721,12 @@ namespace ews
             static delete_item_response_message parse(http_response&& response)
             {
                 const auto doc = parse_response(std::move(response));
-                auto elem = get_element_by_qname(*doc,
-                                                 "DeleteItemResponseMessage",
-                                                 uri<>::microsoft::messages());
+                auto elem =
+                    get_element_by_qname(*doc, "DeleteItemResponseMessage",
+                                         uri<>::microsoft::messages());
 
                 EWS_ASSERT(elem &&
-                        "Expected <DeleteItemResponseMessage>, got nullptr");
+                           "Expected <DeleteItemResponseMessage>, got nullptr");
                 const auto result = parse_response_class_and_code(*elem);
                 return delete_item_response_message(result.first,
                                                     result.second);
@@ -6729,46 +6743,44 @@ namespace ews
             : public response_message_base
         {
         public:
-            static
-            delete_attachment_response_message parse(http_response&& response)
+            static delete_attachment_response_message
+            parse(http_response&& response)
             {
                 const auto doc = parse_response(std::move(response));
-                auto elem =
-                    get_element_by_qname(*doc,
-                                         "DeleteAttachmentResponseMessage",
-                                         uri<>::microsoft::messages());
+                auto elem = get_element_by_qname(
+                    *doc, "DeleteAttachmentResponseMessage",
+                    uri<>::microsoft::messages());
 
-                EWS_ASSERT(elem &&
+                EWS_ASSERT(
+                    elem &&
                     "Expected <DeleteAttachmentResponseMessage>, got nullptr");
                 const auto cls_and_code = parse_response_class_and_code(*elem);
 
                 auto root_item_id = item_id();
-                auto root_item_id_elem =
-                    elem->first_node_ns(uri<>::microsoft::messages(),
-                                        "RootItemId");
+                auto root_item_id_elem = elem->first_node_ns(
+                    uri<>::microsoft::messages(), "RootItemId");
                 if (root_item_id_elem)
                 {
-                    auto id_attr
-                        = root_item_id_elem->first_attribute("RootItemId");
+                    auto id_attr =
+                        root_item_id_elem->first_attribute("RootItemId");
                     EWS_ASSERT(id_attr && "Expected RootItemId attribute");
-                    auto id = std::string(id_attr->value(),
-                                          id_attr->value_size());
+                    auto id =
+                        std::string(id_attr->value(), id_attr->value_size());
 
                     auto change_key_attr =
                         root_item_id_elem->first_attribute("RootItemChangeKey");
-                    EWS_ASSERT(change_key_attr
-                            && "Expected RootItemChangeKey attribute");
+                    EWS_ASSERT(change_key_attr &&
+                               "Expected RootItemChangeKey attribute");
                     auto change_key =
-                            std::string(change_key_attr->value(),
-                                        change_key_attr->value_size());
+                        std::string(change_key_attr->value(),
+                                    change_key_attr->value_size());
 
-                    root_item_id = item_id(std::move(id),
-                                           std::move(change_key));
+                    root_item_id =
+                        item_id(std::move(id), std::move(change_key));
                 }
 
-                return delete_attachment_response_message(cls_and_code.first,
-                                                          cls_and_code.second,
-                                                          root_item_id);
+                return delete_attachment_response_message(
+                    cls_and_code.first, cls_and_code.second, root_item_id);
             }
 
             item_id get_root_item_id() const { return root_item_id_; }
@@ -6931,10 +6943,14 @@ namespace ews
         {
             switch (type)
             {
-                case body_type::best: return "Best";
-                case body_type::plain_text: return "Text";
-                case body_type::html: return "HTML";
-                default: throw exception("Bad enum value");
+            case body_type::best:
+                return "Best";
+            case body_type::plain_text:
+                return "Text";
+            case body_type::html:
+                return "HTML";
+            default:
+                throw exception("Bad enum value");
             }
         }
     }
@@ -6946,19 +6962,14 @@ namespace ews
     {
     public:
         //! Creates an empty body element; body_type is plain-text
-        body()
-            : content_(),
-              type_(body_type::plain_text),
-              is_truncated_(false)
+        body() : content_(), type_(body_type::plain_text), is_truncated_(false)
         {
         }
 
         //! Creates a new body element with given content and type
         explicit body(std::string content,
                       body_type type = body_type::plain_text)
-            : content_(std::move(content)),
-              type_(type),
-              is_truncated_(false)
+            : content_(std::move(content)), type_(type), is_truncated_(false)
         {
         }
 
@@ -6976,16 +6987,15 @@ namespace ews
 
         std::string to_xml() const
         {
-            //FIXME: what about IsTruncated attribute?
+            // FIXME: what about IsTruncated attribute?
             static const auto cdata_beg = std::string("<![CDATA[");
             static const auto cdata_end = std::string("]]>");
 
             std::stringstream sstr;
-            sstr << "<t:Body BodyType=\""
-                 << internal::body_type_str(type());
+            sstr << "<t:Body BodyType=\"" << internal::body_type_str(type());
             sstr << "\">";
-            if (   type() == body_type::html
-                && !(content_.compare(0, cdata_beg.length(), cdata_beg) == 0))
+            if (type() == body_type::html &&
+                !(content_.compare(0, cdata_beg.length(), cdata_beg) == 0))
             {
                 sstr << cdata_beg << content_ << cdata_end;
             }
@@ -7026,12 +7036,11 @@ namespace ews
 #endif
 
         //! Copies \p len bytes from \p ptr into an internal buffer.
-        mime_content(std::string charset,
-                     const char* const ptr,
+        mime_content(std::string charset, const char* const ptr,
                      std::size_t len)
-            : charset_(std::move(charset)),
-              bytearray_(ptr, ptr + len)
-        {}
+            : charset_(std::move(charset)), bytearray_(ptr, ptr + len)
+        {
+        }
 
         //! Returns how the string is encoded, e.g., "UTF-8"
         const std::string& character_set() const EWS_NOEXCEPT
@@ -7083,23 +7092,19 @@ namespace ews
 #endif
 
         explicit mailbox(item_id id)
-            : id_(std::move(id)),
-              value_(),
-              name_(),
-              routing_type_(),
+            : id_(std::move(id)), value_(), name_(), routing_type_(),
               mailbox_type_()
-        {}
+        {
+        }
 
-        explicit mailbox(std::string value,
-                         std::string name = std::string(),
+        explicit mailbox(std::string value, std::string name = std::string(),
                          std::string routing_type = std::string(),
                          std::string mailbox_type = std::string())
-            : id_(),
-              value_(std::move(value)),
-              name_(std::move(name)),
+            : id_(), value_(std::move(value)), name_(std::move(name)),
               routing_type_(std::move(routing_type)),
               mailbox_type_(std::move(mailbox_type))
-        {}
+        {
+        }
 
         //! True if this mailbox is undefined
         bool none() const EWS_NOEXCEPT
@@ -7145,13 +7150,11 @@ namespace ews
             }
             else
             {
-                sstr << "<t:EmailAddress>" << value()
-                     <<"</t:EmailAddress>";
+                sstr << "<t:EmailAddress>" << value() << "</t:EmailAddress>";
 
                 if (!name().empty())
                 {
-                    sstr << "<t:Name>" << name()
-                         << "</t:Name>";
+                    sstr << "<t:Name>" << name() << "</t:Name>";
                 }
 
                 if (!routing_type().empty())
@@ -7178,27 +7181,25 @@ namespace ews
         {
             auto doc = parent.document();
 
-            EWS_ASSERT(doc
-                    && "parent node needs to be somewhere in a document");
+            EWS_ASSERT(doc &&
+                       "parent node needs to be somewhere in a document");
 
             auto ptr_to_qname = doc->allocate_string("t:Mailbox");
             auto mailbox_node = doc->allocate_node(rapidxml::node_element);
-            mailbox_node->qname(ptr_to_qname,
-                                std::strlen("t:Mailbox"),
+            mailbox_node->qname(ptr_to_qname, std::strlen("t:Mailbox"),
                                 ptr_to_qname + 2);
             mailbox_node->namespace_uri(internal::uri<>::microsoft::types(),
                                         internal::uri<>::microsoft::types_size);
 
             if (!id_.valid())
             {
-                EWS_ASSERT(!value_.empty()
-                    && "Neither item_id nor value set in mailbox instance");
+                EWS_ASSERT(!value_.empty() &&
+                           "Neither item_id nor value set in mailbox instance");
 
                 ptr_to_qname = doc->allocate_string("t:EmailAddress");
                 auto ptr_to_value = doc->allocate_string(value_.c_str());
                 auto node = doc->allocate_node(rapidxml::node_element);
-                node->qname(ptr_to_qname,
-                            std::strlen("t:EmailAddress"),
+                node->qname(ptr_to_qname, std::strlen("t:EmailAddress"),
                             ptr_to_qname + 2);
                 node->value(ptr_to_value);
                 node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -7210,8 +7211,7 @@ namespace ews
                     ptr_to_qname = doc->allocate_string("t:Name");
                     ptr_to_value = doc->allocate_string(name_.c_str());
                     node = doc->allocate_node(rapidxml::node_element);
-                    node->qname(ptr_to_qname,
-                                std::strlen("t:Name"),
+                    node->qname(ptr_to_qname, std::strlen("t:Name"),
                                 ptr_to_qname + 2);
                     node->value(ptr_to_value);
                     node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -7224,8 +7224,7 @@ namespace ews
                     ptr_to_qname = doc->allocate_string("t:RoutingType");
                     ptr_to_value = doc->allocate_string(routing_type_.c_str());
                     node = doc->allocate_node(rapidxml::node_element);
-                    node->qname(ptr_to_qname,
-                                std::strlen("t:RoutingType"),
+                    node->qname(ptr_to_qname, std::strlen("t:RoutingType"),
                                 ptr_to_qname + 2);
                     node->value(ptr_to_value);
                     node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -7238,8 +7237,7 @@ namespace ews
                     ptr_to_qname = doc->allocate_string("t:MailboxType");
                     ptr_to_value = doc->allocate_string(mailbox_type_.c_str());
                     node = doc->allocate_node(rapidxml::node_element);
-                    node->qname(ptr_to_qname,
-                                std::strlen("t:MailboxType"),
+                    node->qname(ptr_to_qname, std::strlen("t:MailboxType"),
                                 ptr_to_qname + 2);
                     node->value(ptr_to_value);
                     node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -7250,24 +7248,22 @@ namespace ews
             else
             {
                 ptr_to_qname = doc->allocate_string("t:ItemId");
-                auto item_id_node =
-                    doc->allocate_node(rapidxml::node_element);
-                item_id_node->qname(ptr_to_qname,
-                                    std::strlen("t:ItemId"),
+                auto item_id_node = doc->allocate_node(rapidxml::node_element);
+                item_id_node->qname(ptr_to_qname, std::strlen("t:ItemId"),
                                     ptr_to_qname + 2);
                 item_id_node->namespace_uri(
-                                        internal::uri<>::microsoft::types(),
-                                        internal::uri<>::microsoft::types_size);
+                    internal::uri<>::microsoft::types(),
+                    internal::uri<>::microsoft::types_size);
 
                 auto ptr_to_key = doc->allocate_string("Id");
                 auto ptr_to_value = doc->allocate_string(id_.id().c_str());
                 item_id_node->append_attribute(
-                        doc->allocate_attribute(ptr_to_key, ptr_to_value));
+                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
 
                 ptr_to_key = doc->allocate_string("ChangeKey");
                 ptr_to_value = doc->allocate_string(id_.change_key().c_str());
                 item_id_node->append_attribute(
-                        doc->allocate_attribute(ptr_to_key, ptr_to_value));
+                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
 
                 mailbox_node->append_node(item_id_node);
             }
@@ -7303,58 +7299,45 @@ namespace ews
             for (auto node = elem.first_node(); node;
                  node = node->next_sibling())
             {
-                if (compare(node->local_name(),
-                            node->local_name_size(),
-                            "Name",
+                if (compare(node->local_name(), node->local_name_size(), "Name",
                             std::strlen("Name")))
                 {
                     name = std::string(node->value(), node->value_size());
                 }
-                else if (compare(node->local_name(),
-                                 node->local_name_size(),
-                                 "EmailAddress",
-                                 std::strlen("EmailAddress")))
+                else if (compare(node->local_name(), node->local_name_size(),
+                                 "EmailAddress", std::strlen("EmailAddress")))
                 {
-                    address =
-                        std::string(node->value(), node->value_size());
+                    address = std::string(node->value(), node->value_size());
                 }
-                else if (compare(node->local_name(),
-                                 node->local_name_size(),
-                                 "RoutingType",
-                                 std::strlen("RoutingType")))
+                else if (compare(node->local_name(), node->local_name_size(),
+                                 "RoutingType", std::strlen("RoutingType")))
                 {
                     routing_type =
                         std::string(node->value(), node->value_size());
                 }
-                else if (compare(node->local_name(),
-                                 node->local_name_size(),
-                                 "MailboxType",
-                                 std::strlen("MailboxType")))
+                else if (compare(node->local_name(), node->local_name_size(),
+                                 "MailboxType", std::strlen("MailboxType")))
                 {
                     mailbox_type =
                         std::string(node->value(), node->value_size());
                 }
-                else if (compare(node->local_name(),
-                                 node->local_name_size(),
-                                 "ItemId",
-                                 std::strlen("ItemId")))
+                else if (compare(node->local_name(), node->local_name_size(),
+                                 "ItemId", std::strlen("ItemId")))
                 {
                     id = item_id::from_xml_element(*node);
                 }
                 else
                 {
-                    throw exception(
-                        "Unexpected child element in <Mailbox>");
+                    throw exception("Unexpected child element in <Mailbox>");
                 }
             }
 
             if (!id.valid())
             {
-                EWS_ASSERT(!address.empty()
-                    && "<EmailAddress> element value can't be empty");
+                EWS_ASSERT(!address.empty() &&
+                           "<EmailAddress> element value can't be empty");
 
-                return mailbox(std::move(address),
-                               std::move(name),
+                return mailbox(std::move(address), std::move(name),
                                std::move(routing_type),
                                std::move(mailbox_type));
             }
@@ -7389,22 +7372,19 @@ namespace ews
     public:
         attendee(mailbox address, response_type type,
                  date_time last_response_time)
-            : mailbox_(std::move(address)),
-              response_type_(std::move(type)),
+            : mailbox_(std::move(address)), response_type_(std::move(type)),
               last_response_time_(std::move(last_response_time))
-        {}
+        {
+        }
 
         explicit attendee(mailbox address)
             : mailbox_(std::move(address)),
-              response_type_(ews::response_type::unknown),
-              last_response_time_()
-        {}
+              response_type_(ews::response_type::unknown), last_response_time_()
+        {
+        }
 
         //! Returns this attendee's email address
-        const mailbox& get_mailbox() const EWS_NOEXCEPT
-        {
-            return mailbox_;
-        }
+        const mailbox& get_mailbox() const EWS_NOEXCEPT { return mailbox_; }
 
         //! \brief Returns this attendee's response
         //!
@@ -7427,11 +7407,9 @@ namespace ews
             std::stringstream sstr;
             sstr << "<t:Attendee>";
             sstr << mailbox_.to_xml();
-            sstr << "<t:ResponseType>"
-                 << internal::enum_to_str(response_type_)
+            sstr << "<t:ResponseType>" << internal::enum_to_str(response_type_)
                  << "</t:ResponseType>";
-            sstr << "<t:LastResponseTime>"
-                 << last_response_time_.to_string()
+            sstr << "<t:LastResponseTime>" << last_response_time_.to_string()
                  << "</t:LastResponseTime>";
             sstr << "</t:Attendee>";
             return sstr.str();
@@ -7441,13 +7419,12 @@ namespace ews
         //! given parent node.
         //!
         //! Returns a reference to the newly created element.
-        rapidxml::xml_node<>&
-        to_xml_element(rapidxml::xml_node<>& parent) const
+        rapidxml::xml_node<>& to_xml_element(rapidxml::xml_node<>& parent) const
         {
             auto doc = parent.document();
 
-            EWS_ASSERT(doc
-                && "parent node needs to be somewhere in a document");
+            EWS_ASSERT(doc &&
+                       "parent node needs to be somewhere in a document");
 
             //  <Attendee>
             //    <Mailbox/>
@@ -7457,10 +7434,10 @@ namespace ews
 
             auto ptr_to_qname = doc->allocate_string("t:Attendee");
             auto attendee_node = doc->allocate_node(rapidxml::node_element);
-            attendee_node->qname(ptr_to_qname,
-                                 std::strlen("t:Attendee"),
+            attendee_node->qname(ptr_to_qname, std::strlen("t:Attendee"),
                                  ptr_to_qname + 2);
-            attendee_node->namespace_uri(internal::uri<>::microsoft::types(),
+            attendee_node->namespace_uri(
+                internal::uri<>::microsoft::types(),
                 internal::uri<>::microsoft::types_size);
             parent.append_node(attendee_node);
 
@@ -7468,10 +7445,9 @@ namespace ews
 
             ptr_to_qname = doc->allocate_string("t:ResponseType");
             auto ptr_to_value = doc->allocate_string(
-                                internal::enum_to_str(response_type_).c_str());
+                internal::enum_to_str(response_type_).c_str());
             auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:ResponseType"),
+            node->qname(ptr_to_qname, std::strlen("t:ResponseType"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -7479,11 +7455,10 @@ namespace ews
             attendee_node->append_node(node);
 
             ptr_to_qname = doc->allocate_string("t:LastResponseTime");
-            ptr_to_value = doc->allocate_string(
-                                last_response_time_.to_string().c_str());
+            ptr_to_value =
+                doc->allocate_string(last_response_time_.to_string().c_str());
             node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:LastResponseTime"),
+            node->qname(ptr_to_qname, std::strlen("t:LastResponseTime"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -7511,33 +7486,27 @@ namespace ews
             for (auto node = elem.first_node(); node;
                  node = node->next_sibling())
             {
-                if (compare(node->local_name(),
-                    node->local_name_size(),
-                    "Mailbox",
-                    std::strlen("Mailbox")))
+                if (compare(node->local_name(), node->local_name_size(),
+                            "Mailbox", std::strlen("Mailbox")))
                 {
                     addr = mailbox::from_xml_element(*node);
                 }
-                else if (compare(node->local_name(),
-                         node->local_name_size(),
-                         "ResponseType",
-                         std::strlen("ResponseType")))
+                else if (compare(node->local_name(), node->local_name_size(),
+                                 "ResponseType", std::strlen("ResponseType")))
                 {
                     resp_type = internal::str_to_response_type(
                         std::string(node->value(), node->value_size()));
                 }
-                else if (compare(node->local_name(),
-                         node->local_name_size(),
-                         "LastResponseTime",
-                         std::strlen("LastResponseTime")))
+                else if (compare(node->local_name(), node->local_name_size(),
+                                 "LastResponseTime",
+                                 std::strlen("LastResponseTime")))
                 {
                     last_resp_time = ews::date_time(
                         std::string(node->value(), node->value_size()));
                 }
                 else
                 {
-                    throw exception(
-                        "Unexpected child element in <Attendee>");
+                    throw exception("Unexpected child element in <Attendee>");
                 }
             }
 
@@ -7574,15 +7543,15 @@ namespace ews
     {
     public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
-        internet_message_header()  = delete;
+        internet_message_header() = delete;
 #else
         internet_message_header() {}
 #endif
         //! Constructs a header filed with given values
         internet_message_header(std::string name, std::string value)
-                : header_name_(std::move(name)),
-                  header_value_(std::move(value))
-        {}
+            : header_name_(std::move(name)), header_value_(std::move(value))
+        {
+        }
 
         //! Returns the name of the header field
         const std::string& get_name() const EWS_NOEXCEPT
@@ -7602,10 +7571,13 @@ namespace ews
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<internet_message_header>::value, "");
-    static_assert(std::is_copy_constructible<internet_message_header>::value, "");
+    static_assert(
+        !std::is_default_constructible<internet_message_header>::value, "");
+    static_assert(std::is_copy_constructible<internet_message_header>::value,
+                  "");
     static_assert(std::is_copy_assignable<internet_message_header>::value, "");
-    static_assert(std::is_move_constructible<internet_message_header>::value, "");
+    static_assert(std::is_move_constructible<internet_message_header>::value,
+                  "");
     static_assert(std::is_move_assignable<internet_message_header>::value, "");
 #endif
 
@@ -7613,7 +7585,7 @@ namespace ews
     class item
     {
     public:
-        //! Constructs a new item
+//! Constructs a new item
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
         item() = default;
 #else
@@ -7624,9 +7596,9 @@ namespace ews
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
         item(item_id&& id, internal::xml_subtree&& properties)
-            : item_id_(std::move(id)),
-              xml_subtree_(std::move(properties))
-        {}
+            : item_id_(std::move(id)), xml_subtree_(std::move(properties))
+        {
+        }
 #endif
 
         //! Returns the id of an item
@@ -7642,9 +7614,8 @@ namespace ews
             }
             auto charset = node->first_attribute("CharacterSet");
             EWS_ASSERT(charset &&
-                    "Expected <MimeContent> to have CharacterSet attribute");
-            return mime_content(charset->value(),
-                                node->value(),
+                       "Expected <MimeContent> to have CharacterSet attribute");
+            return mime_content(charset->value(), node->value(),
                                 node->value_size());
         }
 
@@ -7704,30 +7675,28 @@ namespace ews
 
             auto ptr_to_qname = doc->allocate_string("t:Body");
             body_node = doc->allocate_node(rapidxml::node_element);
-            body_node->qname(ptr_to_qname,
-                             std::strlen("t:Body"),
+            body_node->qname(ptr_to_qname, std::strlen("t:Body"),
                              ptr_to_qname + 2);
             body_node->namespace_uri(internal::uri<>::microsoft::types(),
                                      internal::uri<>::microsoft::types_size);
 
-            auto ptr_to_value =
-                doc->allocate_string(b.content().c_str());
+            auto ptr_to_value = doc->allocate_string(b.content().c_str());
             body_node->value(ptr_to_value, b.content().length());
 
             auto ptr_to_key = doc->allocate_string("BodyType");
-            ptr_to_value = doc->allocate_string(
-                    internal::body_type_str(b.type()).c_str());
+            ptr_to_value =
+                doc->allocate_string(internal::body_type_str(b.type()).c_str());
             body_node->append_attribute(
-                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
+                doc->allocate_attribute(ptr_to_key, ptr_to_value));
 
             bool truncated = b.is_truncated();
             if (truncated)
             {
                 ptr_to_key = doc->allocate_string("IsTruncated");
-                ptr_to_value = doc->allocate_string(
-                        truncated ? "true" : "false");
+                ptr_to_value =
+                    doc->allocate_string(truncated ? "true" : "false");
                 body_node->append_attribute(
-                        doc->allocate_attribute(ptr_to_key, ptr_to_value));
+                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
             }
 
             doc->append_node(body_node);
@@ -7745,11 +7714,11 @@ namespace ews
                 for (auto attr = body_node->first_attribute(); attr;
                      attr = attr->next_attribute())
                 {
-                    if (compare(attr->name(), attr->name_size(),
-                                "BodyType", std::strlen("BodyType")))
+                    if (compare(attr->name(), attr->name_size(), "BodyType",
+                                std::strlen("BodyType")))
                     {
-                        if (compare(attr->value(), attr->value_size(),
-                                    "HTML", std::strlen("HTML")))
+                        if (compare(attr->value(), attr->value_size(), "HTML",
+                                    std::strlen("HTML")))
                         {
                             b.set_type(body_type::html);
                         }
@@ -7765,27 +7734,28 @@ namespace ews
                         }
                         else
                         {
-                            EWS_ASSERT(false
-                                && "Unexpected attribute value for BodyType");
+                            EWS_ASSERT(
+                                false &&
+                                "Unexpected attribute value for BodyType");
                         }
                     }
                     else if (compare(attr->name(), attr->name_size(),
                                      "IsTruncated", std::strlen("IsTruncated")))
                     {
                         const auto val =
-                            compare(attr->value(), attr->value_size(),
-                                    "true", std::strlen("true"));
+                            compare(attr->value(), attr->value_size(), "true",
+                                    std::strlen("true"));
                         b.set_truncated(val);
                     }
                     else
                     {
-                        EWS_ASSERT(false
-                                && "Unexpected attribute in <Body> element");
+                        EWS_ASSERT(false &&
+                                   "Unexpected attribute in <Body> element");
                     }
                 }
 
-                auto content = std::string(body_node->value(),
-                                           body_node->value_size());
+                auto content =
+                    std::string(body_node->value(), body_node->value_size());
                 b.set_content(std::move(content));
             }
             return b;
@@ -7794,7 +7764,7 @@ namespace ews
         //! Returns the items or files that are attached to this item
         std::vector<attachment> get_attachments() const
         {
-            //TODO: support attachment hierarchies
+            // TODO: support attachment hierarchies
 
             const auto attachments_node = xml().get_node("Attachments");
             if (!attachments_node)
@@ -7844,19 +7814,20 @@ namespace ews
             {
                 auto ptr_to_qname = doc->allocate_string("t:Categories");
                 target_node = doc->allocate_node(rapidxml::node_element);
-                target_node->qname(ptr_to_qname,
-                                 std::strlen("t:Categories"),
-                                 ptr_to_qname + 2);
-                target_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                         internal::uri<>::microsoft::types_size);
+                target_node->qname(ptr_to_qname, std::strlen("t:Categories"),
+                                   ptr_to_qname + 2);
+                target_node->namespace_uri(
+                    internal::uri<>::microsoft::types(),
+                    internal::uri<>::microsoft::types_size);
             }
 
             for (const auto& category : categories)
             {
-                auto new_str  = doc->allocate_string(category.c_str());
-                auto new_node = doc->allocate_node(rapidxml::node_element, "t:String");
+                auto new_str = doc->allocate_string(category.c_str());
+                auto new_node =
+                    doc->allocate_node(rapidxml::node_element, "t:String");
                 new_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                            internal::uri<>::microsoft::types_size);
+                                        internal::uri<>::microsoft::types_size);
                 new_node->value(new_str);
 
                 target_node->append_node(new_node);
@@ -7880,7 +7851,8 @@ namespace ews
             for (auto child = categories_node->first_node(); child != nullptr;
                  child = child->next_sibling())
             {
-                categories.emplace_back(std::string(child->value(), child->value_size()));
+                categories.emplace_back(
+                    std::string(child->value(), child->value_size()));
             }
             return categories;
         }
@@ -7948,7 +7920,8 @@ namespace ews
         //! This is a read-only property.
         //!
         //! \sa internet_message_header
-        std::vector<internet_message_header> get_internet_message_headers() const
+        std::vector<internet_message_header>
+        get_internet_message_headers() const
         {
             const auto node = xml().get_node("InternetMessageHeaders");
             if (!node)
@@ -7960,13 +7933,13 @@ namespace ews
             for (auto child = node->first_node(); child != nullptr;
                  child = child->next_sibling())
             {
-                auto field = std::string(
-                        child->first_attribute()->value(),
-                        child->first_attribute()->value_size());
+                auto field =
+                    std::string(child->first_attribute()->value(),
+                                child->first_attribute()->value_size());
                 auto value = std::string(child->value(), child->value_size());
 
-                headers.emplace_back(
-                    internet_message_header(std::move(field), std::move(value)));
+                headers.emplace_back(internet_message_header(std::move(field),
+                                                             std::move(value)));
             }
 
             return headers;
@@ -8024,14 +7997,16 @@ namespace ews
         //! shown to the user.
         void set_reminder_minutes_before_start(std::uint32_t minutes)
         {
-            xml().set_or_update("ReminderMinutesBeforeStart", std::to_string(minutes));
+            xml().set_or_update("ReminderMinutesBeforeStart",
+                                std::to_string(minutes));
         }
 
         //! \brief Returns the number of minutes before due date that a
         //! reminder should be shown to the user.
         std::uint32_t get_reminder_minutes_before_start() const
         {
-            std::string minutes = xml().get_value_as_string("ReminderMinutesBeforeStart");
+            std::string minutes =
+                xml().get_value_as_string("ReminderMinutesBeforeStart");
             return minutes.empty() ? 0U : std::stoul(minutes);
         }
 
@@ -8081,22 +8056,19 @@ namespace ews
             return xml().get_value_as_string("Culture");
         }
 
-        // Following properties are beyond 2007 scope:
-        //   <EffectiveRights/>
-        //   <LastModifiedName/>
-        //   <LastModifiedTime/>
-        //   <IsAssociated/>
-        //   <WebClientReadFormQueryString/>
-        //   <WebClientEditFormQueryString/>
-        //   <ConversationId/>
-        //   <UniqueBody/>
+// Following properties are beyond 2007 scope:
+//   <EffectiveRights/>
+//   <LastModifiedName/>
+//   <LastModifiedTime/>
+//   <IsAssociated/>
+//   <WebClientReadFormQueryString/>
+//   <WebClientEditFormQueryString/>
+//   <ConversationId/>
+//   <UniqueBody/>
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
     protected:
-        internal::xml_subtree& xml() EWS_NOEXCEPT
-        {
-            return xml_subtree_;
-        }
+        internal::xml_subtree& xml() EWS_NOEXCEPT { return xml_subtree_; }
 
         const internal::xml_subtree& xml() const EWS_NOEXCEPT
         {
@@ -8550,7 +8522,8 @@ namespace ews
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
         task(item_id&& id, internal::xml_subtree&& properties)
             : item(std::move(id), std::move(properties))
-        {}
+        {
+        }
 #endif
 
         //! \brief Returns the actual amount of work expended on the task.
@@ -8629,8 +8602,8 @@ namespace ews
             for (auto entry = node->first_node(); entry;
                  entry = entry->next_sibling())
             {
-                res.emplace_back(std::string(entry->value(),
-                                             entry->value_size()));
+                res.emplace_back(
+                    std::string(entry->value(), entry->value_size()));
             }
             return res;
         }
@@ -8658,8 +8631,7 @@ namespace ews
             auto doc = xml().document();
             auto ptr_to_qname = doc->allocate_string("t:Companies");
             companies_node = doc->allocate_node(rapidxml::node_element);
-            companies_node->qname(ptr_to_qname,
-                                  std::strlen("t:Companies"),
+            companies_node->qname(ptr_to_qname, std::strlen("t:Companies"),
                                   ptr_to_qname + 2);
             companies_node->namespace_uri(uri::microsoft::types(),
                                           uri::microsoft::types_size);
@@ -8669,8 +8641,7 @@ namespace ews
             {
                 ptr_to_qname = doc->allocate_string("t:String");
                 auto node = doc->allocate_node(rapidxml::node_element);
-                node->qname(ptr_to_qname,
-                            std::strlen("t:String"),
+                node->qname(ptr_to_qname, std::strlen("t:String"),
                             ptr_to_qname + 2);
                 node->namespace_uri(uri::microsoft::types(),
                                     uri::microsoft::types_size);
@@ -8750,8 +8721,8 @@ namespace ews
             return date_time(xml().get_value_as_string("DueDate"));
         }
 
-        // TODO
-        // This is a read-only property.
+// TODO
+// This is a read-only property.
 #if 0
         int is_assignment_editable() const
         {
@@ -8802,9 +8773,9 @@ namespace ews
             xml().set_or_update("Mileage", mileage);
         }
 
-        // TODO: Not in AllProperties shape in EWS 2013, investigate
-        // The name of the user who owns the task.
-        // This is a read-only property
+// TODO: Not in AllProperties shape in EWS 2013, investigate
+// The name of the user who owns the task.
+// This is a read-only property
 #if 0
         std::string get_owner() const
         {
@@ -8922,8 +8893,7 @@ namespace ews
         static task from_xml_element(const rapidxml::xml_node<>& elem)
         {
             auto id_node = elem.first_node_ns(
-                    internal::uri<>::microsoft::types(),
-                    "ItemId");
+                internal::uri<>::microsoft::types(), "ItemId");
             EWS_ASSERT(id_node && "Expected <ItemId>");
             return task(item_id::from_xml_element(*id_node),
                         internal::xml_subtree(elem));
@@ -8936,10 +8906,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << "<m:CreateItem>"
-                      "<m:Items>"
-                        "<t:Task>" << xml().to_string() << "</t:Task>"
-                      "</m:Items>"
-                    "</m:CreateItem>";
+                    "<m:Items>"
+                    "<t:Task>"
+                 << xml().to_string() << "</t:Task>"
+                                         "</m:Items>"
+                                         "</m:CreateItem>";
             return sstr.str();
         }
     };
@@ -8967,7 +8938,8 @@ namespace ews
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
         contact(item_id&& id, internal::xml_subtree&& properties)
             : item(std::move(id), std::move(properties))
-        {}
+        {
+        }
 #endif
 
         // How the name should be filed for display/sorting purposes
@@ -9024,12 +8996,10 @@ namespace ews
                 auto name_attr = entry->first_attribute("Name");
                 auto routing_type_attr = entry->first_attribute("RoutingType");
                 auto mailbox_type_attr = entry->first_attribute("MailboxType");
-                result.emplace_back(
-                    mailbox(
-                        entry->value(),
-                        name_attr ? name_attr->value() : "",
-                        routing_type_attr ? routing_type_attr->value() : "",
-                        mailbox_type_attr ? mailbox_type_attr->value() : ""));
+                result.emplace_back(mailbox(
+                    entry->value(), name_attr ? name_attr->value() : "",
+                    routing_type_attr ? routing_type_attr->value() : "",
+                    mailbox_type_attr ? mailbox_type_attr->value() : ""));
             }
             return result;
         }
@@ -9138,7 +9108,8 @@ namespace ews
             return xml().get_value_as_string("SpouseName");
         }
 
-        //! Sets the family name of the contact; usually considered the last name
+        //! Sets the family name of the contact; usually considered the last
+        //! name
         void set_surname(const std::string& surname)
         {
             xml().set_or_update("Surname", surname);
@@ -9172,8 +9143,8 @@ namespace ews
         //! Makes a contact instance from a \<Contact> XML element
         static contact from_xml_element(const rapidxml::xml_node<>& elem)
         {
-            auto id_node = elem.first_node_ns(internal::uri<>::microsoft::types(),
-                                              "ItemId");
+            auto id_node = elem.first_node_ns(
+                internal::uri<>::microsoft::types(), "ItemId");
             EWS_ASSERT(id_node && "Expected <ItemId>");
             return contact(item_id::from_xml_element(*id_node),
                            internal::xml_subtree(elem));
@@ -9184,15 +9155,13 @@ namespace ews
         std::string create_item_request_string() const
         {
             std::stringstream sstr;
-            sstr <<
-                "<m:CreateItem>"
-                  "<m:Items>"
+            sstr << "<m:CreateItem>"
+                    "<m:Items>"
                     "<t:Contact>";
             sstr << xml().to_string();
-            sstr <<
-                    "</t:Contact>"
-                  "</m:Items>"
-                "</m:CreateItem>";
+            sstr << "</t:Contact>"
+                    "</m:Items>"
+                    "</m:CreateItem>";
             return sstr.str();
         }
 
@@ -9213,10 +9182,9 @@ namespace ews
                 for (auto attr = entry->first_attribute(); attr;
                      attr = attr->next_attribute())
                 {
-                    if (   compare(attr->name(), attr->name_size(),
-                                   "Key", 3)
-                        && compare(attr->value(), attr->value_size(),
-                                   key, std::strlen(key)))
+                    if (compare(attr->name(), attr->name_size(), "Key", 3) &&
+                        compare(attr->value(), attr->value_size(), key,
+                                std::strlen(key)))
                     {
                         return std::string(entry->value(), entry->value_size());
                     }
@@ -9244,10 +9212,10 @@ namespace ews
                     for (auto attr = entry->first_attribute(); attr;
                          attr = attr->next_attribute())
                     {
-                        if (   compare(attr->name(), attr->name_size(),
-                                       "Key", 3)
-                            && compare(attr->value(), attr->value_size(),
-                                       key, std::strlen(key)))
+                        if (compare(attr->name(), attr->name_size(), "Key",
+                                    3) &&
+                            compare(attr->value(), attr->value_size(), key,
+                                    std::strlen(key)))
                         {
                             exists = true;
                             break;
@@ -9265,11 +9233,11 @@ namespace ews
 
                 auto ptr_to_qname = doc->allocate_string("t:EmailAddresses");
                 addresses = doc->allocate_node(rapidxml::node_element);
-                addresses->qname(ptr_to_qname,
-                                 std::strlen("t:EmailAddresses"),
+                addresses->qname(ptr_to_qname, std::strlen("t:EmailAddresses"),
                                  ptr_to_qname + 2);
-                addresses->namespace_uri(internal::uri<>::microsoft::types(),
-                                         internal::uri<>::microsoft::types_size);
+                addresses->namespace_uri(
+                    internal::uri<>::microsoft::types(),
+                    internal::uri<>::microsoft::types_size);
                 doc->append_node(addresses);
             }
 
@@ -9277,38 +9245,37 @@ namespace ews
             auto new_entry_qname = doc->allocate_string("t:Entry");
             auto new_entry_value = doc->allocate_string(mail.value().c_str());
             auto new_entry = doc->allocate_node(rapidxml::node_element);
-            new_entry->qname(new_entry_qname,
-                             std::strlen("t:Entry"),
+            new_entry->qname(new_entry_qname, std::strlen("t:Entry"),
                              new_entry_qname + 2);
             new_entry->namespace_uri(internal::uri<>::microsoft::types(),
                                      internal::uri<>::microsoft::types_size);
             new_entry->value(new_entry_value);
             auto ptr_to_key = doc->allocate_string("Key");
             auto ptr_to_value = doc->allocate_string(key);
-            new_entry->append_attribute(doc->allocate_attribute(ptr_to_key,
-                                                                ptr_to_value));
+            new_entry->append_attribute(
+                doc->allocate_attribute(ptr_to_key, ptr_to_value));
             if (!mail.name().empty())
             {
                 ptr_to_key = doc->allocate_string("Name");
                 ptr_to_value = doc->allocate_string(mail.name().c_str());
                 new_entry->append_attribute(
-                        doc->allocate_attribute(ptr_to_key, ptr_to_value));
+                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
             }
             if (!mail.routing_type().empty())
             {
                 ptr_to_key = doc->allocate_string("RoutingType");
-                ptr_to_value = doc->allocate_string(
-                        mail.routing_type().c_str());
+                ptr_to_value =
+                    doc->allocate_string(mail.routing_type().c_str());
                 new_entry->append_attribute(
-                        doc->allocate_attribute(ptr_to_key, ptr_to_value));
+                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
             }
             if (!mail.mailbox_type().empty())
             {
                 ptr_to_key = doc->allocate_string("MailboxType");
-                ptr_to_value = doc->allocate_string(
-                        mail.mailbox_type().c_str());
+                ptr_to_value =
+                    doc->allocate_string(mail.mailbox_type().c_str());
                 new_entry->append_attribute(
-                        doc->allocate_attribute(ptr_to_key, ptr_to_value));
+                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
             }
             addresses->append_node(new_entry);
         }
@@ -9337,37 +9304,21 @@ namespace ews
         occurrence_info() {}
 #endif
 
-        occurrence_info(item_id id,
-                        date_time start,
-                        date_time end,
+        occurrence_info(item_id id, date_time start, date_time end,
                         date_time original_start)
-            : item_id_(std::move(id)),
-              start_(std::move(start)),
-              end_(std::move(end)),
-              original_start_(std::move(original_start))
+            : item_id_(std::move(id)), start_(std::move(start)),
+              end_(std::move(end)), original_start_(std::move(original_start))
         {
         }
 
         //! True if this occurrence_info is undefined
-        bool none() const EWS_NOEXCEPT
-        {
-            return !item_id_.valid();
-        }
+        bool none() const EWS_NOEXCEPT { return !item_id_.valid(); }
 
-        const item_id& get_item_id() const EWS_NOEXCEPT
-        {
-            return item_id_;
-        }
+        const item_id& get_item_id() const EWS_NOEXCEPT { return item_id_; }
 
-        const date_time& get_start() const EWS_NOEXCEPT
-        {
-            return start_;
-        }
+        const date_time& get_start() const EWS_NOEXCEPT { return start_; }
 
-        const date_time& get_end() const EWS_NOEXCEPT
-        {
-            return end_;
-        }
+        const date_time& get_end() const EWS_NOEXCEPT { return end_; }
 
         const date_time& get_original_start() const EWS_NOEXCEPT
         {
@@ -9376,7 +9327,8 @@ namespace ews
 
         //! \brief Makes a occurrence_info instance from a \<FirstOccurrence>,
         //! \<LastOccurrence>, or \<Occurrence> XML element.
-        static occurrence_info from_xml_element(const rapidxml::xml_node<>& elem)
+        static occurrence_info
+        from_xml_element(const rapidxml::xml_node<>& elem)
         {
             using rapidxml::internal::compare;
 
@@ -9388,48 +9340,37 @@ namespace ews
             for (auto node = elem.first_node(); node;
                  node = node->next_sibling())
             {
-                if (compare(node->local_name(),
-                            node->local_name_size(),
-                            "OriginalStart",
-                            std::strlen("OriginalStart")))
+                if (compare(node->local_name(), node->local_name_size(),
+                            "OriginalStart", std::strlen("OriginalStart")))
                 {
                     original_start = date_time(
                         std::string(node->value(), node->value_size()));
                 }
-                else if (compare(node->local_name(),
-                                 node->local_name_size(),
-                                 "End",
-                                 std::strlen("End")))
+                else if (compare(node->local_name(), node->local_name_size(),
+                                 "End", std::strlen("End")))
                 {
                     end = date_time(
                         std::string(node->value(), node->value_size()));
                 }
-                else if (compare(node->local_name(),
-                         node->local_name_size(),
-                         "Start",
-                         std::strlen("Start")))
+                else if (compare(node->local_name(), node->local_name_size(),
+                                 "Start", std::strlen("Start")))
                 {
                     start = date_time(
                         std::string(node->value(), node->value_size()));
                 }
-                else if (compare(node->local_name(),
-                         node->local_name_size(),
-                         "ItemId",
-                         std::strlen("ItemId")))
+                else if (compare(node->local_name(), node->local_name_size(),
+                                 "ItemId", std::strlen("ItemId")))
                 {
                     id = item_id::from_xml_element(*node);
                 }
                 else
                 {
-                    throw exception(
-                        "Unexpected child element in <Mailbox>");
+                    throw exception("Unexpected child element in <Mailbox>");
                 }
             }
 
-            return occurrence_info(std::move(id),
-                                   std::move(start),
-                                   std::move(end),
-                                   std::move(original_start));
+            return occurrence_info(std::move(id), std::move(start),
+                                   std::move(end), std::move(original_start));
         }
 
     private:
@@ -9466,10 +9407,7 @@ namespace ews
     public:
 #endif
 
-        std::string to_xml() const
-        {
-            return this->to_xml_impl();
-        }
+        std::string to_xml() const { return this->to_xml_impl(); }
 
         //! \brief Creates a new XML element for this recurrence pattern and
         //! appends it to given parent node.
@@ -9500,7 +9438,8 @@ namespace ews
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<recurrence_pattern>::value, "");
+    static_assert(!std::is_default_constructible<recurrence_pattern>::value,
+                  "");
     static_assert(!std::is_copy_constructible<recurrence_pattern>::value, "");
     static_assert(!std::is_copy_assignable<recurrence_pattern>::value, "");
     static_assert(!std::is_move_constructible<recurrence_pattern>::value, "");
@@ -9516,11 +9455,8 @@ namespace ews
     {
     public:
         relative_yearly_recurrence(day_of_week days_of_week,
-                                   day_of_week_index index,
-                                   month m)
-            : days_of_week_(days_of_week),
-              index_(index),
-              month_(m)
+                                   day_of_week_index index, month m)
+            : days_of_week_(days_of_week), index_(index), month_(m)
         {
         }
 
@@ -9534,10 +9470,7 @@ namespace ews
             return index_;
         }
 
-        month get_month() const EWS_NOEXCEPT
-        {
-            return month_;
-        }
+        month get_month() const EWS_NOEXCEPT { return month_; }
 
     private:
         day_of_week days_of_week_;
@@ -9551,11 +9484,10 @@ namespace ews
             std::stringstream sstr;
             sstr << "<t:RelativeYearlyRecurrence>"
                  << "<t:DaysOfWeek>" << enum_to_str(days_of_week_)
-                                << "</t:DaysOfWeek>"
+                 << "</t:DaysOfWeek>"
                  << "<t:DayOfWeekIndex>" << enum_to_str(index_)
-                                << "</t:DayOfWeekIndex>"
-                 << "<t:Month>" << enum_to_str(month_)
-                                << "</t:Month>"
+                 << "</t:DayOfWeekIndex>"
+                 << "<t:Month>" << enum_to_str(month_) << "</t:Month>"
                  << "</t:RelativeYearlyRecurrence>";
             return sstr.str();
         }
@@ -9565,25 +9497,22 @@ namespace ews
         {
             auto doc = parent.document();
 
-            EWS_ASSERT(doc
-                && "parent node needs to be part of a document");
+            EWS_ASSERT(doc && "parent node needs to be part of a document");
 
-            auto ptr_to_qname = doc->allocate_string(
-                                            "t:RelativeYearlyRecurrence");
+            auto ptr_to_qname =
+                doc->allocate_string("t:RelativeYearlyRecurrence");
             auto pattern_node = doc->allocate_node(rapidxml::node_element);
             pattern_node->qname(ptr_to_qname,
                                 std::strlen("t:RelativeYearlyRecurrence"),
                                 ptr_to_qname + 2);
-            pattern_node->namespace_uri(
-                                    internal::uri<>::microsoft::types(),
-                                    internal::uri<>::microsoft::types_size);
+            pattern_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                        internal::uri<>::microsoft::types_size);
 
             ptr_to_qname = doc->allocate_string("t:DaysOfWeek");
             auto ptr_to_value = doc->allocate_string(
                 internal::enum_to_str(days_of_week_).c_str());
             auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:DaysOfWeek"),
+            node->qname(ptr_to_qname, std::strlen("t:DaysOfWeek"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -9591,11 +9520,10 @@ namespace ews
             pattern_node->append_node(node);
 
             ptr_to_qname = doc->allocate_string("t:DayOfWeekIndex");
-            ptr_to_value = doc->allocate_string(
-                internal::enum_to_str(index_).c_str());
+            ptr_to_value =
+                doc->allocate_string(internal::enum_to_str(index_).c_str());
             node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:DayOfWeekIndex"),
+            node->qname(ptr_to_qname, std::strlen("t:DayOfWeekIndex"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -9603,12 +9531,10 @@ namespace ews
             pattern_node->append_node(node);
 
             ptr_to_qname = doc->allocate_string("t:Month");
-            ptr_to_value = doc->allocate_string(
-                internal::enum_to_str(month_).c_str());
+            ptr_to_value =
+                doc->allocate_string(internal::enum_to_str(month_).c_str());
             node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:Month"),
-                        ptr_to_qname + 2);
+            node->qname(ptr_to_qname, std::strlen("t:Month"), ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
                                 internal::uri<>::microsoft::types_size);
@@ -9620,11 +9546,16 @@ namespace ews
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<relative_yearly_recurrence>::value, "");
-    static_assert(!std::is_copy_constructible<relative_yearly_recurrence>::value, "");
-    static_assert(!std::is_copy_assignable<relative_yearly_recurrence>::value, "");
-    static_assert(!std::is_move_constructible<relative_yearly_recurrence>::value, "");
-    static_assert(!std::is_move_assignable<relative_yearly_recurrence>::value, "");
+    static_assert(
+        !std::is_default_constructible<relative_yearly_recurrence>::value, "");
+    static_assert(
+        !std::is_copy_constructible<relative_yearly_recurrence>::value, "");
+    static_assert(!std::is_copy_assignable<relative_yearly_recurrence>::value,
+                  "");
+    static_assert(
+        !std::is_move_constructible<relative_yearly_recurrence>::value, "");
+    static_assert(!std::is_move_assignable<relative_yearly_recurrence>::value,
+                  "");
 #endif
 
     //! A yearly recurrence pattern, e.g., a birthday.
@@ -9632,8 +9563,7 @@ namespace ews
     {
     public:
         absolute_yearly_recurrence(std::uint32_t day_of_month, month m)
-            : day_of_month_(day_of_month),
-              month_(m)
+            : day_of_month_(day_of_month), month_(m)
         {
         }
 
@@ -9642,10 +9572,7 @@ namespace ews
             return day_of_month_;
         }
 
-        month get_month() const EWS_NOEXCEPT
-        {
-            return month_;
-        }
+        month get_month() const EWS_NOEXCEPT { return month_; }
 
     private:
         std::uint32_t day_of_month_;
@@ -9657,10 +9584,8 @@ namespace ews
 
             std::stringstream sstr;
             sstr << "<t:AbsoluteYearlyRecurrence>"
-                     << "<t:DayOfMonth>" << day_of_month_
-                                    << "</t:DayOfMonth>"
-                     << "<t:Month>" << enum_to_str(month_)
-                                    << "</t:Month>"
+                 << "<t:DayOfMonth>" << day_of_month_ << "</t:DayOfMonth>"
+                 << "<t:Month>" << enum_to_str(month_) << "</t:Month>"
                  << "</t:AbsoluteYearlyRecurrence>";
             return sstr.str();
         }
@@ -9670,25 +9595,22 @@ namespace ews
         {
             auto doc = parent.document();
 
-            EWS_ASSERT(doc
-                && "parent node needs to be part of a document");
+            EWS_ASSERT(doc && "parent node needs to be part of a document");
 
-            auto ptr_to_qname = doc->allocate_string(
-                                                "t:AbsoluteYearlyRecurrence");
+            auto ptr_to_qname =
+                doc->allocate_string("t:AbsoluteYearlyRecurrence");
             auto pattern_node = doc->allocate_node(rapidxml::node_element);
             pattern_node->qname(ptr_to_qname,
                                 std::strlen("t:AbsoluteYearlyRecurrence"),
                                 ptr_to_qname + 2);
-            pattern_node->namespace_uri(
-                                    internal::uri<>::microsoft::types(),
-                                    internal::uri<>::microsoft::types_size);
+            pattern_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                        internal::uri<>::microsoft::types_size);
 
             ptr_to_qname = doc->allocate_string("t:DayOfMonth");
             const auto value = std::to_string(day_of_month_);
             auto ptr_to_value = doc->allocate_string(value.c_str());
             auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:DayOfMonth"),
+            node->qname(ptr_to_qname, std::strlen("t:DayOfMonth"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -9696,15 +9618,13 @@ namespace ews
             pattern_node->append_node(node);
 
             ptr_to_qname = doc->allocate_string("t:Month");
-            ptr_to_value = doc->allocate_string(
-                internal::enum_to_str(month_).c_str());
+            ptr_to_value =
+                doc->allocate_string(internal::enum_to_str(month_).c_str());
             node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:Month"),
-                        ptr_to_qname + 2);
+            node->qname(ptr_to_qname, std::strlen("t:Month"), ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
-                internal::uri<>::microsoft::types_size);
+                                internal::uri<>::microsoft::types_size);
             pattern_node->append_node(node);
 
             parent.append_node(pattern_node);
@@ -9713,11 +9633,16 @@ namespace ews
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<absolute_yearly_recurrence>::value, "");
-    static_assert(!std::is_copy_constructible<absolute_yearly_recurrence>::value, "");
-    static_assert(!std::is_copy_assignable<absolute_yearly_recurrence>::value, "");
-    static_assert(!std::is_move_constructible<absolute_yearly_recurrence>::value, "");
-    static_assert(!std::is_move_assignable<absolute_yearly_recurrence>::value, "");
+    static_assert(
+        !std::is_default_constructible<absolute_yearly_recurrence>::value, "");
+    static_assert(
+        !std::is_copy_constructible<absolute_yearly_recurrence>::value, "");
+    static_assert(!std::is_copy_assignable<absolute_yearly_recurrence>::value,
+                  "");
+    static_assert(
+        !std::is_move_constructible<absolute_yearly_recurrence>::value, "");
+    static_assert(!std::is_move_assignable<absolute_yearly_recurrence>::value,
+                  "");
 #endif
 
     //! \brief An event that occurrs on the same day each month or monthly
@@ -9737,16 +9662,13 @@ namespace ews
     class absolute_monthly_recurrence final : public recurrence_pattern
     {
     public:
-        absolute_monthly_recurrence(std::uint32_t interval, std::uint32_t day_of_month)
-            : interval_(interval),
-              day_of_month_(day_of_month)
+        absolute_monthly_recurrence(std::uint32_t interval,
+                                    std::uint32_t day_of_month)
+            : interval_(interval), day_of_month_(day_of_month)
         {
         }
 
-        std::uint32_t get_interval() const EWS_NOEXCEPT
-        {
-            return interval_;
-        }
+        std::uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
 
         std::uint32_t get_days_of_month() const EWS_NOEXCEPT
         {
@@ -9763,10 +9685,8 @@ namespace ews
 
             std::stringstream sstr;
             sstr << "<t:AbsoluteMonthlyRecurrence>"
-                    << "<t:Interval>" << interval_
-                                << "</t:Interval>"
-                    << "<t:DayOfMonth>" << day_of_month_
-                                << "</t:DayOfMonth>"
+                 << "<t:Interval>" << interval_ << "</t:Interval>"
+                 << "<t:DayOfMonth>" << day_of_month_ << "</t:DayOfMonth>"
                  << "</t:AbsoluteMonthlyRecurrence>";
             return sstr.str();
         }
@@ -9776,25 +9696,22 @@ namespace ews
         {
             auto doc = parent.document();
 
-            EWS_ASSERT(doc
-                && "parent node needs to be part of a document");
+            EWS_ASSERT(doc && "parent node needs to be part of a document");
 
-            auto ptr_to_qname = doc->allocate_string(
-                                                "t:AbsoluteMonthlyRecurrence");
+            auto ptr_to_qname =
+                doc->allocate_string("t:AbsoluteMonthlyRecurrence");
             auto pattern_node = doc->allocate_node(rapidxml::node_element);
             pattern_node->qname(ptr_to_qname,
                                 std::strlen("t:AbsoluteMonthlyRecurrence"),
                                 ptr_to_qname + 2);
-            pattern_node->namespace_uri(
-                                    internal::uri<>::microsoft::types(),
-                                    internal::uri<>::microsoft::types_size);
+            pattern_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                        internal::uri<>::microsoft::types_size);
 
             ptr_to_qname = doc->allocate_string("t:Interval");
-            auto ptr_to_value = doc->allocate_string(
-                std::to_string(interval_).c_str());
+            auto ptr_to_value =
+                doc->allocate_string(std::to_string(interval_).c_str());
             auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:Interval"),
+            node->qname(ptr_to_qname, std::strlen("t:Interval"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -9802,11 +9719,10 @@ namespace ews
             pattern_node->append_node(node);
 
             ptr_to_qname = doc->allocate_string("t:DayOfMonth");
-            ptr_to_value = doc->allocate_string(
-                                    std::to_string(day_of_month_).c_str());
+            ptr_to_value =
+                doc->allocate_string(std::to_string(day_of_month_).c_str());
             node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:DayOfMonth"),
+            node->qname(ptr_to_qname, std::strlen("t:DayOfMonth"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -9819,11 +9735,16 @@ namespace ews
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<absolute_monthly_recurrence>::value, "");
-    static_assert(!std::is_copy_constructible<absolute_monthly_recurrence>::value, "");
-    static_assert(!std::is_copy_assignable<absolute_monthly_recurrence>::value, "");
-    static_assert(!std::is_move_constructible<absolute_monthly_recurrence>::value, "");
-    static_assert(!std::is_move_assignable<absolute_monthly_recurrence>::value, "");
+    static_assert(
+        !std::is_default_constructible<absolute_monthly_recurrence>::value, "");
+    static_assert(
+        !std::is_copy_constructible<absolute_monthly_recurrence>::value, "");
+    static_assert(!std::is_copy_assignable<absolute_monthly_recurrence>::value,
+                  "");
+    static_assert(
+        !std::is_move_constructible<absolute_monthly_recurrence>::value, "");
+    static_assert(!std::is_move_assignable<absolute_monthly_recurrence>::value,
+                  "");
 #endif
 
     //! \brief An event that occurrs annually relative to a month, week, and
@@ -9849,16 +9770,11 @@ namespace ews
         relative_monthly_recurrence(std::uint32_t interval,
                                     day_of_week days_of_week,
                                     day_of_week_index index)
-            : interval_(interval),
-              days_of_week_(days_of_week),
-              index_(index)
+            : interval_(interval), days_of_week_(days_of_week), index_(index)
         {
         }
 
-        std::uint32_t get_interval() const EWS_NOEXCEPT
-        {
-            return interval_;
-        }
+        std::uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
 
         day_of_week get_days_of_week() const EWS_NOEXCEPT
         {
@@ -9881,13 +9797,11 @@ namespace ews
 
             std::stringstream sstr;
             sstr << "<t:RelativeMonthlyRecurrence>"
-                     << "<t:Interval>" << interval_
-                                    << "</t:Interval>"
-                     << "<t:DaysOfWeek>"
-                                    << enum_to_str(days_of_week_)
-                                    << "</t:DaysOfWeek>"
-                     << "<t:DayOfWeekIndex>" << enum_to_str(index_)
-                                    << "</t:DayOfWeekIndex>"
+                 << "<t:Interval>" << interval_ << "</t:Interval>"
+                 << "<t:DaysOfWeek>" << enum_to_str(days_of_week_)
+                 << "</t:DaysOfWeek>"
+                 << "<t:DayOfWeekIndex>" << enum_to_str(index_)
+                 << "</t:DayOfWeekIndex>"
                  << "</t:RelativeMonthlyRecurrence>";
             return sstr.str();
         }
@@ -9897,25 +9811,22 @@ namespace ews
         {
             auto doc = parent.document();
 
-            EWS_ASSERT(doc
-                && "parent node needs to be part of a document");
+            EWS_ASSERT(doc && "parent node needs to be part of a document");
 
-            auto ptr_to_qname = doc->allocate_string(
-                                                "t:RelativeMonthlyRecurrence");
+            auto ptr_to_qname =
+                doc->allocate_string("t:RelativeMonthlyRecurrence");
             auto pattern_node = doc->allocate_node(rapidxml::node_element);
             pattern_node->qname(ptr_to_qname,
                                 std::strlen("t:RelativeMonthlyRecurrence"),
                                 ptr_to_qname + 2);
-            pattern_node->namespace_uri(
-                                    internal::uri<>::microsoft::types(),
-                                    internal::uri<>::microsoft::types_size);
+            pattern_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                        internal::uri<>::microsoft::types_size);
 
             ptr_to_qname = doc->allocate_string("t:Interval");
-            auto ptr_to_value = doc->allocate_string(
-                                        std::to_string(interval_).c_str());
+            auto ptr_to_value =
+                doc->allocate_string(std::to_string(interval_).c_str());
             auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:Interval"),
+            node->qname(ptr_to_qname, std::strlen("t:Interval"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -9926,8 +9837,7 @@ namespace ews
             ptr_to_value = doc->allocate_string(
                 internal::enum_to_str(days_of_week_).c_str());
             node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:DaysOfWeek"),
+            node->qname(ptr_to_qname, std::strlen("t:DaysOfWeek"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -9935,11 +9845,10 @@ namespace ews
             pattern_node->append_node(node);
 
             ptr_to_qname = doc->allocate_string("t:DayOfWeekIndex");
-            ptr_to_value = doc->allocate_string(
-                                    internal::enum_to_str(index_).c_str());
+            ptr_to_value =
+                doc->allocate_string(internal::enum_to_str(index_).c_str());
             node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:DayOfWeekIndex"),
+            node->qname(ptr_to_qname, std::strlen("t:DayOfWeekIndex"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -9952,11 +9861,16 @@ namespace ews
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<relative_monthly_recurrence>::value, "");
-    static_assert(!std::is_copy_constructible<relative_monthly_recurrence>::value, "");
-    static_assert(!std::is_copy_assignable<relative_monthly_recurrence>::value, "");
-    static_assert(!std::is_move_constructible<relative_monthly_recurrence>::value, "");
-    static_assert(!std::is_move_assignable<relative_monthly_recurrence>::value, "");
+    static_assert(
+        !std::is_default_constructible<relative_monthly_recurrence>::value, "");
+    static_assert(
+        !std::is_copy_constructible<relative_monthly_recurrence>::value, "");
+    static_assert(!std::is_copy_assignable<relative_monthly_recurrence>::value,
+                  "");
+    static_assert(
+        !std::is_move_constructible<relative_monthly_recurrence>::value, "");
+    static_assert(!std::is_move_assignable<relative_monthly_recurrence>::value,
+                  "");
 #endif
 
     //! \brief A weekly recurrence
@@ -9971,11 +9885,9 @@ namespace ews
     class weekly_recurrence final : public recurrence_pattern
     {
     public:
-        weekly_recurrence(std::uint32_t interval,
-                          day_of_week days_of_week,
+        weekly_recurrence(std::uint32_t interval, day_of_week days_of_week,
                           day_of_week first_day_of_week = day_of_week::mon)
-            : interval_(interval),
-              days_of_week_(),
+            : interval_(interval), days_of_week_(),
               first_day_of_week_(first_day_of_week)
         {
             days_of_week_.push_back(days_of_week);
@@ -9984,16 +9896,12 @@ namespace ews
         weekly_recurrence(std::uint32_t interval,
                           std::vector<day_of_week> days_of_week,
                           day_of_week first_day_of_week = day_of_week::mon)
-            : interval_(interval),
-              days_of_week_(std::move(days_of_week)),
+            : interval_(interval), days_of_week_(std::move(days_of_week)),
               first_day_of_week_(first_day_of_week)
         {
         }
 
-        std::uint32_t get_interval() const EWS_NOEXCEPT
-        {
-            return interval_;
-        }
+        std::uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
 
         const std::vector<day_of_week>& get_days_of_week() const EWS_NOEXCEPT
         {
@@ -10022,13 +9930,10 @@ namespace ews
             value.resize(value.size() - 1);
             std::stringstream sstr;
             sstr << "<t:WeeklyRecurrence>"
-                     << "<t:Interval>" << interval_
-                                    << "</t:Interval>"
-                     << "<t:DaysOfWeek>" << value
-                                    << "</t:DaysOfWeek>"
-                     << "<t:FirstDayOfWeek>"
-                                    << enum_to_str(first_day_of_week_)
-                                    << "</t:FirstDayOfWeek>"
+                 << "<t:Interval>" << interval_ << "</t:Interval>"
+                 << "<t:DaysOfWeek>" << value << "</t:DaysOfWeek>"
+                 << "<t:FirstDayOfWeek>" << enum_to_str(first_day_of_week_)
+                 << "</t:FirstDayOfWeek>"
                  << "</t:WeeklyRecurrence>";
             return sstr.str();
         }
@@ -10040,24 +9945,20 @@ namespace ews
 
             auto doc = parent.document();
 
-            EWS_ASSERT(doc
-                && "parent node needs to be part of a document");
+            EWS_ASSERT(doc && "parent node needs to be part of a document");
 
             auto ptr_to_qname = doc->allocate_string("t:WeeklyRecurrence");
             auto pattern_node = doc->allocate_node(rapidxml::node_element);
-            pattern_node->qname(ptr_to_qname,
-                                std::strlen("t:WeeklyRecurrence"),
+            pattern_node->qname(ptr_to_qname, std::strlen("t:WeeklyRecurrence"),
                                 ptr_to_qname + 2);
-            pattern_node->namespace_uri(
-                                    uri<>::microsoft::types(),
-                                    uri<>::microsoft::types_size);
+            pattern_node->namespace_uri(uri<>::microsoft::types(),
+                                        uri<>::microsoft::types_size);
 
             ptr_to_qname = doc->allocate_string("t:Interval");
-            auto ptr_to_value = doc->allocate_string(
-                std::to_string(interval_).c_str());
+            auto ptr_to_value =
+                doc->allocate_string(std::to_string(interval_).c_str());
             auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:Interval"),
+            node->qname(ptr_to_qname, std::strlen("t:Interval"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(uri<>::microsoft::types(),
@@ -10070,12 +9971,11 @@ namespace ews
                 value += enum_to_str(day) + " ";
             }
             ptr_to_qname = doc->allocate_string("t:DaysOfWeek");
-            ptr_to_value = doc->allocate_string(value.c_str(),
-                                                value.length() - 1);
+            ptr_to_value =
+                doc->allocate_string(value.c_str(), value.length() - 1);
             ptr_to_value[value.length() - 1] = '\0';
             node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:DaysOfWeek"),
+            node->qname(ptr_to_qname, std::strlen("t:DaysOfWeek"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(uri<>::microsoft::types(),
@@ -10083,11 +9983,10 @@ namespace ews
             pattern_node->append_node(node);
 
             ptr_to_qname = doc->allocate_string("t:FirstDayOfWeek");
-            ptr_to_value = doc->allocate_string(
-                                    enum_to_str(first_day_of_week_).c_str());
+            ptr_to_value =
+                doc->allocate_string(enum_to_str(first_day_of_week_).c_str());
             node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:FirstDayOfWeek"),
+            node->qname(ptr_to_qname, std::strlen("t:FirstDayOfWeek"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(uri<>::microsoft::types(),
@@ -10111,15 +10010,11 @@ namespace ews
     class daily_recurrence final : public recurrence_pattern
     {
     public:
-        explicit daily_recurrence(std::uint32_t interval)
-            : interval_(interval)
+        explicit daily_recurrence(std::uint32_t interval) : interval_(interval)
         {
         }
 
-        std::uint32_t get_interval() const EWS_NOEXCEPT
-        {
-            return interval_;
-        }
+        std::uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
 
     private:
         std::uint32_t interval_;
@@ -10130,8 +10025,7 @@ namespace ews
 
             std::stringstream sstr;
             sstr << "<t:DailyRecurrence>"
-                     << "<t:Interval>" << interval_
-                                    << "</t:Interval>"
+                 << "<t:Interval>" << interval_ << "</t:Interval>"
                  << "</t:DailyRecurrence>";
             return sstr.str();
         }
@@ -10141,24 +10035,20 @@ namespace ews
         {
             auto doc = parent.document();
 
-            EWS_ASSERT(doc
-                && "parent node needs to be part of a document");
+            EWS_ASSERT(doc && "parent node needs to be part of a document");
 
             auto ptr_to_qname = doc->allocate_string("t:DailyRecurrence");
             auto pattern_node = doc->allocate_node(rapidxml::node_element);
-            pattern_node->qname(ptr_to_qname,
-                                std::strlen("t:DailyRecurrence"),
+            pattern_node->qname(ptr_to_qname, std::strlen("t:DailyRecurrence"),
                                 ptr_to_qname + 2);
-            pattern_node->namespace_uri(
-                                    internal::uri<>::microsoft::types(),
-                                    internal::uri<>::microsoft::types_size);
+            pattern_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                        internal::uri<>::microsoft::types_size);
 
             ptr_to_qname = doc->allocate_string("t:Interval");
-            auto ptr_to_value = doc->allocate_string(
-                                            std::to_string(interval_).c_str());
+            auto ptr_to_value =
+                doc->allocate_string(std::to_string(interval_).c_str());
             auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:Interval"),
+            node->qname(ptr_to_qname, std::strlen("t:Interval"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -10196,10 +10086,7 @@ namespace ews
 
     public:
 #endif
-        std::string to_xml() const
-        {
-            return this->to_xml_impl();
-        }
+        std::string to_xml() const { return this->to_xml_impl(); }
 
         //! \brief Creates a new XML element for this recurrence range and
         //! appends it to given parent node.
@@ -10259,8 +10146,8 @@ namespace ews
 
             std::stringstream sstr;
             sstr << "<t:NoEndRecurrence>"
-                     << "<t:StartDate>" << start_date_.to_string()
-                                    << "</t:StartDate>"
+                 << "<t:StartDate>" << start_date_.to_string()
+                 << "</t:StartDate>"
                  << "</t:NoEndRecurrence>";
             return sstr.str();
         }
@@ -10270,24 +10157,20 @@ namespace ews
         {
             auto doc = parent.document();
 
-            EWS_ASSERT(doc
-                && "parent node needs to be part of a document");
+            EWS_ASSERT(doc && "parent node needs to be part of a document");
 
             auto ptr_to_qname = doc->allocate_string("t:NoEndRecurrence");
             auto range_node = doc->allocate_node(rapidxml::node_element);
-            range_node->qname(ptr_to_qname,
-                                std::strlen("t:NoEndRecurrence"),
-                                ptr_to_qname + 2);
-            range_node->namespace_uri(
-                                    internal::uri<>::microsoft::types(),
-                                    internal::uri<>::microsoft::types_size);
+            range_node->qname(ptr_to_qname, std::strlen("t:NoEndRecurrence"),
+                              ptr_to_qname + 2);
+            range_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                      internal::uri<>::microsoft::types_size);
 
             ptr_to_qname = doc->allocate_string("t:StartDate");
-            auto ptr_to_value = doc->allocate_string(
-                                            start_date_.to_string().c_str());
+            auto ptr_to_value =
+                doc->allocate_string(start_date_.to_string().c_str());
             auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:StartDate"),
+            node->qname(ptr_to_qname, std::strlen("t:StartDate"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -10300,10 +10183,13 @@ namespace ews
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<no_end_recurrence_range>::value, "");
-    static_assert(!std::is_copy_constructible<no_end_recurrence_range>::value, "");
+    static_assert(
+        !std::is_default_constructible<no_end_recurrence_range>::value, "");
+    static_assert(!std::is_copy_constructible<no_end_recurrence_range>::value,
+                  "");
     static_assert(!std::is_copy_assignable<no_end_recurrence_range>::value, "");
-    static_assert(!std::is_move_constructible<no_end_recurrence_range>::value, "");
+    static_assert(!std::is_move_constructible<no_end_recurrence_range>::value,
+                  "");
     static_assert(!std::is_move_assignable<no_end_recurrence_range>::value, "");
 #endif
 
@@ -10312,8 +10198,7 @@ namespace ews
     {
     public:
         end_date_recurrence_range(date start_date, date end_date)
-            : start_date_(std::move(start_date)),
-              end_date_(std::move(end_date))
+            : start_date_(std::move(start_date)), end_date_(std::move(end_date))
         {
         }
 
@@ -10322,10 +10207,7 @@ namespace ews
             return start_date_;
         }
 
-        const date_time& get_end_date() const EWS_NOEXCEPT
-        {
-            return end_date_;
-        }
+        const date_time& get_end_date() const EWS_NOEXCEPT { return end_date_; }
 
     private:
         date start_date_;
@@ -10337,37 +10219,32 @@ namespace ews
 
             std::stringstream sstr;
             sstr << "<t:EndDateRecurrence>"
-                     << "<t:StartDate>" << start_date_.to_string()
-                                    << "</t:StartDate>"
-                     << "<t:EndDate>" << end_date_.to_string()
-                                    << "</t:EndDate>"
+                 << "<t:StartDate>" << start_date_.to_string()
+                 << "</t:StartDate>"
+                 << "<t:EndDate>" << end_date_.to_string() << "</t:EndDate>"
                  << "</t:EndDateRecurrence>";
             return sstr.str();
         }
-
 
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
         {
             auto doc = parent.document();
 
-            EWS_ASSERT(doc
-                && "parent node needs to be part of a document");
+            EWS_ASSERT(doc && "parent node needs to be part of a document");
 
             auto ptr_to_qname = doc->allocate_string("t:EndDateRecurrence");
             auto range_node = doc->allocate_node(rapidxml::node_element);
-            range_node->qname(ptr_to_qname,
-                              std::strlen("t:EndDateRecurrence"),
+            range_node->qname(ptr_to_qname, std::strlen("t:EndDateRecurrence"),
                               ptr_to_qname + 2);
             range_node->namespace_uri(internal::uri<>::microsoft::types(),
                                       internal::uri<>::microsoft::types_size);
 
             ptr_to_qname = doc->allocate_string("t:StartDate");
-            auto ptr_to_value = doc->allocate_string(
-                                            start_date_.to_string().c_str());
+            auto ptr_to_value =
+                doc->allocate_string(start_date_.to_string().c_str());
             auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:StartDate"),
+            node->qname(ptr_to_qname, std::strlen("t:StartDate"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -10377,8 +10254,7 @@ namespace ews
             ptr_to_qname = doc->allocate_string("t:EndDate");
             ptr_to_value = doc->allocate_string(end_date_.to_string().c_str());
             node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:EndDate"),
+            node->qname(ptr_to_qname, std::strlen("t:EndDate"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -10391,11 +10267,16 @@ namespace ews
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<end_date_recurrence_range>::value, "");
-    static_assert(!std::is_copy_constructible<end_date_recurrence_range>::value, "");
-    static_assert(!std::is_copy_assignable<end_date_recurrence_range>::value, "");
-    static_assert(!std::is_move_constructible<end_date_recurrence_range>::value, "");
-    static_assert(!std::is_move_assignable<end_date_recurrence_range>::value, "");
+    static_assert(
+        !std::is_default_constructible<end_date_recurrence_range>::value, "");
+    static_assert(!std::is_copy_constructible<end_date_recurrence_range>::value,
+                  "");
+    static_assert(!std::is_copy_assignable<end_date_recurrence_range>::value,
+                  "");
+    static_assert(!std::is_move_constructible<end_date_recurrence_range>::value,
+                  "");
+    static_assert(!std::is_move_assignable<end_date_recurrence_range>::value,
+                  "");
 #endif
 
     //! Represents a numbered recurrence range
@@ -10429,12 +10310,10 @@ namespace ews
 
             std::stringstream sstr;
             sstr << "<t:NumberedRecurrence>"
-                     << "<t:StartDate>"
-                                    << start_date_.to_string()
-                                    << "</t:StartDate>"
-                     << "<t:NumberOfOccurrences>"
-                                    << no_of_occurrences_
-                                    << "</t:NumberOfOccurrences>"
+                 << "<t:StartDate>" << start_date_.to_string()
+                 << "</t:StartDate>"
+                 << "<t:NumberOfOccurrences>" << no_of_occurrences_
+                 << "</t:NumberOfOccurrences>"
                  << "</t:NumberedRecurrence>";
             return sstr.str();
         }
@@ -10444,23 +10323,20 @@ namespace ews
         {
             auto doc = parent.document();
 
-            EWS_ASSERT(doc
-                && "parent node needs to be part of a document");
+            EWS_ASSERT(doc && "parent node needs to be part of a document");
 
             auto ptr_to_qname = doc->allocate_string("t:NumberedRecurrence");
             auto range_node = doc->allocate_node(rapidxml::node_element);
-            range_node->qname(ptr_to_qname,
-                              std::strlen("t:NumberedRecurrence"),
+            range_node->qname(ptr_to_qname, std::strlen("t:NumberedRecurrence"),
                               ptr_to_qname + 2);
             range_node->namespace_uri(internal::uri<>::microsoft::types(),
                                       internal::uri<>::microsoft::types_size);
 
             ptr_to_qname = doc->allocate_string("t:StartDate");
-            auto ptr_to_value = doc->allocate_string(
-                                            start_date_.to_string().c_str());
+            auto ptr_to_value =
+                doc->allocate_string(start_date_.to_string().c_str());
             auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:StartDate"),
+            node->qname(ptr_to_qname, std::strlen("t:StartDate"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -10469,10 +10345,9 @@ namespace ews
 
             ptr_to_qname = doc->allocate_string("t:NumberOfOccurrences");
             ptr_to_value = doc->allocate_string(
-                                std::to_string(no_of_occurrences_).c_str());
+                std::to_string(no_of_occurrences_).c_str());
             node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname,
-                        std::strlen("t:NumberOfOccurrences"),
+            node->qname(ptr_to_qname, std::strlen("t:NumberOfOccurrences"),
                         ptr_to_qname + 2);
             node->value(ptr_to_value);
             node->namespace_uri(internal::uri<>::microsoft::types(),
@@ -10485,11 +10360,16 @@ namespace ews
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<numbered_recurrence_range>::value, "");
-    static_assert(!std::is_copy_constructible<numbered_recurrence_range>::value, "");
-    static_assert(!std::is_copy_assignable<numbered_recurrence_range>::value, "");
-    static_assert(!std::is_move_constructible<numbered_recurrence_range>::value, "");
-    static_assert(!std::is_move_assignable<numbered_recurrence_range>::value, "");
+    static_assert(
+        !std::is_default_constructible<numbered_recurrence_range>::value, "");
+    static_assert(!std::is_copy_constructible<numbered_recurrence_range>::value,
+                  "");
+    static_assert(!std::is_copy_assignable<numbered_recurrence_range>::value,
+                  "");
+    static_assert(!std::is_move_constructible<numbered_recurrence_range>::value,
+                  "");
+    static_assert(!std::is_move_assignable<numbered_recurrence_range>::value,
+                  "");
 #endif
 
     //! Represents a calendar item in the Exchange store
@@ -10508,7 +10388,8 @@ namespace ews
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
         calendar_item(item_id&& id, internal::xml_subtree&& properties)
             : item(std::move(id), std::move(properties))
-        {}
+        {
+        }
 #endif
 
         //! Returns the starting date and time for this calendar item
@@ -10747,8 +10628,7 @@ namespace ews
         }
 
         //! Sets the scheduled resources of this meeting
-        void
-        set_resources(const std::vector<attendee>& resources) const
+        void set_resources(const std::vector<attendee>& resources) const
         {
             set_attendees_helper("Resources", resources);
         }
@@ -10762,7 +10642,8 @@ namespace ews
         //! \sa service::get_conflicting_meetings
         int get_conflicting_meeting_count() const
         {
-            const auto val = xml().get_value_as_string("ConflictingMeetingCount");
+            const auto val =
+                xml().get_value_as_string("ConflictingMeetingCount");
             return val.empty() ? 0 : std::stoi(val);
         }
 
@@ -10823,7 +10704,8 @@ namespace ews
         //! Note: Applicable to meetings only. This is a read-only property
         int get_appointment_sequence_number() const
         {
-            const auto val = xml().get_value_as_string("AppointmentSequenceNumber");
+            const auto val =
+                xml().get_value_as_string("AppointmentSequenceNumber");
             return val.empty() ? 0 : std::stoi(val);
         }
 
@@ -10846,7 +10728,6 @@ namespace ews
             return val.empty() ? 0 : std::stoi(val);
         }
 
-
         //! \brief Returns the recurrence pattern for calendar items and
         //! meeting requests.
         //!
@@ -10857,7 +10738,8 @@ namespace ews
         get_recurrence() const
         {
             typedef std::pair<std::unique_ptr<recurrence_pattern>,
-                              std::unique_ptr<recurrence_range>> return_type;
+                              std::unique_ptr<recurrence_range>>
+                return_type;
             auto node = xml().get_node("Recurrence");
             if (!node)
             {
@@ -10881,12 +10763,11 @@ namespace ews
 
             auto ptr_to_qname = doc->allocate_string("t:Recurrence");
             recurrence_node = doc->allocate_node(rapidxml::node_element);
-            recurrence_node->qname(ptr_to_qname,
-                                   std::strlen("t:Recurrence"),
+            recurrence_node->qname(ptr_to_qname, std::strlen("t:Recurrence"),
                                    ptr_to_qname + 2);
             recurrence_node->namespace_uri(
-                                    internal::uri<>::microsoft::types(),
-                                    internal::uri<>::microsoft::types_size);
+                internal::uri<>::microsoft::types(),
+                internal::uri<>::microsoft::types_size);
             doc->append_node(recurrence_node);
 
             pattern.to_xml_element(*recurrence_node);
@@ -10997,7 +10878,7 @@ namespace ews
         void set_new_time_proposal_allowed(bool allowed)
         {
             xml().set_or_update("AllowNewTimeProposal",
-                allowed ? "true" : "false");
+                                allowed ? "true" : "false");
         }
 
         //! \brief Returns whether this meeting is held online.
@@ -11013,8 +10894,7 @@ namespace ews
         //! is read-only .
         void set_online_meeting_enabled(bool enabled)
         {
-            xml().set_or_update("IsOnlineMeeting",
-                enabled ? "true" : "false");
+            xml().set_or_update("IsOnlineMeeting", enabled ? "true" : "false");
         }
 
         //! Returns the URL for a meeting workspace
@@ -11052,16 +10932,16 @@ namespace ews
         //! Makes a calendar item instance from a \<CalendarItem> XML element
         static calendar_item from_xml_element(const rapidxml::xml_node<>& elem)
         {
-            auto id_node = elem.first_node_ns(internal::uri<>::microsoft::types(),
-                                              "ItemId");
+            auto id_node = elem.first_node_ns(
+                internal::uri<>::microsoft::types(), "ItemId");
             EWS_ASSERT(id_node && "Expected <ItemId>");
             return calendar_item(item_id::from_xml_element(*id_node),
                                  internal::xml_subtree(elem));
         }
 
     private:
-        inline
-        std::vector<attendee> get_attendees_helper(const char* node_name) const
+        inline std::vector<attendee>
+        get_attendees_helper(const char* node_name) const
         {
             const auto attendees = xml().get_node(node_name);
             if (!attendees)
@@ -11073,15 +10953,14 @@ namespace ews
             for (auto attendee_node = attendees->first_node(); attendee_node;
                  attendee_node = attendee_node->next_sibling())
             {
-                result.emplace_back(
-                                attendee::from_xml_element(*attendee_node));
+                result.emplace_back(attendee::from_xml_element(*attendee_node));
             }
             return result;
         }
 
-        inline
-        void set_attendees_helper(const char* node_name,
-                                  const std::vector<attendee>& attendees) const
+        inline void
+        set_attendees_helper(const char* node_name,
+                             const std::vector<attendee>& attendees) const
         {
             auto doc = xml().document();
 
@@ -11093,14 +10972,12 @@ namespace ews
 
             const auto tmp = std::string("t:") + node_name;
             auto ptr_to_qname = doc->allocate_string(tmp.c_str());
-            attendees_node = doc->allocate_node(
-                                    rapidxml::node_element);
-            attendees_node->qname(ptr_to_qname,
-                                  std::strlen(node_name) + 2,
+            attendees_node = doc->allocate_node(rapidxml::node_element);
+            attendees_node->qname(ptr_to_qname, std::strlen(node_name) + 2,
                                   ptr_to_qname + 2);
             attendees_node->namespace_uri(
-                                    internal::uri<>::microsoft::types(),
-                                    internal::uri<>::microsoft::types_size);
+                internal::uri<>::microsoft::types(),
+                internal::uri<>::microsoft::types_size);
 
             doc->append_node(attendees_node);
 
@@ -11116,16 +10993,15 @@ namespace ews
                 send_meeting_invitations::send_to_none) const
         {
             std::stringstream sstr;
-            sstr <<
-                "<m:CreateItem SendMeetingInvitations=\""
-                    + internal::enum_to_str(meeting_invitations) + "\">"
-                  "<m:Items>"
-                    "<t:CalendarItem>";
+            sstr << "<m:CreateItem SendMeetingInvitations=\"" +
+                        internal::enum_to_str(meeting_invitations) +
+                        "\">"
+                        "<m:Items>"
+                        "<t:CalendarItem>";
             sstr << xml().to_string();
-            sstr <<
-                    "</t:CalendarItem>"
-                  "</m:Items>"
-                "</m:CreateItem>";
+            sstr << "</t:CalendarItem>"
+                    "</m:Items>"
+                    "</m:CreateItem>";
             return sstr.str();
         }
     };
@@ -11153,7 +11029,8 @@ namespace ews
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
         message(item_id&& id, internal::xml_subtree&& properties)
             : item(std::move(id), std::move(properties))
-        {}
+        {
+        }
 #endif
 
         // <Sender/>
@@ -11170,12 +11047,11 @@ namespace ews
 
             auto ptr_to_qname = doc->allocate_string("t:ToRecipients");
             to_recipients_node = doc->allocate_node(rapidxml::node_element);
-            to_recipients_node->qname(ptr_to_qname,
-                                      std::strlen("t:ToRecipients"),
-                                      ptr_to_qname + 2);
+            to_recipients_node->qname(
+                ptr_to_qname, std::strlen("t:ToRecipients"), ptr_to_qname + 2);
             to_recipients_node->namespace_uri(
-                                        internal::uri<>::microsoft::types(),
-                                        internal::uri<>::microsoft::types_size);
+                internal::uri<>::microsoft::types(),
+                internal::uri<>::microsoft::types_size);
 
             doc->append_node(to_recipients_node);
 
@@ -11196,8 +11072,7 @@ namespace ews
             for (auto mailbox_node = recipients->first_node(); mailbox_node;
                  mailbox_node = mailbox_node->next_sibling())
             {
-                result.emplace_back(
-                            mailbox::from_xml_element(*mailbox_node));
+                result.emplace_back(mailbox::from_xml_element(*mailbox_node));
             }
             return result;
         }
@@ -11233,8 +11108,8 @@ namespace ews
         //! Makes a message instance from a \<Message> XML element
         static message from_xml_element(const rapidxml::xml_node<>& elem)
         {
-            auto id_node = elem.first_node_ns(internal::uri<>::microsoft::types(),
-                                              "ItemId");
+            auto id_node = elem.first_node_ns(
+                internal::uri<>::microsoft::types(), "ItemId");
             EWS_ASSERT(id_node && "Expected <ItemId>");
             return message(item_id::from_xml_element(*id_node),
                            internal::xml_subtree(elem));
@@ -11246,16 +11121,14 @@ namespace ews
         create_item_request_string(ews::message_disposition disposition) const
         {
             std::stringstream sstr;
-            sstr <<
-                "<m:CreateItem MessageDisposition=\""
-                        << internal::enum_to_str(disposition) << "\">"
-                  "<m:Items>"
-                    "<t:Message>";
+            sstr << "<m:CreateItem MessageDisposition=\""
+                 << internal::enum_to_str(disposition) << "\">"
+                                                          "<m:Items>"
+                                                          "<t:Message>";
             sstr << xml().to_string();
-            sstr <<
-                    "</t:Message>"
-                  "</m:Items>"
-                "</m:CreateItem>";
+            sstr << "</t:Message>"
+                    "</m:Items>"
+                    "</m:CreateItem>";
             return sstr.str();
         }
     };
@@ -11368,7 +11241,8 @@ namespace ews
     public:
         indexed_property_path(const char* uri, const char* index)
             : property_path(uri), index_(std::string(index))
-        {}
+        {
+        }
 
         const std::string& field_index() const EWS_NOEXCEPT { return index_; }
 
@@ -11377,7 +11251,8 @@ namespace ews
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<indexed_property_path>::value, "");
+    static_assert(!std::is_default_constructible<indexed_property_path>::value,
+                  "");
     static_assert(std::is_copy_constructible<indexed_property_path>::value, "");
     static_assert(std::is_copy_assignable<indexed_property_path>::value, "");
     static_assert(std::is_move_constructible<indexed_property_path>::value, "");
@@ -11393,13 +11268,17 @@ namespace ews
         static const property_path display_name = "folder:DisplayName";
         static const property_path unread_count = "folder:UnreadCount";
         static const property_path total_count = "folder:TotalCount";
-        static const property_path child_folder_count = "folder:ChildFolderCount";
+        static const property_path child_folder_count =
+            "folder:ChildFolderCount";
         static const property_path folder_class = "folder:FolderClass";
-        static const property_path search_parameters = "folder:SearchParameters";
-        static const property_path managed_folder_information = "folder:ManagedFolderInformation";
+        static const property_path search_parameters =
+            "folder:SearchParameters";
+        static const property_path managed_folder_information =
+            "folder:ManagedFolderInformation";
         static const property_path permission_set = "folder:PermissionSet";
         static const property_path effective_rights = "folder:EffectiveRights";
-        static const property_path sharing_effective_rights = "folder:SharingEffectiveRights";
+        static const property_path sharing_effective_rights =
+            "folder:SharingEffectiveRights";
     }
 
     namespace item_property_path
@@ -11416,7 +11295,8 @@ namespace ews
         static const property_path has_attachments = "item:HasAttachments";
         static const property_path importance = "item:Importance";
         static const property_path in_reply_to = "item:InReplyTo";
-        static const property_path internet_message_headers = "item:InternetMessageHeaders";
+        static const property_path internet_message_headers =
+            "item:InternetMessageHeaders";
         static const property_path is_associated = "item:IsAssociated";
         static const property_path is_draft = "item:IsDraft";
         static const property_path is_from_me = "item:IsFromMe";
@@ -11431,7 +11311,8 @@ namespace ews
         static const property_path reminder_due_by = "item:ReminderDueBy";
         static const property_path reminder_is_set = "item:ReminderIsSet";
         static const property_path reminder_next_time = "item:ReminderNextTime";
-        static const property_path reminder_minutes_before_start = "item:ReminderMinutesBeforeStart";
+        static const property_path reminder_minutes_before_start =
+            "item:ReminderMinutesBeforeStart";
         static const property_path display_to = "item:DisplayTo";
         static const property_path display_cc = "item:DisplayCc";
         static const property_path culture = "item:Culture";
@@ -11444,20 +11325,26 @@ namespace ews
         static const property_path store_entry_id = "item:StoreEntryId";
         static const property_path instance_key = "item:InstanceKey";
         static const property_path normalized_body = "item:NormalizedBody";
-        static const property_path entity_extraction_result = "item:EntityExtractionResult";
+        static const property_path entity_extraction_result =
+            "item:EntityExtractionResult";
         static const property_path policy_tag = "item:PolicyTag";
         static const property_path archive_tag = "item:ArchiveTag";
         static const property_path retention_date = "item:RetentionDate";
         static const property_path preview = "item:Preview";
-        static const property_path next_predicted_action = "item:NextPredictedAction";
+        static const property_path next_predicted_action =
+            "item:NextPredictedAction";
         static const property_path grouping_action = "item:GroupingAction";
-        static const property_path predicted_action_reasons = "item:PredictedActionReasons";
+        static const property_path predicted_action_reasons =
+            "item:PredictedActionReasons";
         static const property_path is_clutter = "item:IsClutter";
-        static const property_path rights_management_license_data = "item:RightsManagementLicenseData";
+        static const property_path rights_management_license_data =
+            "item:RightsManagementLicenseData";
         static const property_path block_status = "item:BlockStatus";
         static const property_path has_blocked_images = "item:HasBlockedImages";
-        static const property_path web_client_read_from_query_string = "item:WebClientReadFormQueryString";
-        static const property_path web_client_edit_from_query_string = "item:WebClientEditFormQueryString";
+        static const property_path web_client_read_from_query_string =
+            "item:WebClientReadFormQueryString";
+        static const property_path web_client_edit_from_query_string =
+            "item:WebClientEditFormQueryString";
         static const property_path text_body = "item:TextBody";
         static const property_path icon_index = "item:IconIndex";
         static const property_path mime_content_utf8 = "item:MimeContentUTF8";
@@ -11465,15 +11352,22 @@ namespace ews
 
     namespace message_property_path
     {
-        static const property_path conversation_index = "message:ConversationIndex";
-        static const property_path conversation_topic = "message:ConversationTopic";
-        static const property_path internet_message_id = "message:InternetMessageId";
+        static const property_path conversation_index =
+            "message:ConversationIndex";
+        static const property_path conversation_topic =
+            "message:ConversationTopic";
+        static const property_path internet_message_id =
+            "message:InternetMessageId";
         static const property_path is_read = "message:IsRead";
-        static const property_path is_response_requested = "message:IsResponseRequested";
-        static const property_path is_read_receipt_requested = "message:IsReadReceiptRequested";
-        static const property_path is_delivery_receipt_requested = "message:IsDeliveryReceiptRequested";
+        static const property_path is_response_requested =
+            "message:IsResponseRequested";
+        static const property_path is_read_receipt_requested =
+            "message:IsReadReceiptRequested";
+        static const property_path is_delivery_receipt_requested =
+            "message:IsDeliveryReceiptRequested";
         static const property_path received_by = "message:ReceivedBy";
-        static const property_path received_representing = "message:ReceivedRepresenting";
+        static const property_path received_representing =
+            "message:ReceivedRepresenting";
         static const property_path references = "message:References";
         static const property_path reply_to = "message:ReplyTo";
         static const property_path from = "message:From";
@@ -11481,17 +11375,22 @@ namespace ews
         static const property_path to_recipients = "message:ToRecipients";
         static const property_path cc_recipients = "message:CcRecipients";
         static const property_path bcc_recipients = "message:BccRecipients";
-        static const property_path approval_request_data = "message:ApprovalRequestData";
-        static const property_path voting_information = "message:VotingInformation";
-        static const property_path reminder_message_data = "message:ReminderMessageData";
+        static const property_path approval_request_data =
+            "message:ApprovalRequestData";
+        static const property_path voting_information =
+            "message:VotingInformation";
+        static const property_path reminder_message_data =
+            "message:ReminderMessageData";
     }
 
     namespace meeting_property_path
     {
-        static const property_path associated_calendar_item_id = "meeting:AssociatedCalendarItemId";
+        static const property_path associated_calendar_item_id =
+            "meeting:AssociatedCalendarItemId";
         static const property_path is_delegated = "meeting:IsDelegated";
         static const property_path is_out_of_date = "meeting:IsOutOfDate";
-        static const property_path has_been_processed = "meeting:HasBeenProcessed";
+        static const property_path has_been_processed =
+            "meeting:HasBeenProcessed";
         static const property_path response_type = "meeting:ResponseType";
         static const property_path proposed_start = "meeting:ProposedStart";
         static const property_path proposed_end = "meeting:PropsedEnd";
@@ -11499,9 +11398,12 @@ namespace ews
 
     namespace meeting_request_property_path
     {
-        static const property_path meeting_request_type = "meetingRequest:MeetingRequestType";
-        static const property_path intended_free_busy_status = "meetingRequest:IntendedFreeBusyStatus";
-        static const property_path change_highlights = "meetingRequest:ChangeHighlights";
+        static const property_path meeting_request_type =
+            "meetingRequest:MeetingRequestType";
+        static const property_path intended_free_busy_status =
+            "meetingRequest:IntendedFreeBusyStatus";
+        static const property_path change_highlights =
+            "meetingRequest:ChangeHighlights";
     }
 
     namespace calendar_property_path
@@ -11511,50 +11413,73 @@ namespace ews
         static const property_path original_start = "calendar:OriginalStart";
         static const property_path start_wall_clock = "calendar:StartWallClock";
         static const property_path end_wall_clock = "calendar:EndWallClock";
-        static const property_path start_time_zone_id = "calendar:StartTimeZoneId";
+        static const property_path start_time_zone_id =
+            "calendar:StartTimeZoneId";
         static const property_path end_time_zone_id = "calendar:EndTimeZoneId";
         static const property_path is_all_day_event = "calendar:IsAllDayEvent";
-        static const property_path legacy_free_busy_status = "calendar:LegacyFreeBusyStatus";
+        static const property_path legacy_free_busy_status =
+            "calendar:LegacyFreeBusyStatus";
         static const property_path location = "calendar:Location";
         static const property_path when = "calendar:When";
         static const property_path is_meeting = "calendar:IsMeeting";
         static const property_path is_cancelled = "calendar:IsCancelled";
         static const property_path is_recurring = "calendar:IsRecurring";
-        static const property_path meeting_request_was_sent = "calendar:MeetingRequestWasSent";
-        static const property_path is_response_requested = "calendar:IsResponseRequested";
-        static const property_path calendar_item_type = "calendar:CalendarItemType";
+        static const property_path meeting_request_was_sent =
+            "calendar:MeetingRequestWasSent";
+        static const property_path is_response_requested =
+            "calendar:IsResponseRequested";
+        static const property_path calendar_item_type =
+            "calendar:CalendarItemType";
         static const property_path my_response_type = "calendar:MyResponseType";
         static const property_path organizer = "calendar:Organizer";
-        static const property_path required_attendees = "calendar:RequiredAttendees";
-        static const property_path optional_attendees = "calendar:OptionalAttendees";
+        static const property_path required_attendees =
+            "calendar:RequiredAttendees";
+        static const property_path optional_attendees =
+            "calendar:OptionalAttendees";
         static const property_path resources = "calendar:Resources";
-        static const property_path conflicting_meeting_count = "calendar:ConflictingMeetingCount";
-        static const property_path adjacent_meeting_count = "calendar:AdjacentMeetingCount";
-        static const property_path conflicting_meetings = "calendar:ConflictingMeetings";
-        static const property_path adjacent_meetings = "calendar:AdjacentMeetings";
+        static const property_path conflicting_meeting_count =
+            "calendar:ConflictingMeetingCount";
+        static const property_path adjacent_meeting_count =
+            "calendar:AdjacentMeetingCount";
+        static const property_path conflicting_meetings =
+            "calendar:ConflictingMeetings";
+        static const property_path adjacent_meetings =
+            "calendar:AdjacentMeetings";
         static const property_path duration = "calendar:Duration";
         static const property_path time_zone = "calendar:TimeZone";
-        static const property_path appointment_reply_time = "calendar:AppointmentReplyTime";
-        static const property_path appointment_sequence_number = "calendar:AppointmentSequenceNumber";
-        static const property_path appointment_state = "calendar:AppointmentState";
+        static const property_path appointment_reply_time =
+            "calendar:AppointmentReplyTime";
+        static const property_path appointment_sequence_number =
+            "calendar:AppointmentSequenceNumber";
+        static const property_path appointment_state =
+            "calendar:AppointmentState";
         static const property_path recurrence = "calendar:Recurrence";
-        static const property_path first_occurrence = "calendar:FirstOccurrence";
+        static const property_path first_occurrence =
+            "calendar:FirstOccurrence";
         static const property_path last_occurrence = "calendar:LastOccurrence";
-        static const property_path modified_occurrences = "calendar:ModifiedOccurrences";
-        static const property_path deleted_occurrences = "calendar:DeletedOccurrences";
-        static const property_path meeting_time_zone = "calendar:MeetingTimeZone";
+        static const property_path modified_occurrences =
+            "calendar:ModifiedOccurrences";
+        static const property_path deleted_occurrences =
+            "calendar:DeletedOccurrences";
+        static const property_path meeting_time_zone =
+            "calendar:MeetingTimeZone";
         static const property_path conference_type = "calendar:ConferenceType";
-        static const property_path allow_new_time_proposal = "calendar:AllowNewTimeProposal";
-        static const property_path is_online_meeting = "calendar:IsOnlineMeeting";
-        static const property_path meeting_workspace_url = "calendar:MeetingWorkspaceUrl";
+        static const property_path allow_new_time_proposal =
+            "calendar:AllowNewTimeProposal";
+        static const property_path is_online_meeting =
+            "calendar:IsOnlineMeeting";
+        static const property_path meeting_workspace_url =
+            "calendar:MeetingWorkspaceUrl";
         static const property_path net_show_url = "calendar:NetShowUrl";
         static const property_path uid = "calendar:UID";
         static const property_path recurrence_id = "calendar:RecurrenceId";
         static const property_path date_time_stamp = "calendar:DateTimeStamp";
         static const property_path start_time_zone = "calendar:StartTimeZone";
         static const property_path end_time_zone = "calendar:EndTimeZone";
-        static const property_path join_online_meeting_url = "calendar:JoinOnlineMeetingUrl";
-        static const property_path online_meeting_settings = "calendar:OnlineMeetingSettings";
+        static const property_path join_online_meeting_url =
+            "calendar:JoinOnlineMeetingUrl";
+        static const property_path online_meeting_settings =
+            "calendar:OnlineMeetingSettings";
         static const property_path is_organizer = "calendar:IsOrganizer";
     }
 
@@ -11562,7 +11487,8 @@ namespace ews
     {
         static const property_path actual_work = "task:ActualWork";
         static const property_path assigned_time = "task:AssignedTime";
-        static const property_path billing_information = "task:BillingInformation";
+        static const property_path billing_information =
+            "task:BillingInformation";
         static const property_path change_count = "task:ChangeCount";
         static const property_path companies = "task:Companies";
         static const property_path complete_date = "task:CompleteDate";
@@ -11570,7 +11496,8 @@ namespace ews
         static const property_path delegation_state = "task:DelegationState";
         static const property_path delegator = "task:Delegator";
         static const property_path due_date = "task:DueDate";
-        static const property_path is_assignment_editable = "task:IsAssignmentEditable";
+        static const property_path is_assignment_editable =
+            "task:IsAssignmentEditable";
         static const property_path is_complete = "task:IsComplete";
         static const property_path is_recurring = "task:IsRecurring";
         static const property_path is_team_task = "task:IsTeamTask";
@@ -11580,7 +11507,8 @@ namespace ews
         static const property_path recurrence = "task:Recurrence";
         static const property_path start_date = "task:StartDate";
         static const property_path status = "task:Status";
-        static const property_path status_description = "task:StatusDescription";
+        static const property_path status_description =
+            "task:StatusDescription";
         static const property_path total_work = "task:TotalWork";
     }
 
@@ -11589,7 +11517,8 @@ namespace ews
         static const property_path alias = "contacts:Alias";
         static const property_path assistant_name = "contacts:AssistantName";
         static const property_path birthday = "contacts:Birthday";
-        static const property_path business_home_page = "contacts:BusinessHomePage";
+        static const property_path business_home_page =
+            "contacts:BusinessHomePage";
         static const property_path children = "contacts:Children";
         static const property_path companies = "contacts:Companies";
         static const property_path company_name = "contacts:CompanyName";
@@ -11601,9 +11530,12 @@ namespace ews
         static const property_path directory_id = "contacts:DirectoryId";
         static const property_path direct_reports = "contacts:DirectReports";
         static const property_path email_addresses = "contacts:EmailAddresses";
-        static const indexed_property_path email_address_1("contacts:EmailAddress", "EmailAddress1");
-        static const indexed_property_path email_address_2("contacts:EmailAddress", "EmailAddress2");
-        static const indexed_property_path email_address_3("contacts:EmailAddress", "EmailAddress3");
+        static const indexed_property_path
+            email_address_1("contacts:EmailAddress", "EmailAddress1");
+        static const indexed_property_path
+            email_address_2("contacts:EmailAddress", "EmailAddress2");
+        static const indexed_property_path
+            email_address_3("contacts:EmailAddress", "EmailAddress3");
         static const property_path file_as = "contacts:FileAs";
         static const property_path file_as_mapping = "contacts:FileAsMapping";
         static const property_path generation = "contacts:Generation";
@@ -11615,22 +11547,30 @@ namespace ews
         static const property_path manager_mailbox = "contacts:ManagerMailbox";
         static const property_path middle_name = "contacts:MiddleName";
         static const property_path mileage = "contacts:Mileage";
-        static const property_path ms_exchange_certificate = "contacts:MSExchangeCertificate";
+        static const property_path ms_exchange_certificate =
+            "contacts:MSExchangeCertificate";
         static const property_path nickname = "contacts:Nickname";
         static const property_path notes = "contacts:Notes";
         static const property_path office_location = "contacts:OfficeLocation";
         static const property_path phone_numbers = "contacts:PhoneNumbers";
-        static const property_path phonetic_full_name = "contacts:PhoneticFullName";
-        static const property_path phonetic_first_name = "contacts:PhoneticFirstName";
-        static const property_path phonetic_last_name = "contacts:PhoneticLastName";
+        static const property_path phonetic_full_name =
+            "contacts:PhoneticFullName";
+        static const property_path phonetic_first_name =
+            "contacts:PhoneticFirstName";
+        static const property_path phonetic_last_name =
+            "contacts:PhoneticLastName";
         static const property_path photo = "contacts:Photo";
-        static const property_path physical_address = "contacts:PhysicalAddresses";
-        static const property_path postal_adress_index = "contacts:PostalAddressIndex";
+        static const property_path physical_address =
+            "contacts:PhysicalAddresses";
+        static const property_path postal_adress_index =
+            "contacts:PostalAddressIndex";
         static const property_path profession = "contacts:Profession";
         static const property_path spouse_name = "contacts:SpouseName";
         static const property_path surname = "contacts:Surname";
-        static const property_path wedding_anniversary = "contacts:WeddingAnniversary";
-        static const property_path smime_certificate = "contacts:UserSMIMECertificate";
+        static const property_path wedding_anniversary =
+            "contacts:WeddingAnniversary";
+        static const property_path smime_certificate =
+            "contacts:UserSMIMECertificate";
         static const property_path has_picture = "contacts:HasPicture";
     }
 
@@ -11646,44 +11586,68 @@ namespace ews
 
     namespace conversation_property_path
     {
-        static const property_path conversation_id = "conversation:ConversationId";
-        static const property_path conversation_topic = "conversation:ConversationTopic";
-        static const property_path unique_recipients = "conversation:UniqueRecipients";
-        static const property_path global_unique_recipients = "conversation:GlobalUniqueRecipients";
-        static const property_path unique_unread_senders = "conversation:UniqueUnreadSenders";
-        static const property_path global_unique_unread_readers = "conversation:GlobalUniqueUnreadSenders";
-        static const property_path unique_senders = "conversation:UniqueSenders";
-        static const property_path global_unique_senders = "conversation:GlobalUniqueSenders";
-        static const property_path last_delivery_time = "conversation:LastDeliveryTime";
-        static const property_path global_last_delivery_time = "conversation:GlobalLastDeliveryTime";
+        static const property_path conversation_id =
+            "conversation:ConversationId";
+        static const property_path conversation_topic =
+            "conversation:ConversationTopic";
+        static const property_path unique_recipients =
+            "conversation:UniqueRecipients";
+        static const property_path global_unique_recipients =
+            "conversation:GlobalUniqueRecipients";
+        static const property_path unique_unread_senders =
+            "conversation:UniqueUnreadSenders";
+        static const property_path global_unique_unread_readers =
+            "conversation:GlobalUniqueUnreadSenders";
+        static const property_path unique_senders =
+            "conversation:UniqueSenders";
+        static const property_path global_unique_senders =
+            "conversation:GlobalUniqueSenders";
+        static const property_path last_delivery_time =
+            "conversation:LastDeliveryTime";
+        static const property_path global_last_delivery_time =
+            "conversation:GlobalLastDeliveryTime";
         static const property_path categories = "conversation:Categories";
-        static const property_path global_categories = "conversation:GlobalCategories";
+        static const property_path global_categories =
+            "conversation:GlobalCategories";
         static const property_path flag_status = "conversation:FlagStatus";
-        static const property_path global_flag_status = "conversation:GlobalFlagStatus";
-        static const property_path has_attachments = "conversation:HasAttachments";
-        static const property_path global_has_attachments = "conversation:GlobalHasAttachments";
+        static const property_path global_flag_status =
+            "conversation:GlobalFlagStatus";
+        static const property_path has_attachments =
+            "conversation:HasAttachments";
+        static const property_path global_has_attachments =
+            "conversation:GlobalHasAttachments";
         static const property_path has_irm = "conversation:HasIrm";
         static const property_path global_has_irm = "conversation:GlobalHasIrm";
         static const property_path message_count = "conversation:MessageCount";
-        static const property_path global_message_count = "conversation:GlobalMessageCount";
+        static const property_path global_message_count =
+            "conversation:GlobalMessageCount";
         static const property_path unread_count = "conversation:UnreadCount";
-        static const property_path global_unread_count = "conversation:GlobalUnreadCount";
+        static const property_path global_unread_count =
+            "conversation:GlobalUnreadCount";
         static const property_path size = "conversation:Size";
         static const property_path global_size = "conversation:GlobalSize";
         static const property_path item_classes = "conversation:ItemClasses";
-        static const property_path global_item_classes = "conversation:GlobalItemClasses";
+        static const property_path global_item_classes =
+            "conversation:GlobalItemClasses";
         static const property_path importance = "conversation:Importance";
-        static const property_path global_importance = "conversation:GlobalImportance";
+        static const property_path global_importance =
+            "conversation:GlobalImportance";
         static const property_path item_ids = "conversation:ItemIds";
-        static const property_path global_item_ids = "conversation:GlobalItemIds";
-        static const property_path last_modified_time = "conversation:LastModifiedTime";
+        static const property_path global_item_ids =
+            "conversation:GlobalItemIds";
+        static const property_path last_modified_time =
+            "conversation:LastModifiedTime";
         static const property_path instance_key = "conversation:InstanceKey";
         static const property_path preview = "conversation:Preview";
-        static const property_path global_parent_folder_id = "conversation:GlobalParentFolderId";
-        static const property_path next_predicted_action = "conversation:NextPredictedAction";
-        static const property_path grouping_action = "conversation:GroupingAction";
+        static const property_path global_parent_folder_id =
+            "conversation:GlobalParentFolderId";
+        static const property_path next_predicted_action =
+            "conversation:NextPredictedAction";
+        static const property_path grouping_action =
+            "conversation:GroupingAction";
         static const property_path icon_index = "conversation:IconIndex";
-        static const property_path global_icon_index = "conversation:GlobalIconIndex";
+        static const property_path global_icon_index =
+            "conversation:GlobalIconIndex";
         static const property_path draft_item_ids = "conversation:DraftItemIds";
         static const property_path has_clutter = "conversation:HasClutter";
     }
@@ -11695,138 +11659,114 @@ namespace ews
     {
     public:
         //! Use this constructor if you want to delete a property from an item
-        explicit property(property_path path)
-            : path_(std::move(path)),
-              value_()
+        explicit property(property_path path) : path_(std::move(path)), value_()
         {
         }
 
         // Use this constructor (and following overloads) whenever you want to
         // set or update an item's property
         property(property_path path, std::string value)
-            : path_(std::move(path)),
-              value_(std::move(value))
+            : path_(std::move(path)), value_(std::move(value))
         {
         }
 
         property(property_path path, const char* value)
-            : path_(std::move(path)),
-              value_(std::string(value))
+            : path_(std::move(path)), value_(std::string(value))
         {
         }
 
         property(property_path path, int value)
-            : path_(std::move(path)),
-              value_(std::to_string(value))
+            : path_(std::move(path)), value_(std::to_string(value))
         {
         }
 
         property(property_path path, long value)
-            : path_(std::move(path)),
-              value_(std::to_string(value))
+            : path_(std::move(path)), value_(std::to_string(value))
         {
         }
 
         property(property_path path, long long value)
-            : path_(std::move(path)),
-              value_(std::to_string(value))
+            : path_(std::move(path)), value_(std::to_string(value))
         {
         }
 
         property(property_path path, unsigned value)
-            : path_(std::move(path)),
-              value_(std::to_string(value))
+            : path_(std::move(path)), value_(std::to_string(value))
         {
         }
 
         property(property_path path, unsigned long value)
-            : path_(std::move(path)),
-              value_(std::to_string(value))
+            : path_(std::move(path)), value_(std::to_string(value))
         {
         }
 
         property(property_path path, unsigned long long value)
-            : path_(std::move(path)),
-              value_(std::to_string(value))
+            : path_(std::move(path)), value_(std::to_string(value))
         {
         }
 
         property(property_path path, float value)
-            : path_(std::move(path)),
-              value_(std::to_string(value))
+            : path_(std::move(path)), value_(std::to_string(value))
         {
         }
 
         property(property_path path, double value)
-            : path_(std::move(path)),
-              value_(std::to_string(value))
+            : path_(std::move(path)), value_(std::to_string(value))
         {
         }
 
         property(property_path path, long double value)
-            : path_(std::move(path)),
-              value_(std::to_string(value))
+            : path_(std::move(path)), value_(std::to_string(value))
         {
         }
 
         property(property_path path, bool value)
-            : path_(std::move(path)),
-              value_(value ? "true" : "false")
+            : path_(std::move(path)), value_(value ? "true" : "false")
         {
         }
 
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
-        template <typename T,
-            typename = typename std::enable_if<std::is_enum<T>::value>::type>
+        template <typename T, typename = typename std::enable_if<
+                                  std::is_enum<T>::value>::type>
         property(property_path path, T enum_value)
-            : path_(std::move(path)),
-              value_(internal::enum_to_str(enum_value))
+            : path_(std::move(path)), value_(internal::enum_to_str(enum_value))
         {
         }
 #else
         property(property_path path, ews::free_busy_status enum_value)
-            : path_(std::move(path)),
-              value_(internal::enum_to_str(enum_value))
+            : path_(std::move(path)), value_(internal::enum_to_str(enum_value))
         {
         }
 
         property(property_path path, ews::sensitivity enum_value)
-            : path_(std::move(path)),
-              value_(internal::enum_to_str(enum_value))
+            : path_(std::move(path)), value_(internal::enum_to_str(enum_value))
         {
         }
 #endif
 
         property(property_path path, const body& value)
-            : path_(std::move(path)),
-              value_(value.to_xml())
+            : path_(std::move(path)), value_(value.to_xml())
         {
         }
 
         property(property_path path, const date_time& value)
-            : path_(std::move(path)),
-              value_(value.to_string())
+            : path_(std::move(path)), value_(value.to_string())
         {
         }
 
-        property(property_path path,
-                 const recurrence_pattern& pattern,
+        property(property_path path, const recurrence_pattern& pattern,
                  const recurrence_range& range)
-            : path_(std::move(path)),
-              value_()
+            : path_(std::move(path)), value_()
         {
             std::stringstream sstr;
-            sstr << "<t:Recurrence>"
-                     << pattern.to_xml()
-                     << range.to_xml()
+            sstr << "<t:Recurrence>" << pattern.to_xml() << range.to_xml()
                  << "</t:Recurrence>";
             value_ = sstr.str();
         }
 
         template <typename T>
         property(property_path path, const std::vector<T>& value)
-            : path_(std::move(path)),
-              value_()
+            : path_(std::move(path)), value_()
         {
             std::stringstream sstr;
             for (const auto& elem : value)
@@ -11837,8 +11777,7 @@ namespace ews
         }
 
         property(property_path path, const std::vector<std::string>& value)
-            : path_(std::move(path)),
-              value_()
+            : path_(std::move(path)), value_()
         {
             std::stringstream sstr;
             for (const auto& str : value)
@@ -11906,116 +11845,106 @@ namespace ews
         ~search_expression() = default;
 #endif
 
-        std::string to_xml() const
-        {
-            return func_();
-        }
+        std::string to_xml() const { return func_(); }
 
     protected:
-        explicit search_expression(
-                    std::function<std::string ()>&& func)
+        explicit search_expression(std::function<std::string()>&& func)
             : func_(std::move(func))
         {
         }
 
         // Used by sub-classes to share common code
         search_expression(const char* term, property_path path, bool b)
-            : func_([=]() -> std::string
-                    {
-                        std::stringstream sstr;
+            : func_([=]() -> std::string {
+                  std::stringstream sstr;
 
-                        sstr << "<t:" << term << ">";
-                        sstr << "<t:FieldURI FieldURI=\"";
-                        sstr << path.field_uri();
-                        sstr << "\"/><t:FieldURIOrConstant>";
-                        sstr << "<t:Constant Value=\"";
-                        sstr << std::boolalpha << b;
-                        sstr << "\"/></t:FieldURIOrConstant></t:";
-                        sstr << term << ">";
-                        return sstr.str();
-                    })
+                  sstr << "<t:" << term << ">";
+                  sstr << "<t:FieldURI FieldURI=\"";
+                  sstr << path.field_uri();
+                  sstr << "\"/><t:FieldURIOrConstant>";
+                  sstr << "<t:Constant Value=\"";
+                  sstr << std::boolalpha << b;
+                  sstr << "\"/></t:FieldURIOrConstant></t:";
+                  sstr << term << ">";
+                  return sstr.str();
+              })
         {
         }
 
         search_expression(const char* term, property_path path, int i)
-            : func_([=]() -> std::string
-                    {
-                        std::stringstream sstr;
+            : func_([=]() -> std::string {
+                  std::stringstream sstr;
 
-                        sstr << "<t:" << term << ">";
-                        sstr << "<t:FieldURI FieldURI=\"";
-                        sstr << path.field_uri();
-                        sstr << "\"/><t:" << "FieldURIOrConstant><";
-                        sstr << "t:Constant Value=\"";
-                        sstr << std::to_string(i);
-                        sstr << "\"/></t:FieldURIOrConstant></t:";
-                        sstr << term << ">";
-                        return sstr.str();
-                    })
+                  sstr << "<t:" << term << ">";
+                  sstr << "<t:FieldURI FieldURI=\"";
+                  sstr << path.field_uri();
+                  sstr << "\"/><t:"
+                       << "FieldURIOrConstant><";
+                  sstr << "t:Constant Value=\"";
+                  sstr << std::to_string(i);
+                  sstr << "\"/></t:FieldURIOrConstant></t:";
+                  sstr << term << ">";
+                  return sstr.str();
+              })
         {
         }
 
-        search_expression(const char* term,
-                          property_path path,
-                          const char* str)
-            : func_([=]() -> std::string
-                    {
-                        std::stringstream sstr;
+        search_expression(const char* term, property_path path, const char* str)
+            : func_([=]() -> std::string {
+                  std::stringstream sstr;
 
-                        sstr << "<t:" << term << ">";
-                        sstr << "<t:FieldURI FieldURI=\"";
-                        sstr << path.field_uri();
-                        sstr << "\"/><t:" << "FieldURIOrConstant>";
-                        sstr << "<t:Constant Value=\"";
-                        sstr << str;
-                        sstr << "\"/></t:FieldURIOrConstant></t:";
-                        sstr << term << ">";
-                        return sstr.str();
-                    })
+                  sstr << "<t:" << term << ">";
+                  sstr << "<t:FieldURI FieldURI=\"";
+                  sstr << path.field_uri();
+                  sstr << "\"/><t:"
+                       << "FieldURIOrConstant>";
+                  sstr << "<t:Constant Value=\"";
+                  sstr << str;
+                  sstr << "\"/></t:FieldURIOrConstant></t:";
+                  sstr << term << ">";
+                  return sstr.str();
+              })
         {
         }
 
-        search_expression(const char* term,
-                          indexed_property_path path,
+        search_expression(const char* term, indexed_property_path path,
                           const char* str)
-            : func_([=]() -> std::string
-                    {
-                        std::stringstream sstr;
+            : func_([=]() -> std::string {
+                  std::stringstream sstr;
 
-                        sstr << "<t:" << term << ">";
-                        sstr << "<t:IndexedFieldURI FieldURI=\"";
-                        sstr << path.field_uri();
-                        sstr << "\" FieldIndex=\"" << path.field_index();
-                        sstr << "\"/><t:FieldURIOrConstant>";
-                        sstr << "<t:Constant Value=\"";
-                        sstr << str;
-                        sstr << "\"/></t:FieldURIOrConstant></t:";
-                        sstr << term << ">";
-                        return sstr.str();
-                    })
+                  sstr << "<t:" << term << ">";
+                  sstr << "<t:IndexedFieldURI FieldURI=\"";
+                  sstr << path.field_uri();
+                  sstr << "\" FieldIndex=\"" << path.field_index();
+                  sstr << "\"/><t:FieldURIOrConstant>";
+                  sstr << "<t:Constant Value=\"";
+                  sstr << str;
+                  sstr << "\"/></t:FieldURIOrConstant></t:";
+                  sstr << term << ">";
+                  return sstr.str();
+              })
         {
         }
 
         search_expression(const char* term, property_path path, date_time when)
-            : func_([=]() -> std::string
-                    {
-                        std::stringstream sstr;
+            : func_([=]() -> std::string {
+                  std::stringstream sstr;
 
-                        sstr << "<t:" << term << ">";
-                        sstr << "<t:FieldURI FieldURI=\"";
-                        sstr << path.field_uri();
-                        sstr << "\"/><t:FieldURIOrConstant>";
-                        sstr << "<t:Constant Value=\"";
-                        sstr << when.to_string();
-                        sstr << "\"/></t:FieldURIOrConstant></t:";
-                        sstr << term << ">";
-                        return sstr.str();
-                    })
+                  sstr << "<t:" << term << ">";
+                  sstr << "<t:FieldURI FieldURI=\"";
+                  sstr << path.field_uri();
+                  sstr << "\"/><t:FieldURIOrConstant>";
+                  sstr << "<t:Constant Value=\"";
+                  sstr << when.to_string();
+                  sstr << "\"/></t:FieldURIOrConstant></t:";
+                  sstr << term << ">";
+                  return sstr.str();
+              })
         {
         }
 
     private:
-        std::function<std::string ()> func_;
+        std::function<std::string()> func_;
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
@@ -12097,8 +12026,7 @@ namespace ews
         }
 
         is_not_equal_to(property_path path, date_time when)
-            : search_expression("IsNotEqualTo",
-                                std::move(path),
+            : search_expression("IsNotEqualTo", std::move(path),
                                 std::move(when))
         {
         }
@@ -12137,8 +12065,7 @@ namespace ews
         }
 
         is_greater_than(property_path path, date_time when)
-            : search_expression("IsGreaterThan",
-                                std::move(path),
+            : search_expression("IsGreaterThan", std::move(path),
                                 std::move(when))
         {
         }
@@ -12177,19 +12104,23 @@ namespace ews
         }
 
         is_greater_than_or_equal_to(property_path path, date_time when)
-            : search_expression("IsGreaterThanOrEqualTo",
-                                std::move(path),
+            : search_expression("IsGreaterThanOrEqualTo", std::move(path),
                                 std::move(when))
         {
         }
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<is_greater_than_or_equal_to>::value, "");
-    static_assert(std::is_copy_constructible<is_greater_than_or_equal_to>::value, "");
-    static_assert(std::is_copy_assignable<is_greater_than_or_equal_to>::value, "");
-    static_assert(std::is_move_constructible<is_greater_than_or_equal_to>::value, "");
-    static_assert(std::is_move_assignable<is_greater_than_or_equal_to>::value, "");
+    static_assert(
+        !std::is_default_constructible<is_greater_than_or_equal_to>::value, "");
+    static_assert(
+        std::is_copy_constructible<is_greater_than_or_equal_to>::value, "");
+    static_assert(std::is_copy_assignable<is_greater_than_or_equal_to>::value,
+                  "");
+    static_assert(
+        std::is_move_constructible<is_greater_than_or_equal_to>::value, "");
+    static_assert(std::is_move_assignable<is_greater_than_or_equal_to>::value,
+                  "");
 #endif
 
     //! \brief Compare a property with a constant or another property
@@ -12217,9 +12148,7 @@ namespace ews
         }
 
         is_less_than(property_path path, date_time when)
-            : search_expression("IsLessThan",
-                                std::move(path),
-                                std::move(when))
+            : search_expression("IsLessThan", std::move(path), std::move(when))
         {
         }
     };
@@ -12257,18 +12186,20 @@ namespace ews
         }
 
         is_less_than_or_equal_to(property_path path, date_time when)
-            : search_expression("IsLessThanOrEqualTo",
-                                std::move(path),
+            : search_expression("IsLessThanOrEqualTo", std::move(path),
                                 std::move(when))
         {
         }
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<is_less_than_or_equal_to>::value, "");
-    static_assert(std::is_copy_constructible<is_less_than_or_equal_to>::value, "");
+    static_assert(
+        !std::is_default_constructible<is_less_than_or_equal_to>::value, "");
+    static_assert(std::is_copy_constructible<is_less_than_or_equal_to>::value,
+                  "");
     static_assert(std::is_copy_assignable<is_less_than_or_equal_to>::value, "");
-    static_assert(std::is_move_constructible<is_less_than_or_equal_to>::value, "");
+    static_assert(std::is_move_constructible<is_less_than_or_equal_to>::value,
+                  "");
     static_assert(std::is_move_assignable<is_less_than_or_equal_to>::value, "");
 #endif
 
@@ -12278,16 +12209,16 @@ namespace ews
     {
     public:
         and_(const search_expression& first, const search_expression& second)
-            : search_expression([=]() -> std::string
-                    {
-                        std::stringstream sstr;
+            : search_expression([=]() -> std::string {
+                  std::stringstream sstr;
 
-                        sstr << "<t:And" << ">";
-                        sstr << first.to_xml();
-                        sstr << second.to_xml();
-                        sstr << "</t:And>";
-                        return sstr.str();
-                    })
+                  sstr << "<t:And"
+                       << ">";
+                  sstr << first.to_xml();
+                  sstr << second.to_xml();
+                  sstr << "</t:And>";
+                  return sstr.str();
+              })
         {
         }
     };
@@ -12306,16 +12237,16 @@ namespace ews
     {
     public:
         or_(const search_expression& first, const search_expression& second)
-            : search_expression([=]() -> std::string
-                    {
-                        std::stringstream sstr;
+            : search_expression([=]() -> std::string {
+                  std::stringstream sstr;
 
-                        sstr << "<t:Or" << ">";
-                        sstr << first.to_xml();
-                        sstr << second.to_xml();
-                        sstr << "</t:Or>";
-                        return sstr.str();
-                    })
+                  sstr << "<t:Or"
+                       << ">";
+                  sstr << first.to_xml();
+                  sstr << second.to_xml();
+                  sstr << "</t:Or>";
+                  return sstr.str();
+              })
         {
         }
     };
@@ -12333,15 +12264,15 @@ namespace ews
     {
     public:
         not_(const search_expression& expr)
-            : search_expression([=]() -> std::string
-                    {
-                        std::stringstream sstr;
+            : search_expression([=]() -> std::string {
+                  std::stringstream sstr;
 
-                        sstr << "<t:Not" << ">";
-                        sstr << expr.to_xml();
-                        sstr << "</t:Not>";
-                        return sstr.str();
-                    })
+                  sstr << "<t:Not"
+                       << ">";
+                  sstr << expr.to_xml();
+                  sstr << "</t:Not>";
+                  return sstr.str();
+              })
         {
         }
     };
@@ -12418,7 +12349,8 @@ namespace ews
         //! Non-spacing characters will be ignored during comparison
         ignore_non_spacing_characters,
 
-        //! This is \ref containment_comparison::ignore_case and \ref containment_comparison::ignore_non_spacing_characters
+        //! This is \ref containment_comparison::ignore_case and \ref
+        //! containment_comparison::ignore_non_spacing_characters
         loose,
     };
 
@@ -12449,28 +12381,25 @@ namespace ews
     class contains final : public search_expression
     {
     public:
-        contains(property_path path,
-                 const char* str,
-                 containment_mode mode =
-                    containment_mode::substring,
-                 containment_comparison comparison =
-                    containment_comparison::loose)
-            : search_expression([=]() -> std::string
-                    {
-                        std::stringstream sstr;
+        contains(
+            property_path path, const char* str,
+            containment_mode mode = containment_mode::substring,
+            containment_comparison comparison = containment_comparison::loose)
+            : search_expression([=]() -> std::string {
+                  std::stringstream sstr;
 
-                        sstr << "<t:Contains ";
-                        sstr << "ContainmentMode=\""
-                            << internal::enum_to_str(mode) << "\" ";
-                        sstr << "ContainmentComparison=\""
-                            << internal::enum_to_str(comparison) << "\">";
-                        sstr << "<t:FieldURI FieldURI=\"";
-                        sstr << path.field_uri();
-                        sstr << "\"/><t:Constant Value=\"";
-                        sstr << str;
-                        sstr << "\"/></t:Contains>";
-                        return sstr.str();
-                    })
+                  sstr << "<t:Contains ";
+                  sstr << "ContainmentMode=\"" << internal::enum_to_str(mode)
+                       << "\" ";
+                  sstr << "ContainmentComparison=\""
+                       << internal::enum_to_str(comparison) << "\">";
+                  sstr << "<t:FieldURI FieldURI=\"";
+                  sstr << path.field_uri();
+                  sstr << "\"/><t:Constant Value=\"";
+                  sstr << str;
+                  sstr << "\"/></t:Contains>";
+                  return sstr.str();
+              })
         {
         }
     };
@@ -12492,14 +12421,12 @@ namespace ews
     public:
         calendar_view(date_time start_date, date_time end_date)
             : start_date_(std::move(start_date)),
-              end_date_(std::move(end_date)),
-              max_entries_returned_(0U),
+              end_date_(std::move(end_date)), max_entries_returned_(0U),
               max_entries_set_(false)
         {
         }
 
-        calendar_view(date_time start_date,
-                      date_time end_date,
+        calendar_view(date_time start_date, date_time end_date,
                       std::uint32_t max_entries_returned)
             : start_date_(std::move(start_date)),
               end_date_(std::move(end_date)),
@@ -12518,10 +12445,7 @@ namespace ews
             return start_date_;
         }
 
-        const date_time& get_end_date() const EWS_NOEXCEPT
-        {
-            return end_date_;
-        }
+        const date_time& get_end_date() const EWS_NOEXCEPT { return end_date_; }
 
         std::string to_xml() const
         {
@@ -12533,8 +12457,8 @@ namespace ews
                 sstr << "MaxEntriesReturned=\""
                      << std::to_string(max_entries_returned_) << "\" ";
             }
-            sstr << "StartDate=\"" << start_date_.to_string()
-                 << "\" EndDate=\"" << end_date_.to_string() << "\" />";
+            sstr << "StartDate=\"" << start_date_.to_string() << "\" EndDate=\""
+                 << end_date_.to_string() << "\" />";
             return sstr.str();
         }
 
@@ -12579,12 +12503,9 @@ namespace ews
 
         //! \brief Constructs a new service with given credentials to a server
         //! specified by \p server_uri
-        basic_service(const std::string& server_uri,
-                      const std::string& domain,
-                      const std::string& username,
-                      const std::string& password)
-            : request_handler_(server_uri),
-              server_version_("Exchange2013_SP1")
+        basic_service(const std::string& server_uri, const std::string& domain,
+                      const std::string& username, const std::string& password)
+            : request_handler_(server_uri), server_version_("Exchange2013_SP1")
         {
             request_handler_.set_method(RequestHandler::method::POST);
             request_handler_.set_content_type("text/xml; charset=utf-8");
@@ -12618,8 +12539,7 @@ namespace ews
         task get_task(const item_id& id,
                       const std::vector<property_path>& additional_properties)
         {
-            return get_item_impl<task>(id,
-                                       base_shape::all_properties,
+            return get_item_impl<task>(id, base_shape::all_properties,
                                        additional_properties);
         }
 
@@ -12632,12 +12552,11 @@ namespace ews
         //! \brief Gets a contact from the Exchange store
         //!
         //! The returned contact includes specified additional properties.
-        contact get_contact(
-                const item_id& id,
-                const std::vector<property_path>& additional_properties)
+        contact
+        get_contact(const item_id& id,
+                    const std::vector<property_path>& additional_properties)
         {
-            return get_item_impl<contact>(id,
-                                          base_shape::all_properties,
+            return get_item_impl<contact>(id, base_shape::all_properties,
                                           additional_properties);
         }
 
@@ -12652,11 +12571,10 @@ namespace ews
         //! The returned calendar item includes specified additional
         //! properties.
         calendar_item get_calendar_item(
-                    const item_id& id,
-                    const std::vector<property_path>& additional_properties)
+            const item_id& id,
+            const std::vector<property_path>& additional_properties)
         {
-            return get_item_impl<calendar_item>(id,
-                                                base_shape::all_properties,
+            return get_item_impl<calendar_item>(id, base_shape::all_properties,
                                                 additional_properties);
         }
 
@@ -12669,12 +12587,11 @@ namespace ews
         //! \brief Gets a message from the Exchange store
         //!
         //! The returned message includes specified additional properties.
-        message get_message(
-                    const item_id& id,
+        message
+        get_message(const item_id& id,
                     const std::vector<property_path>& additional_properties)
         {
-            return get_item_impl<message>(id,
-                                          base_shape::all_properties,
+            return get_item_impl<message>(id, base_shape::all_properties,
                                           additional_properties);
         }
 
@@ -12682,22 +12599,25 @@ namespace ews
         void delete_item(const item_id& id,
                          delete_type del_type = delete_type::hard_delete,
                          affected_task_occurrences affected =
-                            affected_task_occurrences::all_occurrences,
+                             affected_task_occurrences::all_occurrences,
                          send_meeting_cancellations cancellations =
-                            send_meeting_cancellations::send_to_none)
+                             send_meeting_cancellations::send_to_none)
         {
             using internal::delete_item_response_message;
 
             const std::string request_string =
                 "<m:DeleteItem "
-                    "DeleteType=\""
-                                + internal::enum_to_str(del_type) + "\" "
-                    "SendMeetingCancellations=\""
-                                + internal::enum_to_str(cancellations) + "\" "
-                    "AffectedTaskOccurrences=\""
-                                + internal::enum_to_str(affected) + "\">"
-                  "<m:ItemIds>" + id.to_xml() + "</m:ItemIds>"
-                "</m:DeleteItem>";
+                "DeleteType=\"" +
+                internal::enum_to_str(del_type) +
+                "\" "
+                "SendMeetingCancellations=\"" +
+                internal::enum_to_str(cancellations) +
+                "\" "
+                "AffectedTaskOccurrences=\"" +
+                internal::enum_to_str(affected) + "\">"
+                                                  "<m:ItemIds>" +
+                id.to_xml() + "</m:ItemIds>"
+                              "</m:DeleteItem>";
 
             auto response = request(request_string);
             const auto response_message =
@@ -12712,7 +12632,7 @@ namespace ews
         void delete_task(task&& the_task,
                          delete_type del_type = delete_type::hard_delete,
                          affected_task_occurrences affected =
-                            affected_task_occurrences::all_occurrences)
+                             affected_task_occurrences::all_occurrences)
         {
             delete_item(the_task.get_item_id(), del_type, affected);
             the_task = ews::task();
@@ -12726,14 +12646,13 @@ namespace ews
         }
 
         //! Delete a calendar item from the Exchange store
-        void delete_calendar_item(calendar_item&& the_calendar_item,
-                                  delete_type del_type =
-                                      delete_type::hard_delete,
-                                  send_meeting_cancellations cancellations =
-                                      send_meeting_cancellations::send_to_none)
+        void
+        delete_calendar_item(calendar_item&& the_calendar_item,
+                             delete_type del_type = delete_type::hard_delete,
+                             send_meeting_cancellations cancellations =
+                                 send_meeting_cancellations::send_to_none)
         {
-            delete_item(the_calendar_item.get_item_id(),
-                        del_type,
+            delete_item(the_calendar_item.get_item_id(), del_type,
                         affected_task_occurrences::all_occurrences,
                         cancellations);
             the_calendar_item = ews::calendar_item();
@@ -12794,8 +12713,8 @@ namespace ews
             {
                 throw exchange_error(response_message.get_response_code());
             }
-            EWS_ASSERT(!response_message.items().empty()
-                && "Expected a message item");
+            EWS_ASSERT(!response_message.items().empty() &&
+                       "Expected a message item");
             return response_message.items().front();
         }
 
@@ -12814,8 +12733,8 @@ namespace ews
             {
                 throw exchange_error(response_message.get_response_code());
             }
-            EWS_ASSERT(!response_message.items().empty()
-                    && "Expected a message item");
+            EWS_ASSERT(!response_message.items().empty() &&
+                       "Expected a message item");
             return response_message.items().front();
         }
 
@@ -12823,17 +12742,17 @@ namespace ews
         {
             const std::string request_string =
                 "<m:FindItem Traversal=\"Shallow\">"
-                  "<m:ItemShape>"
-                    "<t:BaseShape>IdOnly</t:BaseShape>"
-                  "</m:ItemShape>"
-                  "<m:ParentFolderIds>" + parent_folder_id.to_xml()
-                                        + "</m:ParentFolderIds>"
-                "</m:FindItem>";
+                "<m:ItemShape>"
+                "<t:BaseShape>IdOnly</t:BaseShape>"
+                "</m:ItemShape>"
+                "<m:ParentFolderIds>" +
+                parent_folder_id.to_xml() + "</m:ParentFolderIds>"
+                                            "</m:FindItem>";
 
             auto response = request(request_string);
             const auto response_message =
                 internal::find_item_response_message::parse(
-                                                        std::move(response));
+                    std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -12851,13 +12770,12 @@ namespace ews
         {
             const std::string request_string =
                 "<m:FindItem Traversal=\"Shallow\">"
-                  "<m:ItemShape>"
-                    "<t:BaseShape>Default</t:BaseShape>"
-                  "</m:ItemShape>"
-                  + view.to_xml() +
-                  "<m:ParentFolderIds>" + parent_folder_id.to_xml()
-                                        + "</m:ParentFolderIds>"
-                "</m:FindItem>";
+                "<m:ItemShape>"
+                "<t:BaseShape>Default</t:BaseShape>"
+                "</m:ItemShape>" +
+                view.to_xml() + "<m:ParentFolderIds>" +
+                parent_folder_id.to_xml() + "</m:ParentFolderIds>"
+                                            "</m:FindItem>";
 
             auto response = request(request_string);
             const auto response_message =
@@ -12885,19 +12803,19 @@ namespace ews
         {
             const std::string request_string =
                 "<m:FindItem Traversal=\"Shallow\">"
-                  "<m:ItemShape>"
-                    "<t:BaseShape>IdOnly</t:BaseShape>"
-                  "</m:ItemShape>"
-                  "<m:Restriction>" + restriction.to_xml()
-                                    + "</m:Restriction>"
-                  "<m:ParentFolderIds>" + parent_folder_id.to_xml()
-                                        + "</m:ParentFolderIds>"
-                "</m:FindItem>";
+                "<m:ItemShape>"
+                "<t:BaseShape>IdOnly</t:BaseShape>"
+                "</m:ItemShape>"
+                "<m:Restriction>" +
+                restriction.to_xml() + "</m:Restriction>"
+                                       "<m:ParentFolderIds>" +
+                parent_folder_id.to_xml() + "</m:ParentFolderIds>"
+                                            "</m:FindItem>";
 
             auto response = request(request_string);
             const auto response_message =
                 internal::find_item_response_message::parse(
-                                                        std::move(response));
+                    std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -12908,22 +12826,21 @@ namespace ews
         // TODO: currently, this can only do <SetItemField>, need to support
         // <AppendToItemField> and <DeleteItemField>
         item_id
-        update_item(item_id id,
-                    property prop,
+        update_item(item_id id, property prop,
                     conflict_resolution res = conflict_resolution::auto_resolve,
                     send_meeting_cancellations cancellations =
                         send_meeting_cancellations::send_to_none)
         {
             auto item_change_open_tag = "<t:SetItemField>";
             auto item_change_close_tag = "</t:SetItemField>";
-            if (//   prop.path() == "calendar:OptionalAttendees"
-                //|| prop.path() == "calendar:RequiredAttendees"
-                //|| prop.path() == "calendar:Resources"
-                   prop.path() == "item:Body"
-                || prop.path() == "message:ToRecipients"
-                || prop.path() == "message:CcRecipients"
-                || prop.path() == "message:BccRecipients"
-                || prop.path() == "message:ReplyTo")
+            if ( //   prop.path() == "calendar:OptionalAttendees"
+                 //|| prop.path() == "calendar:RequiredAttendees"
+                 //|| prop.path() == "calendar:Resources"
+                prop.path() == "item:Body" ||
+                prop.path() == "message:ToRecipients" ||
+                prop.path() == "message:CcRecipients" ||
+                prop.path() == "message:BccRecipients" ||
+                prop.path() == "message:ReplyTo")
             {
                 item_change_open_tag = "<t:AppendToItemField>";
                 item_change_close_tag = "</t:AppendToItemField>";
@@ -12931,33 +12848,30 @@ namespace ews
 
             const std::string request_string =
                 "<m:UpdateItem "
-                    "MessageDisposition=\"SaveOnly\" "
-                    "ConflictResolution=\""
-                      + internal::enum_to_str(res) + "\" "
-                    "SendMeetingInvitationsOrCancellations=\""
-                      + internal::enum_to_str(cancellations) + "\">"
-                  "<m:ItemChanges>"
-                    "<t:ItemChange>"
-                      + id.to_xml() +
-                      "<t:Updates>"
-                        + item_change_open_tag
-                        + prop.to_xml()
-                        + item_change_close_tag +
-                      "</t:Updates>"
-                    "</t:ItemChange>"
-                  "</m:ItemChanges>"
-                "</m:UpdateItem>";
+                "MessageDisposition=\"SaveOnly\" "
+                "ConflictResolution=\"" +
+                internal::enum_to_str(res) +
+                "\" "
+                "SendMeetingInvitationsOrCancellations=\"" +
+                internal::enum_to_str(cancellations) + "\">"
+                                                       "<m:ItemChanges>"
+                                                       "<t:ItemChange>" +
+                id.to_xml() + "<t:Updates>" + item_change_open_tag +
+                prop.to_xml() + item_change_close_tag + "</t:Updates>"
+                                                        "</t:ItemChange>"
+                                                        "</m:ItemChanges>"
+                                                        "</m:UpdateItem>";
 
             auto response = request(request_string);
             const auto response_message =
                 internal::update_item_response_message::parse(
-                                                        std::move(response));
+                    std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
             }
-            EWS_ASSERT(!response_message.items().empty()
-                    && "Expected at least one item");
+            EWS_ASSERT(!response_message.items().empty() &&
+                       "Expected at least one item");
             return response_message.items().front();
         }
 
@@ -12970,23 +12884,24 @@ namespace ews
         attachment_id create_attachment(const item_id& parent_item,
                                         const attachment& a)
         {
-            auto response = request(
-                   "<m:CreateAttachment>"
-                     "<m:ParentItemId Id=\""
-                         + parent_item.id() + "\" ChangeKey=\"" +
-                         parent_item.change_key() + "\"/>"
-                     "<m:Attachments>" + a.to_xml() + "</m:Attachments>"
-                   "</m:CreateAttachment>");
+            auto response =
+                request("<m:CreateAttachment>"
+                        "<m:ParentItemId Id=\"" +
+                        parent_item.id() + "\" ChangeKey=\"" +
+                        parent_item.change_key() + "\"/>"
+                                                   "<m:Attachments>" +
+                        a.to_xml() + "</m:Attachments>"
+                                     "</m:CreateAttachment>");
 
             const auto response_message =
                 internal::create_attachment_response_message::parse(
-                                                        std::move(response));
+                    std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
             }
-            EWS_ASSERT(!response_message.attachment_ids().empty()
-                    && "Expected at least one attachment");
+            EWS_ASSERT(!response_message.attachment_ids().empty() &&
+                       "Expected at least one attachment");
             return response_message.attachment_ids().front();
         }
 
@@ -13013,26 +12928,26 @@ namespace ews
         //! Retrieves an attachment from the Exchange store
         attachment get_attachment(const attachment_id& id)
         {
-            auto response = request(
-                "<m:GetAttachment>"
-                  "<m:AttachmentShape>"
-                    "<m:IncludeMimeContent/>"
-                    "<m:BodyType/>"
-                    "<m:FilterHtmlContent/>"
-                    "<m:AdditionalProperties/>"
-                  "</m:AttachmentShape>"
-                  "<m:AttachmentIds>" + id.to_xml() + "</m:AttachmentIds>"
-                "</m:GetAttachment>");
+            auto response = request("<m:GetAttachment>"
+                                    "<m:AttachmentShape>"
+                                    "<m:IncludeMimeContent/>"
+                                    "<m:BodyType/>"
+                                    "<m:FilterHtmlContent/>"
+                                    "<m:AdditionalProperties/>"
+                                    "</m:AttachmentShape>"
+                                    "<m:AttachmentIds>" +
+                                    id.to_xml() + "</m:AttachmentIds>"
+                                                  "</m:GetAttachment>");
 
             const auto response_message =
                 internal::get_attachment_response_message::parse(
-                                                        std::move(response));
+                    std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
             }
-            EWS_ASSERT(!response_message.attachments().empty()
-                    && "Expected at least one attachment to be returned");
+            EWS_ASSERT(!response_message.attachments().empty() &&
+                       "Expected at least one attachment to be returned");
             return response_message.attachments().front();
         }
 
@@ -13043,13 +12958,13 @@ namespace ews
         //! contains the updated change key of the parent item.
         item_id delete_attachment(const attachment_id& id)
         {
-            auto response = request(
-                "<m:DeleteAttachment>"
-                  "<m:AttachmentIds>" + id.to_xml() + "</m:AttachmentIds>"
-                "</m:DeleteAttachment>");
+            auto response = request("<m:DeleteAttachment>"
+                                    "<m:AttachmentIds>" +
+                                    id.to_xml() + "</m:AttachmentIds>"
+                                                  "</m:DeleteAttachment>");
             const auto response_message =
                 internal::delete_attachment_response_message::parse(
-                                                        std::move(response));
+                    std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
@@ -13069,13 +12984,11 @@ namespace ews
             using internal::get_element_by_qname;
 
             auto soap_headers = std::vector<std::string>();
-            soap_headers.emplace_back(
-                "<t:RequestServerVersion Version=\"" + server_version_ + "\"/>");
+            soap_headers.emplace_back("<t:RequestServerVersion Version=\"" +
+                                      server_version_ + "\"/>");
 
-            auto response =
-                internal::make_raw_soap_request(request_handler_,
-                                                request_string,
-                                                soap_headers);
+            auto response = internal::make_raw_soap_request(
+                request_handler_, request_string, soap_headers);
 
             if (response.ok())
             {
@@ -13091,63 +13004,51 @@ namespace ews
                 }
                 catch (xml_parse_error&)
                 {
-                    throw soap_fault(
-                        "The request failed for unknown reason "
-                        "(could not parse response)");
+                    throw soap_fault("The request failed for unknown reason "
+                                     "(could not parse response)");
                 }
 
-                auto elem =
-                    get_element_by_qname(*doc,
-                                         "ResponseCode",
-                                         internal::uri<>::microsoft::errors());
+                auto elem = get_element_by_qname(
+                    *doc, "ResponseCode", internal::uri<>::microsoft::errors());
                 if (!elem)
                 {
-                    throw soap_fault(
-                        "The request failed for unknown reason "
-                        "(unexpected XML in response)");
+                    throw soap_fault("The request failed for unknown reason "
+                                     "(unexpected XML in response)");
                 }
 
-                if (compare(elem->value(),
-                            elem->value_size(),
-                            "ErrorSchemaValidation",
-                            21))
+                if (compare(elem->value(), elem->value_size(),
+                            "ErrorSchemaValidation", 21))
                 {
                     // Get some more helpful details
-                    elem =
-                        get_element_by_qname(*doc,
-                                             "LineNumber",
-                                             internal::uri<>::microsoft::types());
+                    elem = get_element_by_qname(
+                        *doc, "LineNumber",
+                        internal::uri<>::microsoft::types());
                     EWS_ASSERT(elem &&
-                            "Expected <LineNumber> element in response");
-                    const auto line_number =
-                        std::stoul(std::string(elem->value(),
-                                               elem->value_size()));
+                               "Expected <LineNumber> element in response");
+                    const auto line_number = std::stoul(
+                        std::string(elem->value(), elem->value_size()));
 
-                    elem = get_element_by_qname(*doc,
-                                                "LinePosition",
-                                                internal::uri<>::microsoft::types());
+                    elem = get_element_by_qname(
+                        *doc, "LinePosition",
+                        internal::uri<>::microsoft::types());
                     EWS_ASSERT(elem &&
-                            "Expected <LinePosition> element in response");
-                    const auto line_position =
-                        std::stoul(std::string(elem->value(),
-                                               elem->value_size()));
+                               "Expected <LinePosition> element in response");
+                    const auto line_position = std::stoul(
+                        std::string(elem->value(), elem->value_size()));
 
-                    elem =
-                        get_element_by_qname(*doc,
-                                             "Violation",
-                                             internal::uri<>::microsoft::types());
+                    elem = get_element_by_qname(
+                        *doc, "Violation", internal::uri<>::microsoft::types());
                     EWS_ASSERT(elem &&
-                            "Expected <Violation> element in response");
+                               "Expected <Violation> element in response");
                     throw schema_validation_error(
-                            line_number,
-                            line_position,
-                            std::string(elem->value(), elem->value_size()));
+                        line_number, line_position,
+                        std::string(elem->value(), elem->value_size()));
                 }
                 else
                 {
                     elem = get_element_by_qname(*doc, "faultstring", "");
                     EWS_ASSERT(elem &&
-                            "Expected <faultstring> element in response");
+                               "Expected <faultstring> element in response");
                     throw soap_fault(elem->value());
                 }
             }
@@ -13161,67 +13062,65 @@ namespace ews
         template <typename ItemType>
         ItemType get_item_impl(const item_id& id, base_shape shape)
         {
-            const std::string request_string =
-                "<m:GetItem>"
-                  "<m:ItemShape>"
-                    "<t:BaseShape>" + internal::enum_to_str(shape)
-                                    + "</t:BaseShape>"
-                  "</m:ItemShape>"
-                  "<m:ItemIds>" + id.to_xml() + "</m:ItemIds>"
-                "</m:GetItem>";
+            const std::string request_string = "<m:GetItem>"
+                                               "<m:ItemShape>"
+                                               "<t:BaseShape>" +
+                                               internal::enum_to_str(shape) +
+                                               "</t:BaseShape>"
+                                               "</m:ItemShape>"
+                                               "<m:ItemIds>" +
+                                               id.to_xml() + "</m:ItemIds>"
+                                                             "</m:GetItem>";
 
             auto response = request(request_string);
             const auto response_message =
                 internal::get_item_response_message<ItemType>::parse(
-                                                        std::move(response));
+                    std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
             }
-            EWS_ASSERT(!response_message.items().empty()
-                    && "Expected at least one item");
+            EWS_ASSERT(!response_message.items().empty() &&
+                       "Expected at least one item");
             return response_message.items().front();
         }
 
         // Gets an item from the server with additional properties
         template <typename ItemType>
-        ItemType get_item_impl(const item_id& id,
-                               base_shape shape,
-                               const std::vector<property_path>&
-                                   additional_properties)
+        ItemType
+        get_item_impl(const item_id& id, base_shape shape,
+                      const std::vector<property_path>& additional_properties)
         {
             EWS_ASSERT(!additional_properties.empty());
 
             std::stringstream sstr;
-            sstr <<
-                "<m:GetItem>"
-                  "<m:ItemShape>"
-                    "<t:BaseShape>" << internal::enum_to_str(shape)
-                                    << "</t:BaseShape>"
-                    "<t:AdditionalProperties>";
+            sstr << "<m:GetItem>"
+                    "<m:ItemShape>"
+                    "<t:BaseShape>"
+                 << internal::enum_to_str(shape) << "</t:BaseShape>"
+                                                    "<t:AdditionalProperties>";
             for (const auto& prop : additional_properties)
             {
                 sstr << "<t:FieldURI FieldURI=\"" << prop.field_uri() << "\"/>";
             }
-            sstr <<
-                    "</t:AdditionalProperties>"
-                  "</m:ItemShape>"
-                  "<m:ItemIds>" << id.to_xml() << "</m:ItemIds>"
-                "</m:GetItem>";
+            sstr << "</t:AdditionalProperties>"
+                    "</m:ItemShape>"
+                    "<m:ItemIds>"
+                 << id.to_xml() << "</m:ItemIds>"
+                                   "</m:GetItem>";
 
             auto response = request(sstr.str());
             const auto response_message =
                 internal::get_item_response_message<ItemType>::parse(
-                                                        std::move(response));
+                    std::move(response));
             if (!response_message.success())
             {
                 throw exchange_error(response_message.get_response_code());
             }
-            EWS_ASSERT(!response_message.items().empty()
-                    && "Expected at least one item");
+            EWS_ASSERT(!response_message.items().empty() &&
+                       "Expected at least one item");
             return response_message.items().front();
         }
-
 
         // Creates an item on the server and returns it's item_id.
         template <typename ItemType>
@@ -13236,8 +13135,8 @@ namespace ews
             {
                 throw exchange_error(response_message.get_response_code());
             }
-            EWS_ASSERT(!response_message.items().empty()
-                    && "Expected at least one item");
+            EWS_ASSERT(!response_message.items().empty() &&
+                       "Expected at least one item");
             return response_message.items().front();
         }
     };
@@ -13254,8 +13153,8 @@ namespace ews
 
     // Implementations
 
-    inline
-    void basic_credentials::certify(internal::http_request* request) const
+    inline void
+    basic_credentials::certify(internal::http_request* request) const
     {
         EWS_ASSERT(request != nullptr);
 
@@ -13264,8 +13163,7 @@ namespace ews
         request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
     }
 
-    inline
-    void ntlm_credentials::certify(internal::http_request* request) const
+    inline void ntlm_credentials::certify(internal::http_request* request) const
     {
         EWS_ASSERT(request != nullptr);
 
@@ -13278,17 +13176,15 @@ namespace ews
     namespace internal
     {
         // FIXME: a CreateItemResponse can contain multiple ResponseMessages
-        inline
-        create_item_response_message
+        inline create_item_response_message
         create_item_response_message::parse(http_response&& response)
         {
             const auto doc = parse_response(std::move(response));
-            auto elem = get_element_by_qname(*doc,
-                                             "CreateItemResponseMessage",
+            auto elem = get_element_by_qname(*doc, "CreateItemResponseMessage",
                                              uri<>::microsoft::messages());
 
             EWS_ASSERT(elem &&
-                    "Expected <CreateItemResponseMessage>, got nullptr");
+                       "Expected <CreateItemResponseMessage>, got nullptr");
             const auto result = parse_response_class_and_code(*elem);
             auto item_ids = std::vector<item_id>();
             auto items_elem =
@@ -13296,33 +13192,30 @@ namespace ews
             EWS_ASSERT(items_elem && "Expected <Items> element");
 
             for_each_item(*items_elem,
-                    [&item_ids](const rapidxml::xml_node<>& item_elem)
-            {
-                auto item_id_elem = item_elem.first_node();
-                EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
-                item_ids.emplace_back(
-                        item_id::from_xml_element(*item_id_elem));
-            });
-            return create_item_response_message(result.first,
-                                                result.second,
+                          [&item_ids](const rapidxml::xml_node<>& item_elem) {
+                              auto item_id_elem = item_elem.first_node();
+                              EWS_ASSERT(item_id_elem &&
+                                         "Expected <ItemId> element");
+                              item_ids.emplace_back(
+                                  item_id::from_xml_element(*item_id_elem));
+                          });
+            return create_item_response_message(result.first, result.second,
                                                 std::move(item_ids));
         }
 
-        inline
-        find_item_response_message
+        inline find_item_response_message
         find_item_response_message::parse(http_response&& response)
         {
             const auto doc = parse_response(std::move(response));
-            auto elem = get_element_by_qname(*doc,
-                                             "FindItemResponseMessage",
+            auto elem = get_element_by_qname(*doc, "FindItemResponseMessage",
                                              uri<>::microsoft::messages());
 
             EWS_ASSERT(elem &&
-                "Expected <FindItemResponseMessage>, got nullptr");
+                       "Expected <FindItemResponseMessage>, got nullptr");
             const auto result = parse_response_class_and_code(*elem);
 
-            auto root_folder = elem->first_node_ns(uri<>::microsoft::messages(),
-                                                   "RootFolder");
+            auto root_folder =
+                elem->first_node_ns(uri<>::microsoft::messages(), "RootFolder");
 
             auto items_elem =
                 root_folder->first_node_ns(uri<>::microsoft::types(), "Items");
@@ -13335,30 +13228,25 @@ namespace ews
                 EWS_ASSERT(item_elem && "Expected an element, got nullptr");
                 auto item_id_elem = item_elem->first_node();
                 EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
-                items.emplace_back(
-                    item_id::from_xml_element(*item_id_elem));
+                items.emplace_back(item_id::from_xml_element(*item_id_elem));
             }
-            return find_item_response_message(result.first,
-                                              result.second,
+            return find_item_response_message(result.first, result.second,
                                               std::move(items));
         }
 
-        inline
-        find_calendar_item_response_message
+        inline find_calendar_item_response_message
         find_calendar_item_response_message::parse(http_response& response)
         {
             const auto doc = parse_response(std::move(response));
-            auto elem = get_element_by_qname(*doc,
-                                             "FindItemResponseMessage",
+            auto elem = get_element_by_qname(*doc, "FindItemResponseMessage",
                                              uri<>::microsoft::messages());
 
             EWS_ASSERT(elem &&
-                "Expected <FindItemResponseMessage>, got nullptr");
+                       "Expected <FindItemResponseMessage>, got nullptr");
             const auto result = parse_response_class_and_code(*elem);
 
-            auto root_folder = elem->first_node_ns(
-                                        uri<>::microsoft::messages(),
-                                        "RootFolder");
+            auto root_folder =
+                elem->first_node_ns(uri<>::microsoft::messages(), "RootFolder");
 
             auto items_elem =
                 root_folder->first_node_ns(uri<>::microsoft::types(), "Items");
@@ -13366,26 +13254,23 @@ namespace ews
 
             auto items = std::vector<calendar_item>();
             for_each_item(*items_elem,
-                          [&items](const rapidxml::xml_node<>& item_elem)
-            {
-                items.emplace_back(calendar_item::from_xml_element(item_elem));
-            });
-            return find_calendar_item_response_message(result.first,
-                                                       result.second,
-                                                       std::move(items));
+                          [&items](const rapidxml::xml_node<>& item_elem) {
+                              items.emplace_back(
+                                  calendar_item::from_xml_element(item_elem));
+                          });
+            return find_calendar_item_response_message(
+                result.first, result.second, std::move(items));
         }
 
-        inline
-        update_item_response_message
+        inline update_item_response_message
         update_item_response_message::parse(http_response&& response)
         {
             const auto doc = parse_response(std::move(response));
-            auto elem = get_element_by_qname(*doc,
-                                             "UpdateItemResponseMessage",
+            auto elem = get_element_by_qname(*doc, "UpdateItemResponseMessage",
                                              uri<>::microsoft::messages());
 
             EWS_ASSERT(elem &&
-                "Expected <UpdateItemResponseMessage>, got nullptr");
+                       "Expected <UpdateItemResponseMessage>, got nullptr");
             const auto result = parse_response_class_and_code(*elem);
 
             auto items_elem =
@@ -13399,37 +13284,31 @@ namespace ews
                 EWS_ASSERT(item_elem && "Expected an element, got nullptr");
                 auto item_id_elem = item_elem->first_node();
                 EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
-                items.emplace_back(
-                    item_id::from_xml_element(*item_id_elem));
+                items.emplace_back(item_id::from_xml_element(*item_id_elem));
             }
-            return update_item_response_message(result.first,
-                                                result.second,
+            return update_item_response_message(result.first, result.second,
                                                 std::move(items));
         }
 
         template <typename ItemType>
-        inline
-        get_item_response_message<ItemType>
+        inline get_item_response_message<ItemType>
         get_item_response_message<ItemType>::parse(http_response&& response)
         {
             const auto doc = parse_response(std::move(response));
-            auto elem = get_element_by_qname(*doc,
-                                             "GetItemResponseMessage",
+            auto elem = get_element_by_qname(*doc, "GetItemResponseMessage",
                                              uri<>::microsoft::messages());
             EWS_ASSERT(elem &&
-                    "Expected <GetItemResponseMessage>, got nullptr");
+                       "Expected <GetItemResponseMessage>, got nullptr");
             const auto result = parse_response_class_and_code(*elem);
             auto items_elem =
                 elem->first_node_ns(uri<>::microsoft::messages(), "Items");
             EWS_ASSERT(items_elem && "Expected <Items> element");
             auto items = std::vector<ItemType>();
-            for_each_item(*items_elem,
-                          [&items](const rapidxml::xml_node<>& item_elem)
-            {
-                items.emplace_back(ItemType::from_xml_element(item_elem));
-            });
-            return get_item_response_message(result.first,
-                                             result.second,
+            for_each_item(
+                *items_elem, [&items](const rapidxml::xml_node<>& item_elem) {
+                    items.emplace_back(ItemType::from_xml_element(item_elem));
+                });
+            return get_item_response_message(result.first, result.second,
                                              std::move(items));
         }
     }
@@ -13438,24 +13317,23 @@ namespace ews
     //!
     //! It is not necessary for the item to already exist in the Exchange
     //! store. If it doesn't, it will be automatically created.
-    inline
-    attachment attachment::from_item(const item& the_item,
-                                     const std::string& name)
+    inline attachment attachment::from_item(const item& the_item,
+                                            const std::string& name)
     {
-        // Creating a new <ItemAttachment> with the <CreateAttachment>
-        // method is pretty similar to a <CreateItem> method call. However,
-        // most of the times we do not want to create item attachments out
-        // of thin air but attach an _existing_ item.
-        //
-        // If we want create an attachment from an existing item, we need
-        // to first call <GetItem> before we call <CreateItem> and put the
-        // complete item from the response into the <CreateAttachment>
-        // call.
-        //
-        // There is a shortcut for Calendar, E-mail message items, and Posting
-        // notes: use <BaseShape>IdOnly</BaseShape> and <AdditionalProperties>
-        // with item::MimeContent in <GetItem> call, remove <ItemId> from the
-        // response and pass that to <CreateAttachment>.
+// Creating a new <ItemAttachment> with the <CreateAttachment>
+// method is pretty similar to a <CreateItem> method call. However,
+// most of the times we do not want to create item attachments out
+// of thin air but attach an _existing_ item.
+//
+// If we want create an attachment from an existing item, we need
+// to first call <GetItem> before we call <CreateItem> and put the
+// complete item from the response into the <CreateAttachment>
+// call.
+//
+// There is a shortcut for Calendar, E-mail message items, and Posting
+// notes: use <BaseShape>IdOnly</BaseShape> and <AdditionalProperties>
+// with item::MimeContent in <GetItem> call, remove <ItemId> from the
+// response and pass that to <CreateAttachment>.
 
 #if 0
         const auto item_class = the_item.get_item_class();
@@ -13470,21 +13348,20 @@ namespace ews
 
         auto& props = the_item.xml();
 
-        // Filter out read-only property paths
+// Filter out read-only property paths
 #ifdef EWS_HAS_INITIALIZER_LISTS
         for (const auto& property_name :
-                // item
-                { "ItemId", "ParentFolderId", "DateTimeReceived", "Size",
-                "IsSubmitted", "IsDraft", "IsFromMe", "IsResend",
-                "IsUnmodified", "DateTimeSent", "DateTimeCreated",
-                "ResponseObjects", "DisplayCc", "DisplayTo", "HasAttachments",
-                "EffectiveRights", "LastModifiedName", "LastModifiedTime",
-                "IsAssociated", "WebClientReadFormQueryString",
-                "WebClientEditFormQueryString", "ConversationId", "InstanceKey",
+             // item
+             {"ItemId", "ParentFolderId", "DateTimeReceived", "Size",
+              "IsSubmitted", "IsDraft", "IsFromMe", "IsResend", "IsUnmodified",
+              "DateTimeSent", "DateTimeCreated", "ResponseObjects", "DisplayCc",
+              "DisplayTo", "HasAttachments", "EffectiveRights",
+              "LastModifiedName", "LastModifiedTime", "IsAssociated",
+              "WebClientReadFormQueryString", "WebClientEditFormQueryString",
+              "ConversationId", "InstanceKey",
 
-                // message
-                "ConversationIndex", "ConversationTopic"
-                })
+              // message
+              "ConversationIndex", "ConversationTopic"})
 #else
         std::vector<std::string> properties;
 
@@ -13551,8 +13428,8 @@ namespace ews
         using rapidxml::internal::compare;
         using namespace internal;
 
-        EWS_ASSERT(std::string(elem.local_name()) == "Recurrence"
-            && "Expected a <Recurrence> element");
+        EWS_ASSERT(std::string(elem.local_name()) == "Recurrence" &&
+                   "Expected a <Recurrence> element");
 
         auto node = elem.first_node_ns(uri<>::microsoft::types(),
                                        "AbsoluteYearlyRecurrence");
@@ -13564,22 +13441,17 @@ namespace ews
             for (auto child = node->first_node(); child;
                  child = child->next_sibling())
             {
-                if (compare(child->local_name(),
-                            child->local_name_size(),
-                            "Month",
-                            std::strlen("Month")))
+                if (compare(child->local_name(), child->local_name_size(),
+                            "Month", std::strlen("Month")))
                 {
-                    mon = str_to_month(std::string(child->value(),
-                                                   child->value_size()));
+                    mon = str_to_month(
+                        std::string(child->value(), child->value_size()));
                 }
-                else if (compare(child->local_name(),
-                                 child->local_name_size(),
-                                 "DayOfMonth",
-                                 std::strlen("DayOfMonth")))
+                else if (compare(child->local_name(), child->local_name_size(),
+                                 "DayOfMonth", std::strlen("DayOfMonth")))
                 {
                     day_of_month = std::stoul(
-                                        std::string(child->value(),
-                                                    child->value_size()));
+                        std::string(child->value(), child->value_size()));
                 }
             }
 
@@ -13604,31 +13476,24 @@ namespace ews
             for (auto child = node->first_node(); child;
                  child = child->next_sibling())
             {
-                if (compare(child->local_name(),
-                            child->local_name_size(),
-                            "Month",
-                            std::strlen("Month")))
+                if (compare(child->local_name(), child->local_name_size(),
+                            "Month", std::strlen("Month")))
                 {
-                    mon = str_to_month(std::string(child->value(),
-                                                   child->value_size()));
+                    mon = str_to_month(
+                        std::string(child->value(), child->value_size()));
                 }
-                else if (compare(child->local_name(),
-                                 child->local_name_size(),
+                else if (compare(child->local_name(), child->local_name_size(),
                                  "DayOfWeekIndex",
                                  std::strlen("DayOfWeekIndex")))
                 {
                     index = str_to_day_of_week_index(
-                                                    std::string(child->value(),
-                                                        child->value_size()));
+                        std::string(child->value(), child->value_size()));
                 }
-                else if (compare(child->local_name(),
-                                 child->local_name_size(),
-                                 "DaysOfWeek",
-                                 std::strlen("DaysOfWeek")))
+                else if (compare(child->local_name(), child->local_name_size(),
+                                 "DaysOfWeek", std::strlen("DaysOfWeek")))
                 {
                     days_of_week = str_to_day_of_week(
-                                                    std::string(child->value(),
-                                                        child->value_size()));
+                        std::string(child->value(), child->value_size()));
                 }
             }
 
@@ -13637,9 +13502,8 @@ namespace ews
                 std::move(days_of_week), std::move(index), std::move(mon));
 #else
             return std::unique_ptr<relative_yearly_recurrence>(
-                new relative_yearly_recurrence(std::move(days_of_week),
-                                               std::move(index),
-                                               std::move(mon)));
+                new relative_yearly_recurrence(
+                    std::move(days_of_week), std::move(index), std::move(mon)));
 #endif
         }
 
@@ -13653,22 +13517,17 @@ namespace ews
             for (auto child = node->first_node(); child;
                  child = child->next_sibling())
             {
-                if (compare(child->local_name(),
-                            child->local_name_size(),
-                            "Interval",
-                            std::strlen("Interval")))
+                if (compare(child->local_name(), child->local_name_size(),
+                            "Interval", std::strlen("Interval")))
                 {
-                    interval = std::stoul(std::string(child->value(),
-                                                      child->value_size()));
+                    interval = std::stoul(
+                        std::string(child->value(), child->value_size()));
                 }
-                else if (compare(child->local_name(),
-                                 child->local_name_size(),
-                                 "DayOfMonth",
-                                 std::strlen("DayOfMonth")))
+                else if (compare(child->local_name(), child->local_name_size(),
+                                 "DayOfMonth", std::strlen("DayOfMonth")))
                 {
                     day_of_month = std::stoul(
-                                            std::string(child->value(),
-                                                        child->value_size()));
+                        std::string(child->value(), child->value_size()));
                 }
             }
 
@@ -13693,39 +13552,30 @@ namespace ews
             for (auto child = node->first_node(); child;
                  child = child->next_sibling())
             {
-                if (compare(child->local_name(),
-                            child->local_name_size(),
-                            "Interval",
-                            std::strlen("Interval")))
+                if (compare(child->local_name(), child->local_name_size(),
+                            "Interval", std::strlen("Interval")))
                 {
-                    interval = std::stoul(std::string(child->value(),
-                                                      child->value_size()));
+                    interval = std::stoul(
+                        std::string(child->value(), child->value_size()));
                 }
-                else if (compare(child->local_name(),
-                                 child->local_name_size(),
-                                 "DaysOfWeek",
-                                 std::strlen("DaysOfWeek")))
+                else if (compare(child->local_name(), child->local_name_size(),
+                                 "DaysOfWeek", std::strlen("DaysOfWeek")))
                 {
                     days_of_week = str_to_day_of_week(
-                                            std::string(child->value(),
-                                                        child->value_size()));
+                        std::string(child->value(), child->value_size()));
                 }
-                else if (compare(child->local_name(),
-                                 child->local_name_size(),
+                else if (compare(child->local_name(), child->local_name_size(),
                                  "DayOfWeekIndex",
                                  std::strlen("DayOfWeekIndex")))
                 {
                     index = str_to_day_of_week_index(
-                                            std::string(child->value(),
-                                                        child->value_size()));
+                        std::string(child->value(), child->value_size()));
                 }
             }
 
 #ifdef EWS_HAS_MAKE_UNIQUE
             return std::make_unique<relative_monthly_recurrence>(
-                                        std::move(interval),
-                                        std::move(days_of_week),
-                                        std::move(index));
+                std::move(interval), std::move(days_of_week), std::move(index));
 #else
             return std::unique_ptr<relative_monthly_recurrence>(
                 new relative_monthly_recurrence(std::move(interval),
@@ -13734,8 +13584,8 @@ namespace ews
 #endif
         }
 
-        node = elem.first_node_ns(uri<>::microsoft::types(),
-                                  "WeeklyRecurrence");
+        node =
+            elem.first_node_ns(uri<>::microsoft::types(), "WeeklyRecurrence");
         if (node)
         {
             std::uint32_t interval = 0U;
@@ -13745,21 +13595,17 @@ namespace ews
             for (auto child = node->first_node(); child;
                  child = child->next_sibling())
             {
-                if (compare(child->local_name(),
-                            child->local_name_size(),
-                            "Interval",
-                            std::strlen("Interval")))
+                if (compare(child->local_name(), child->local_name_size(),
+                            "Interval", std::strlen("Interval")))
                 {
-                    interval = std::stoul(std::string(child->value(),
-                                                      child->value_size()));
+                    interval = std::stoul(
+                        std::string(child->value(), child->value_size()));
                 }
-                else if (compare(child->local_name(),
-                                 child->local_name_size(),
-                                 "DaysOfWeek",
-                                 std::strlen("DaysOfWeek")))
+                else if (compare(child->local_name(), child->local_name_size(),
+                                 "DaysOfWeek", std::strlen("DaysOfWeek")))
                 {
-                    const auto list = std::string(child->value(),
-                                                  child->value_size());
+                    const auto list =
+                        std::string(child->value(), child->value_size());
                     std::stringstream sstr(list);
                     std::string temp;
                     while (std::getline(sstr, temp, ' '))
@@ -13767,32 +13613,27 @@ namespace ews
                         days_of_week.emplace_back(str_to_day_of_week(temp));
                     }
                 }
-                else if (compare(child->local_name(),
-                                 child->local_name_size(),
+                else if (compare(child->local_name(), child->local_name_size(),
                                  "FirstDayOfWeek",
                                  std::strlen("FirstDayOfWeek")))
                 {
                     first_day_of_week = str_to_day_of_week(
-                                            std::string(child->value(),
-                                                        child->value_size()));
+                        std::string(child->value(), child->value_size()));
                 }
             }
 
 #ifdef EWS_HAS_MAKE_UNIQUE
             return std::make_unique<weekly_recurrence>(
-                                                std::move(interval),
-                                                std::move(days_of_week),
-                                                std::move(first_day_of_week));
+                std::move(interval), std::move(days_of_week),
+                std::move(first_day_of_week));
 #else
-            return std::unique_ptr<weekly_recurrence>(
-                new weekly_recurrence(std::move(interval),
-                                      std::move(days_of_week),
-                                      std::move(first_day_of_week)));
+            return std::unique_ptr<weekly_recurrence>(new weekly_recurrence(
+                std::move(interval), std::move(days_of_week),
+                std::move(first_day_of_week)));
 #endif
         }
 
-        node = elem.first_node_ns(uri<>::microsoft::types(),
-                                  "DailyRecurrence");
+        node = elem.first_node_ns(uri<>::microsoft::types(), "DailyRecurrence");
         if (node)
         {
             std::uint32_t interval = 0U;
@@ -13800,13 +13641,11 @@ namespace ews
             for (auto child = node->first_node(); child;
                  child = child->next_sibling())
             {
-                if (compare(child->local_name(),
-                            child->local_name_size(),
-                            "Interval",
-                            std::strlen("Interval")))
+                if (compare(child->local_name(), child->local_name_size(),
+                            "Interval", std::strlen("Interval")))
                 {
-                    interval = std::stoul(std::string(child->value(),
-                                                      child->value_size()));
+                    interval = std::stoul(
+                        std::string(child->value(), child->value_size()));
                 }
             }
 
@@ -13818,10 +13657,11 @@ namespace ews
 #endif
         }
 
-        EWS_ASSERT(false && "Expected one of "
-            "<AbsoluteYearlyRecurrence>, <RelativeYearlyRecurrence>, "
-            "<AbsoluteMonthlyRecurrence>, <RelativeMonthlyRecurrence>, "
-            "<WeeklyRecurrence>, <DailyRecurrence>");
+        EWS_ASSERT(false &&
+                   "Expected one of "
+                   "<AbsoluteYearlyRecurrence>, <RelativeYearlyRecurrence>, "
+                   "<AbsoluteMonthlyRecurrence>, <RelativeMonthlyRecurrence>, "
+                   "<WeeklyRecurrence>, <DailyRecurrence>");
         return std::unique_ptr<recurrence_pattern>();
     }
 
@@ -13830,8 +13670,8 @@ namespace ews
     {
         using rapidxml::internal::compare;
 
-        EWS_ASSERT(std::string(elem.local_name()) == "Recurrence"
-            && "Expected a <Recurrence> element");
+        EWS_ASSERT(std::string(elem.local_name()) == "Recurrence" &&
+                   "Expected a <Recurrence> element");
 
         auto node = elem.first_node_ns(internal::uri<>::microsoft::types(),
                                        "NoEndRecurrence");
@@ -13842,19 +13682,17 @@ namespace ews
             for (auto child = node->first_node(); child;
                  child = child->next_sibling())
             {
-                if (compare(child->local_name(),
-                    child->local_name_size(),
-                    "StartDate",
-                    std::strlen("StartDate")))
+                if (compare(child->local_name(), child->local_name_size(),
+                            "StartDate", std::strlen("StartDate")))
                 {
-                    start_date = date_time(std::string(child->value(),
-                        child->value_size()));
+                    start_date = date_time(
+                        std::string(child->value(), child->value_size()));
                 }
             }
 
 #ifdef EWS_HAS_MAKE_UNIQUE
             return std::make_unique<no_end_recurrence_range>(
-                                                        std::move(start_date));
+                std::move(start_date));
 #else
             return std::unique_ptr<no_end_recurrence_range>(
                 new no_end_recurrence_range(std::move(start_date)));
@@ -13871,22 +13709,17 @@ namespace ews
             for (auto child = node->first_node(); child;
                  child = child->next_sibling())
             {
-                if (compare(child->local_name(),
-                            child->local_name_size(),
-                            "StartDate",
-                            std::strlen("StartDate")))
+                if (compare(child->local_name(), child->local_name_size(),
+                            "StartDate", std::strlen("StartDate")))
                 {
-                    start_date = date_time(std::string(child->value(),
-                        child->value_size()));
+                    start_date = date_time(
+                        std::string(child->value(), child->value_size()));
                 }
-                else if (compare(child->local_name(),
-                                 child->local_name_size(),
-                                 "EndDate",
-                                 std::strlen("EndDate")))
+                else if (compare(child->local_name(), child->local_name_size(),
+                                 "EndDate", std::strlen("EndDate")))
                 {
-                    end_date =
-                        date_time(std::string(child->value(),
-                            child->value_size()));
+                    end_date = date_time(
+                        std::string(child->value(), child->value_size()));
                 }
             }
 
@@ -13910,22 +13743,18 @@ namespace ews
             for (auto child = node->first_node(); child;
                  child = child->next_sibling())
             {
-                if (compare(child->local_name(),
-                            child->local_name_size(),
-                            "StartDate",
-                            std::strlen("StartDate")))
+                if (compare(child->local_name(), child->local_name_size(),
+                            "StartDate", std::strlen("StartDate")))
                 {
-                    start_date = date_time(std::string(child->value(),
-                                                       child->value_size()));
+                    start_date = date_time(
+                        std::string(child->value(), child->value_size()));
                 }
-                else if (compare(child->local_name(),
-                         child->local_name_size(),
-                         "NumberOfOccurrences",
-                         std::strlen("NumberOfOccurrences")))
+                else if (compare(child->local_name(), child->local_name_size(),
+                                 "NumberOfOccurrences",
+                                 std::strlen("NumberOfOccurrences")))
                 {
-                    no_of_occurrences =
-                        std::stoul(std::string(child->value(),
-                                               child->value_size()));
+                    no_of_occurrences = std::stoul(
+                        std::string(child->value(), child->value_size()));
                 }
             }
 
@@ -13939,7 +13768,9 @@ namespace ews
 #endif
         }
 
-        EWS_ASSERT(false && "Expected one of "
+        EWS_ASSERT(
+            false &&
+            "Expected one of "
             "<NoEndRecurrence>, <EndDateRecurrence>, <NumberedRecurrence>");
         return std::unique_ptr<recurrence_range>();
     }

@@ -1,12 +1,12 @@
-#include <ews/ews.hpp>
-#include <gtest/gtest.h>
-#include <ews/rapidxml/rapidxml_print.hpp>
-#include <vector>
-#include <string>
-#include <sstream>
 #include <algorithm>
-#include <iterator>
 #include <cstring>
+#include <ews/ews.hpp>
+#include <ews/rapidxml/rapidxml_print.hpp>
+#include <gtest/gtest.h>
+#include <iterator>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace
 {
@@ -23,61 +23,71 @@ namespace
     }
 
     const std::string contact_card =
-"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n"
-"    <s:Body xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n"
-"        <m:GetItemResponse xmlns:m=\"http://schemas.microsoft.com/exchange/services/2006/messages\" xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\">\n"
-"            <m:ResponseMessages>\n"
-"                <m:GetItemResponseMessage ResponseClass=\"Success\">\n"
-"                    <m:ResponseCode>NoError</m:ResponseCode>\n"
-"                    <m:Items>\n"
-"                        <t:Contact>\n"
-"                            <t:DateTimeSent>2015-05-21T10:13:28Z</t:DateTimeSent>\n"
-"                            <t:DateTimeCreated>2015-05-21T10:13:28Z</t:DateTimeCreated>\n"
-"                            <t:EffectiveRights>\n"
-"                                <t:Delete>true</t:Delete>\n"
-"                                <t:Modify>true</t:Modify>\n"
-"                                <t:Read>true</t:Read>\n"
-"                            </t:EffectiveRights>\n"
-"                            <t:Culture>en-US</t:Culture>\n"
-"                        </t:Contact>\n"
-"                    </m:Items>\n"
-"                </m:GetItemResponseMessage>\n"
-"            </m:ResponseMessages>\n"
-"        </m:GetItemResponse>\n"
-"    </s:Body>\n"
-"</s:Envelope>";
+        "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n"
+        "    <s:Body xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+        "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n"
+        "        <m:GetItemResponse "
+        "xmlns:m=\"http://schemas.microsoft.com/exchange/services/2006/"
+        "messages\" "
+        "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/"
+        "types\">\n"
+        "            <m:ResponseMessages>\n"
+        "                <m:GetItemResponseMessage ResponseClass=\"Success\">\n"
+        "                    <m:ResponseCode>NoError</m:ResponseCode>\n"
+        "                    <m:Items>\n"
+        "                        <t:Contact>\n"
+        "                            "
+        "<t:DateTimeSent>2015-05-21T10:13:28Z</t:DateTimeSent>\n"
+        "                            "
+        "<t:DateTimeCreated>2015-05-21T10:13:28Z</t:DateTimeCreated>\n"
+        "                            <t:EffectiveRights>\n"
+        "                                <t:Delete>true</t:Delete>\n"
+        "                                <t:Modify>true</t:Modify>\n"
+        "                                <t:Read>true</t:Read>\n"
+        "                            </t:EffectiveRights>\n"
+        "                            <t:Culture>en-US</t:Culture>\n"
+        "                        </t:Contact>\n"
+        "                    </m:Items>\n"
+        "                </m:GetItemResponseMessage>\n"
+        "            </m:ResponseMessages>\n"
+        "        </m:GetItemResponse>\n"
+        "    </s:Body>\n"
+        "</s:Envelope>";
 
-    const std::string malformed_xml_1 =
-"<html>\n"
-"  <head>\n"
-"  </head>\n"
-"  <body>\n"
-"    <p>\n"
-"      <h1</h1>\n"
-// line 6   ~
-"    </p>\n"
-"  </body>\n"
-"</html>";
+    const std::string malformed_xml_1 = "<html>\n"
+                                        "  <head>\n"
+                                        "  </head>\n"
+                                        "  <body>\n"
+                                        "    <p>\n"
+                                        "      <h1</h1>\n"
+                                        // line 6   ~
+                                        "    </p>\n"
+                                        "  </body>\n"
+                                        "</html>";
 
     const std::string malformed_xml_2 =
-"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n"
-"    <s:Body xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n"
-"        <m:GetItemResponse xmlns:m=\"http://schemas.microsoft.com/exchange/services/2006/messages\" xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\">\n"
-"            <m:ResponseMessages>\n"
-"                <m:GetItemResponseMessage ResponseClass=\"Success\">\n"
-"                    <m:ResponseCode>NoError</m:ResponseCode>\n"
-"                    <m:Items>\n"
-"                        <t:Contact>\n"
-"                            <t:Cultu</t:Culture>\n"
-// line 9                              ~
-"                        </t:Contact>\n"
-"                    </m:Items>\n"
-"                </m:GetItemResponseMessage>\n"
-"            </m:ResponseMessages>\n"
-"        </m:GetItemResponse>\n"
-"    </s:Body>\n"
-"</s:Envelope>";
-
+        "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n"
+        "    <s:Body xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+        "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n"
+        "        <m:GetItemResponse "
+        "xmlns:m=\"http://schemas.microsoft.com/exchange/services/2006/"
+        "messages\" "
+        "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/"
+        "types\">\n"
+        "            <m:ResponseMessages>\n"
+        "                <m:GetItemResponseMessage ResponseClass=\"Success\">\n"
+        "                    <m:ResponseCode>NoError</m:ResponseCode>\n"
+        "                    <m:Items>\n"
+        "                        <t:Contact>\n"
+        "                            <t:Cultu</t:Culture>\n"
+        // line 9                              ~
+        "                        </t:Contact>\n"
+        "                    </m:Items>\n"
+        "                </m:GetItemResponseMessage>\n"
+        "            </m:ResponseMessages>\n"
+        "        </m:GetItemResponse>\n"
+        "    </s:Body>\n"
+        "</s:Envelope>";
 }
 
 namespace tests
@@ -124,38 +134,35 @@ namespace tests
             EXPECT_NE(nullptr, m.bytes());
         }
 
-        // b was destructed
+// b was destructed
 
 #if EWS_HAS_ROBUST_NONMODIFYING_SEQ_OPS
-        EXPECT_TRUE(std::equal(m.bytes(), m.bytes() + m.len_bytes(),
-                               content, content + std::strlen(content)));
+        EXPECT_TRUE(std::equal(m.bytes(), m.bytes() + m.len_bytes(), content,
+                               content + std::strlen(content)));
 #else
         EXPECT_TRUE(m.len_bytes() == std::strlen(content) &&
-                    std::equal(m.bytes(), m.bytes() + m.len_bytes(),
-                               content));
+                    std::equal(m.bytes(), m.bytes() + m.len_bytes(), content));
 #endif
     }
 
     TEST(InternalTest, TraversalIsDepthFirst)
     {
-        const auto xml = std::string(
-            "<a>\n"
-            "   <b>\n"
-            "       <c>\n"
-            "           <d>Some value</d>\n"
-            "       </c>\n"
-            "   </b>\n"
-            "   <e>\n"
-            "       <f>More</f>\n"
-            "       <g>Even more</g>\n"
-            "   </e>\n"
-            "   <h>Done</h>\n"
-            "</a>");
+        const auto xml = std::string("<a>\n"
+                                     "   <b>\n"
+                                     "       <c>\n"
+                                     "           <d>Some value</d>\n"
+                                     "       </c>\n"
+                                     "   </b>\n"
+                                     "   <e>\n"
+                                     "       <f>More</f>\n"
+                                     "       <g>Even more</g>\n"
+                                     "   </e>\n"
+                                     "   <h>Done</h>\n"
+                                     "</a>");
 
 #ifdef EWS_HAS_INITIALIZER_LISTS
-        const std::vector<std::string> expected_order{
-            "d", "c", "b", "f", "g", "e", "h", "a"
-        };
+        const std::vector<std::string> expected_order{"d", "c", "b", "f",
+                                                      "g", "e", "h", "a"};
 #else
         std::vector<std::string> expected_order;
         expected_order.push_back("d");
@@ -174,20 +181,19 @@ namespace tests
         auto str = doc.allocate_string(xml.c_str());
         doc.parse<0>(str);
 
-        ews::internal::traverse_elements(doc,
-                [&](const rapidxml::xml_node<>& node) -> bool
-        {
-            actual_order.push_back(node.name());
-            return false;
-        });
+        ews::internal::traverse_elements(
+            doc, [&](const rapidxml::xml_node<>& node) -> bool {
+                actual_order.push_back(node.name());
+                return false;
+            });
 
 #if EWS_HAS_ROBUST_NONMODIFYING_SEQ_OPS
-        auto ordered = std::equal(begin(actual_order),   end(actual_order),
+        auto ordered = std::equal(begin(actual_order), end(actual_order),
                                   begin(expected_order), end(expected_order));
 #else
         auto ordered = actual_order.size() == expected_order.size() &&
-                    std::equal(begin(actual_order), end(actual_order),
-                               begin(expected_order));
+                       std::equal(begin(actual_order), end(actual_order),
+                                  begin(expected_order));
 #endif
 
         std::stringstream sstr;
@@ -207,19 +213,18 @@ namespace tests
     TEST(InternalTest, GetElementByQualifiedName)
     {
         const char* noxmlns = "";
-        const auto xml = std::string(
-            "<a>\n"
-            "   <b>\n"
-            "       <c>\n"
-            "           <d>Some value</d>\n"
-            "       </c>\n"
-            "   </b>\n"
-            "   <e>\n"
-            "       <f>More</f>\n"
-            "       <g>Even more</g>\n"
-            "   </e>\n"
-            "   <h>Done</h>\n"
-            "</a>");
+        const auto xml = std::string("<a>\n"
+                                     "   <b>\n"
+                                     "       <c>\n"
+                                     "           <d>Some value</d>\n"
+                                     "       </c>\n"
+                                     "   </b>\n"
+                                     "   <e>\n"
+                                     "       <f>More</f>\n"
+                                     "       <g>Even more</g>\n"
+                                     "   </e>\n"
+                                     "   <h>Done</h>\n"
+                                     "</a>");
 
         rapidxml::xml_document<> doc;
         auto str = doc.allocate_string(xml.c_str());
@@ -234,15 +239,14 @@ namespace tests
     TEST(InternalTest, GetElementByQualifiedNameMultiplePaths)
     {
         const char* noxmlns = "";
-        const auto xml = std::string(
-            "<a>\n"
-            "   <b>\n"
-            "       <c>\n"
-            "           <d>Some value</d>\n"
-            "       </c>\n"
-            "   </b>\n"
-            "   <d>Some other value</d>\n"
-            "</a>");
+        const auto xml = std::string("<a>\n"
+                                     "   <b>\n"
+                                     "       <c>\n"
+                                     "           <d>Some value</d>\n"
+                                     "       </c>\n"
+                                     "   </b>\n"
+                                     "   <d>Some other value</d>\n"
+                                     "</a>");
 
         rapidxml::xml_document<> doc;
         auto str = doc.allocate_string(xml.c_str());
@@ -261,14 +265,13 @@ namespace tests
         rapidxml::xml_document<> doc;
         auto str = doc.allocate_string(contact_card.c_str());
         doc.parse<0>(str);
-        auto effective_rights_element =
-            get_element_by_qname(doc,
-                                 "EffectiveRights",
-                                 uri<>::microsoft::types());
+        auto effective_rights_element = get_element_by_qname(
+            doc, "EffectiveRights", uri<>::microsoft::types());
         auto effective_rights = xml_subtree(*effective_rights_element);
-        EXPECT_STREQ(
-            "<t:EffectiveRights><t:Delete>true</t:Delete><t:Modify>true</t:Modify><t:Read>true</t:Read></t:EffectiveRights>",
-            effective_rights.to_string().c_str());
+        EXPECT_STREQ("<t:EffectiveRights><t:Delete>true</"
+                     "t:Delete><t:Modify>true</t:Modify><t:Read>true</t:Read></"
+                     "t:EffectiveRights>",
+                     effective_rights.to_string().c_str());
     }
 
     TEST(InternalTest, GetNonExistingElementReturnsNullptr)
@@ -276,16 +279,15 @@ namespace tests
         using namespace ews::internal;
 
         rapidxml::xml_document<> doc;
-        auto str = doc.allocate_string(
-            "<html lang=\"en\"><head><meta charset=\"utf-8\"/><title>Welcome</title></head><body><h1>Greetings</h1><p>Hello!</p></body></html>");
+        auto str = doc.allocate_string("<html lang=\"en\"><head><meta "
+                                       "charset=\"utf-8\"/><title>Welcome</"
+                                       "title></head><body><h1>Greetings</"
+                                       "h1><p>Hello!</p></body></html>");
         doc.parse<0>(str);
         auto body_element = get_element_by_qname(doc, "body", "");
         auto body = xml_subtree(*body_element);
         rapidxml::xml_node<char>* node = nullptr;
-        ASSERT_NO_THROW(
-        {
-            node = body.get_node("h1");
-        });
+        ASSERT_NO_THROW({ node = body.get_node("h1"); });
         EXPECT_EQ(nullptr, node);
     }
 
@@ -296,10 +298,8 @@ namespace tests
         rapidxml::xml_document<> doc;
         auto str = doc.allocate_string(contact_card.c_str());
         doc.parse<0>(str);
-        auto effective_rights_element =
-            get_element_by_qname(doc,
-                                 "EffectiveRights",
-                                 uri<>::microsoft::types());
+        auto effective_rights_element = get_element_by_qname(
+            doc, "EffectiveRights", uri<>::microsoft::types());
         auto effective_rights = xml_subtree(*effective_rights_element);
 
         EXPECT_STREQ("true", effective_rights.get_node("Delete")->value());
@@ -313,23 +313,21 @@ namespace tests
         auto str = doc.allocate_string(contact_card.c_str());
         doc.parse<0>(str);
         auto contact_element =
-            get_element_by_qname(doc,
-                                 "Contact",
-                                 uri<>::microsoft::types());
+            get_element_by_qname(doc, "Contact", uri<>::microsoft::types());
         auto cont = xml_subtree(*contact_element);
 
         cont.set_or_update("Modify", "false");
         EXPECT_STREQ("false", cont.get_node("Modify")->value());
         EXPECT_STREQ(
             "<t:Contact>"
-                "<t:DateTimeSent>2015-05-21T10:13:28Z</t:DateTimeSent>"
-                "<t:DateTimeCreated>2015-05-21T10:13:28Z</t:DateTimeCreated>"
-                "<t:EffectiveRights>"
-                    "<t:Delete>true</t:Delete>"
-                    "<t:Modify>false</t:Modify>"
-                    "<t:Read>true</t:Read>"
-                "</t:EffectiveRights>"
-                "<t:Culture>en-US</t:Culture>"
+            "<t:DateTimeSent>2015-05-21T10:13:28Z</t:DateTimeSent>"
+            "<t:DateTimeCreated>2015-05-21T10:13:28Z</t:DateTimeCreated>"
+            "<t:EffectiveRights>"
+            "<t:Delete>true</t:Delete>"
+            "<t:Modify>false</t:Modify>"
+            "<t:Read>true</t:Read>"
+            "</t:EffectiveRights>"
+            "<t:Culture>en-US</t:Culture>"
             "</t:Contact>",
             cont.to_string().c_str());
     }
@@ -340,22 +338,20 @@ namespace tests
 
         rapidxml::xml_document<> doc;
         {
-            const auto xml = std::string(
-                "<a>"
-                    "<b>"
-                    "</b>"
-                "</a>");
+            const auto xml = std::string("<a>"
+                                         "<b>"
+                                         "</b>"
+                                         "</a>");
             auto str = doc.allocate_string(xml.c_str());
             doc.parse<0>(str);
         }
         auto target_node = get_element_by_qname(doc, "b", "");
 
         rapidxml::xml_document<> src;
-        const auto xml = std::string(
-            "<c>"
-                "<d>"
-                "</d>"
-            "</c>");
+        const auto xml = std::string("<c>"
+                                     "<d>"
+                                     "</d>"
+                                     "</c>");
         auto str = src.allocate_string(xml.c_str());
         src.parse<0>(str);
         auto subtree = xml_subtree(*src.first_node());
@@ -363,16 +359,16 @@ namespace tests
         subtree.append_to(*target_node);
 
         std::string actual;
-        rapidxml::print(std::back_inserter(actual),
-                        doc,
+        rapidxml::print(std::back_inserter(actual), doc,
                         rapidxml::print_no_indenting);
         EXPECT_STREQ("<a>"
-                         "<b>"
-                             "<c>"
-                                 "<d/>"
-                             "</c>"
-                         "</b>"
-                     "</a>", actual.c_str());
+                     "<b>"
+                     "<c>"
+                     "<d/>"
+                     "</c>"
+                     "</b>"
+                     "</a>",
+                     actual.c_str());
     }
 
     TEST(InternalTest, SubTreeCopyAndAssignment)
@@ -380,11 +376,10 @@ namespace tests
         using namespace ews::internal;
 
         rapidxml::xml_document<> doc;
-        const auto xml = std::string(
-            "<a>\n"
-            "   <b>\n"
-            "   </b>\n"
-            "</a>");
+        const auto xml = std::string("<a>\n"
+                                     "   <b>\n"
+                                     "   </b>\n"
+                                     "</a>");
         auto str = doc.allocate_string(xml.c_str());
         doc.parse<0>(str);
         auto a = xml_subtree(*doc.first_node());
@@ -418,13 +413,14 @@ namespace tests
         }
         catch (rapidxml::parse_error& exc)
         {
-            const auto str = ews::xml_parse_error::error_message_from(exc,
-                                                                      data);
+            const auto str =
+                ews::xml_parse_error::error_message_from(exc, data);
             ASSERT_FALSE(str.empty());
             const auto output = split(str, '\n');
             EXPECT_EQ(4U, output.size());
             EXPECT_STREQ("in line 6:", output[0].c_str());
-            EXPECT_STREQ("   </head>   <body>     <p>       <h1</h1>     </p>   </body> </html>",
+            EXPECT_STREQ("   </head>   <body>     <p>       <h1</h1>     </p>  "
+                         " </body> </html>",
                          output[2].c_str());
             EXPECT_STREQ("                                       ~",
                          output[3].c_str());
@@ -445,13 +441,14 @@ namespace tests
         }
         catch (rapidxml::parse_error& exc)
         {
-            const auto str = ews::xml_parse_error::error_message_from(exc,
-                                                                      data);
+            const auto str =
+                ews::xml_parse_error::error_message_from(exc, data);
             ASSERT_FALSE(str.empty());
             const auto output = split(str, '\n');
             EXPECT_EQ(4U, output.size());
             EXPECT_STREQ("in line 9:", output[0].c_str());
-            EXPECT_STREQ("                             <t:Cultu</t:Culture>                         </t:",
+            EXPECT_STREQ("                             <t:Cultu</t:Culture>    "
+                         "                     </t:",
                          output[2].c_str());
             EXPECT_STREQ("                                       ~",
                          output[3].c_str());

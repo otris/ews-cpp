@@ -1,11 +1,11 @@
 #include "fixtures.hpp"
 
+#include <cstring>
 #include <ews/rapidxml/rapidxml_print.hpp>
-#include <string>
-#include <vector>
 #include <iterator>
 #include <stdexcept>
-#include <cstring>
+#include <string>
+#include <vector>
 
 typedef rapidxml::xml_document<> xml_document;
 
@@ -31,8 +31,7 @@ namespace tests
     TEST(AttachmentIdTest, ConstructFromIdAndRootItemId)
     {
         // As in CreateAttachment operation
-        auto obj = ews::attachment_id("abcde",
-                                      ews::item_id("edcba", "qwertz"));
+        auto obj = ews::attachment_id("abcde", ews::item_id("edcba", "qwertz"));
         EXPECT_TRUE(obj.valid());
         EXPECT_STREQ("abcde", obj.id().c_str());
         EXPECT_TRUE(obj.root_item_id().valid());
@@ -56,8 +55,8 @@ namespace tests
 
     TEST(AttachmentIdTest, FromXMLNodeWithIdAndRootIdAttributes)
     {
-        const char* xml =
-"<AttachmentId Id=\"abcde\" RootItemId=\"qwertz\" RootItemChangeKey=\"edcba\"/>";
+        const char* xml = "<AttachmentId Id=\"abcde\" RootItemId=\"qwertz\" "
+                          "RootItemChangeKey=\"edcba\"/>";
         std::vector<char> buf(xml, xml + std::strlen(xml));
         buf.push_back('\0');
         xml_document doc;
@@ -73,8 +72,9 @@ namespace tests
 
     TEST(AttachmentIdTest, ToXMLWithNamespace)
     {
-        const char* expected =
-"<t:AttachmentId Id=\"abcde\" RootItemId=\"qwertz\" RootItemChangeKey=\"edcba\"/>";
+        const char* expected = "<t:AttachmentId Id=\"abcde\" "
+                               "RootItemId=\"qwertz\" "
+                               "RootItemChangeKey=\"edcba\"/>";
         const auto obj =
             ews::attachment_id("abcde", ews::item_id("qwertz", "edcba"));
         EXPECT_STREQ(expected, obj.to_xml().c_str());
@@ -82,8 +82,9 @@ namespace tests
 
     TEST(AttachmentIdTest, ToXML)
     {
-        const char* expected =
-"<t:AttachmentId Id=\"abcde\" RootItemId=\"qwertz\" RootItemChangeKey=\"edcba\"/>";
+        const char* expected = "<t:AttachmentId Id=\"abcde\" "
+                               "RootItemId=\"qwertz\" "
+                               "RootItemChangeKey=\"edcba\"/>";
         const auto obj =
             ews::attachment_id("abcde", ews::item_id("qwertz", "edcba"));
         EXPECT_STREQ(expected, obj.to_xml().c_str());
@@ -91,8 +92,8 @@ namespace tests
 
     TEST(AttachmentIdTest, FromAndToXMLRoundTrip)
     {
-        const char* xml =
-"<t:AttachmentId Id=\"abcde\" RootItemId=\"qwertz\" RootItemChangeKey=\"edcba\"/>";
+        const char* xml = "<t:AttachmentId Id=\"abcde\" RootItemId=\"qwertz\" "
+                          "RootItemChangeKey=\"edcba\"/>";
         std::vector<char> buf(xml, xml + std::strlen(xml));
         buf.push_back('\0');
         xml_document doc;
@@ -147,22 +148,17 @@ namespace tests
         some_task.set_subject("Respond to Mike's mail!");
         auto task_id = service().create_item(some_task);
         some_task = service().get_task(task_id);
-        ews::internal::on_scope_exit remove_task([&]
-        {
-            service().delete_task(std::move(some_task));
-        });
+        ews::internal::on_scope_exit remove_task(
+            [&] { service().delete_task(std::move(some_task)); });
 
         EXPECT_TRUE(some_task.get_attachments().empty());
 
         auto attachment_id = service().create_attachment(
-                                                        some_task.get_item_id(),
-                                                        item_attachment);
+            some_task.get_item_id(), item_attachment);
         ASSERT_TRUE(attachment_id.valid());
         item_attachment = service().get_attachment(attachment_id);
-        ews::internal::on_scope_exit remove_attachment([&]
-        {
-            service().delete_attachment(item_attachment.id());
-        });
+        ews::internal::on_scope_exit remove_attachment(
+            [&] { service().delete_attachment(item_attachment.id()); });
 
         // RootItemId should be that of the parent task
 
@@ -185,14 +181,13 @@ namespace tests
     {
         using ews::internal::get_element_by_qname;
 
-        std::vector<char> buf = read_file(
-            assets_dir() / "get_attachment_response_item.xml");
+        std::vector<char> buf =
+            read_file(assets_dir() / "get_attachment_response_item.xml");
         buf.push_back('\0');
         xml_document doc;
         doc.parse<0>(&buf[0]);
-        auto node = get_element_by_qname(doc,
-                                        "ItemAttachment",
-                                        ews::internal::uri<>::microsoft::types());
+        auto node = get_element_by_qname(
+            doc, "ItemAttachment", ews::internal::uri<>::microsoft::types());
         ASSERT_TRUE(node);
         auto att = ews::attachment::from_xml_element(*node);
 
@@ -203,8 +198,7 @@ namespace tests
         EXPECT_EQ(0U, att.content_size());
 
         std::string expected_xml;
-        rapidxml::print(std::back_inserter(expected_xml),
-                        *node,
+        rapidxml::print(std::back_inserter(expected_xml), *node,
                         rapidxml::print_no_indenting);
         const auto actual_xml = att.to_xml();
         EXPECT_STREQ(expected_xml.c_str(), actual_xml.c_str());
@@ -213,14 +207,13 @@ namespace tests
     TEST_F(AssetsFixture, ToXML)
     {
         const auto path = assets_dir() / "ballmer_peak.png";
-        auto attachment = ews::attachment::from_file(path.string(),
-                                                     "image/png",
+        auto attachment = ews::attachment::from_file(path.string(), "image/png",
                                                      "Ballmer Peak");
         const auto xml = attachment.to_xml();
         EXPECT_FALSE(xml.empty());
         const char* prefix = "<t:FileAttachment>";
-        EXPECT_TRUE(std::equal(prefix, prefix + std::strlen(prefix),
-                    begin(xml)));
+        EXPECT_TRUE(
+            std::equal(prefix, prefix + std::strlen(prefix), begin(xml)));
     }
 
     TEST_F(AssetsFixture, WriteContentToFileDoesNothingIfItemAttachment)
@@ -241,22 +234,19 @@ namespace tests
         using ews::internal::on_scope_exit;
 
         const auto target_path = cwd() / "output.png";
-        std::vector<char> buf = read_file(
-                assets_dir() / "get_attachment_response.xml");
+        std::vector<char> buf =
+            read_file(assets_dir() / "get_attachment_response.xml");
         buf.push_back('\0');
         xml_document doc;
         doc.parse<0>(&buf[0]);
-        auto node = get_element_by_qname(doc,
-                                         "FileAttachment",
+        auto node = get_element_by_qname(doc, "FileAttachment",
                                          uri::microsoft::types());
         ASSERT_TRUE(node);
         auto attachment = ews::attachment::from_xml_element(*node);
         const auto bytes_written =
             attachment.write_content_to_file(target_path.string());
-        on_scope_exit remove_file([&]
-        {
-            boost::filesystem::remove(target_path);
-        });
+        on_scope_exit remove_file(
+            [&] { boost::filesystem::remove(target_path); });
         EXPECT_EQ(93525U, bytes_written);
         EXPECT_TRUE(boost::filesystem::exists(target_path));
     }
@@ -264,21 +254,20 @@ namespace tests
     TEST_F(AssetsFixture, WriteContentToFileThrowsOnEmptyFileName)
     {
         const auto path = assets_dir() / "ballmer_peak.png";
-        auto attachment = ews::attachment::from_file(path.string(),
-                                                     "image/png",
+        auto attachment = ews::attachment::from_file(path.string(), "image/png",
                                                      "Ballmer Peak");
         EXPECT_THROW(
-        {
-            attachment.write_content_to_file("");
+            {
+                attachment.write_content_to_file("");
 
-        }, ews::exception);
+            },
+            ews::exception);
     }
 
     TEST_F(AssetsFixture, WriteContentToFileExceptionMessage)
     {
         const auto path = assets_dir() / "ballmer_peak.png";
-        auto attachment = ews::attachment::from_file(path.string(),
-                                                     "image/png",
+        auto attachment = ews::attachment::from_file(path.string(), "image/png",
                                                      "Ballmer Peak");
         try
         {
@@ -295,9 +284,8 @@ namespace tests
     TEST_F(AssetsFixture, CreateFromFile)
     {
         const auto path = assets_dir() / "ballmer_peak.png";
-        auto file_attachment = ews::attachment::from_file(path.string(),
-                                                          "image/png",
-                                                          "Ballmer Peak");
+        auto file_attachment = ews::attachment::from_file(
+            path.string(), "image/png", "Ballmer Peak");
         EXPECT_EQ(ews::attachment::type::file, file_attachment.get_type());
         EXPECT_FALSE(file_attachment.id().valid());
         EXPECT_STREQ("Ballmer Peak", file_attachment.name().c_str());
@@ -310,10 +298,11 @@ namespace tests
     {
         const auto path = assets_dir() / "unlikely_to_exist.txt";
         EXPECT_THROW(
-        {
-            ews::attachment::from_file(path.string(), "image/png", "");
+            {
+                ews::attachment::from_file(path.string(), "image/png", "");
 
-        }, ews::exception);
+            },
+            ews::exception);
     }
 
     TEST_F(AssetsFixture, CreateFromFileExceptionMessage)
@@ -335,14 +324,13 @@ namespace tests
     {
         using ews::internal::get_element_by_qname;
 
-        std::vector<char> buf = read_file(
-                assets_dir() / "get_attachment_response.xml");
+        std::vector<char> buf =
+            read_file(assets_dir() / "get_attachment_response.xml");
         buf.push_back('\0');
         xml_document doc;
         doc.parse<0>(&buf[0]);
-        auto node = get_element_by_qname(doc,
-                                         "FileAttachment",
-                                         ews::internal::uri<>::microsoft::types());
+        auto node = get_element_by_qname(
+            doc, "FileAttachment", ews::internal::uri<>::microsoft::types());
         ASSERT_TRUE(node);
         auto obj = ews::attachment::from_xml_element(*node);
 
@@ -384,10 +372,7 @@ namespace tests
             AttachmentTest::TearDown();
         }
 
-        const boost::filesystem::path& assets_dir() const
-        {
-            return assetsdir_;
-        }
+        const boost::filesystem::path& assets_dir() const { return assetsdir_; }
 
     private:
         boost::filesystem::path assetsdir_;
@@ -400,13 +385,12 @@ namespace tests
         auto& msg = test_message();
         const auto path = assets_dir() / "ballmer_peak.png";
 
-        auto file_attachment = ews::attachment::from_file(path.string(),
-                                                          "image/png",
-                                                          "Ballmer Peak");
+        auto file_attachment = ews::attachment::from_file(
+            path.string(), "image/png", "Ballmer Peak");
 
         // Attach image to email message
-        auto attachment_id = service().create_attachment(msg.get_item_id(),
-                                                         file_attachment);
+        auto attachment_id =
+            service().create_attachment(msg.get_item_id(), file_attachment);
         ASSERT_TRUE(attachment_id.valid());
 
         // Make sure two additional attributes of <AttachmentId> are set; only
@@ -423,17 +407,15 @@ namespace tests
         EXPECT_STREQ("image/png", file_attachment.content_type().c_str());
         EXPECT_FALSE(file_attachment.content().empty());
 
-        ASSERT_NO_THROW(
-        {
-            service().delete_attachment(file_attachment.id());
-        });
+        ASSERT_NO_THROW({ service().delete_attachment(file_attachment.id()); });
 
         // Check if it is still in store
         EXPECT_THROW(
-        {
-            service().get_attachment(attachment_id);
+            {
+                service().get_attachment(attachment_id);
 
-        }, ews::exchange_error);
+            },
+            ews::exchange_error);
     }
 #endif // EWS_USE_BOOST_LIBRARY
 }

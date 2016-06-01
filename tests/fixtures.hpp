@@ -1,11 +1,11 @@
 #pragma once
 
-#include <string>
-#include <vector>
 #include <algorithm>
 #include <memory>
-#include <utility>
 #include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
@@ -13,10 +13,10 @@
 #include <gtest/gtest.h>
 
 #ifdef EWS_USE_BOOST_LIBRARY
-# include <fstream>
-# include <iostream>
-# include <iterator>
-# include <boost/filesystem.hpp>
+#include <boost/filesystem.hpp>
+#include <fstream>
+#include <iostream>
+#include <iterator>
 #endif
 
 namespace tests
@@ -44,7 +44,7 @@ namespace tests
         if (!ifstr.is_open())
         {
             throw std::runtime_error("Could not open file for reading: " +
-                path.string());
+                                     path.string());
         }
 
         ifstr.unsetf(std::ios::skipws);
@@ -93,12 +93,15 @@ namespace tests
             const auto& request_str = storage::instance().request_string;
             const auto header_end_idx = request_str.find("</soap:Header>");
             const auto search_str_idx = request_str.find(search_str);
-            return     search_str_idx != std::string::npos
-                    && search_str_idx < header_end_idx;
+            return search_str_idx != std::string::npos &&
+                   search_str_idx < header_end_idx;
         }
 
         // Below same public interface as ews::internal::http_request class
-        enum class method { POST };
+        enum class method
+        {
+            POST
+        };
 
         explicit http_request_mock(const std::string&) {}
 
@@ -113,11 +116,12 @@ namespace tests
 #ifdef EWS_HAS_VARIADIC_TEMPLATES
         template <typename... Args> void set_option(CURLoption, Args...) {}
 #else
-        template <typename T1>
-        void set_option(CURLoption option, T1) {}
+        template <typename T1> void set_option(CURLoption option, T1) {}
 
         template <typename T1, typename T2>
-        void set_option(CURLoption option, T1, T2) {}
+        void set_option(CURLoption option, T1, T2)
+        {
+        }
 #endif
 
         ews::internal::http_response send(const std::string& request)
@@ -125,8 +129,7 @@ namespace tests
             auto& s = storage::instance();
             s.request_string = request;
             auto response_bytes = s.fake_response;
-            return ews::internal::http_response(200,
-                                                std::move(response_bytes));
+            return ews::internal::http_response(200, std::move(response_bytes));
         }
     };
 
@@ -134,15 +137,9 @@ namespace tests
     class BaseFixture : public ::testing::Test
     {
     protected:
-        static void SetUpTestCase()
-        {
-            ews::set_up();
-        }
+        static void SetUpTestCase() { ews::set_up(); }
 
-        static void TearDownTestCase()
-        {
-            ews::tear_down();
-        }
+        static void TearDownTestCase() { ews::tear_down(); }
     };
 
     class FakeServiceFixture : public BaseFixture
@@ -159,10 +156,7 @@ namespace tests
             return *service_ptr_;
         }
 
-        http_request_mock get_last_request()
-        {
-            return http_request_mock();
-        }
+        http_request_mock get_last_request() { return http_request_mock(); }
 
         void set_next_fake_response(const char* str)
         {
@@ -177,20 +171,16 @@ namespace tests
         {
             BaseFixture::SetUp();
 #ifdef EWS_HAS_MAKE_UNIQUE
-            service_ptr_ = std::make_unique<
-                                ews::basic_service<http_request_mock>>(
-                                    "https://example.com/ews/Exchange.asmx",
-                                    "FAKEDOMAIN",
-                                    "fakeuser",
-                                    "fakepassword");
+            service_ptr_ =
+                std::make_unique<ews::basic_service<http_request_mock>>(
+                    "https://example.com/ews/Exchange.asmx", "FAKEDOMAIN",
+                    "fakeuser", "fakepassword");
 #else
             service_ptr_ =
                 std::unique_ptr<ews::basic_service<http_request_mock>>(
-                        new ews::basic_service<http_request_mock>(
-                            "https://example.com/ews/Exchange.asmx",
-                            "FAKEDOMAIN",
-                            "fakeuser",
-                            "fakepassword"));
+                    new ews::basic_service<http_request_mock>(
+                        "https://example.com/ews/Exchange.asmx", "FAKEDOMAIN",
+                        "fakeuser", "fakepassword"));
 #endif
         }
 
@@ -219,7 +209,7 @@ namespace tests
             if (!service_ptr_)
             {
                 throw std::runtime_error(
-                        "Cannot access service: no instance created");
+                    "Cannot access service: no instance created");
             }
             return *service_ptr_;
         }
@@ -230,16 +220,11 @@ namespace tests
             BaseFixture::SetUp();
             const auto& env = ews::test::global_data::instance().env;
 #ifdef EWS_HAS_MAKE_UNIQUE
-            service_ptr_ = std::make_unique<ews::service>(env.server_uri,
-                                                          env.domain,
-                                                          env.username,
-                                                          env.password);
+            service_ptr_ = std::make_unique<ews::service>(
+                env.server_uri, env.domain, env.username, env.password);
 #else
-            service_ptr_ = std::unique_ptr<ews::service>(
-                                         new ews::service(env.server_uri,
-                                                          env.domain,
-                                                          env.username,
-                                                          env.password));
+            service_ptr_ = std::unique_ptr<ews::service>(new ews::service(
+                env.server_uri, env.domain, env.username, env.password));
 #endif
         }
 
@@ -253,7 +238,9 @@ namespace tests
         std::unique_ptr<ews::service> service_ptr_;
     };
 
-    class ItemTest : public ServiceFixture {};
+    class ItemTest : public ServiceFixture
+    {
+    };
 
     // Create and remove a task on the server
     class TaskTest : public ServiceFixture
@@ -274,9 +261,8 @@ namespace tests
         void TearDown()
         {
             service().delete_task(
-                    std::move(task_),
-                    ews::delete_type::hard_delete,
-                    ews::affected_task_occurrences::all_occurrences);
+                std::move(task_), ews::delete_type::hard_delete,
+                ews::affected_task_occurrences::all_occurrences);
 
             ServiceFixture::TearDown();
         }
@@ -323,8 +309,7 @@ namespace tests
 
             message_.set_subject("Meet the Fockers");
             const auto item_id = service().create_item(
-                                        message_,
-                                        ews::message_disposition::save_only);
+                message_, ews::message_disposition::save_only);
             message_ = service().get_message(item_id);
         }
 
@@ -349,7 +334,7 @@ namespace tests
 
             calitem_.set_subject("Meet the Fockers");
             calitem_.set_start(ews::date_time("2004-12-25T10:00:00.000Z"));
-            calitem_.set_end(  ews::date_time("2004-12-27T10:00:00.000Z"));
+            calitem_.set_end(ews::date_time("2004-12-27T10:00:00.000Z"));
             const auto item_id = service().create_item(calitem_);
             calitem_ = service().get_calendar_item(item_id);
         }
@@ -378,12 +363,10 @@ namespace tests
             msg.set_subject("Honorable Minister of Finance - Release Funds");
             std::vector<ews::mailbox> recipients;
             recipients.push_back(
-                ews::mailbox("udom.emmanuel@zenith-bank.com.ng")
-            );
+                ews::mailbox("udom.emmanuel@zenith-bank.com.ng"));
             msg.set_to_recipients(recipients);
-            auto item_id = service().create_item(
-                    msg,
-                    ews::message_disposition::save_only);
+            auto item_id =
+                service().create_item(msg, ews::message_disposition::save_only);
             message_ = service().get_message(item_id);
         }
 
@@ -415,8 +398,8 @@ namespace tests
 
             olddir_ = boost::filesystem::current_path();
             workingdir_ = boost::filesystem::unique_path(
-                        boost::filesystem::temp_directory_path() /
-                        "%%%%-%%%%-%%%%-%%%%");
+                boost::filesystem::temp_directory_path() /
+                "%%%%-%%%%-%%%%-%%%%");
             ASSERT_TRUE(boost::filesystem::create_directory(workingdir_))
                 << "Unable to create temporary working directory";
             boost::filesystem::current_path(workingdir_);
@@ -432,15 +415,9 @@ namespace tests
             BaseFixture::TearDown();
         }
 
-        const boost::filesystem::path& assets_dir() const
-        {
-            return assetsdir_;
-        }
+        const boost::filesystem::path& assets_dir() const { return assetsdir_; }
 
-        const boost::filesystem::path& cwd() const
-        {
-            return workingdir_;
-        }
+        const boost::filesystem::path& cwd() const { return workingdir_; }
 
     private:
         boost::filesystem::path assetsdir_;
@@ -449,7 +426,7 @@ namespace tests
     };
 #endif // EWS_USE_BOOST_LIBRARY
 
-    inline ews::task make_fake_task(const char* xml=nullptr)
+    inline ews::task make_fake_task(const char* xml = nullptr)
     {
         typedef rapidxml::xml_document<> xml_document;
 
@@ -457,14 +434,17 @@ namespace tests
         {
             xml =
                 "<t:Task\n"
-                "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\">\n"
+                "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/"
+                "types\">\n"
                 "    <t:ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>\n"
                 "    <t:ParentFolderId Id=\"qwertz\" ChangeKey=\"ztrewq\"/>\n"
                 "    <t:ItemClass>IPM.Task</t:ItemClass>\n"
                 "    <t:Subject>Write poem</t:Subject>\n"
                 "    <t:Sensitivity>Confidential</t:Sensitivity>\n"
                 "    <t:Body BodyType=\"Text\" IsTruncated=\"false\"/>\n"
-                "    <t:DateTimeReceived>2015-02-09T13:00:11Z</t:DateTimeReceived>\n"
+                "    "
+                "<t:DateTimeReceived>2015-02-09T13:00:11Z</"
+                "t:DateTimeReceived>\n"
                 "    <t:Size>962</t:Size>\n"
                 "    <t:Importance>Normal</t:Importance>\n"
                 "    <t:IsSubmitted>false</t:IsSubmitted>\n"
@@ -473,7 +453,8 @@ namespace tests
                 "    <t:IsResend>false</t:IsResend>\n"
                 "    <t:IsUnmodified>false</t:IsUnmodified>\n"
                 "    <t:DateTimeSent>2015-02-09T13:00:11Z</t:DateTimeSent>\n"
-                "    <t:DateTimeCreated>2015-02-09T13:00:11Z</t:DateTimeCreated>\n"
+                "    "
+                "<t:DateTimeCreated>2015-02-09T13:00:11Z</t:DateTimeCreated>\n"
                 "    <t:DisplayCc/>\n"
                 "    <t:DisplayTo/>\n"
                 "    <t:HasAttachments>false</t:HasAttachments>\n"
@@ -488,12 +469,15 @@ namespace tests
                 "            <t:ViewPrivateItems>true</t:ViewPrivateItems>\n"
                 "    </t:EffectiveRights>\n"
                 "    <t:LastModifiedName>Kwaltz</t:LastModifiedName>\n"
-                "    <t:LastModifiedTime>2015-02-09T13:00:11Z</t:LastModifiedTime>\n"
+                "    "
+                "<t:LastModifiedTime>2015-02-09T13:00:11Z</"
+                "t:LastModifiedTime>\n"
                 "    <t:IsAssociated>false</t:IsAssociated>\n"
                 "    <t:Flag>\n"
                 "            <t:FlagStatus>NotFlagged</t:FlagStatus>\n"
                 "    </t:Flag>\n"
-                "    <t:InstanceKey>AQAAAAAAARMBAAAAG4AqWQAAAAA=</t:InstanceKey>\n"
+                "    "
+                "<t:InstanceKey>AQAAAAAAARMBAAAAG4AqWQAAAAA=</t:InstanceKey>\n"
                 "    <t:EntityExtractionResult/>\n"
                 "    <t:ChangeCount>1</t:ChangeCount>\n"
                 "    <t:IsComplete>false</t:IsComplete>\n"
@@ -514,7 +498,7 @@ namespace tests
     }
 
 #ifdef EWS_USE_BOOST_LIBRARY
-    inline ews::message make_fake_message(const char* xml=nullptr)
+    inline ews::message make_fake_message(const char* xml = nullptr)
     {
         typedef rapidxml::xml_document<> xml_document;
 
@@ -533,22 +517,21 @@ namespace tests
 
             const auto assets = boost::filesystem::path(
                 ews::test::global_data::instance().assets_dir);
-            const auto file_path = assets
-                / "undeliverable_test_mail_get_item_response.xml";
+            const auto file_path =
+                assets / "undeliverable_test_mail_get_item_response.xml";
             std::ifstream ifstr(file_path.string(),
-                std::ifstream::in | std::ios::binary);
+                                std::ifstream::in | std::ios::binary);
             if (!ifstr.is_open())
             {
-                throw std::runtime_error("Could not open file for reading: "
-                    + file_path.string());
+                throw std::runtime_error("Could not open file for reading: " +
+                                         file_path.string());
             }
             ifstr.unsetf(std::ios::skipws);
             ifstr.seekg(0, std::ios::end);
             const auto file_size = ifstr.tellg();
             ifstr.seekg(0, std::ios::beg);
             buf.reserve(file_size);
-            buf.insert(begin(buf),
-                       std::istream_iterator<char>(ifstr),
+            buf.insert(begin(buf), std::istream_iterator<char>(ifstr),
                        std::istream_iterator<char>());
             ifstr.close();
         }
@@ -556,9 +539,7 @@ namespace tests
         xml_document doc;
         doc.parse<0>(&buf[0]);
         auto node = ews::internal::get_element_by_qname(
-            doc,
-            "Message",
-            ews::internal::uri<>::microsoft::types());
+            doc, "Message", ews::internal::uri<>::microsoft::types());
         return ews::message::from_xml_element(*node);
     }
 #endif // EWS_USE_BOOST_LIBRARY

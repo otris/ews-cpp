@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include <string>
-#include <stdexcept>
 #include <cstdlib>
+#include <stdexcept>
+#include <string>
 
 namespace ews
 {
@@ -33,10 +33,9 @@ namespace ews
             }
 
         private:
-
 #ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable : 4996)
+#pragma warning(push)
+#pragma warning(disable : 4996)
 #endif
             static std::string getenv_or_throw(const char* name)
             {
@@ -56,7 +55,7 @@ namespace ews
                 return val == nullptr ? "" : std::string(val);
             }
 #ifdef _MSC_VER
-# pragma warning(pop)
+#pragma warning(pop)
 #endif
         };
 

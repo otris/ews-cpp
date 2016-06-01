@@ -1,19 +1,19 @@
-#include <gtest/gtest.h>
 #include <ews/ews_test_support.hpp>
+#include <gtest/gtest.h>
 
-#include <iostream>
-#include <ostream>
-#include <string>
-#include <unordered_map>
-#include <stdexcept>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
+#include <ostream>
+#include <stdexcept>
+#include <string>
+#include <unordered_map>
 
 #ifdef _WIN32
-# include <direct.h>
-# define getcwd _getcwd
+#include <direct.h>
+#define getcwd _getcwd
 #else
-# include <unistd.h>
+#include <unistd.h>
 #endif
 
 typedef std::unordered_map<std::string, std::string> argument_map;
@@ -38,12 +38,14 @@ namespace
 
     std::string pwd()
     {
-        enum { size = 4096U };
+        enum
+        {
+            size = 4096U
+        };
         char buf[size];
         auto ret = ::getcwd(buf, size);
-        return ret != nullptr ?
-                      std::string(buf)
-                    : throw std::runtime_error("getcwd failed");
+        return ret != nullptr ? std::string(buf)
+                              : throw std::runtime_error("getcwd failed");
     }
 
     // Parse and interpret command line flags that we recognize. Remove them
@@ -64,7 +66,7 @@ namespace
                 // The following loop moves the trailing null element as well.
                 for (int j = i; j != *argc; j++)
                 {
-                  argv[j] = argv[j + 1];
+                    argv[j] = argv[j + 1];
                 }
 
                 // Decrements the argument count.
@@ -74,18 +76,17 @@ namespace
                 // element.
                 i--;
             }
-            else if (  arg == "--help"
-                    || arg == "-h"
-                    || arg == "-?"
-                    || arg == "/?")
+            else if (arg == "--help" || arg == "-h" || arg == "-?" ||
+                     arg == "/?")
             {
-                std::cout <<
-"usage: tests [--assets=PATH]\n"
-"\n"
-"--assets=PATH  path to the test assets directory, default\n"
-"               $PWD/tests/assets\n"
-"\n"
-"invoke with --gtest_help to see Google Test flags" << std::endl;
+                std::cout << "usage: tests [--assets=PATH]\n"
+                             "\n"
+                             "--assets=PATH  path to the test assets "
+                             "directory, default\n"
+                             "               $PWD/tests/assets\n"
+                             "\n"
+                             "invoke with --gtest_help to see Google Test flags"
+                          << std::endl;
 
                 std::exit(EXIT_FAILURE);
             }
@@ -111,16 +112,16 @@ namespace
             if (starts_with("~", assets_dir))
             {
 #ifdef _WIN32
-# ifdef _MSC_VER
-#  pragma warning(push)
-#  pragma warning(disable: 4996)
-# endif
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
 
                 const char* const env = getenv("USERPROFILE");
 
-# ifdef _MSC_VER
-#  pragma warning(pop)
-# endif
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 #else
                 const char* const env = getenv("HOME");
 #endif

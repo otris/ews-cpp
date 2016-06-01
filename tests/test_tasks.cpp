@@ -1,14 +1,14 @@
 #include "fixtures.hpp"
 
-#include <string>
-#include <vector>
 #include <algorithm>
 #include <iterator>
+#include <string>
 #include <utility>
+#include <vector>
 
 namespace tests
 {
-#pragma warning(suppress: 6262)
+#pragma warning(suppress : 6262)
     TEST(OfflineTaskTest, FromXMLElement)
     {
         const auto task = make_fake_task();
@@ -49,7 +49,7 @@ namespace tests
     TEST_F(TaskTest, CreateAndDelete)
     {
         auto start_time = ews::date_time("2015-01-17T12:00:00Z");
-        auto end_time   = ews::date_time("2015-01-17T12:30:00Z");
+        auto end_time = ews::date_time("2015-01-17T12:30:00Z");
         auto task = ews::task();
         task.set_subject("Something really important to do");
         task.set_body(ews::body("Some descriptive body text"));
@@ -62,18 +62,17 @@ namespace tests
         auto created_task = service().get_task(item_id);
         // Check properties
         EXPECT_STREQ("Something really important to do",
-                created_task.get_subject().c_str());
+                     created_task.get_subject().c_str());
         EXPECT_EQ(start_time, created_task.get_start_date());
         EXPECT_EQ(end_time, created_task.get_due_date());
         EXPECT_TRUE(created_task.is_reminder_enabled());
         EXPECT_EQ(start_time, created_task.get_reminder_due_by());
 
-        ASSERT_NO_THROW(
-        {
+        ASSERT_NO_THROW({
             service().delete_task(
-                    std::move(created_task), // Sink argument
-                    ews::delete_type::hard_delete,
-                    ews::affected_task_occurrences::all_occurrences);
+                std::move(created_task), // Sink argument
+                ews::delete_type::hard_delete,
+                ews::affected_task_occurrences::all_occurrences);
         });
         EXPECT_STREQ("", created_task.get_subject().c_str());
 
@@ -84,12 +83,15 @@ namespace tests
     TEST_F(TaskTest, FindTasks)
     {
         ews::distinguished_folder_id folder = ews::standard_folder::tasks;
-        const auto initial_count = service().find_item(folder,
-            ews::is_equal_to(ews::task_property_path::is_complete,
-                             false)).size();
+        const auto initial_count =
+            service()
+                .find_item(folder,
+                           ews::is_equal_to(
+                               ews::task_property_path::is_complete, false))
+                .size();
 
         auto start_time = ews::date_time("2015-05-29T17:00:00Z");
-        auto end_time   = ews::date_time("2015-05-29T17:30:00Z");
+        auto end_time = ews::date_time("2015-05-29T17:30:00Z");
         auto t = ews::task();
         t.set_subject("Feed the cat");
         t.set_body(ews::body("And don't forget to buy some Whiskas"));
@@ -97,13 +99,11 @@ namespace tests
         t.set_due_date(end_time);
         const auto item_id = service().create_item(t);
         t = service().get_task(item_id);
-        ews::internal::on_scope_exit delete_item([&]
-        {
-            service().delete_task(std::move(t));
-        });
+        ews::internal::on_scope_exit delete_item(
+            [&] { service().delete_task(std::move(t)); });
         auto ids = service().find_item(
-                folder,
-                ews::is_equal_to(ews::task_property_path::is_complete, false));
+            folder,
+            ews::is_equal_to(ews::task_property_path::is_complete, false));
         EXPECT_EQ(initial_count + 1, ids.size());
     }
 
@@ -203,8 +203,8 @@ namespace tests
         std::vector<std::string> companies;
         companies.push_back("Tic Tric Tac Inc.");
         auto task = test_task();
-        auto prop = ews::property(ews::task_property_path::companies,
-                                  companies);
+        auto prop =
+            ews::property(ews::task_property_path::companies, companies);
         auto new_id = service().update_item(task.get_item_id(), prop);
         task = service().get_task(new_id);
         ASSERT_EQ(1U, task.get_companies().size());
@@ -256,8 +256,8 @@ namespace tests
 
         auto complete_date = get_milk.get_complete_date();
         ASSERT_FALSE(get_milk.is_complete());
-        auto prop = ews::property(ews::task_property_path::percent_complete,
-                                  100);
+        auto prop =
+            ews::property(ews::task_property_path::percent_complete, 100);
         auto new_id = service().update_item(get_milk.get_item_id(), prop);
         get_milk = service().get_task(new_id);
 
@@ -317,8 +317,8 @@ namespace tests
     TEST_F(TaskTest, UpdatePercentCompleteProperty)
     {
         auto task = test_task();
-        auto prop = ews::property(ews::task_property_path::percent_complete,
-                                  55);
+        auto prop =
+            ews::property(ews::task_property_path::percent_complete, 55);
         auto new_id = service().update_item(task.get_item_id(), prop);
         task = service().get_task(new_id);
         EXPECT_EQ(55, task.get_percent_complete());

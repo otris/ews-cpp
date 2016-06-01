@@ -1,7 +1,7 @@
 #include "fixtures.hpp"
+#include <cstring>
 #include <ews/ews.hpp>
 #include <vector>
-#include <cstring>
 
 using ews::item_id;
 typedef rapidxml::xml_document<> xml_document;
@@ -30,7 +30,7 @@ namespace tests
         EXPECT_STREQ("", a.change_key().c_str());
     }
 
-#pragma warning(suppress: 6262)
+#pragma warning(suppress : 6262)
     TEST(ItemIdTest, FromXMLNode)
     {
         char buf[] = "<ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>";
@@ -49,7 +49,7 @@ namespace tests
         EXPECT_STREQ(expected, a.to_xml().c_str());
     }
 
-#pragma warning(suppress: 6262)
+#pragma warning(suppress : 6262)
     TEST(ItemIdTest, FromAndToXMLRoundTrip)
     {
         const char* xml = "<t:ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>";
@@ -71,8 +71,8 @@ namespace tests
 
     TEST(BodyTest, PlainTextToXML)
     {
-        auto b = ews::body("Here is some plain text",
-                           ews::body_type::plain_text);
+        auto b =
+            ews::body("Here is some plain text", ews::body_type::plain_text);
         EXPECT_EQ(ews::body_type::plain_text, b.type());
         EXPECT_FALSE(b.is_truncated());
         const char* const expected =
@@ -85,8 +85,9 @@ namespace tests
         auto b = ews::body("<b>Here is some HTML</b>", ews::body_type::html);
         EXPECT_EQ(ews::body_type::html, b.type());
         EXPECT_FALSE(b.is_truncated());
-        const char* const expected =
-            "<t:Body BodyType=\"HTML\"><![CDATA[<b>Here is some HTML</b>]]></t:Body>";
+        const char* const expected = "<t:Body "
+                                     "BodyType=\"HTML\"><![CDATA[<b>Here is "
+                                     "some HTML</b>]]></t:Body>";
         EXPECT_STREQ(expected, b.to_xml().c_str());
     }
 
@@ -183,10 +184,8 @@ namespace tests
         auto contact = ews::contact();
         auto& s = service();
         const auto item_id = s.create_item(contact);
-        ews::internal::on_scope_exit remove_contact([&]
-        {
-            s.delete_contact(std::move(contact));
-        });
+        ews::internal::on_scope_exit remove_contact(
+            [&] { s.delete_contact(std::move(contact)); });
         contact = s.get_contact(item_id);
         EXPECT_TRUE(contact.get_mime_content().none());
     }
@@ -196,10 +195,8 @@ namespace tests
         auto contact = ews::contact();
         auto& s = service();
         const auto item_id = s.create_item(contact);
-        ews::internal::on_scope_exit remove_contact([&]
-        {
-            s.delete_contact(std::move(contact));
-        });
+        ews::internal::on_scope_exit remove_contact(
+            [&] { s.delete_contact(std::move(contact)); });
         auto additional_properties = std::vector<ews::property_path>();
         additional_properties.push_back(ews::item_property_path::mime_content);
         contact = s.get_contact(item_id, additional_properties);
@@ -246,10 +243,8 @@ namespace tests
         auto task = ews::task();
         task.set_sensitivity(ews::sensitivity::personal);
         auto item_id = service().create_item(task);
-        ews::internal::on_scope_exit remove_task([&]
-        {
-            service().delete_task(std::move(task));
-        });
+        ews::internal::on_scope_exit remove_task(
+            [&] { service().delete_task(std::move(task)); });
         task = service().get_task(item_id);
         EXPECT_EQ(ews::sensitivity::personal, task.get_sensitivity());
 
@@ -267,16 +262,14 @@ namespace tests
         // TODO: better: what to do!? EXPECT_FALSE(item.get_body().none());
         // boost::optional desperately missing
 
-        auto original =
-            ews::body("<p>Some of the finest Vogon poetry</p>",
-                      ews::body_type::html);
+        auto original = ews::body("<p>Some of the finest Vogon poetry</p>",
+                                  ews::body_type::html);
         item.set_body(original);
 
         auto actual = item.get_body();
         EXPECT_EQ(original.type(), actual.type());
         EXPECT_EQ(original.is_truncated(), actual.is_truncated());
-        EXPECT_STREQ(original.content().c_str(),
-                     actual.content().c_str());
+        EXPECT_STREQ(original.content().c_str(), actual.content().c_str());
     }
 
     // TODO: Attachments-Test
@@ -284,7 +277,8 @@ namespace tests
     TEST(OfflineItemTest, GetDateTimeReceivedProperty)
     {
         const auto task = make_fake_task();
-        EXPECT_EQ(ews::date_time("2015-02-09T13:00:11Z"), task.get_date_time_received());
+        EXPECT_EQ(ews::date_time("2015-02-09T13:00:11Z"),
+                  task.get_date_time_received());
     }
 
     TEST(OfflineItemTest, GetDateTimeReceivedPropertyDefaultConstructed)
@@ -297,10 +291,8 @@ namespace tests
     {
         auto task = ews::task();
         auto item_id = service().create_item(task);
-        ews::internal::on_scope_exit remove_task([&]
-        {
-            service().delete_task(std::move(task));
-        });
+        ews::internal::on_scope_exit remove_task(
+            [&] { service().delete_task(std::move(task)); });
         task = service().get_task(item_id);
         EXPECT_TRUE(task.get_date_time_received().is_set());
     }
@@ -319,15 +311,15 @@ namespace tests
 
     TEST(OfflineItemTest, SetCategoriesPropertyDefaultConstructed)
     {
-      auto task = ews::task();
-      std::vector<std::string> categories;
-      categories.push_back("ham");
-      categories.push_back("spam");
-      task.set_categories(categories);
+        auto task = ews::task();
+        std::vector<std::string> categories;
+        categories.push_back("ham");
+        categories.push_back("spam");
+        task.set_categories(categories);
 
-      ASSERT_EQ(2U, task.get_categories().size());
-      EXPECT_EQ("ham", task.get_categories()[0]);
-      EXPECT_EQ("spam", task.get_categories()[1]);
+        ASSERT_EQ(2U, task.get_categories().size());
+        EXPECT_EQ("ham", task.get_categories()[0]);
+        EXPECT_EQ("spam", task.get_categories()[1]);
     }
 
     TEST(OfflineItemTest, GetCategoriesProperty)
@@ -350,10 +342,8 @@ namespace tests
         categories.push_back("spam");
         task.set_categories(categories);
         auto item_id = service().create_item(task);
-        ews::internal::on_scope_exit remove_task([&]
-        {
-            service().delete_task(std::move(task));
-        });
+        ews::internal::on_scope_exit remove_task(
+            [&] { service().delete_task(std::move(task)); });
         task = service().get_task(item_id);
         ASSERT_EQ(2U, task.get_categories().size());
         EXPECT_EQ("ham", task.get_categories()[0]);
@@ -363,8 +353,8 @@ namespace tests
         std::vector<std::string> prop_categories;
         prop_categories.push_back("note");
         prop_categories.push_back("info");
-        auto prop = ews::property(ews::item_property_path::categories,
-                                  prop_categories);
+        auto prop =
+            ews::property(ews::item_property_path::categories, prop_categories);
         item_id = service().update_item(task.get_item_id(), prop);
         task = service().get_task(item_id);
         ASSERT_EQ(2U, task.get_categories().size());
@@ -396,10 +386,8 @@ namespace tests
         ASSERT_EQ("", task.get_in_reply_to());
 
         auto item_id = service().create_item(task);
-        ews::internal::on_scope_exit remove_task([&]
-        {
-            service().delete_task(std::move(task));
-        });
+        ews::internal::on_scope_exit remove_task(
+            [&] { service().delete_task(std::move(task)); });
         task = service().get_task(item_id);
 
         // set
@@ -411,7 +399,7 @@ namespace tests
 
         // update
         prop = ews::property(ews::item_property_path::in_reply_to,
-                                  "somebody@noreply.com");
+                             "somebody@noreply.com");
         item_id = service().update_item(task.get_item_id(), prop);
         task = service().get_task(item_id);
         EXPECT_EQ("somebody@noreply.com", task.get_in_reply_to());
@@ -485,66 +473,53 @@ namespace tests
         ASSERT_FALSE(headers.empty());
 
         std::vector<ews::internet_message_header> headers_expected;
+        headers_expected.push_back(ews::internet_message_header(
+            "Received",
+            "from duckburg2013.otris.de (192.168.4.234) "
+            "by duckburg2013.otris.de (192.168.4.234) "
+            "with Microsoft SMTP Server (TLS) id 15.0.847.32 "
+            "via Mailbox Transport; Sun, 7 Feb 2016 12:12:49 +0100"));
         headers_expected.push_back(
-            ews::internet_message_header("Received",
-                "from duckburg2013.otris.de (192.168.4.234) "
-                "by duckburg2013.otris.de (192.168.4.234) "
-                "with Microsoft SMTP Server (TLS) id 15.0.847.32 "
-                "via Mailbox Transport; Sun, 7 Feb 2016 12:12:49 +0100"));
+            ews::internet_message_header("MIME-Version", "1.0"));
+        headers_expected.push_back(ews::internet_message_header(
+            "Date", "Sun, 7 Feb 2016 12:12:31 +0100"));
         headers_expected.push_back(
-            ews::internet_message_header("MIME-Version",
-                "1.0"));
+            ews::internet_message_header("Content-Type", "multipart/report"));
+        headers_expected.push_back(ews::internet_message_header(
+            "X-MS-Exchange-Organization-SCL", "-1"));
         headers_expected.push_back(
-            ews::internet_message_header("Date",
-                "Sun, 7 Feb 2016 12:12:31 +0100"));
+            ews::internet_message_header("Content-Language", "en-US"));
+        headers_expected.push_back(ews::internet_message_header(
+            "Message-ID",
+            "<28b94593-526c-42d8-b49b-257f04f15083@duckburg2013.otris.de>"));
+        headers_expected.push_back(ews::internet_message_header(
+            "In-Reply-To",
+            "<c829d7b23a1b4c138c0b58d80b97b595@duckburg2013.otris.de>"));
+        headers_expected.push_back(ews::internet_message_header(
+            "References",
+            "<c829d7b23a1b4c138c0b58d80b97b595@duckburg2013.otris.de>"));
         headers_expected.push_back(
-            ews::internet_message_header("Content-Type",
-                "multipart/report"));
+            ews::internet_message_header("Thread-Topic", "Test mail"));
+        headers_expected.push_back(ews::internet_message_header(
+            "Thread-Index", "AQHRYAVXv4yEkT9GTECGcXS3Z6t3OJ8gcNbs"));
+        headers_expected.push_back(ews::internet_message_header(
+            "Subject", "Undeliverable: Test mail"));
         headers_expected.push_back(
-            ews::internet_message_header("X-MS-Exchange-Organization-SCL",
-                "-1"));
+            ews::internet_message_header("Auto-Submitted", "auto-replied"));
+        headers_expected.push_back(ews::internet_message_header(
+            "X-MS-Exchange-Organization-AuthSource", "duckburg2013.otris.de"));
+        headers_expected.push_back(ews::internet_message_header(
+            "X-MS-Exchange-Organization-AuthAs", "Internal"));
+        headers_expected.push_back(ews::internet_message_header(
+            "X-MS-Exchange-Organization-AuthMechanism", "05"));
+        headers_expected.push_back(ews::internet_message_header(
+            "X-MS-Exchange-Organization-Network-Message-Id",
+            "6b449cb6-88e2-4a17-acde-08d32faf931b"));
         headers_expected.push_back(
-            ews::internet_message_header("Content-Language",
-                "en-US"));
-        headers_expected.push_back(
-            ews::internet_message_header("Message-ID",
-                "<28b94593-526c-42d8-b49b-257f04f15083@duckburg2013.otris.de>"));
-        headers_expected.push_back(
-            ews::internet_message_header("In-Reply-To",
-                "<c829d7b23a1b4c138c0b58d80b97b595@duckburg2013.otris.de>"));
-        headers_expected.push_back(
-            ews::internet_message_header("References",
-                "<c829d7b23a1b4c138c0b58d80b97b595@duckburg2013.otris.de>"));
-        headers_expected.push_back(
-            ews::internet_message_header("Thread-Topic",
-                "Test mail"));
-        headers_expected.push_back(
-            ews::internet_message_header("Thread-Index",
-                "AQHRYAVXv4yEkT9GTECGcXS3Z6t3OJ8gcNbs"));
-        headers_expected.push_back(
-            ews::internet_message_header("Subject",
-                "Undeliverable: Test mail"));
-        headers_expected.push_back(
-            ews::internet_message_header("Auto-Submitted",
-                "auto-replied"));
-        headers_expected.push_back(
-            ews::internet_message_header("X-MS-Exchange-Organization-AuthSource",
-                "duckburg2013.otris.de"));
-        headers_expected.push_back(
-            ews::internet_message_header("X-MS-Exchange-Organization-AuthAs",
-                "Internal"));
-        headers_expected.push_back(
-            ews::internet_message_header("X-MS-Exchange-Organization-AuthMechanism",
-                "05"));
-        headers_expected.push_back(
-            ews::internet_message_header("X-MS-Exchange-Organization-Network-Message-Id",
-                "6b449cb6-88e2-4a17-acde-08d32faf931b"));
-        headers_expected.push_back(
-            ews::internet_message_header("Return-Path",
-                "<>"));
+            ews::internet_message_header("Return-Path", "<>"));
 
         auto it_headers_expected = headers_expected.begin();
-        for(auto it_headers : headers)
+        for (auto it_headers : headers)
         {
             ASSERT_FALSE(it_headers.get_name().empty());
             ASSERT_FALSE(it_headers.get_value().empty());
@@ -559,7 +534,8 @@ namespace tests
     TEST(OfflineItemTest, GetDateTimeSentProperty)
     {
         const auto task = make_fake_task();
-        EXPECT_EQ(ews::date_time("2015-02-09T13:00:11Z"), task.get_date_time_sent());
+        EXPECT_EQ(ews::date_time("2015-02-09T13:00:11Z"),
+                  task.get_date_time_sent());
     }
 
     TEST(OfflineItemTest, GetDateTimeSentPropertyDefaultConstructed)
@@ -572,10 +548,8 @@ namespace tests
     {
         auto task = ews::task();
         auto item_id = service().create_item(task);
-        ews::internal::on_scope_exit remove_task([&]
-        {
-            service().delete_task(std::move(task));
-        });
+        ews::internal::on_scope_exit remove_task(
+            [&] { service().delete_task(std::move(task)); });
         task = service().get_task(item_id);
         EXPECT_TRUE(task.get_date_time_sent().is_set());
     }
@@ -583,7 +557,8 @@ namespace tests
     TEST(OfflineItemTest, GetDateTimeCreatedProperty)
     {
         const auto task = make_fake_task();
-        EXPECT_EQ(ews::date_time("2015-02-09T13:00:11Z"), task.get_date_time_created());
+        EXPECT_EQ(ews::date_time("2015-02-09T13:00:11Z"),
+                  task.get_date_time_created());
     }
 
     TEST(OfflineItemTest, GetDateTimeCreatedPropertyDefaultConstructed)
@@ -596,10 +571,8 @@ namespace tests
     {
         auto task = ews::task();
         auto item_id = service().create_item(task);
-        ews::internal::on_scope_exit remove_task([&]
-        {
-            service().delete_task(std::move(task));
-        });
+        ews::internal::on_scope_exit remove_task(
+            [&] { service().delete_task(std::move(task)); });
         task = service().get_task(item_id);
         EXPECT_TRUE(task.get_date_time_created().is_set());
     }
@@ -610,10 +583,12 @@ namespace tests
         EXPECT_EQ(ews::date_time(), task.get_reminder_due_by());
 
         task.set_reminder_due_by(ews::date_time("2012-09-11T10:00:11Z"));
-        EXPECT_EQ(ews::date_time("2012-09-11T10:00:11Z"), task.get_reminder_due_by());
+        EXPECT_EQ(ews::date_time("2012-09-11T10:00:11Z"),
+                  task.get_reminder_due_by());
 
         task.set_reminder_due_by(ews::date_time("2001-09-11T12:00:11Z"));
-        EXPECT_EQ(ews::date_time("2001-09-11T12:00:11Z"), task.get_reminder_due_by());
+        EXPECT_EQ(ews::date_time("2001-09-11T12:00:11Z"),
+                  task.get_reminder_due_by());
     }
 
     TEST_F(ItemTest, ReminderDueByProperty)
@@ -621,12 +596,11 @@ namespace tests
         auto task = ews::task();
         task.set_reminder_due_by(ews::date_time("2001-09-11T12:00:11Z"));
         auto item_id = service().create_item(task);
-        ews::internal::on_scope_exit remove_task([&]
-        {
-            service().delete_task(std::move(task));
-        });
+        ews::internal::on_scope_exit remove_task(
+            [&] { service().delete_task(std::move(task)); });
         task = service().get_task(item_id);
-        EXPECT_EQ(ews::date_time("2001-09-11T12:00:11Z"), task.get_reminder_due_by());
+        EXPECT_EQ(ews::date_time("2001-09-11T12:00:11Z"),
+                  task.get_reminder_due_by());
     }
 
     TEST(OfflineItemTest, ReminderMinutesBeforeStartPropertyDefaultConstructed)
@@ -649,10 +623,8 @@ namespace tests
         ASSERT_EQ(0U, task.get_reminder_minutes_before_start());
         task.set_reminder_minutes_before_start(999);
         auto item_id = service().create_item(task);
-        ews::internal::on_scope_exit remove_task([&]
-        {
-            service().delete_task(std::move(task));
-        });
+        ews::internal::on_scope_exit remove_task(
+            [&] { service().delete_task(std::move(task)); });
         task = service().get_task(item_id);
         EXPECT_EQ(999U, task.get_reminder_minutes_before_start());
     }
@@ -667,10 +639,8 @@ namespace tests
     {
         auto task = ews::task();
         auto item_id = service().create_item(task);
-        ews::internal::on_scope_exit remove_task([&]
-        {
-            service().delete_task(std::move(task));
-        });
+        ews::internal::on_scope_exit remove_task(
+            [&] { service().delete_task(std::move(task)); });
         task = service().get_task(item_id);
         EXPECT_EQ("", task.get_display_cc());
         // TODO: more tests
@@ -686,10 +656,8 @@ namespace tests
     {
         auto task = ews::task();
         auto item_id = service().create_item(task);
-        ews::internal::on_scope_exit remove_task([&]
-        {
-            service().delete_task(std::move(task));
-        });
+        ews::internal::on_scope_exit remove_task(
+            [&] { service().delete_task(std::move(task)); });
         task = service().get_task(item_id);
         EXPECT_EQ("", task.get_display_to());
     }
@@ -718,20 +686,16 @@ namespace tests
         ASSERT_EQ("mn-Mong-CN", task.get_culture());
 
         auto item_id = service().create_item(task);
-        ews::internal::on_scope_exit remove_task([&]
-        {
-            service().delete_task(std::move(task));
-        });
+        ews::internal::on_scope_exit remove_task(
+            [&] { service().delete_task(std::move(task)); });
         task = service().get_task(item_id);
 
-        auto prop = ews::property(ews::item_property_path::culture,
-                                  "zu-ZA");
+        auto prop = ews::property(ews::item_property_path::culture, "zu-ZA");
         item_id = service().update_item(task.get_item_id(), prop);
         task = service().get_task(item_id);
         ASSERT_EQ("zu-ZA", task.get_culture());
 
-        prop = ews::property(ews::item_property_path::culture,
-                                  "yo-NG");
+        prop = ews::property(ews::item_property_path::culture, "yo-NG");
         item_id = service().update_item(task.get_item_id(), prop);
         task = service().get_task(item_id);
         EXPECT_EQ("yo-NG", task.get_culture());

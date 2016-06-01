@@ -32,13 +32,10 @@ namespace tests
         auto message = ews::message();
         message.set_subject("You are hiding again, aren't you?");
         std::vector<ews::mailbox> recipients;
-        recipients.push_back(
-            ews::mailbox("darkwing.duck@duckburg.com")
-        );
+        recipients.push_back(ews::mailbox("darkwing.duck@duckburg.com"));
         message.set_to_recipients(recipients);
-        auto item_id = service().create_item(
-                message,
-                ews::message_disposition::save_only);
+        auto item_id =
+            service().create_item(message, ews::message_disposition::save_only);
         message = service().get_message(item_id);
         recipients = message.get_to_recipients();
         ASSERT_EQ(1U, recipients.size());
@@ -68,8 +65,7 @@ namespace tests
     TEST_F(MessageTest, UpdateIsReadProperty)
     {
         auto& msg = test_message();
-        auto prop = ews::property(ews::message_property_path::is_read,
-                                  true);
+        auto prop = ews::property(ews::message_property_path::is_read, true);
         auto new_id = service().update_item(msg.get_item_id(), prop);
         msg = service().get_message(new_id);
         EXPECT_TRUE(msg.is_read());

@@ -3,42 +3,42 @@
 #include <ews/rapidxml/rapidxml.hpp>
 #include <ews/rapidxml/rapidxml_print.hpp>
 
-#include <string>
-#include <sstream>
-#include <vector>
-#include <iterator>
-#include <memory>
 #include <algorithm>
 #include <cstring>
+#include <iterator>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace tests
 {
     TEST(AttendeeTest, ToXML)
     {
-        auto a = ews::attendee(
-                    ews::mailbox("gaylord.focker@uchospitals.edu"),
-                    ews::response_type::accept,
-                    ews::date_time("2004-11-11T11:11:11Z"));
+        auto a = ews::attendee(ews::mailbox("gaylord.focker@uchospitals.edu"),
+                               ews::response_type::accept,
+                               ews::date_time("2004-11-11T11:11:11Z"));
 
-        EXPECT_STREQ("<t:Attendee>"
-                       "<t:Mailbox>"
-                         "<t:EmailAddress>gaylord.focker@uchospitals.edu</t:EmailAddress>"
-                       "</t:Mailbox>"
-                       "<t:ResponseType>Accept</t:ResponseType>"
-                       "<t:LastResponseTime>2004-11-11T11:11:11Z</t:LastResponseTime>"
-                     "</t:Attendee>",
-                     a.to_xml().c_str());
+        EXPECT_STREQ(
+            "<t:Attendee>"
+            "<t:Mailbox>"
+            "<t:EmailAddress>gaylord.focker@uchospitals.edu</t:EmailAddress>"
+            "</t:Mailbox>"
+            "<t:ResponseType>Accept</t:ResponseType>"
+            "<t:LastResponseTime>2004-11-11T11:11:11Z</t:LastResponseTime>"
+            "</t:Attendee>",
+            a.to_xml().c_str());
     }
 
     TEST(AttendeeTest, FromXML)
     {
         const char* xml =
             "<Attendee>"
-              "<Mailbox>"
-                "<EmailAddress>gaylord.focker@uchospitals.edu</EmailAddress>"
-              "</Mailbox>"
-              "<ResponseType>Accept</ResponseType>"
-              "<LastResponseTime>2004-11-11T11:11:11Z</LastResponseTime>"
+            "<Mailbox>"
+            "<EmailAddress>gaylord.focker@uchospitals.edu</EmailAddress>"
+            "</Mailbox>"
+            "<ResponseType>Accept</ResponseType>"
+            "<LastResponseTime>2004-11-11T11:11:11Z</LastResponseTime>"
             "</Attendee>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
@@ -84,13 +84,12 @@ namespace tests
 
     TEST(OccurrenceInfoTest, ConstructFromXML)
     {
-        const char* xml =
-            "<Occurrence>"
-                "<ItemId Id=\"xyz\" ChangeKey=\"xyz\" />"
-                "<Start>2011-11-11T11:11:11Z</Start>"
-                "<End>2011-11-11T11:11:11Z</End>"
-                "<OriginalStart>2011-11-11T11:11:11Z</OriginalStart>"
-            "</Occurrence>";
+        const char* xml = "<Occurrence>"
+                          "<ItemId Id=\"xyz\" ChangeKey=\"xyz\" />"
+                          "<Start>2011-11-11T11:11:11Z</Start>"
+                          "<End>2011-11-11T11:11:11Z</End>"
+                          "<OriginalStart>2011-11-11T11:11:11Z</OriginalStart>"
+                          "</Occurrence>";
 
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
@@ -100,11 +99,9 @@ namespace tests
         auto node = doc.first_node();
 
         auto a = ews::occurrence_info::from_xml_element(*node);
-        EXPECT_EQ(ews::date_time("2011-11-11T11:11:11Z"),
-                  a.get_start());
+        EXPECT_EQ(ews::date_time("2011-11-11T11:11:11Z"), a.get_start());
 
-        EXPECT_EQ(ews::date_time("2011-11-11T11:11:11Z"),
-                  a.get_end());
+        EXPECT_EQ(ews::date_time("2011-11-11T11:11:11Z"), a.get_end());
 
         EXPECT_EQ(ews::date_time("2011-11-11T11:11:11Z"),
                   a.get_original_start());
@@ -122,8 +119,9 @@ namespace tests
         ews::no_end_recurrence_range r(start_date);
         EXPECT_EQ(start_date, r.get_start_date());
 
-        const char* xml =
-            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
+        const char* xml = "<Recurrence "
+                          "xmlns:t=\"http://schemas.microsoft.com/exchange/"
+                          "services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -132,14 +130,13 @@ namespace tests
         auto parent = doc.first_node();
 
         std::string str;
-        rapidxml::print(std::back_inserter(str),
-            r.to_xml_element(*parent),
-            rapidxml::print_no_indenting);
+        rapidxml::print(std::back_inserter(str), r.to_xml_element(*parent),
+                        rapidxml::print_no_indenting);
 
-        EXPECT_STREQ(
-            "<t:NoEndRecurrence>"
-                "<t:StartDate>1994-10-10</t:StartDate>"
-            "</t:NoEndRecurrence>", str.c_str());
+        EXPECT_STREQ("<t:NoEndRecurrence>"
+                     "<t:StartDate>1994-10-10</t:StartDate>"
+                     "</t:NoEndRecurrence>",
+                     str.c_str());
 
         auto result = ews::recurrence_range::from_xml_element(*parent);
         ASSERT_TRUE(result);
@@ -157,8 +154,9 @@ namespace tests
         EXPECT_EQ(start_date, r.get_start_date());
         EXPECT_EQ(end_date, r.get_end_date());
 
-        const char* xml =
-            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
+        const char* xml = "<Recurrence "
+                          "xmlns:t=\"http://schemas.microsoft.com/exchange/"
+                          "services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -167,15 +165,14 @@ namespace tests
         auto parent = doc.first_node();
 
         std::string str;
-        rapidxml::print(std::back_inserter(str),
-            r.to_xml_element(*parent),
-            rapidxml::print_no_indenting);
+        rapidxml::print(std::back_inserter(str), r.to_xml_element(*parent),
+                        rapidxml::print_no_indenting);
 
-        EXPECT_STREQ(
-            "<t:EndDateRecurrence>"
-                "<t:StartDate>1961-08-13</t:StartDate>"
-                "<t:EndDate>1989-11-09</t:EndDate>"
-            "</t:EndDateRecurrence>", str.c_str());
+        EXPECT_STREQ("<t:EndDateRecurrence>"
+                     "<t:StartDate>1961-08-13</t:StartDate>"
+                     "<t:EndDate>1989-11-09</t:EndDate>"
+                     "</t:EndDateRecurrence>",
+                     str.c_str());
 
         auto result = ews::recurrence_range::from_xml_element(*parent);
         ASSERT_TRUE(result);
@@ -193,8 +190,9 @@ namespace tests
         EXPECT_EQ(start_date, r.get_start_date());
         EXPECT_EQ(18U, r.get_number_of_occurrences());
 
-        const char* xml =
-            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
+        const char* xml = "<Recurrence "
+                          "xmlns:t=\"http://schemas.microsoft.com/exchange/"
+                          "services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -203,15 +201,14 @@ namespace tests
         auto parent = doc.first_node();
 
         std::string str;
-        rapidxml::print(std::back_inserter(str),
-            r.to_xml_element(*parent),
-            rapidxml::print_no_indenting);
+        rapidxml::print(std::back_inserter(str), r.to_xml_element(*parent),
+                        rapidxml::print_no_indenting);
 
-        EXPECT_STREQ(
-            "<t:NumberedRecurrence>"
-                "<t:StartDate>1989-01-01</t:StartDate>"
-                "<t:NumberOfOccurrences>18</t:NumberOfOccurrences>"
-            "</t:NumberedRecurrence>", str.c_str());
+        EXPECT_STREQ("<t:NumberedRecurrence>"
+                     "<t:StartDate>1989-01-01</t:StartDate>"
+                     "<t:NumberOfOccurrences>18</t:NumberOfOccurrences>"
+                     "</t:NumberedRecurrence>",
+                     str.c_str());
 
         auto result = ews::recurrence_range::from_xml_element(*parent);
         ASSERT_TRUE(result);
@@ -228,8 +225,9 @@ namespace tests
         EXPECT_EQ(10U, r.get_day_of_month());
         EXPECT_EQ(ews::month::oct, r.get_month());
 
-        const char* xml =
-            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
+        const char* xml = "<Recurrence "
+                          "xmlns:t=\"http://schemas.microsoft.com/exchange/"
+                          "services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -238,14 +236,13 @@ namespace tests
         auto parent = doc.first_node();
 
         std::string str;
-        rapidxml::print(std::back_inserter(str),
-            r.to_xml_element(*parent),
-            rapidxml::print_no_indenting);
-        EXPECT_STREQ(
-            "<t:AbsoluteYearlyRecurrence>"
-                "<t:DayOfMonth>10</t:DayOfMonth>"
-                "<t:Month>October</t:Month>"
-            "</t:AbsoluteYearlyRecurrence>", str.c_str());
+        rapidxml::print(std::back_inserter(str), r.to_xml_element(*parent),
+                        rapidxml::print_no_indenting);
+        EXPECT_STREQ("<t:AbsoluteYearlyRecurrence>"
+                     "<t:DayOfMonth>10</t:DayOfMonth>"
+                     "<t:Month>October</t:Month>"
+                     "</t:AbsoluteYearlyRecurrence>",
+                     str.c_str());
     }
 
     TEST(RecurrencePatternTest, RelativeYearly)
@@ -257,15 +254,16 @@ namespace tests
         EXPECT_EQ(ews::day_of_week_index::third, r.get_day_of_week_index());
         EXPECT_EQ(ews::month::apr, r.get_month());
 
-        EXPECT_STREQ(
-            "<t:RelativeYearlyRecurrence>"
-                "<t:DaysOfWeek>Monday</t:DaysOfWeek>"
-                "<t:DayOfWeekIndex>Third</t:DayOfWeekIndex>"
-                "<t:Month>April</t:Month>"
-            "</t:RelativeYearlyRecurrence>", r.to_xml().c_str());
+        EXPECT_STREQ("<t:RelativeYearlyRecurrence>"
+                     "<t:DaysOfWeek>Monday</t:DaysOfWeek>"
+                     "<t:DayOfWeekIndex>Third</t:DayOfWeekIndex>"
+                     "<t:Month>April</t:Month>"
+                     "</t:RelativeYearlyRecurrence>",
+                     r.to_xml().c_str());
 
-        const char* xml =
-            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
+        const char* xml = "<Recurrence "
+                          "xmlns:t=\"http://schemas.microsoft.com/exchange/"
+                          "services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -274,16 +272,15 @@ namespace tests
         auto parent = doc.first_node();
 
         std::string str;
-        rapidxml::print(std::back_inserter(str),
-            r.to_xml_element(*parent),
-            rapidxml::print_no_indenting);
+        rapidxml::print(std::back_inserter(str), r.to_xml_element(*parent),
+                        rapidxml::print_no_indenting);
 
-        EXPECT_STREQ(
-            "<t:RelativeYearlyRecurrence>"
-                "<t:DaysOfWeek>Monday</t:DaysOfWeek>"
-                "<t:DayOfWeekIndex>Third</t:DayOfWeekIndex>"
-                "<t:Month>April</t:Month>"
-            "</t:RelativeYearlyRecurrence>", str.c_str());
+        EXPECT_STREQ("<t:RelativeYearlyRecurrence>"
+                     "<t:DaysOfWeek>Monday</t:DaysOfWeek>"
+                     "<t:DayOfWeekIndex>Third</t:DayOfWeekIndex>"
+                     "<t:Month>April</t:Month>"
+                     "</t:RelativeYearlyRecurrence>",
+                     str.c_str());
     }
 
     TEST(RecurrencePatternTest, AbsoluteMonthly)
@@ -292,14 +289,15 @@ namespace tests
         EXPECT_EQ(1U, r.get_interval());
         EXPECT_EQ(5U, r.get_days_of_month());
 
-        EXPECT_STREQ(
-            "<t:AbsoluteMonthlyRecurrence>"
-                "<t:Interval>1</t:Interval>"
-                "<t:DayOfMonth>5</t:DayOfMonth>"
-            "</t:AbsoluteMonthlyRecurrence>", r.to_xml().c_str());
+        EXPECT_STREQ("<t:AbsoluteMonthlyRecurrence>"
+                     "<t:Interval>1</t:Interval>"
+                     "<t:DayOfMonth>5</t:DayOfMonth>"
+                     "</t:AbsoluteMonthlyRecurrence>",
+                     r.to_xml().c_str());
 
-        const char* xml =
-            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
+        const char* xml = "<Recurrence "
+                          "xmlns:t=\"http://schemas.microsoft.com/exchange/"
+                          "services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -308,35 +306,34 @@ namespace tests
         auto parent = doc.first_node();
 
         std::string str;
-        rapidxml::print(std::back_inserter(str),
-            r.to_xml_element(*parent),
-            rapidxml::print_no_indenting);
+        rapidxml::print(std::back_inserter(str), r.to_xml_element(*parent),
+                        rapidxml::print_no_indenting);
 
-        EXPECT_STREQ(
-            "<t:AbsoluteMonthlyRecurrence>"
-                "<t:Interval>1</t:Interval>"
-                "<t:DayOfMonth>5</t:DayOfMonth>"
-            "</t:AbsoluteMonthlyRecurrence>", str.c_str());
+        EXPECT_STREQ("<t:AbsoluteMonthlyRecurrence>"
+                     "<t:Interval>1</t:Interval>"
+                     "<t:DayOfMonth>5</t:DayOfMonth>"
+                     "</t:AbsoluteMonthlyRecurrence>",
+                     str.c_str());
     }
 
     TEST(RecurrencePatternTest, RelativeMonthly)
     {
-        ews::relative_monthly_recurrence r(1,
-                                           ews::day_of_week::thu,
+        ews::relative_monthly_recurrence r(1, ews::day_of_week::thu,
                                            ews::day_of_week_index::third);
         EXPECT_EQ(1U, r.get_interval());
         EXPECT_EQ(ews::day_of_week::thu, r.get_days_of_week());
         EXPECT_EQ(ews::day_of_week_index::third, r.get_day_of_week_index());
 
-        EXPECT_STREQ(
-            "<t:RelativeMonthlyRecurrence>"
-                "<t:Interval>1</t:Interval>"
-                "<t:DaysOfWeek>Thursday</t:DaysOfWeek>"
-                "<t:DayOfWeekIndex>Third</t:DayOfWeekIndex>"
-            "</t:RelativeMonthlyRecurrence>", r.to_xml().c_str());
+        EXPECT_STREQ("<t:RelativeMonthlyRecurrence>"
+                     "<t:Interval>1</t:Interval>"
+                     "<t:DaysOfWeek>Thursday</t:DaysOfWeek>"
+                     "<t:DayOfWeekIndex>Third</t:DayOfWeekIndex>"
+                     "</t:RelativeMonthlyRecurrence>",
+                     r.to_xml().c_str());
 
-        const char* xml =
-            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
+        const char* xml = "<Recurrence "
+                          "xmlns:t=\"http://schemas.microsoft.com/exchange/"
+                          "services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -345,16 +342,15 @@ namespace tests
         auto parent = doc.first_node();
 
         std::string str;
-        rapidxml::print(std::back_inserter(str),
-            r.to_xml_element(*parent),
-            rapidxml::print_no_indenting);
+        rapidxml::print(std::back_inserter(str), r.to_xml_element(*parent),
+                        rapidxml::print_no_indenting);
 
-        EXPECT_STREQ(
-            "<t:RelativeMonthlyRecurrence>"
-                "<t:Interval>1</t:Interval>"
-                "<t:DaysOfWeek>Thursday</t:DaysOfWeek>"
-                "<t:DayOfWeekIndex>Third</t:DayOfWeekIndex>"
-            "</t:RelativeMonthlyRecurrence>", str.c_str());
+        EXPECT_STREQ("<t:RelativeMonthlyRecurrence>"
+                     "<t:Interval>1</t:Interval>"
+                     "<t:DaysOfWeek>Thursday</t:DaysOfWeek>"
+                     "<t:DayOfWeekIndex>Third</t:DayOfWeekIndex>"
+                     "</t:RelativeMonthlyRecurrence>",
+                     str.c_str());
     }
 
     TEST(RecurrencePatternTest, Weekly)
@@ -365,15 +361,16 @@ namespace tests
         EXPECT_EQ(ews::day_of_week::mon, r1.get_days_of_week().front());
         EXPECT_EQ(ews::day_of_week::mon, r1.get_first_day_of_week());
 
-        EXPECT_STREQ(
-            "<t:WeeklyRecurrence>"
-                "<t:Interval>1</t:Interval>"
-                "<t:DaysOfWeek>Monday</t:DaysOfWeek>"
-                "<t:FirstDayOfWeek>Monday</t:FirstDayOfWeek>"
-            "</t:WeeklyRecurrence>", r1.to_xml().c_str());
+        EXPECT_STREQ("<t:WeeklyRecurrence>"
+                     "<t:Interval>1</t:Interval>"
+                     "<t:DaysOfWeek>Monday</t:DaysOfWeek>"
+                     "<t:FirstDayOfWeek>Monday</t:FirstDayOfWeek>"
+                     "</t:WeeklyRecurrence>",
+                     r1.to_xml().c_str());
 
-        const char* xml1 =
-            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
+        const char* xml1 = "<Recurrence "
+                           "xmlns:t=\"http://schemas.microsoft.com/exchange/"
+                           "services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml1, xml1 + std::strlen(xml1), std::back_inserter(buf));
         buf.push_back('\0');
@@ -382,16 +379,15 @@ namespace tests
         auto parent = doc1.first_node();
 
         std::string str;
-        rapidxml::print(std::back_inserter(str),
-            r1.to_xml_element(*parent),
-            rapidxml::print_no_indenting);
+        rapidxml::print(std::back_inserter(str), r1.to_xml_element(*parent),
+                        rapidxml::print_no_indenting);
 
-        EXPECT_STREQ(
-            "<t:WeeklyRecurrence>"
-                "<t:Interval>1</t:Interval>"
-                "<t:DaysOfWeek>Monday</t:DaysOfWeek>"
-                "<t:FirstDayOfWeek>Monday</t:FirstDayOfWeek>"
-            "</t:WeeklyRecurrence>", str.c_str());
+        EXPECT_STREQ("<t:WeeklyRecurrence>"
+                     "<t:Interval>1</t:Interval>"
+                     "<t:DaysOfWeek>Monday</t:DaysOfWeek>"
+                     "<t:FirstDayOfWeek>Monday</t:FirstDayOfWeek>"
+                     "</t:WeeklyRecurrence>",
+                     str.c_str());
 
         // On multiple days
         auto days = std::vector<ews::day_of_week>();
@@ -404,8 +400,9 @@ namespace tests
         EXPECT_EQ(ews::day_of_week::fri, r2.get_days_of_week()[1]);
         EXPECT_EQ(ews::day_of_week::sun, r2.get_first_day_of_week());
 
-        const char* xml2 =
-            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
+        const char* xml2 = "<Recurrence "
+                           "xmlns:t=\"http://schemas.microsoft.com/exchange/"
+                           "services/2006/types\"></Recurrence>";
         buf.clear();
         std::copy(xml2, xml2 + std::strlen(xml2), std::back_inserter(buf));
         buf.push_back('\0');
@@ -414,16 +411,15 @@ namespace tests
         parent = doc2.first_node();
 
         str.clear();
-        rapidxml::print(std::back_inserter(str),
-            r2.to_xml_element(*parent),
-            rapidxml::print_no_indenting);
+        rapidxml::print(std::back_inserter(str), r2.to_xml_element(*parent),
+                        rapidxml::print_no_indenting);
 
-        EXPECT_STREQ(
-            "<t:WeeklyRecurrence>"
-                "<t:Interval>2</t:Interval>"
-                "<t:DaysOfWeek>Thursday Friday</t:DaysOfWeek>"
-                "<t:FirstDayOfWeek>Sunday</t:FirstDayOfWeek>"
-            "</t:WeeklyRecurrence>", str.c_str());
+        EXPECT_STREQ("<t:WeeklyRecurrence>"
+                     "<t:Interval>2</t:Interval>"
+                     "<t:DaysOfWeek>Thursday Friday</t:DaysOfWeek>"
+                     "<t:FirstDayOfWeek>Sunday</t:FirstDayOfWeek>"
+                     "</t:WeeklyRecurrence>",
+                     str.c_str());
     }
 
     TEST(RecurrencePatternTest, Daily)
@@ -431,13 +427,14 @@ namespace tests
         ews::daily_recurrence r(3);
         EXPECT_EQ(3U, r.get_interval());
 
-        EXPECT_STREQ(
-            "<t:DailyRecurrence>"
-                "<t:Interval>3</t:Interval>"
-            "</t:DailyRecurrence>", r.to_xml().c_str());
+        EXPECT_STREQ("<t:DailyRecurrence>"
+                     "<t:Interval>3</t:Interval>"
+                     "</t:DailyRecurrence>",
+                     r.to_xml().c_str());
 
-        const char* xml =
-            "<Recurrence xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/types\"></Recurrence>";
+        const char* xml = "<Recurrence "
+                          "xmlns:t=\"http://schemas.microsoft.com/exchange/"
+                          "services/2006/types\"></Recurrence>";
         std::vector<char> buf;
         std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
@@ -446,14 +443,13 @@ namespace tests
         auto parent = doc.first_node();
 
         std::string str;
-        rapidxml::print(std::back_inserter(str),
-            r.to_xml_element(*parent),
-            rapidxml::print_no_indenting);
+        rapidxml::print(std::back_inserter(str), r.to_xml_element(*parent),
+                        rapidxml::print_no_indenting);
 
-        EXPECT_STREQ(
-            "<t:DailyRecurrence>"
-                "<t:Interval>3</t:Interval>"
-            "</t:DailyRecurrence>", str.c_str());
+        EXPECT_STREQ("<t:DailyRecurrence>"
+                     "<t:Interval>3</t:Interval>"
+                     "</t:DailyRecurrence>",
+                     str.c_str());
     }
 
     TEST_F(CalendarItemTest, GetCalendarItemWithInvalidIdThrows)
@@ -488,12 +484,10 @@ namespace tests
         calitem.set_subject("Write chapter explaining Vogon poetry");
 
         {
-            ews::internal::on_scope_exit remove_item([&]
-            {
+            ews::internal::on_scope_exit remove_item([&] {
                 service().delete_calendar_item(
-                               std::move(calitem),
-                               ews::delete_type::hard_delete,
-                               ews::send_meeting_cancellations::send_to_none);
+                    std::move(calitem), ews::delete_type::hard_delete,
+                    ews::send_meeting_cancellations::send_to_none);
             });
 
             auto item_id = service().create_item(calitem);
@@ -530,7 +524,8 @@ namespace tests
     {
         const auto new_start = ews::date_time("2004-12-25T11:00:00Z");
         auto cal = test_calendar_item();
-        auto prop = ews::property(ews::calendar_property_path::start, new_start);
+        auto prop =
+            ews::property(ews::calendar_property_path::start, new_start);
         auto new_id = service().update_item(cal.get_item_id(), prop);
         cal = service().get_calendar_item(new_id);
         EXPECT_EQ(new_start, cal.get_start());
@@ -585,9 +580,8 @@ namespace tests
     TEST_F(CalendarItemTest, UpdateIsAllDayEventProperty)
     {
         auto cal = test_calendar_item();
-        auto prop = ews::property(
-                        ews::calendar_property_path::is_all_day_event,
-                        true);
+        auto prop =
+            ews::property(ews::calendar_property_path::is_all_day_event, true);
         auto new_id = service().update_item(cal.get_item_id(), prop);
         cal = service().get_calendar_item(new_id);
         EXPECT_TRUE(cal.is_all_day_event());
@@ -612,9 +606,9 @@ namespace tests
     TEST_F(CalendarItemTest, UpdateLegacyFreeBusyStatusProperty)
     {
         auto cal = test_calendar_item();
-        auto prop = ews::property(
-                        ews::calendar_property_path::legacy_free_busy_status,
-                        ews::free_busy_status::out_of_office);
+        auto prop =
+            ews::property(ews::calendar_property_path::legacy_free_busy_status,
+                          ews::free_busy_status::out_of_office);
         auto new_id = service().update_item(cal.get_item_id(), prop);
         cal = service().get_calendar_item(new_id);
         EXPECT_EQ(ews::free_busy_status::out_of_office,
@@ -638,9 +632,8 @@ namespace tests
     TEST_F(CalendarItemTest, UpdateLocationProperty)
     {
         auto cal = test_calendar_item();
-        auto prop = ews::property(
-                        ews::calendar_property_path::location,
-                        "Our place");
+        auto prop =
+            ews::property(ews::calendar_property_path::location, "Our place");
         auto new_id = service().update_item(cal.get_item_id(), prop);
         cal = service().get_calendar_item(new_id);
         EXPECT_STREQ("Our place", cal.get_location().c_str());
@@ -663,9 +656,8 @@ namespace tests
     TEST_F(CalendarItemTest, UpdateWhenProperty)
     {
         auto cal = test_calendar_item();
-        auto prop = ews::property(
-                                ews::calendar_property_path::when,
-                                "Next Christmas");
+        auto prop =
+            ews::property(ews::calendar_property_path::when, "Next Christmas");
         auto new_id = service().update_item(cal.get_item_id(), prop);
         cal = service().get_calendar_item(new_id);
         EXPECT_STREQ("Next Christmas", cal.get_when().c_str());
@@ -711,7 +703,7 @@ namespace tests
     {
         auto cal = ews::calendar_item();
         EXPECT_EQ(ews::calendar_item_type::single,
-            cal.get_calendar_item_type());
+                  cal.get_calendar_item_type());
     }
 
     // <MyResponseType/>
@@ -744,23 +736,21 @@ namespace tests
 
         std::vector<ews::attendee> vec;
         vec.push_back(
-            ews::attendee(
-                ews::mailbox("gaylord.focker@uchospitals.edu"),
-                ews::response_type::accept,
-                ews::date_time("2004-11-11T11:11:11Z")));
-        vec.push_back(
-            ews::attendee(
-                ews::mailbox("pam@nursery.org"),
-                ews::response_type::no_response_received,
-                ews::date_time("2004-12-24T08:00:00Z")));
+            ews::attendee(ews::mailbox("gaylord.focker@uchospitals.edu"),
+                          ews::response_type::accept,
+                          ews::date_time("2004-11-11T11:11:11Z")));
+        vec.push_back(ews::attendee(ews::mailbox("pam@nursery.org"),
+                                    ews::response_type::no_response_received,
+                                    ews::date_time("2004-12-24T08:00:00Z")));
         cal.set_required_attendees(vec);
         auto result = cal.get_required_attendees();
         ASSERT_FALSE(result.empty());
-        EXPECT_TRUE(contains_if(result, [&](const ews::attendee& a)
-        {
-            return a.get_mailbox().value() == "pam@nursery.org"
-                && a.get_response_type() == ews::response_type::no_response_received
-                && a.get_last_response_time() == ews::date_time("2004-12-24T08:00:00Z");
+        EXPECT_TRUE(contains_if(result, [&](const ews::attendee& a) {
+            return a.get_mailbox().value() == "pam@nursery.org" &&
+                   a.get_response_type() ==
+                       ews::response_type::no_response_received &&
+                   a.get_last_response_time() ==
+                       ews::date_time("2004-12-24T08:00:00Z");
         }));
 
         // Finally, remove all
@@ -774,22 +764,18 @@ namespace tests
         auto cal = test_calendar_item();
         auto vec = cal.get_required_attendees();
         const auto initial_count = vec.size();
-        vec.push_back(
-            ews::attendee(
-                ews::mailbox("pam@nursery.org"),
-                ews::response_type::accept,
-                ews::date_time("2004-12-24T10:00:00Z")));
-        auto prop = ews::property(
-                ews::calendar_property_path::required_attendees,
-                vec);
+        vec.push_back(ews::attendee(ews::mailbox("pam@nursery.org"),
+                                    ews::response_type::accept,
+                                    ews::date_time("2004-12-24T10:00:00Z")));
+        auto prop =
+            ews::property(ews::calendar_property_path::required_attendees, vec);
         auto new_id = service().update_item(cal.get_item_id(), prop);
         cal = service().get_calendar_item(new_id);
         EXPECT_EQ(initial_count + 1, cal.get_required_attendees().size());
 
         // Remove all again
-        prop = ews::property(
-            ews::calendar_property_path::required_attendees,
-            std::vector<ews::attendee>());
+        prop = ews::property(ews::calendar_property_path::required_attendees,
+                             std::vector<ews::attendee>());
         new_id = service().update_item(cal.get_item_id(), prop);
         cal = service().get_calendar_item(new_id);
         EXPECT_TRUE(cal.get_required_attendees().empty());
@@ -811,23 +797,21 @@ namespace tests
 
         std::vector<ews::attendee> vec;
         vec.push_back(
-            ews::attendee(
-                ews::mailbox("gaylord.focker@uchospitals.edu"),
-                ews::response_type::accept,
-                ews::date_time("2004-11-11T11:11:11Z")));
-        vec.push_back(
-            ews::attendee(
-                ews::mailbox("pam@nursery.org"),
-                ews::response_type::no_response_received,
-                ews::date_time("2004-12-24T08:00:00Z")));
+            ews::attendee(ews::mailbox("gaylord.focker@uchospitals.edu"),
+                          ews::response_type::accept,
+                          ews::date_time("2004-11-11T11:11:11Z")));
+        vec.push_back(ews::attendee(ews::mailbox("pam@nursery.org"),
+                                    ews::response_type::no_response_received,
+                                    ews::date_time("2004-12-24T08:00:00Z")));
         cal.set_optional_attendees(vec);
         auto result = cal.get_optional_attendees();
         ASSERT_FALSE(result.empty());
-        EXPECT_TRUE(contains_if(result, [&](const ews::attendee& a)
-        {
-            return a.get_mailbox().value() == "pam@nursery.org"
-                && a.get_response_type() == ews::response_type::no_response_received
-                && a.get_last_response_time() == ews::date_time("2004-12-24T08:00:00Z");
+        EXPECT_TRUE(contains_if(result, [&](const ews::attendee& a) {
+            return a.get_mailbox().value() == "pam@nursery.org" &&
+                   a.get_response_type() ==
+                       ews::response_type::no_response_received &&
+                   a.get_last_response_time() ==
+                       ews::date_time("2004-12-24T08:00:00Z");
         }));
 
         // Finally, remove all
@@ -841,22 +825,18 @@ namespace tests
         auto cal = test_calendar_item();
         auto vec = cal.get_optional_attendees();
         const auto initial_count = vec.size();
-        vec.push_back(
-            ews::attendee(
-                ews::mailbox("pam@nursery.org"),
-                ews::response_type::accept,
-                ews::date_time("2004-12-24T10:00:00Z")));
-        auto prop = ews::property(
-            ews::calendar_property_path::optional_attendees,
-            vec);
+        vec.push_back(ews::attendee(ews::mailbox("pam@nursery.org"),
+                                    ews::response_type::accept,
+                                    ews::date_time("2004-12-24T10:00:00Z")));
+        auto prop =
+            ews::property(ews::calendar_property_path::optional_attendees, vec);
         auto new_id = service().update_item(cal.get_item_id(), prop);
         cal = service().get_calendar_item(new_id);
         EXPECT_EQ(initial_count + 1, cal.get_optional_attendees().size());
 
         // Remove all again
-        prop = ews::property(
-            ews::calendar_property_path::optional_attendees,
-            std::vector<ews::attendee>());
+        prop = ews::property(ews::calendar_property_path::optional_attendees,
+                             std::vector<ews::attendee>());
         new_id = service().update_item(cal.get_item_id(), prop);
         cal = service().get_calendar_item(new_id);
         EXPECT_TRUE(cal.get_optional_attendees().empty());
@@ -878,23 +858,21 @@ namespace tests
 
         std::vector<ews::attendee> vec;
         vec.push_back(
-            ews::attendee(
-                ews::mailbox("gaylord.focker@uchospitals.edu"),
-                ews::response_type::accept,
-                ews::date_time("2004-11-11T11:11:11Z")));
-        vec.push_back(
-            ews::attendee(
-                ews::mailbox("pam@nursery.org"),
-                ews::response_type::no_response_received,
-                ews::date_time("2004-12-24T08:00:00Z")));
+            ews::attendee(ews::mailbox("gaylord.focker@uchospitals.edu"),
+                          ews::response_type::accept,
+                          ews::date_time("2004-11-11T11:11:11Z")));
+        vec.push_back(ews::attendee(ews::mailbox("pam@nursery.org"),
+                                    ews::response_type::no_response_received,
+                                    ews::date_time("2004-12-24T08:00:00Z")));
         cal.set_resources(vec);
         auto result = cal.get_resources();
         ASSERT_FALSE(result.empty());
-        EXPECT_TRUE(contains_if(result, [&](const ews::attendee& a)
-        {
-            return a.get_mailbox().value() == "pam@nursery.org"
-                && a.get_response_type() == ews::response_type::no_response_received
-                && a.get_last_response_time() == ews::date_time("2004-12-24T08:00:00Z");
+        EXPECT_TRUE(contains_if(result, [&](const ews::attendee& a) {
+            return a.get_mailbox().value() == "pam@nursery.org" &&
+                   a.get_response_type() ==
+                       ews::response_type::no_response_received &&
+                   a.get_last_response_time() ==
+                       ews::date_time("2004-12-24T08:00:00Z");
         }));
 
         // Finally, remove all
@@ -908,22 +886,17 @@ namespace tests
         auto cal = test_calendar_item();
         auto vec = cal.get_resources();
         const auto initial_count = vec.size();
-        vec.push_back(
-            ews::attendee(
-                ews::mailbox("pam@nursery.org"),
-                ews::response_type::accept,
-                ews::date_time("2004-12-24T10:00:00Z")));
-        auto prop = ews::property(
-            ews::calendar_property_path::resources,
-            vec);
+        vec.push_back(ews::attendee(ews::mailbox("pam@nursery.org"),
+                                    ews::response_type::accept,
+                                    ews::date_time("2004-12-24T10:00:00Z")));
+        auto prop = ews::property(ews::calendar_property_path::resources, vec);
         auto new_id = service().update_item(cal.get_item_id(), prop);
         cal = service().get_calendar_item(new_id);
         EXPECT_EQ(initial_count + 1, cal.get_resources().size());
 
         // Remove all again
-        prop = ews::property(
-            ews::calendar_property_path::resources,
-            std::vector<ews::attendee>());
+        prop = ews::property(ews::calendar_property_path::resources,
+                             std::vector<ews::attendee>());
         new_id = service().update_item(cal.get_item_id(), prop);
         cal = service().get_calendar_item(new_id);
         EXPECT_TRUE(cal.get_resources().empty());
@@ -971,8 +944,7 @@ namespace tests
     }
 
     // <AppointmentSequenceNumber/>
-    TEST(OfflineCalendarItemTest,
-         AppointmentSequenceNumberPropertyInitialValue)
+    TEST(OfflineCalendarItemTest, AppointmentSequenceNumberPropertyInitialValue)
     {
         auto cal = ews::calendar_item();
         EXPECT_EQ(0, cal.get_appointment_sequence_number());
@@ -1000,11 +972,13 @@ namespace tests
         cal.set_recurrence(birthday, no_end);
         auto result = cal.get_recurrence();
         ASSERT_TRUE(result.first && result.second);
-        auto pattern1 = dynamic_cast<ews::absolute_yearly_recurrence*>(result.first.get());
+        auto pattern1 =
+            dynamic_cast<ews::absolute_yearly_recurrence*>(result.first.get());
         ASSERT_TRUE(pattern1);
         EXPECT_EQ(10U, pattern1->get_day_of_month());
         EXPECT_EQ(ews::month::oct, pattern1->get_month());
-        auto range1 = dynamic_cast<ews::no_end_recurrence_range*>(result.second.get());
+        auto range1 =
+            dynamic_cast<ews::no_end_recurrence_range*>(result.second.get());
         ASSERT_TRUE(range1);
         EXPECT_EQ(start_date, range1->get_start_date());
 
@@ -1016,11 +990,13 @@ namespace tests
         cal.set_recurrence(mortgage_payment, end);
         result = cal.get_recurrence();
         ASSERT_TRUE(result.first && result.second);
-        auto pattern2 = dynamic_cast<ews::absolute_monthly_recurrence*>(result.first.get());
+        auto pattern2 =
+            dynamic_cast<ews::absolute_monthly_recurrence*>(result.first.get());
         ASSERT_TRUE(pattern2);
         EXPECT_EQ(1U, pattern2->get_interval());
         EXPECT_EQ(5U, pattern2->get_days_of_month());
-        auto range2 = dynamic_cast<ews::numbered_recurrence_range*>(result.second.get());
+        auto range2 =
+            dynamic_cast<ews::numbered_recurrence_range*>(result.second.get());
         ASSERT_TRUE(range2);
         EXPECT_EQ(start_date, range2->get_start_date());
         EXPECT_EQ(48U, range2->get_number_of_occurrences());
@@ -1041,28 +1017,24 @@ namespace tests
         master.set_start(ews::date_time("2014-12-01T00:00:00Z"));
         master.set_end(ews::date_time("2014-12-01T00:05:00Z"));
         master.set_recurrence(
-                ews::absolute_monthly_recurrence(1, 5),
-                ews::end_date_recurrence_range(ews::date("2015-01-01Z"),
-                                               ews::date("2037-01-01Z")));
+            ews::absolute_monthly_recurrence(1, 5),
+            ews::end_date_recurrence_range(ews::date("2015-01-01Z"),
+                                           ews::date("2037-01-01Z")));
 
         auto master_id = service().create_item(master);
-        ews::internal::on_scope_exit remove_items([&]
-        {
-            service().delete_item(master_id);
-        });
+        ews::internal::on_scope_exit remove_items(
+            [&] { service().delete_item(master_id); });
         master = service().get_calendar_item(master_id);
 
         auto recurrence = master.get_recurrence();
         ASSERT_TRUE(recurrence.first && recurrence.second);
-        auto pattern =
-            dynamic_cast<ews::absolute_monthly_recurrence*>(
-                                                    recurrence.first.get());
+        auto pattern = dynamic_cast<ews::absolute_monthly_recurrence*>(
+            recurrence.first.get());
         ASSERT_TRUE(pattern);
         EXPECT_EQ(1U, pattern->get_interval());
         EXPECT_EQ(5U, pattern->get_days_of_month());
-        auto range =
-            dynamic_cast<ews::end_date_recurrence_range*>(
-                                                    recurrence.second.get());
+        auto range = dynamic_cast<ews::end_date_recurrence_range*>(
+            recurrence.second.get());
         ASSERT_TRUE(range);
         EXPECT_EQ(ews::date("2015-01-05Z"), range->get_start_date());
         EXPECT_EQ(ews::date("2037-01-01Z"), range->get_end_date());
@@ -1080,10 +1052,8 @@ namespace tests
                                            ews::date("2037-01-01Z")));
 
         auto master_id = service().create_item(master);
-        ews::internal::on_scope_exit remove_items([&]
-        {
-            service().delete_item(master_id);
-        });
+        ews::internal::on_scope_exit remove_items(
+            [&] { service().delete_item(master_id); });
         master = service().get_calendar_item(master_id);
         EXPECT_FALSE(master.is_recurring());
         EXPECT_EQ(ews::calendar_item_type::recurring_master,
@@ -1097,9 +1067,8 @@ namespace tests
         auto new_id = service().update_item(master.get_item_id(), prop);
         master = service().get_calendar_item(new_id);
         auto recurrence = master.get_recurrence();
-        auto pattern =
-            dynamic_cast<ews::absolute_monthly_recurrence*>(
-                                                    recurrence.first.get());
+        auto pattern = dynamic_cast<ews::absolute_monthly_recurrence*>(
+            recurrence.first.get());
         ASSERT_TRUE(pattern);
         EXPECT_EQ(2U, pattern->get_days_of_month());
     }
@@ -1149,8 +1118,8 @@ namespace tests
     TEST_F(CalendarItemTest, UpdateConferenceTypeProperty)
     {
         auto cal = test_calendar_item();
-        auto prop = ews::property(
-            ews::calendar_property_path::conference_type, 2);
+        auto prop =
+            ews::property(ews::calendar_property_path::conference_type, 2);
         auto new_id = service().update_item(cal.get_item_id(), prop);
         cal = service().get_calendar_item(new_id);
         EXPECT_EQ(2, cal.get_conference_type());
@@ -1201,14 +1170,14 @@ namespace tests
     TEST_F(CalendarItemTest, UpdateIsOnlineMeetingProperty)
     {
         auto cal = test_calendar_item();
-        auto prop = ews::property(
-            ews::calendar_property_path::is_online_meeting, true);
+        auto prop =
+            ews::property(ews::calendar_property_path::is_online_meeting, true);
         auto new_id = service().update_item(cal.get_item_id(), prop);
         cal = service().get_calendar_item(new_id);
         EXPECT_TRUE(cal.is_online_meeting());
 
-        prop = ews::property(
-            ews::calendar_property_path::is_online_meeting, false);
+        prop = ews::property(ews::calendar_property_path::is_online_meeting,
+                             false);
         new_id = service().update_item(cal.get_item_id(), prop);
         cal = service().get_calendar_item(new_id);
         EXPECT_FALSE(cal.is_online_meeting());
@@ -1264,34 +1233,30 @@ namespace tests
         calitemC.set_end(ews::date_time("2016-01-12T13:00:00Z"));
         auto idC = service().create_item(calitemC);
 
-        ews::internal::on_scope_exit remove_items([&]
-        {
+        ews::internal::on_scope_exit remove_items([&] {
             service().delete_item(idA);
             service().delete_item(idB);
             service().delete_item(idC);
         });
 
-        const ews::distinguished_folder_id calendar_folder
-            = ews::standard_folder::calendar;
+        const ews::distinguished_folder_id calendar_folder =
+            ews::standard_folder::calendar;
         // 11 AM - 12 PM -> A, B
-        auto view1 = ews::calendar_view(
-                                ews::date_time("2016-01-12T11:00:00Z"),
-                                ews::date_time("2016-01-12T12:00:00Z"));
+        auto view1 = ews::calendar_view(ews::date_time("2016-01-12T11:00:00Z"),
+                                        ews::date_time("2016-01-12T12:00:00Z"));
         auto result = service().find_item(view1, calendar_folder);
         ASSERT_EQ(2U, result.size());
 
         // 11:01 AM - 12 PM -> B
-        auto view2 = ews::calendar_view(
-                                ews::date_time("2016-01-12T11:01:00Z"),
-                                ews::date_time("2016-01-12T12:00:00Z"));
+        auto view2 = ews::calendar_view(ews::date_time("2016-01-12T11:01:00Z"),
+                                        ews::date_time("2016-01-12T12:00:00Z"));
         result = service().find_item(view2, calendar_folder);
         ASSERT_EQ(1U, result.size());
         EXPECT_STREQ("Appointment B", result[0].get_subject().c_str());
 
         // 11 AM - 12:01 PM -> A, B, C
-        auto view3 = ews::calendar_view(
-                                ews::date_time("2016-01-12T11:00:00Z"),
-                                ews::date_time("2016-01-12T12:01:00Z"));
+        auto view3 = ews::calendar_view(ews::date_time("2016-01-12T11:00:00Z"),
+                                        ews::date_time("2016-01-12T12:01:00Z"));
         result = service().find_item(view3, calendar_folder);
         ASSERT_EQ(3U, result.size());
     }

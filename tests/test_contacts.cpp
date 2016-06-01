@@ -33,9 +33,7 @@ namespace tests
         EXPECT_STREQ("", minnie.get_email_address_3().c_str());
         EXPECT_TRUE(minnie.get_email_addresses().empty());
 
-        minnie.set_email_address_1(
-                ews::mailbox("minnie.mouse@duckburg.com")
-            );
+        minnie.set_email_address_1(ews::mailbox("minnie.mouse@duckburg.com"));
         EXPECT_STREQ("minnie.mouse@duckburg.com",
                      minnie.get_email_address_1().c_str());
         EXPECT_STREQ("", minnie.get_email_address_2().c_str());

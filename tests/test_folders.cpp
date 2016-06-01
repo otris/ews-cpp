@@ -22,7 +22,7 @@ namespace tests
         EXPECT_STREQ("edcba", a.change_key().c_str());
     }
 
-#pragma warning(suppress: 6262)
+#pragma warning(suppress : 6262)
     TEST(FolderTest, FromParentFolderIdXMLNode)
     {
         char buf[] = "<ParentFolderId Id=\"abcde\" ChangeKey=\"edcba\" />";
