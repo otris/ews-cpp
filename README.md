@@ -56,6 +56,9 @@ ews-cpp's source code is available as a Git repository. To obtain it, type:
 
 ```bash
 git clone git@gitlab.otris.de:kircher/ews-cpp.git
+cd ews-cpp/
+git submodule init
+git submodule update
 ```
 
 
@@ -68,7 +71,7 @@ To build the accompanied tests with debugging symbols and address sanitizer
 enabled do something like this
 
 ```bash
-cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_ASAN=ON path/to/source/
+cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_ASAN=ON /path/to/source
 make
 ```
 
