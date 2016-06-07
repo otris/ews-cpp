@@ -137,10 +137,10 @@ set(rapidxml_SOURCES
 find_package(CURL 7.29 REQUIRED)
 include_directories(${ews_INCLUDE_DIR} ${CURL_INCLUDE_DIRS})
 
-add_subdirectory(3rdparty/gtest)
-set(GTEST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/gtest)
+set(GTEST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/gtest/googletest)
 set(GTEST_INCLUDE_DIR ${GTEST_ROOT}/include)
 set(GTEST_LIBRARIES gtest)
+add_subdirectory(${GTEST_ROOT})
 include_directories(${GTEST_INCLUDE_DIR})
 
 # Boost is optional as it is only used by some test cases
