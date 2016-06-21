@@ -60,6 +60,22 @@ namespace tests
 
         // TODO: delete an email address entry from a contact
     }
+
+    TEST_F(ContactTest, GetCompleteNameProperty)
+    {
+        auto minnie = test_contact();
+
+        const auto complete_name = minnie.get_complete_name();
+
+        EXPECT_STREQ("", complete_name.get_title().c_str());
+        EXPECT_STREQ("Minnie", complete_name.get_first_name().c_str());
+        EXPECT_STREQ("", complete_name.get_middle_name().c_str());
+        EXPECT_STREQ("Mouse", complete_name.get_last_name().c_str());
+        EXPECT_STREQ("", complete_name.get_suffix().c_str());
+        EXPECT_STREQ("", complete_name.get_initials().c_str());
+        EXPECT_STREQ("Minnie Mouse", complete_name.get_full_name().c_str());
+        EXPECT_STREQ("", complete_name.get_nickname().c_str());
+    }
 }
 
 // vim:et ts=4 sw=4 noic cc=80
