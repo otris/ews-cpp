@@ -55,10 +55,7 @@ Additionally, you probably need to tell CMake where to find it. Just set
 ews-cpp's source code is available as a Git repository. To obtain it, type:
 
 ```bash
-git clone git@gitlab.otris.de:kircher/ews-cpp.git
-cd ews-cpp/
-git submodule init
-git submodule update
+git clone --recursive git@gitlab.otris.de:kircher/ews-cpp.git
 ```
 
 
