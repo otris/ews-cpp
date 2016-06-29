@@ -64,7 +64,7 @@ git clone --recursive git@gitlab.otris.de:kircher/ews-cpp.git
 The library is header-only. So there is no need to build anything. Just copy the
 `include/ews/` directory wherever you may like.
 
-To build the accompanied tests with debugging symbols and address sanitizer
+To build the accompanied tests with debugging symbols and Address Sanitizer
 enabled do something like this
 
 ```bash
