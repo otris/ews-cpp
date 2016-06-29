@@ -8951,26 +8951,20 @@ namespace ews
         complete_name() {}
 #endif
 
-        complete_name(std::string title,
-            std::string firstname,
-            std::string middlename,
-            std::string lastname,
-            std::string suffix,
-            std::string initials,
-            std::string fullname,
-            std::string nickname)
-            : title_(std::move(title)),
-            firstname_(std::move(firstname)),
-            middlename_(std::move(middlename)),
-            lastname_(std::move(lastname)),
-            suffix_(std::move(suffix)),
-            initials_(std::move(initials)),
-            fullname_(std::move(fullname)),
-            nickname_(std::move(nickname))
+        complete_name(std::string title, std::string firstname,
+                      std::string middlename, std::string lastname,
+                      std::string suffix, std::string initials,
+                      std::string fullname, std::string nickname)
+            : title_(std::move(title)), firstname_(std::move(firstname)),
+              middlename_(std::move(middlename)),
+              lastname_(std::move(lastname)), suffix_(std::move(suffix)),
+              initials_(std::move(initials)), fullname_(std::move(fullname)),
+              nickname_(std::move(nickname))
         {
         }
 
-        static complete_name from_xml_element(const rapidxml::xml_node<char>& node)
+        static complete_name
+        from_xml_element(const rapidxml::xml_node<char>& node)
         {
             using namespace rapidxml::internal;
             std::string title;
@@ -8981,62 +8975,83 @@ namespace ews
             std::string initials;
             std::string fullname;
             std::string nickname;
-            for (auto child = node.first_node(); child != nullptr; child = child->next_sibling())
+            for (auto child = node.first_node(); child != nullptr;
+                 child = child->next_sibling())
             {
-                if (compare("Title", std::strlen("Title"),
-                    child->local_name(), child->local_name_size()))
+                if (compare("Title", std::strlen("Title"), child->local_name(),
+                            child->local_name_size()))
                 {
                     title = std::string(child->value(), child->value_size());
                 }
                 else if (compare("FirstName", std::strlen("FirstName"),
-                    child->local_name(), child->local_name_size()))
+                                 child->local_name(), child->local_name_size()))
                 {
-                    firstname = std::string(child->value(), child->value_size());
+                    firstname =
+                        std::string(child->value(), child->value_size());
                 }
                 else if (compare("MiddleName", std::strlen("MiddleName"),
-                    child->local_name(), child->local_name_size()))
+                                 child->local_name(), child->local_name_size()))
                 {
-                    middlename = std::string(child->value(), child->value_size());
+                    middlename =
+                        std::string(child->value(), child->value_size());
                 }
                 else if (compare("LastName", std::strlen("LastName"),
-                    child->local_name(), child->local_name_size()))
+                                 child->local_name(), child->local_name_size()))
                 {
                     lastname = std::string(child->value(), child->value_size());
                 }
                 else if (compare("Suffix", std::strlen("Suffix"),
-                    child->local_name(), child->local_name_size()))
+                                 child->local_name(), child->local_name_size()))
                 {
                     suffix = std::string(child->value(), child->value_size());
                 }
                 else if (compare("Initials", std::strlen("Initials"),
-                    child->local_name(), child->local_name_size()))
+                                 child->local_name(), child->local_name_size()))
                 {
                     initials = std::string(child->value(), child->value_size());
                 }
                 else if (compare("FullName", std::strlen("FullName"),
-                    child->local_name(), child->local_name_size()))
+                                 child->local_name(), child->local_name_size()))
                 {
                     fullname = std::string(child->value(), child->value_size());
                 }
                 else if (compare("Nickname", std::strlen("Nickname"),
-                    child->local_name(), child->local_name_size()))
+                                 child->local_name(), child->local_name_size()))
                 {
                     nickname = std::string(child->value(), child->value_size());
                 }
             }
 
-            return complete_name(title, firstname, middlename, lastname,
-                suffix, initials, fullname, nickname);
+            return complete_name(title, firstname, middlename, lastname, suffix,
+                                 initials, fullname, nickname);
         }
 
-        const std::string& get_title() const EWS_NOEXCEPT{ return title_; }
-        const std::string& get_first_name() const EWS_NOEXCEPT{ return firstname_; }
-        const std::string& get_middle_name() const EWS_NOEXCEPT{ return middlename_; }
-        const std::string& get_last_name() const EWS_NOEXCEPT{ return lastname_; }
-        const std::string& get_suffix() const EWS_NOEXCEPT{ return suffix_; }
-        const std::string& get_initials() const EWS_NOEXCEPT{ return initials_; }
-        const std::string& get_full_name() const EWS_NOEXCEPT{ return fullname_; }
-        const std::string& get_nickname() const EWS_NOEXCEPT{ return nickname_; }
+        const std::string& get_title() const EWS_NOEXCEPT { return title_; }
+        const std::string& get_first_name() const EWS_NOEXCEPT
+        {
+            return firstname_;
+        }
+        const std::string& get_middle_name() const EWS_NOEXCEPT
+        {
+            return middlename_;
+        }
+        const std::string& get_last_name() const EWS_NOEXCEPT
+        {
+            return lastname_;
+        }
+        const std::string& get_suffix() const EWS_NOEXCEPT { return suffix_; }
+        const std::string& get_initials() const EWS_NOEXCEPT
+        {
+            return initials_;
+        }
+        const std::string& get_full_name() const EWS_NOEXCEPT
+        {
+            return fullname_;
+        }
+        const std::string& get_nickname() const EWS_NOEXCEPT
+        {
+            return nickname_;
+        }
 
     private:
         std::string title_;
@@ -9104,15 +9119,14 @@ namespace ews
         // (read-only)
         // TODO: get_complete_name
         complete_name get_complete_name() const
-		{
+        {
             auto node = xml().get_node("CompleteName");
             if (node == nullptr)
             {
                 return complete_name();
             }
             return complete_name::from_xml_element(*node);
-
-		}
+        }
 
         // The company that the contact is affiliated with
         // TODO: get_company_name
