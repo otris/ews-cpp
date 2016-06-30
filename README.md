@@ -61,6 +61,8 @@ git clone --recursive git@gitlab.otris.de:kircher/ews-cpp.git
 
 ## Building
 
+### Linux
+
 The library is header-only. So there is no need to build anything. Just copy the
 `include/ews/` directory wherever you may like.
 
@@ -74,6 +76,10 @@ make
 
 Type `make help` to see more configuration options.
 
+### Windows
+
+To build the tests and examples on Windows you can use `cmake-gui`.
+For more see: https://cmake.org/runningcmake/
 
 ## API Docs
 
