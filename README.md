@@ -1,4 +1,4 @@
-# README
+# Overview
 
 EWS is an API that third-party programmers can use to communicate with
 Microsoft Exchange Server. The API exists since Exchange Server 2007 and is
@@ -157,6 +157,15 @@ Cons:
 * You cannot issue thousands of EWS requests asynchronously simply because you
   cannot spawn thousands of threads in your process. You may need additional
   effort here
+
+## Legal Notice
+ews-cpp is developed by otris software AG and was initially released to the
+public in June 2016. It is licensed under the Apache License, Version 2.0 (see
+[LICENSE](LICENSE) ). 
+
+For more information about otris software AG visit our website
+www.otris.de or our Open Source repositories at github.com/otris
+
 
 
 <!-- vim: et sw=4 ts=4:
