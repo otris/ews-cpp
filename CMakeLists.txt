@@ -137,17 +137,15 @@ set(rapidxml_SOURCES
 find_package(CURL 7.29 REQUIRED)
 include_directories(${ews_INCLUDE_DIR} ${CURL_INCLUDE_DIRS})
 
-# googletest
 set(GTEST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/gtest/googletest)
 set(GTEST_INCLUDE_DIR ${GTEST_ROOT}/include)
 set(GTEST_LIBRARIES gtest)
+if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+    set(gtest_force_shared_crt ON CACHE BOOL
+        "Use shared (DLL) run-time lib even when Google Test is built as static lib.")
+endif()
 add_subdirectory(${GTEST_ROOT})
 include_directories(${GTEST_INCLUDE_DIR})
-if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-    set(gtest_force_shared_crt ON)
-else()
-    set(gtest_force_shared_crt OFF)
-endif()
 
 # Boost is optional as it is only used by some test cases
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
