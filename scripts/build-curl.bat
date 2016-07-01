@@ -7,7 +7,7 @@
 ::   - 7z.exe in PATH
 
 @setlocal
-@set curl_version=7.49.0
+@set curl_version=7.49.1
 @set curl_download_url="http://curl.haxx.se/download/curl-%curl_version%.zip"
 
 @if "%VS140COMNTOOLS%"=="" goto error_no_vscomntools
