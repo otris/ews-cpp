@@ -58,7 +58,7 @@ libcurl for your particular version of Visual Studio.
 ews-cpp's source code is available as a Git repository. To obtain it, type:
 
 ```bash
-git clone --recursive git@gitlab.otris.de:kircher/ews-cpp.git
+git clone --recursive https://gitlab.otris.de/kircher/ews-cpp.git
 ```
 
 
@@ -89,8 +89,8 @@ do something like this with the Windows `cmd.exe` command prompt:
 
 ```bat
 set PATH=%PATH%;C:\Program Files (x86)\CMake\bin
-mkdir ews-cpp-msvc-build
-cd ews-cpp-msvc-build
+mkdir build-dir
+cd build-dir
 cmake -G "Visual Studio 14 2015 Win64" ^
     -DCURL_LIBRARY="C:\Program Files\cURL\7.49.1\win64-debug\lib\libcurl_debug.lib" ^
     -DCURL_INCLUDE_DIR="C:\Program Files\cURL\7.49.1\win64-debug\include" ^
@@ -98,10 +98,10 @@ cmake -G "Visual Studio 14 2015 Win64" ^
 cmake --build .
 ```
 
-You get the idea.
+Make sure to choose the right generator for your environment.
 
 
-## API Docs
+### API Docs
 
 Use the `doc` target to create the API documentation with Doxygen.  Type:
 
@@ -111,7 +111,7 @@ open html/index.html
 ```
 
 
-## Test Suite
+### Test Suite
 
 Export the following environment variables in order to run individual examples
 or the test suite:
