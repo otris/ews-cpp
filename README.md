@@ -1,4 +1,4 @@
-# Overview
+## Overview
 
 EWS is an API that third-party programmers can use to communicate with
 Microsoft Exchange Server. The API exists since Exchange Server 2007 and is
@@ -49,6 +49,9 @@ Additionally, you probably need to tell CMake where to find it. Just set
 `CMAKE_PREFIX_PATH` to the path where you installed libcurl (e.g.
 ``C:\Program Files\cURL``) and re-configure.
 
+You can also use the script provided in ``scripts\build-curl.bat`` to compile
+libcurl for your particular version of Visual Studio.
+
 
 ## Source Code
 
@@ -78,8 +81,25 @@ Type `make help` to see more configuration options.
 
 ### Windows
 
-To build the tests and examples on Windows you can use `cmake-gui`.
-For more see: https://cmake.org/runningcmake/
+To build the tests and examples on Windows you can use `cmake-gui`.  For more
+see: https://cmake.org/runningcmake/
+
+If you do not want to use any GUI to compile the examples and tests you could
+do something like this with the Windows `cmd.exe` command prompt:
+
+```bat
+set PATH=%PATH%;C:\Program Files (x86)\CMake\bin
+mkdir ews-cpp-msvc-build
+cd ews-cpp-msvc-build
+cmake -G "Visual Studio 14 2015 Win64" ^
+    -DCURL_LIBRARY="C:\Program Files\cURL\7.49.1\win64-debug\lib\libcurl_debug.lib" ^
+    -DCURL_INCLUDE_DIR="C:\Program Files\cURL\7.49.1\win64-debug\include" ^
+    C:\path\to\source
+cmake --build .
+```
+
+You get the idea.
+
 
 ## API Docs
 
@@ -167,11 +187,10 @@ Cons:
 ## Legal Notice
 ews-cpp is developed by otris software AG and was initially released to the
 public in June 2016. It is licensed under the Apache License, Version 2.0 (see
-[LICENSE](LICENSE) ). 
+[LICENSE](LICENSE)).
 
 For more information about otris software AG visit our website
 www.otris.de or our Open Source repositories at github.com/otris
-
 
 
 <!-- vim: et sw=4 ts=4:
