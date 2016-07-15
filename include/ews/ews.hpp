@@ -5470,7 +5470,7 @@ namespace ews
     }
 
     //! Set-up EWS library.
-    //
+    //!
     //! Should be called when application is still in single-threaded context.
     //! Calling this function more than once does no harm.
     //!

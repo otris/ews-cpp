@@ -34,10 +34,18 @@ C++ application.
 
 * Microsoft Exchange Server 2013 SP1
 
+However, our goal is to support all Exchange Server versions since 2007.
 
 ## Run-time Dependencies
 
 * libcurl, at least version 7.22
+
+
+## Dev Dependencies
+
+* Git
+* CMake
+* Doxygen (optional)
 
 
 ## Note Windows Users
@@ -58,7 +66,7 @@ libcurl for your particular version of Visual Studio.
 ews-cpp's source code is available as a Git repository. To obtain it, type:
 
 ```bash
-git clone --recursive https://gitlab.otris.de/kircher/ews-cpp.git
+git clone --recursive https://github.com/otris/ews-cpp.git
 ```
 
 
@@ -70,7 +78,7 @@ The library is header-only. So there is no need to build anything. Just copy the
 `include/ews/` directory wherever you may like.
 
 To build the accompanied tests with debugging symbols and Address Sanitizer
-enabled do something like this
+enabled do something like this:
 
 ```bash
 cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_ASAN=ON /path/to/source
@@ -186,11 +194,12 @@ Cons:
 
 ## Legal Notice
 ews-cpp is developed by otris software AG and was initially released to the
-public in June 2016. It is licensed under the Apache License, Version 2.0 (see
-[LICENSE](LICENSE)).
+public in July 2016. It is licensed under the Apache License, Version 2.0 (see
+[LICENSE file](LICENSE)).
 
 For more information about otris software AG visit our website
-www.otris.de or our Open Source repositories at github.com/otris
+[otris.de](https://www.otris.de/) or our Open Source repositories at
+[github.com/otris](https://github.com/otris).
 
 
 <!-- vim: et sw=4 ts=4:
