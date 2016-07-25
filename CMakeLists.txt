@@ -64,8 +64,11 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     if(ENABLE_LIBCXX)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     endif()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
+
+    # In what sane world does 'extra' mean more than 'all', and 'all' and
+    # 'everything' mean different things?
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -fcolor-diagnostics")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas -Wno-c++98-compat -Wno-covered-switch-default -Wno-switch-enum -Wno-weak-vtables -Wno-exit-time-destructors -Wno-global-constructors -Wno-padded")
 elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     patch_cmake_cxx_debug_flags()
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS GNUCXX_MINIMUM_VERSION)
