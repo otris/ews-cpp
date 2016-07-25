@@ -91,9 +91,19 @@ namespace rapidxml
         {
         }
 
+        // TODO make what() noexcept
+#if defined(__clang__) || defined (__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated"
+#endif
+
         //! Gets human readable description of error.
         //! \return Pointer to null terminated description of the error.
         virtual const char* what() const throw() { return m_what; }
+
+#if defined(__clang__) || defined (__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
         //! Gets pointer to character data where error happened.
         //! Ch should be the same as char type of xml_document that produced
