@@ -9480,6 +9480,150 @@ namespace ews
         std::string nickname_;
     };
 
+    class physical_address final
+    {
+    public:
+        enum class key
+        {
+            home,
+            business,
+            other
+        };
+
+        explicit physical_address(key k, std::string street, std::string city,
+                                  std::string state, std::string cor,
+                                  std::string postal_code)
+            : key_(std::move(k)), street_(std::move(street)),
+              city_(std::move(city)), state_(std::move(state)),
+              country_or_region_(std::move(cor)),
+              postal_code_(std::move(postal_code))
+        {
+        }
+
+        static physical_address
+        from_xml_element(const rapidxml::xml_node<char>& node)
+        {
+            using rapidxml::internal::compare;
+
+            EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
+                               "Entry", std::strlen("Entry")));
+
+            // <Entry Key="Home">
+            //      <Street>
+            //      <City>
+            //      <State>
+            //      <CountryOrRegion>
+            //      <PostalCode>
+            // </Entry>
+
+            auto key_attr = node.first_attribute();
+            EWS_ASSERT(key_attr);
+            EWS_ASSERT(
+                compare(key_attr->name(), key_attr->name_size(), "Key", 3));
+            auto key_ = string_to_key(key_attr->value());
+
+            std::string street;
+            std::string city;
+            std::string state;
+            std::string cor;
+            std::string postal_code;
+
+            for (auto child = node.first_attribute(); child != nullptr;
+                 child = child->next_attribute())
+            {
+                if (compare("Street", std::strlen("Street"),
+                            child->local_name(), child->local_name_size()))
+                {
+                    street = std::string(child->value(), child->value_size());
+                }
+                if (compare("City", std::strlen("City"), child->local_name(),
+                            child->local_name_size()))
+                {
+                    city = std::string(child->value(), child->value_size());
+                }
+                if (compare("State", std::strlen("State"), child->local_name(),
+                            child->local_name_size()))
+                {
+                    state = std::string(child->value(), child->value_size());
+                }
+                if (compare("CountryOrRegion", std::strlen("CountryOrRegion"),
+                            child->local_name(), child->local_name_size()))
+                {
+                    cor = std::string(child->value(), child->value_size());
+                }
+                if (compare("PostalCode", std::strlen("PostalCode"),
+                            child->local_name(), child->local_name_size()))
+                {
+                    postal_code =
+                        std::string(child->value(), child->value_size());
+                }
+            }
+            return physical_address(key_, street, city, state, cor,
+                                    postal_code);
+        }
+
+        key get_key() const { return key_; }
+        const std::string& street() const EWS_NOEXCEPT { return street_; }
+        const std::string& city() const EWS_NOEXCEPT { return city_; }
+        const std::string& state() const EWS_NOEXCEPT { return state_; }
+        const std::string& country_or_region() const EWS_NOEXCEPT
+        {
+            return country_or_region_;
+        }
+        const std::string& postal_code() const EWS_NOEXCEPT
+        {
+            return postal_code_;
+        }
+
+    private:
+        key key_;
+        std::string street_;
+        std::string city_;
+        std::string state_;
+        std::string country_or_region_;
+        std::string postal_code_;
+
+        static key string_to_key(const std::string& keystring)
+        {
+            key k;
+            if (keystring == "Home")
+            {
+                k = physical_address::key::home;
+            }
+            else if (keystring == "Business")
+            {
+                k = physical_address::key::business;
+            }
+            else if (keystring == "Other")
+            {
+                k = physical_address::key::other;
+            }
+            else
+            {
+                throw exception(std::string("Unrecognized key: ") + keystring);
+            }
+            return k;
+        }
+    };
+
+    namespace internal
+    {
+        inline std::string enum_to_str(physical_address::key k)
+        {
+            switch (k)
+            {
+            case physical_address::key::home:
+                return "Home";
+            case physical_address::key::business:
+                return "Business";
+            case physical_address::key::other:
+                return "Other";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
     //! A contact item in the Exchange store.
     class contact final : public item
     {
@@ -9498,16 +9642,34 @@ namespace ews
         {
         }
 #endif
-
-        // How the name should be filed for display/sorting purposes
+        /**
+        //! How the name should be filed for display/sorting purposes
         // TODO: file_as
+        std::string get_file_as_mapping(std::string maptype)
+        {
+            return xml().get_value_as_string(maptype);
+        }
 
-        // How the various parts of a contact's information interact to form
-        // the FileAs property value
+        //! How the various parts of a contact's information interact to form
+        //! the FileAs property value
         // TODO: file_as_mapping
 
-        // The name to display for a contact
-        // TODO: get_display_name
+        void set_file_as_mapping(std::string maptype)
+        {
+
+        }
+        */
+        //! Sets the name to display for a contact
+        void set_display_name(const std::string& display_name)
+        {
+            xml().set_or_update("DisplayName", display_name);
+        }
+
+        //! Returns the displayed name of the contact
+        std::string get_display_name() const
+        {
+            return xml().get_value_as_string("DisplayName");
+        }
 
         // Sets the name by which a person is known to `given_name`; often
         // referred to as a person's first name
@@ -9522,18 +9684,43 @@ namespace ews
             return xml().get_value_as_string("GivenName");
         }
 
-        // Initials for the contact
-        // TODO: get_initials
+        //! Set the Initials for the contact
+        void set_initials(const std::string& initials)
+        {
+            xml().set_or_update("Initials", initials);
+        }
 
-        // The middle name for the contact
-        // TODO: get_middle_name
+        //! Returns the person's initials
+        std::string get_initials() const
+        {
+            return xml().get_value_as_string("Initials");
+        }
 
-        // Another name by which the contact is known
-        // TODO: get_nickname
+        //! Set the middle name for the contact
+        void set_middle_name(const std::string& middle_name)
+        {
+            xml().set_or_update("MiddleName", middle_name);
+        }
 
-        // A combination of several name fields in one convenient place
-        // (read-only)
-        // TODO: get_complete_name
+        //! Returns the middle name of the contact
+        std::string get_middle_name() const
+        {
+            return xml().get_value_as_string("MiddleName");
+        }
+
+        //! Sets another name by which the contact is known
+        void set_nickname(const std::string& nickname)
+        {
+            xml().set_or_update("Nickname", nickname);
+        }
+
+        //! Returns the nickname of the contact
+        std::string get_nickname() const
+        {
+            return xml().get_value_as_string("Nickname");
+        }
+
+        //! A combination of several name fields in one convenient place
         complete_name get_complete_name() const
         {
             auto node = xml().get_node("CompleteName");
@@ -9544,9 +9731,17 @@ namespace ews
             return complete_name::from_xml_element(*node);
         }
 
-        // The company that the contact is affiliated with
-        // TODO: get_company_name
+        //! Sets the company that the contact is affiliated with
+        void set_company_name(const std::string& company_name)
+        {
+            xml().set_or_update("CompanyName", company_name);
+        }
 
+        //! Returns the comany of the contact
+        std::string get_company_name() const
+        {
+            return xml().get_value_as_string("CompanyName");
+        }
         //! A collection of email addresses for the contact
         std::vector<mailbox> get_email_addresses() const
         {
@@ -9602,19 +9797,163 @@ namespace ews
 
         // A collection of mailing addresses for the contact
         // TODO: get_physical_addresses
+        std::vector<physical_address> get_physical_addresses() const
+        {
+            const auto addresses = xml().get_node("PhysicalAddresses");
+            if (!addresses)
+            {
+                return std::vector<physical_address>();
+            }
+            std::vector<physical_address> result;
+            for (auto entry = addresses->first_node(); entry != nullptr;
+                 entry = entry->next_sibling())
+            {
+                result.push_back(physical_address::from_xml_element(*entry));
+            }
+            return result;
+        }
+
+        void set_physical_address(const physical_address& address)
+        {
+            using rapidxml::internal::compare;
+            auto doc = xml().document();
+            auto addresses = xml().get_node("PhysicalAddresses");
+            // <PhysicalAddresses>
+            //   <Entry Key="Home">
+            //     <Street>
+            //     <City>
+            //     <State>
+            //     <CountryOrRegion>
+            //     <PostalCode>
+            //   <Entry/>
+            //   <Entry Key="Business">
+            //     <Street>
+            //     <City>
+            //     <State>
+            //     <CountryOrRegion>
+            //     <PostalCode>
+            //   <Entry/>
+            // <PhysicalAddresses/>
+
+            if (addresses)
+            {
+                bool entry_exists = false;
+                auto entry = addresses->first_node();
+                for (; entry != nullptr; entry = entry->next_sibling())
+                {
+                    auto key_attr = entry->first_attribute();
+                    EWS_ASSERT(key_attr);
+                    EWS_ASSERT(compare(key_attr->name(), key_attr->name_size(),
+                                       "Key", 3));
+                    const auto key = internal::enum_to_str(address.get_key());
+                    if (compare(key_attr->value(), key_attr->value_size(),
+                                key.c_str(), key.size()))
+                    {
+                        entry_exists = true;
+                        break;
+                    }
+                }
+                if (entry_exists)
+                {
+                    addresses->remove_node(entry);
+                }
+            }
+            else
+            {
+                auto name = doc->allocate_string("t:PhysicalAddresses");
+                addresses = doc->allocate_node(rapidxml::node_element);
+                addresses->qname(name, std::strlen("t:PhysicalAddresses"),
+                                 name + 2);
+                addresses->namespace_uri(
+                    internal::uri<>::microsoft::types(),
+                    internal::uri<>::microsoft::types_size);
+                doc->append_node(addresses);
+            }
+
+            // create entry & key
+            auto entry_name = doc->allocate_string("t:Entry");
+            auto new_entry = doc->allocate_node(rapidxml::node_element);
+            new_entry->qname(entry_name, std::strlen("t:Entry"),
+                             entry_name + 2);
+            new_entry->namespace_uri(internal::uri<>::microsoft::types(),
+                                     internal::uri<>::microsoft::types_size);
+            new_entry->value(entry_name);
+
+            auto ptr_to_key = doc->allocate_string("Key");
+            const auto keystr = internal::enum_to_str(address.get_key());
+            auto ptr_to_value = doc->allocate_string(keystr.c_str());
+            new_entry->append_attribute(
+                doc->allocate_attribute(ptr_to_key, ptr_to_value));
+
+            if (!address.street().empty())
+            {
+                ptr_to_key = doc->allocate_string("Street");
+                ptr_to_value = doc->allocate_string(address.street().c_str());
+                new_entry->append_attribute(
+                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
+            }
+            if (!address.street().empty())
+            {
+                ptr_to_key = doc->allocate_string("City");
+                ptr_to_value = doc->allocate_string(address.city().c_str());
+                new_entry->append_attribute(
+                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
+            }
+            if (!address.state().empty())
+            {
+                ptr_to_key = doc->allocate_string("State");
+                ptr_to_value = doc->allocate_string(address.state().c_str());
+                new_entry->append_attribute(
+                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
+            }
+            if (!address.country_or_region().empty())
+            {
+                ptr_to_key = doc->allocate_string("CountryOrRegion");
+                ptr_to_value =
+                    doc->allocate_string(address.country_or_region().c_str());
+                new_entry->append_attribute(
+                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
+            }
+            if (!address.postal_code().empty())
+            {
+                ptr_to_key = doc->allocate_string("PostalCode");
+                ptr_to_value =
+                    doc->allocate_string(address.postal_code().c_str());
+                new_entry->append_attribute(
+                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
+            }
+            addresses->append_node(new_entry);
+        }
 
         // A collection of phone numbers for the contact
         // TODO: get_phone_numbers
 
-        // The name of the contact's assistant
-        // TODO: get_assistant_name
+        //! Sets the name of the contact's assistant
+        void set_assistant_name(const std::string& assistant_name)
+        {
+            xml().set_or_update("AssistantName", assistant_name);
+        }
+
+        //! Returns the contact's assistant's name
+        std::string get_assistant_name() const
+        {
+            return xml().get_value_as_string("AssistantName");
+        }
 
         // The contact's birthday
         // TODO: get_birthday
 
-        // Web page for the contact's business; typically a URL
-        // TODO: get_business_homepage
+        //! Sets the web page for the contact's business; typically a URL
+        void set_business_homepage(const std::string& business_homepage)
+        {
+            xml().set_or_update("BusinessHomePage", business_homepage);
+        }
 
+        //! Returns the URL of the contact
+        std::string get_business_homepage() const
+        {
+            return xml().get_value_as_string("BusinessHomePage");
+        }
         // A collection of children's names associated with the contact
         // TODO: get_children
 
@@ -9625,11 +9964,30 @@ namespace ews
         // (read-only)
         // TODO: get_contact_source
 
-        // The department name that the contact is in
-        // TODO: get_department
+        //! Set the department name that the contact is in
+        void set_department(const std::string& department)
+        {
+            xml().set_or_update("Department", department);
+        }
 
-        // Sr, Jr, I, II, III, and so on
-        // TODO: get_generation
+        //! Return the department name of the contact
+        std::string get_department() const
+        {
+            return xml().get_value_as_string("Department");
+        }
+
+        //! Sets the generation of the contact
+        //! e.g.: Sr, Jr, I, II, III, and so on
+        void set_generation(const std::string& generation)
+        {
+            xml().set_or_update("Generation", generation);
+        }
+
+        //! Returns the generation of the contact
+        std::string get_generation() const
+        {
+            return xml().get_value_as_string("Generation");
+        }
 
         // A collection of instant messaging addresses for the contact
         // TODO: get_im_addresses
@@ -9646,21 +10004,58 @@ namespace ews
             return xml().get_value_as_string("JobTitle");
         }
 
-        // The name of the contact's manager
-        // TODO: get_manager
+        //! Sets the name of the contact's manager
+        void set_manager(const std::string& manager)
+        {
+            xml().set_or_update("Manager", manager);
+        }
 
-        // The distance that the contact resides from some reference point
-        // TODO: get_mileage
+        //! Returns the name of the contact's manager
+        std::string get_manager() const
+        {
+            return xml().get_value_as_string("Manager");
+        }
 
-        // Location of the contact's office
-        // TODO: get_office_location
+        //! Sets the distance that the contact resides
+        //! from some reference point
+        void set_mileage(const std::string& mileage)
+        {
+            xml().set_or_update("Mileage", mileage);
+        }
+
+        //! Returns the distance to the reference point
+        std::string get_mileage() const
+        {
+            return xml().get_value_as_string("Mileage");
+        }
+
+        //! Sets the location of the contact's office
+        void set_office_location(const std::string& office_location)
+        {
+            xml().set_or_update("OfficeLocation", office_location);
+        }
+
+        //! Returns the location of the contact's office
+        std::string get_office_location() const
+        {
+            return xml().get_value_as_string("OfficeLocation");
+        }
 
         // The physical addresses in the PhysicalAddresses collection that
         // represents the mailing address for the contact
         // TODO: get_postal_address_index
 
-        // Occupation or discipline of the contact
-        // TODO: get_profession
+        //! Sets the occupation or discipline of the contact
+        void set_profession(const std::string& profession)
+        {
+            xml().set_or_update("Profession", profession);
+        }
+
+        //! Returns the occupation of the contact
+        std::string get_profession() const
+        {
+            return xml().get_value_as_string("Profession");
+        }
 
         //! Set name of the contact's significant other
         void set_spouse_name(const std::string& spouse_name)

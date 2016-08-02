@@ -200,7 +200,7 @@ namespace tests
 
         auto minnie = test_contact();
 
-        EXPECT_STREQ("", minnie.get_spouse_name().c_str());
+        EXPECT_STREQ("Mickey", minnie.get_spouse_name().c_str());
         auto spouse_name_property =
             ews::property(ews::contact_property_path::spouse_name, "Mickey");
         auto new_id =
