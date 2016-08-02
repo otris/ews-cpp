@@ -12643,7 +12643,7 @@ namespace ews
     //! - find_people
     //! - get_contact
     //! - get_task
-    //
+    //!
     //! and so on and so on.
     template <typename RequestHandler = internal::http_request>
     class basic_service final
@@ -12830,7 +12830,7 @@ namespace ews
 
         //! \brief Creates a new task item from the given object in the
         //! Exchange store.
-        //
+        //!
         //! Returns it's item_id if successful.
         item_id create_item(const task& the_task)
         {
