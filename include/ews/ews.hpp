@@ -12231,8 +12231,16 @@ namespace ews
         static const property_path phonetic_last_name =
             "contacts:PhoneticLastName";
         static const property_path photo = "contacts:Photo";
-        static const property_path physical_address =
-            "contacts:PhysicalAddresses";
+        static const indexed_property_path
+            street("contacts:PhysicalAddress", "Street");
+        static const indexed_property_path
+            city("contacts:PhysicalAddress", "City");
+        static const indexed_property_path
+            state("contacts:PhysicalAddress", "State");
+        static const indexed_property_path
+            country_or_region("contacts:PhysicalAddress", "CountryOrRegion");
+        static const indexed_property_path
+            postal_code("contacts:PhysicalAddress", "PostalCode");
         static const property_path postal_adress_index =
             "contacts:PostalAddressIndex";
         static const property_path profession = "contacts:Profession";
