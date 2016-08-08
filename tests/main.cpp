@@ -30,6 +30,7 @@
 #include <direct.h>
 #define getcwd _getcwd
 #else
+#include <limits.h>
 #include <unistd.h>
 #endif
 
@@ -145,7 +146,26 @@ namespace
 
                 assets_dir.replace(0, 1, env);
             }
+
+            // Expand relative paths
+
+            char* res = nullptr;
+#ifdef _WIN32
+            std::vector<char> abspath(MAX_PATH);
+            res = _fullpath(&abspath[0], &assets_dir.c_str(), 1000);
+#else
+            std::vector<char> abspath(FILENAME_MAX);
+            res = realpath(assets_dir.c_str(), &abspath[0]);
+#endif
+            if (res == nullptr)
+            {
+                std::cout << "No such directory: '" << assets_dir << "'\n";
+                std::exit(EXIT_FAILURE);
+            }
+
+            assets_dir = std::string(&abspath[0]);
         }
+
         ews::test::global_data::instance().assets_dir = assets_dir;
         std::cout << "Loading assets from: '" << assets_dir << "'\n";
     }
