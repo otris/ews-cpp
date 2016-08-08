@@ -25,6 +25,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -151,8 +152,8 @@ namespace
 
             char* res = nullptr;
 #ifdef _WIN32
-            std::vector<char> abspath(MAX_PATH);
-            res = _fullpath(&abspath[0], &assets_dir.c_str(), 1000);
+            std::vector<char> abspath(_MAX_PATH);
+            res = _fullpath(&abspath[0], assets_dir.c_str(), 1000);
 #else
             std::vector<char> abspath(FILENAME_MAX);
             res = realpath(assets_dir.c_str(), &abspath[0]);
