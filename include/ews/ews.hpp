@@ -4711,6 +4711,7 @@ namespace ews
         public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
             virtual ~credentials() = default;
+            credentials& operator=(const credentials&) = default;
 #else
             virtual ~credentials() {}
 #endif
