@@ -9756,8 +9756,6 @@ namespace ews
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
         {
             using internal::create_node;
-            EWS_ASSERT(doc && "parent node needs to be part of a document");
-
             auto& pattern_node =
                 create_node(parent, "t:RelativeMonthlyRecurrence");
             create_node(pattern_node, "t:Interval", std::to_string(interval_));
