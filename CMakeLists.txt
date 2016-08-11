@@ -68,7 +68,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     # In what sane world does 'extra' mean more than 'all', and 'all' and
     # 'everything' mean different things?
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -fcolor-diagnostics")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas -Wno-c++98-compat -Wno-covered-switch-default -Wno-switch-enum -Wno-weak-vtables -Wno-exit-time-destructors -Wno-global-constructors -Wno-padded")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas -Wno-c++98-compat -Wno-covered-switch-default -Wno-switch-enum -Wno-weak-vtables -Wno-exit-time-destructors -Wno-global-constructors -Wno-padded -Wno-conversion -Wno-sign-conversion -Wno-c++98-compat-pedantic -Wno-disabled-macro-expansion -Wno-undef")
 elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     patch_cmake_cxx_debug_flags()
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS GNUCXX_MINIMUM_VERSION)
