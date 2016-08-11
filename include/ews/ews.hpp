@@ -6335,6 +6335,8 @@ namespace ews
         static attachment from_file(const std::string& file_path,
                                     std::string content_type, std::string name)
         {
+            using internal::create_node;
+
             // Try open file
             std::ifstream ifstr(file_path,
                                 std::ifstream::in | std::ios::binary);
@@ -6368,12 +6370,12 @@ namespace ews
             auto obj = attachment();
             obj.type_ = type::file;
 
-            auto attachment_node = &internal::create_node(*obj.xml_.document(),
-                                                          "t:FileAttachment");
-            append_child_node(attachment_node, "t:Name", name);
-            append_child_node(attachment_node, "t:ContentType", content_type);
-            append_child_node(attachment_node, "t:Content", content);
-            append_child_node(attachment_node, "t:Size",
+            auto& attachment_node = create_node(*obj.xml_.document(),
+                                                         "t:FileAttachment");
+            create_node(attachment_node, "t:Name", name);
+            create_node(attachment_node, "t:ContentType", content_type);
+            create_node(attachment_node, "t:Content", content);
+            create_node(attachment_node, "t:Size",
                               std::to_string(buffer.size()));
 
             return obj;
@@ -6414,17 +6416,6 @@ namespace ews
                 }
             }
             return node;
-        }
-
-        // Helper function used in from_item, from_file. Creates a new node
-        // with given name and value and appends it to given parent
-        static rapidxml::xml_node<>*
-        append_child_node(rapidxml::xml_node<>* parent, const char* name,
-                          const std::string& value)
-        {
-            EWS_ASSERT(parent);
-            return &internal::create_node(*parent, std::string(name),
-                                          std::string(value));
         }
     };
 
