@@ -4622,31 +4622,33 @@ namespace ews
             return doc;
         }
 
+        // TODO: explicitlz for nodes in Types XML namespace, document or
+        // change interface
         inline rapidxml::xml_node<>& create_node(rapidxml::xml_node<>& parent,
                                                  const std::string& name)
         {
-            auto ptr_to_qname =
-                parent.document()->allocate_string(name.c_str());
-            auto to_create =
-                parent.document()->allocate_node(rapidxml::node_element);
-            to_create->qname(ptr_to_qname, name.length(), ptr_to_qname + 2);
-            to_create->namespace_uri(internal::uri<>::microsoft::types(),
+            auto doc = parent.document();
+            EWS_ASSERT(doc && "parent node needs to be part of a document");
+            auto ptr_to_qname = doc->allocate_string(name.c_str());
+            auto new_node = doc->allocate_node(rapidxml::node_element);
+            new_node->qname(ptr_to_qname, name.length(), ptr_to_qname + 2);
+            new_node->namespace_uri(internal::uri<>::microsoft::types(),
                                     internal::uri<>::microsoft::types_size);
-            parent.append_node(to_create);
-            return *to_create;
+            parent.append_node(new_node);
+            return *new_node;
         }
 
         inline rapidxml::xml_node<>& create_node(rapidxml::xml_node<>& parent,
                                                  const std::string& name,
                                                  const std::string& value)
         {
-            auto val = parent.document()->allocate_string(value.c_str());
-            auto& to_create = create_node(parent, name);
-            to_create.value(val);
-            return to_create;
+            auto doc = parent.document();
+            EWS_ASSERT(doc && "parent node needs to be part of a document");
+            auto str = doc->allocate_string(value.c_str());
+            auto& new_node = create_node(parent, name);
+            new_node.value(str);
+            return new_node;
         }
-
-
 
         // Traverse elements, depth first, beginning with given node.
         //
