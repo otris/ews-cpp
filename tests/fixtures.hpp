@@ -27,7 +27,6 @@
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
 #include <ews/rapidxml/rapidxml.hpp>
-#include <gtest/gtest.h>
 
 #ifdef EWS_USE_BOOST_LIBRARY
 #include <boost/filesystem.hpp>
@@ -35,6 +34,8 @@
 #include <iostream>
 #include <iterator>
 #endif
+
+#include "gtest-wrapper.hpp"
 
 namespace tests
 {

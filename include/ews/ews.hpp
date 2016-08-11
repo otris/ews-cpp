@@ -4013,7 +4013,7 @@ namespace ews
         people_connect,
 
         //! Represents the Favorites folder
-        favorites,
+        favorites
     };
 
     //! \brief Indicates whether a user is interested in the internal or
@@ -4711,6 +4711,7 @@ namespace ews
         public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
             virtual ~credentials() = default;
+            credentials& operator=(const credentials&) = default;
 #else
             virtual ~credentials() {}
 #endif
@@ -5724,6 +5725,7 @@ namespace ews
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
         folder_id() = default;
         virtual ~folder_id() = default;
+        folder_id(const folder_id&) = default;
 #else
         folder_id() {}
         virtual ~folder_id() {}
@@ -8147,7 +8149,7 @@ namespace ews
         nov,
 
         //! December
-        dec,
+        dec
     };
 
     namespace internal
@@ -11595,7 +11597,6 @@ namespace ews
     public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
         search_expression() = delete;
-        ~search_expression() = default;
 #endif
 
         std::string to_xml() const { return func_(); }

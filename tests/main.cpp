@@ -16,7 +16,6 @@
 //   This project is hosted at https://github.com/otris
 
 #include <ews/ews_test_support.hpp>
-#include <gtest/gtest.h>
 
 #include <cstdlib>
 #include <cstring>
@@ -34,6 +33,8 @@
 #include <limits.h>
 #include <unistd.h>
 #endif
+
+#include "gtest-wrapper.hpp"
 
 typedef std::unordered_map<std::string, std::string> argument_map;
 

@@ -91,9 +91,19 @@ namespace rapidxml
         {
         }
 
+        // TODO make what() noexcept
+#if defined(__clang__) || defined (__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated"
+#endif
+
         //! Gets human readable description of error.
         //! \return Pointer to null terminated description of the error.
         virtual const char* what() const throw() { return m_what; }
+
+#if defined(__clang__) || defined (__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
         //! Gets pointer to character data where error happened.
         //! Ch should be the same as char type of xml_document that produced
@@ -382,7 +392,6 @@ namespace rapidxml
     ///////////////////////////////////////////////////////////////////////
     // Internals
 
-    //! \cond internal
     namespace internal
     {
 
@@ -693,12 +702,11 @@ namespace rapidxml
     //! <code>RAPIDXML_ALIGNMENT</code>
     //! to obtain best wasted memory to performance compromise.
     //! To do it, define their values before rapidxml.hpp file is included.
-    //! \param Ch Character type of created nodes.
+    //! \tparam Ch Character type of created nodes.
     template <class Ch = char> class memory_pool
     {
 
     public:
-        //! \cond internal
         typedef void*(alloc_func)(std::size_t); // Type of user-defined function
                                                 // used to allocate memory
         typedef void(free_func)(void*); // Type of user-defined function used to
@@ -1007,7 +1015,7 @@ namespace rapidxml
 
     //! Base class for xml_node and xml_attribute implementing common functions:
     //! name(), name_size(), value(), value_size() and parent().
-    //! \param Ch Character type to use
+    //! \tparam Ch Character type to use
     template <class Ch = char> class xml_base
     {
     public:
@@ -1273,7 +1281,7 @@ namespace rapidxml
     //! Note that after parse, both name and value of attribute will point to
     //! interior of source text used for parsing.
     //! Thus, this text must persist in memory for the lifetime of attribute.
-    //! \param Ch Character type to use.
+    //! \tparam Ch Character type to use.
     template <class Ch = char> class xml_attribute : public xml_base<Ch>
     {
 
@@ -1425,7 +1433,7 @@ namespace rapidxml
     //! Note that after parse, both name and value of node, if any, will point
     //! interior of source text used for parsing.
     //! Thus, this text must persist in the memory for the lifetime of node.
-    //! \param Ch Character type to use.
+    //! \tparam Ch Character type to use.
     template <class Ch = char> class xml_node : public xml_base<Ch>
     {
     public:
@@ -2139,7 +2147,7 @@ namespace rapidxml
     //! which are inherited from memory_pool.
     //! To access root node of the document, use the document itself, as if it
     //! was an xml_node.
-    //! \param Ch Character type to use.
+    //! \tparam Ch Character type to use.
     template <class Ch = char>
     class xml_document : public xml_node<Ch>, public memory_pool<Ch>
     {

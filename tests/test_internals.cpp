@@ -19,11 +19,12 @@
 #include <cstring>
 #include <ews/ews.hpp>
 #include <ews/rapidxml/rapidxml_print.hpp>
-#include <gtest/gtest.h>
 #include <iterator>
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "gtest-wrapper.hpp"
 
 namespace
 {
