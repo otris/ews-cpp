@@ -4622,6 +4622,32 @@ namespace ews
             return doc;
         }
 
+        inline rapidxml::xml_node<>& create_node(rapidxml::xml_node<>& parent,
+                                                 const std::string& name)
+        {
+            auto ptr_to_qname =
+                parent.document()->allocate_string(name.c_str());
+            auto to_create =
+                parent.document()->allocate_node(rapidxml::node_element);
+            to_create->qname(ptr_to_qname, name.length(), ptr_to_qname + 2);
+            to_create->namespace_uri(internal::uri<>::microsoft::types(),
+                                    internal::uri<>::microsoft::types_size);
+            parent.append_node(to_create);
+            return *to_create;
+        }
+
+        inline rapidxml::xml_node<>& create_node(rapidxml::xml_node<>& parent,
+                                                 const std::string& name,
+                                                 const std::string& value)
+        {
+            auto val = parent.document()->allocate_string(value.c_str());
+            auto& to_create = create_node(parent, name);
+            to_create.value(val);
+            return to_create;
+        }
+
+
+
         // Traverse elements, depth first, beginning with given node.
         //
         // Applies given function to every element during traversal, stopping as
@@ -6340,15 +6366,8 @@ namespace ews
             auto obj = attachment();
             obj.type_ = type::file;
 
-            auto doc = obj.xml_.document();
-            auto str = doc->allocate_string("t:FileAttachment");
-            auto attachment_node = doc->allocate_node(rapidxml::node_element);
-            attachment_node->qname(str, std::strlen(str), str + 2);
-            attachment_node->namespace_uri(
-                internal::uri<>::microsoft::types(),
-                internal::uri<>::microsoft::types_size);
-            doc->append_node(attachment_node);
-
+            auto attachment_node = &internal::create_node(*obj.xml_.document(),
+                                                          "t:FileAttachment");
             append_child_node(attachment_node, "t:Name", name);
             append_child_node(attachment_node, "t:ContentType", content_type);
             append_child_node(attachment_node, "t:Content", content);
@@ -6402,18 +6421,8 @@ namespace ews
                           const std::string& value)
         {
             EWS_ASSERT(parent);
-
-            auto doc = parent->document();
-            auto str = doc->allocate_string(name);
-            auto value_string =
-                doc->allocate_string(value.c_str(), value.size());
-            auto child = doc->allocate_node(rapidxml::node_element);
-            child->qname(str, std::strlen(str), str + 2);
-            child->value(value_string, value.size());
-            child->namespace_uri(internal::uri<>::microsoft::types(),
-                                 internal::uri<>::microsoft::types_size);
-            parent->append_node(child);
-            return child;
+            return &internal::create_node(*parent, std::string(name),
+                                          std::string(value));
         }
     };
 
@@ -7205,76 +7214,34 @@ namespace ews
             EWS_ASSERT(doc &&
                        "parent node needs to be somewhere in a document");
 
-            auto ptr_to_qname = doc->allocate_string("t:Mailbox");
-            auto mailbox_node = doc->allocate_node(rapidxml::node_element);
-            mailbox_node->qname(ptr_to_qname, std::strlen("t:Mailbox"),
-                                ptr_to_qname + 2);
-            mailbox_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                        internal::uri<>::microsoft::types_size);
+            using namespace internal;
+            auto& mailbox_node = create_node(parent, "t:Mailbox");
 
             if (!id_.valid())
             {
                 EWS_ASSERT(!value_.empty() &&
                            "Neither item_id nor value set in mailbox instance");
 
-                ptr_to_qname = doc->allocate_string("t:EmailAddress");
-                auto ptr_to_value = doc->allocate_string(value_.c_str());
-                auto node = doc->allocate_node(rapidxml::node_element);
-                node->qname(ptr_to_qname, std::strlen("t:EmailAddress"),
-                            ptr_to_qname + 2);
-                node->value(ptr_to_value);
-                node->namespace_uri(internal::uri<>::microsoft::types(),
-                                    internal::uri<>::microsoft::types_size);
-                mailbox_node->append_node(node);
+                create_node(mailbox_node, "t:EmailAddress", value_);
 
                 if (!name_.empty())
                 {
-                    ptr_to_qname = doc->allocate_string("t:Name");
-                    ptr_to_value = doc->allocate_string(name_.c_str());
-                    node = doc->allocate_node(rapidxml::node_element);
-                    node->qname(ptr_to_qname, std::strlen("t:Name"),
-                                ptr_to_qname + 2);
-                    node->value(ptr_to_value);
-                    node->namespace_uri(internal::uri<>::microsoft::types(),
-                                        internal::uri<>::microsoft::types_size);
-                    mailbox_node->append_node(node);
+                    create_node(mailbox_node, "t:Name", name_);
                 }
 
                 if (!routing_type_.empty())
                 {
-                    ptr_to_qname = doc->allocate_string("t:RoutingType");
-                    ptr_to_value = doc->allocate_string(routing_type_.c_str());
-                    node = doc->allocate_node(rapidxml::node_element);
-                    node->qname(ptr_to_qname, std::strlen("t:RoutingType"),
-                                ptr_to_qname + 2);
-                    node->value(ptr_to_value);
-                    node->namespace_uri(internal::uri<>::microsoft::types(),
-                                        internal::uri<>::microsoft::types_size);
-                    mailbox_node->append_node(node);
+                    create_node(mailbox_node, "t:RoutingType", routing_type_);
                 }
 
                 if (!mailbox_type_.empty())
                 {
-                    ptr_to_qname = doc->allocate_string("t:MailboxType");
-                    ptr_to_value = doc->allocate_string(mailbox_type_.c_str());
-                    node = doc->allocate_node(rapidxml::node_element);
-                    node->qname(ptr_to_qname, std::strlen("t:MailboxType"),
-                                ptr_to_qname + 2);
-                    node->value(ptr_to_value);
-                    node->namespace_uri(internal::uri<>::microsoft::types(),
-                                        internal::uri<>::microsoft::types_size);
-                    mailbox_node->append_node(node);
+                    create_node(mailbox_node, "t:MailboxType", mailbox_type_);
                 }
             }
             else
             {
-                ptr_to_qname = doc->allocate_string("t:ItemId");
-                auto item_id_node = doc->allocate_node(rapidxml::node_element);
-                item_id_node->qname(ptr_to_qname, std::strlen("t:ItemId"),
-                                    ptr_to_qname + 2);
-                item_id_node->namespace_uri(
-                    internal::uri<>::microsoft::types(),
-                    internal::uri<>::microsoft::types_size);
+                auto item_id_node = &create_node(mailbox_node, "t:ItemId");
 
                 auto ptr_to_key = doc->allocate_string("Id");
                 auto ptr_to_value = doc->allocate_string(id_.id().c_str());
@@ -7285,12 +7252,8 @@ namespace ews
                 ptr_to_value = doc->allocate_string(id_.change_key().c_str());
                 item_id_node->append_attribute(
                     doc->allocate_attribute(ptr_to_key, ptr_to_value));
-
-                mailbox_node->append_node(item_id_node);
             }
-
-            parent.append_node(mailbox_node);
-            return *mailbox_node;
+            return mailbox_node;
         }
 
         //! Makes a mailbox instance from a \<Mailbox> XML element
@@ -7442,9 +7405,7 @@ namespace ews
         //! Returns a reference to the newly created element.
         rapidxml::xml_node<>& to_xml_element(rapidxml::xml_node<>& parent) const
         {
-            auto doc = parent.document();
-
-            EWS_ASSERT(doc &&
+            EWS_ASSERT(parent.document() &&
                        "parent node needs to be somewhere in a document");
 
             //  <Attendee>
@@ -7453,40 +7414,17 @@ namespace ews
             //    <LastResponseTime/>
             //  </Attendee>
 
-            auto ptr_to_qname = doc->allocate_string("t:Attendee");
-            auto attendee_node = doc->allocate_node(rapidxml::node_element);
-            attendee_node->qname(ptr_to_qname, std::strlen("t:Attendee"),
-                                 ptr_to_qname + 2);
-            attendee_node->namespace_uri(
-                internal::uri<>::microsoft::types(),
-                internal::uri<>::microsoft::types_size);
-            parent.append_node(attendee_node);
+            using namespace internal;
 
-            mailbox_.to_xml_element(*attendee_node);
+            auto& attendee_node = create_node(parent, "t:Attendee");
+            mailbox_.to_xml_element(attendee_node);
 
-            ptr_to_qname = doc->allocate_string("t:ResponseType");
-            auto ptr_to_value = doc->allocate_string(
-                internal::enum_to_str(response_type_).c_str());
-            auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:ResponseType"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            attendee_node->append_node(node);
+            create_node(attendee_node, "t:ResponseType",
+                        enum_to_str(response_type_));
+            create_node(attendee_node, "t:LastResponseTime",
+                        last_response_time_.to_string());
 
-            ptr_to_qname = doc->allocate_string("t:LastResponseTime");
-            ptr_to_value =
-                doc->allocate_string(last_response_time_.to_string().c_str());
-            node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:LastResponseTime"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            attendee_node->append_node(node);
-
-            return *attendee_node;
+            return attendee_node;
         }
 
         //! Makes a attendee instance from an \<Attendee> XML element
@@ -7694,18 +7632,10 @@ namespace ews
                 doc->remove_node(body_node);
             }
 
-            auto ptr_to_qname = doc->allocate_string("t:Body");
-            body_node = doc->allocate_node(rapidxml::node_element);
-            body_node->qname(ptr_to_qname, std::strlen("t:Body"),
-                             ptr_to_qname + 2);
-            body_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                     internal::uri<>::microsoft::types_size);
-
-            auto ptr_to_value = doc->allocate_string(b.content().c_str());
-            body_node->value(ptr_to_value, b.content().length());
+            body_node = &internal::create_node(*doc, "t:Body", b.content());
 
             auto ptr_to_key = doc->allocate_string("BodyType");
-            ptr_to_value =
+            auto ptr_to_value =
                 doc->allocate_string(internal::body_type_str(b.type()).c_str());
             body_node->append_attribute(
                 doc->allocate_attribute(ptr_to_key, ptr_to_value));
@@ -7719,8 +7649,6 @@ namespace ews
                 body_node->append_attribute(
                     doc->allocate_attribute(ptr_to_key, ptr_to_value));
             }
-
-            doc->append_node(body_node);
         }
 
         //! Returns the body of this item
@@ -7833,28 +7761,14 @@ namespace ews
             auto target_node = xml().get_node("Categories");
             if (!target_node)
             {
-                auto ptr_to_qname = doc->allocate_string("t:Categories");
-                target_node = doc->allocate_node(rapidxml::node_element);
-                target_node->qname(ptr_to_qname, std::strlen("t:Categories"),
-                                   ptr_to_qname + 2);
-                target_node->namespace_uri(
-                    internal::uri<>::microsoft::types(),
-                    internal::uri<>::microsoft::types_size);
+                target_node = &internal::create_node(*doc, "t:Categories");
             }
 
             for (const auto& category : categories)
             {
-                auto new_str = doc->allocate_string(category.c_str());
-                auto new_node =
-                    doc->allocate_node(rapidxml::node_element, "t:String");
-                new_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                        internal::uri<>::microsoft::types_size);
-                new_node->value(new_str);
-
-                target_node->append_node(new_node);
+                internal::create_node(*target_node, "t:String", category);
             }
 
-            doc->append_node(target_node);
         }
 
         //! \brief Returns the categories associated with this item.
@@ -8635,7 +8549,7 @@ namespace ews
         //! element here, although it is an ArrayOfStringsType.
         void set_companies(const std::vector<std::string>& companies)
         {
-            typedef internal::uri<> uri;
+            using namespace internal;
 
             auto companies_node = xml().get_node("Companies");
             if (companies_node)
@@ -8649,26 +8563,10 @@ namespace ews
                 return;
             }
 
-            auto doc = xml().document();
-            auto ptr_to_qname = doc->allocate_string("t:Companies");
-            companies_node = doc->allocate_node(rapidxml::node_element);
-            companies_node->qname(ptr_to_qname, std::strlen("t:Companies"),
-                                  ptr_to_qname + 2);
-            companies_node->namespace_uri(uri::microsoft::types(),
-                                          uri::microsoft::types_size);
-            doc->append_node(companies_node);
-
+            companies_node = &create_node(*xml().document(), "t:Companies");
             for (const auto& company : companies)
             {
-                ptr_to_qname = doc->allocate_string("t:String");
-                auto node = doc->allocate_node(rapidxml::node_element);
-                node->qname(ptr_to_qname, std::strlen("t:String"),
-                            ptr_to_qname + 2);
-                node->namespace_uri(uri::microsoft::types(),
-                                    uri::microsoft::types_size);
-                auto ptr_to_value = doc->allocate_string(company.c_str());
-                node->value(ptr_to_value);
-                companies_node->append_node(node);
+                create_node(*companies_node, "t:String", company);
             }
         }
 
@@ -9350,6 +9248,7 @@ namespace ews
         void set_email_address_by_key(const char* key, mailbox&& mail)
         {
             using rapidxml::internal::compare;
+            using internal::create_node;
 
             auto doc = xml().document();
             auto addresses = xml().get_node("EmailAddresses");
@@ -9382,26 +9281,11 @@ namespace ews
             else
             {
                 // Need to construct <EmailAddresses> node first
-
-                auto ptr_to_qname = doc->allocate_string("t:EmailAddresses");
-                addresses = doc->allocate_node(rapidxml::node_element);
-                addresses->qname(ptr_to_qname, std::strlen("t:EmailAddresses"),
-                                 ptr_to_qname + 2);
-                addresses->namespace_uri(
-                    internal::uri<>::microsoft::types(),
-                    internal::uri<>::microsoft::types_size);
-                doc->append_node(addresses);
+                addresses = &create_node(*doc, "t:EmailAddresses");
             }
 
             // <Entry Key="" Name="" RoutingType="" MailboxType="" />
-            auto new_entry_qname = doc->allocate_string("t:Entry");
-            auto new_entry_value = doc->allocate_string(mail.value().c_str());
-            auto new_entry = doc->allocate_node(rapidxml::node_element);
-            new_entry->qname(new_entry_qname, std::strlen("t:Entry"),
-                             new_entry_qname + 2);
-            new_entry->namespace_uri(internal::uri<>::microsoft::types(),
-                                     internal::uri<>::microsoft::types_size);
-            new_entry->value(new_entry_value);
+            auto new_entry = &create_node(*addresses, "t:Entry", mail.value());
             auto ptr_to_key = doc->allocate_string("Key");
             auto ptr_to_value = doc->allocate_string(key);
             new_entry->append_attribute(
@@ -9429,7 +9313,6 @@ namespace ews
                 new_entry->append_attribute(
                     doc->allocate_attribute(ptr_to_key, ptr_to_value));
             }
-            addresses->append_node(new_entry);
         }
     };
 
@@ -9647,53 +9530,17 @@ namespace ews
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
         {
-            auto doc = parent.document();
+            EWS_ASSERT(parent.document() &&
+                       "parent node needs to be part of a document");
 
-            EWS_ASSERT(doc && "parent node needs to be part of a document");
-
-            auto ptr_to_qname =
-                doc->allocate_string("t:RelativeYearlyRecurrence");
-            auto pattern_node = doc->allocate_node(rapidxml::node_element);
-            pattern_node->qname(ptr_to_qname,
-                                std::strlen("t:RelativeYearlyRecurrence"),
-                                ptr_to_qname + 2);
-            pattern_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                        internal::uri<>::microsoft::types_size);
-
-            ptr_to_qname = doc->allocate_string("t:DaysOfWeek");
-            auto ptr_to_value = doc->allocate_string(
-                internal::enum_to_str(days_of_week_).c_str());
-            auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:DaysOfWeek"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            pattern_node->append_node(node);
-
-            ptr_to_qname = doc->allocate_string("t:DayOfWeekIndex");
-            ptr_to_value =
-                doc->allocate_string(internal::enum_to_str(index_).c_str());
-            node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:DayOfWeekIndex"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            pattern_node->append_node(node);
-
-            ptr_to_qname = doc->allocate_string("t:Month");
-            ptr_to_value =
-                doc->allocate_string(internal::enum_to_str(month_).c_str());
-            node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:Month"), ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            pattern_node->append_node(node);
-
-            parent.append_node(pattern_node);
-            return *pattern_node;
+            using namespace internal;
+            auto& pattern_node =
+                create_node(parent, "t:RelativeYearlyRecurrence");
+            create_node(pattern_node, "t:DaysOfWeek",
+                        enum_to_str(days_of_week_));
+            create_node(pattern_node, "t:DayOfWeekIndex", enum_to_str(index_));
+            create_node(pattern_node, "t:Month", enum_to_str(month_));
+            return pattern_node;
         }
     };
 
@@ -9745,42 +9592,16 @@ namespace ews
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
         {
-            auto doc = parent.document();
+            using namespace internal;
+            EWS_ASSERT(parent.document() &&
+                       "parent node needs to be part of a document");
 
-            EWS_ASSERT(doc && "parent node needs to be part of a document");
-
-            auto ptr_to_qname =
-                doc->allocate_string("t:AbsoluteYearlyRecurrence");
-            auto pattern_node = doc->allocate_node(rapidxml::node_element);
-            pattern_node->qname(ptr_to_qname,
-                                std::strlen("t:AbsoluteYearlyRecurrence"),
-                                ptr_to_qname + 2);
-            pattern_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                        internal::uri<>::microsoft::types_size);
-
-            ptr_to_qname = doc->allocate_string("t:DayOfMonth");
-            const auto value = std::to_string(day_of_month_);
-            auto ptr_to_value = doc->allocate_string(value.c_str());
-            auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:DayOfMonth"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            pattern_node->append_node(node);
-
-            ptr_to_qname = doc->allocate_string("t:Month");
-            ptr_to_value =
-                doc->allocate_string(internal::enum_to_str(month_).c_str());
-            node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:Month"), ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            pattern_node->append_node(node);
-
-            parent.append_node(pattern_node);
-            return *pattern_node;
+            auto& pattern_node =
+                create_node(parent, "t:AbsoluteYearlyRecurrence");
+            create_node(pattern_node, "t:DayOfMonth",
+                        std::to_string(day_of_month_));
+            create_node(pattern_node, "t:Month", internal::enum_to_str(month_));
+            return pattern_node;
         }
     };
 
@@ -9846,43 +9667,16 @@ namespace ews
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
         {
-            auto doc = parent.document();
+            using internal::create_node;
+            EWS_ASSERT(parent.document() &&
+                       "parent node needs to be part of a document");
 
-            EWS_ASSERT(doc && "parent node needs to be part of a document");
-
-            auto ptr_to_qname =
-                doc->allocate_string("t:AbsoluteMonthlyRecurrence");
-            auto pattern_node = doc->allocate_node(rapidxml::node_element);
-            pattern_node->qname(ptr_to_qname,
-                                std::strlen("t:AbsoluteMonthlyRecurrence"),
-                                ptr_to_qname + 2);
-            pattern_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                        internal::uri<>::microsoft::types_size);
-
-            ptr_to_qname = doc->allocate_string("t:Interval");
-            auto ptr_to_value =
-                doc->allocate_string(std::to_string(interval_).c_str());
-            auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:Interval"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            pattern_node->append_node(node);
-
-            ptr_to_qname = doc->allocate_string("t:DayOfMonth");
-            ptr_to_value =
-                doc->allocate_string(std::to_string(day_of_month_).c_str());
-            node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:DayOfMonth"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            pattern_node->append_node(node);
-
-            parent.append_node(pattern_node);
-            return *pattern_node;
+            auto& pattern_node =
+                create_node(parent, "t:AbsoluteMonthlyRecurrence");
+            create_node(pattern_node, "t:Interval", std::to_string(interval_));
+            create_node(pattern_node, "t:DayOfMonth",
+                        std::to_string(day_of_month_));
+            return pattern_node;
         }
     };
 
@@ -9961,54 +9755,17 @@ namespace ews
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
         {
-            auto doc = parent.document();
-
+            using internal::create_node;
             EWS_ASSERT(doc && "parent node needs to be part of a document");
 
-            auto ptr_to_qname =
-                doc->allocate_string("t:RelativeMonthlyRecurrence");
-            auto pattern_node = doc->allocate_node(rapidxml::node_element);
-            pattern_node->qname(ptr_to_qname,
-                                std::strlen("t:RelativeMonthlyRecurrence"),
-                                ptr_to_qname + 2);
-            pattern_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                        internal::uri<>::microsoft::types_size);
-
-            ptr_to_qname = doc->allocate_string("t:Interval");
-            auto ptr_to_value =
-                doc->allocate_string(std::to_string(interval_).c_str());
-            auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:Interval"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            pattern_node->append_node(node);
-
-            ptr_to_qname = doc->allocate_string("t:DaysOfWeek");
-            ptr_to_value = doc->allocate_string(
-                internal::enum_to_str(days_of_week_).c_str());
-            node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:DaysOfWeek"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            pattern_node->append_node(node);
-
-            ptr_to_qname = doc->allocate_string("t:DayOfWeekIndex");
-            ptr_to_value =
-                doc->allocate_string(internal::enum_to_str(index_).c_str());
-            node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:DayOfWeekIndex"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            pattern_node->append_node(node);
-
-            parent.append_node(pattern_node);
-            return *pattern_node;
+            auto& pattern_node =
+                create_node(parent, "t:RelativeMonthlyRecurrence");
+            create_node(pattern_node, "t:Interval", std::to_string(interval_));
+            create_node(pattern_node, "t:DaysOfWeek",
+                        internal::enum_to_str(days_of_week_));
+            create_node(pattern_node, "t:DayOfWeekIndex",
+                        internal::enum_to_str(index_));
+            return pattern_node;
         }
     };
 
@@ -10094,59 +9851,21 @@ namespace ews
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
         {
             using namespace internal;
+            EWS_ASSERT(parent.document() &&
+                       "parent node needs to be part of a document");
 
-            auto doc = parent.document();
-
-            EWS_ASSERT(doc && "parent node needs to be part of a document");
-
-            auto ptr_to_qname = doc->allocate_string("t:WeeklyRecurrence");
-            auto pattern_node = doc->allocate_node(rapidxml::node_element);
-            pattern_node->qname(ptr_to_qname, std::strlen("t:WeeklyRecurrence"),
-                                ptr_to_qname + 2);
-            pattern_node->namespace_uri(uri<>::microsoft::types(),
-                                        uri<>::microsoft::types_size);
-
-            ptr_to_qname = doc->allocate_string("t:Interval");
-            auto ptr_to_value =
-                doc->allocate_string(std::to_string(interval_).c_str());
-            auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:Interval"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(uri<>::microsoft::types(),
-                                uri<>::microsoft::types_size);
-            pattern_node->append_node(node);
-
+            auto& pattern_node = create_node(parent, "t:WeeklyRecurrence");
+            create_node(pattern_node, "t:Interval", std::to_string(interval_));
             std::string value;
             for (const auto& day : days_of_week_)
             {
                 value += enum_to_str(day) + " ";
             }
-            ptr_to_qname = doc->allocate_string("t:DaysOfWeek");
-            ptr_to_value =
-                doc->allocate_string(value.c_str(), value.length() - 1);
-            ptr_to_value[value.length() - 1] = '\0';
-            node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:DaysOfWeek"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(uri<>::microsoft::types(),
-                                uri<>::microsoft::types_size);
-            pattern_node->append_node(node);
-
-            ptr_to_qname = doc->allocate_string("t:FirstDayOfWeek");
-            ptr_to_value =
-                doc->allocate_string(enum_to_str(first_day_of_week_).c_str());
-            node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:FirstDayOfWeek"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(uri<>::microsoft::types(),
-                                uri<>::microsoft::types_size);
-            pattern_node->append_node(node);
-
-            parent.append_node(pattern_node);
-            return *pattern_node;
+            value.pop_back();
+            create_node(pattern_node, "t:DaysOfWeek", value);
+            create_node(pattern_node, "t:FirstDayOfWeek",
+                        enum_to_str(first_day_of_week_));
+            return pattern_node;
         }
     };
 
@@ -10185,30 +9904,13 @@ namespace ews
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
         {
-            auto doc = parent.document();
+            using internal::create_node;
+            EWS_ASSERT(parent.document() &&
+                       "parent node needs to be part of a document");
 
-            EWS_ASSERT(doc && "parent node needs to be part of a document");
-
-            auto ptr_to_qname = doc->allocate_string("t:DailyRecurrence");
-            auto pattern_node = doc->allocate_node(rapidxml::node_element);
-            pattern_node->qname(ptr_to_qname, std::strlen("t:DailyRecurrence"),
-                                ptr_to_qname + 2);
-            pattern_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                        internal::uri<>::microsoft::types_size);
-
-            ptr_to_qname = doc->allocate_string("t:Interval");
-            auto ptr_to_value =
-                doc->allocate_string(std::to_string(interval_).c_str());
-            auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:Interval"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            pattern_node->append_node(node);
-
-            parent.append_node(pattern_node);
-            return *pattern_node;
+            auto& pattern_node = create_node(parent, "t:DailyRecurrence");
+            create_node(pattern_node, "t:Interval", std::to_string(interval_));
+            return pattern_node;
         }
     };
 
@@ -10307,30 +10009,13 @@ namespace ews
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
         {
-            auto doc = parent.document();
+            using namespace internal;
+            EWS_ASSERT(parent.document() &&
+                       "parent node needs to be part of a document");
 
-            EWS_ASSERT(doc && "parent node needs to be part of a document");
-
-            auto ptr_to_qname = doc->allocate_string("t:NoEndRecurrence");
-            auto range_node = doc->allocate_node(rapidxml::node_element);
-            range_node->qname(ptr_to_qname, std::strlen("t:NoEndRecurrence"),
-                              ptr_to_qname + 2);
-            range_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                      internal::uri<>::microsoft::types_size);
-
-            ptr_to_qname = doc->allocate_string("t:StartDate");
-            auto ptr_to_value =
-                doc->allocate_string(start_date_.to_string().c_str());
-            auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:StartDate"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            range_node->append_node(node);
-
-            parent.append_node(range_node);
-            return *range_node;
+            auto& pattern_node = create_node(parent, "t:NoEndRecurrence");
+            create_node(pattern_node, "t:StartDate", start_date_.to_string());
+            return pattern_node;
         }
     };
 
@@ -10381,40 +10066,14 @@ namespace ews
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
         {
-            auto doc = parent.document();
+            using internal::create_node;
+            EWS_ASSERT(parent.document() &&
+                       "parent node needs to be part of a document");
 
-            EWS_ASSERT(doc && "parent node needs to be part of a document");
-
-            auto ptr_to_qname = doc->allocate_string("t:EndDateRecurrence");
-            auto range_node = doc->allocate_node(rapidxml::node_element);
-            range_node->qname(ptr_to_qname, std::strlen("t:EndDateRecurrence"),
-                              ptr_to_qname + 2);
-            range_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                      internal::uri<>::microsoft::types_size);
-
-            ptr_to_qname = doc->allocate_string("t:StartDate");
-            auto ptr_to_value =
-                doc->allocate_string(start_date_.to_string().c_str());
-            auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:StartDate"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            range_node->append_node(node);
-
-            ptr_to_qname = doc->allocate_string("t:EndDate");
-            ptr_to_value = doc->allocate_string(end_date_.to_string().c_str());
-            node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:EndDate"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            range_node->append_node(node);
-
-            parent.append_node(range_node);
-            return *range_node;
+            auto& pattern_node = create_node(parent, "t:EndDateRecurrence");
+            create_node(pattern_node, "t:StartDate", start_date_.to_string());
+            create_node(pattern_node, "t:EndDate", end_date_.to_string());
+            return pattern_node;
         }
     };
 
@@ -10473,41 +10132,15 @@ namespace ews
         rapidxml::xml_node<>&
         to_xml_element_impl(rapidxml::xml_node<>& parent) const override
         {
-            auto doc = parent.document();
+            using namespace internal;
+            EWS_ASSERT(parent.document() &&
+                       "parent node needs to be part of a document");
 
-            EWS_ASSERT(doc && "parent node needs to be part of a document");
-
-            auto ptr_to_qname = doc->allocate_string("t:NumberedRecurrence");
-            auto range_node = doc->allocate_node(rapidxml::node_element);
-            range_node->qname(ptr_to_qname, std::strlen("t:NumberedRecurrence"),
-                              ptr_to_qname + 2);
-            range_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                      internal::uri<>::microsoft::types_size);
-
-            ptr_to_qname = doc->allocate_string("t:StartDate");
-            auto ptr_to_value =
-                doc->allocate_string(start_date_.to_string().c_str());
-            auto node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:StartDate"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            range_node->append_node(node);
-
-            ptr_to_qname = doc->allocate_string("t:NumberOfOccurrences");
-            ptr_to_value = doc->allocate_string(
-                std::to_string(no_of_occurrences_).c_str());
-            node = doc->allocate_node(rapidxml::node_element);
-            node->qname(ptr_to_qname, std::strlen("t:NumberOfOccurrences"),
-                        ptr_to_qname + 2);
-            node->value(ptr_to_value);
-            node->namespace_uri(internal::uri<>::microsoft::types(),
-                                internal::uri<>::microsoft::types_size);
-            range_node->append_node(node);
-
-            parent.append_node(range_node);
-            return *range_node;
+            auto& pattern_node = create_node(parent, "t:NumberedRecurrence");
+            create_node(pattern_node, "t:StartDate", start_date_.to_string());
+            create_node(pattern_node, "t:NumberOfOccurrences",
+                        std::to_string(no_of_occurrences_));
+            return pattern_node;
         }
     };
 
@@ -10913,14 +10546,7 @@ namespace ews
                 doc->remove_node(recurrence_node);
             }
 
-            auto ptr_to_qname = doc->allocate_string("t:Recurrence");
-            recurrence_node = doc->allocate_node(rapidxml::node_element);
-            recurrence_node->qname(ptr_to_qname, std::strlen("t:Recurrence"),
-                                   ptr_to_qname + 2);
-            recurrence_node->namespace_uri(
-                internal::uri<>::microsoft::types(),
-                internal::uri<>::microsoft::types_size);
-            doc->append_node(recurrence_node);
+            recurrence_node = &internal::create_node(*doc, "t:Recurrence");
 
             pattern.to_xml_element(*recurrence_node);
             range.to_xml_element(*recurrence_node);
@@ -11122,16 +10748,8 @@ namespace ews
                 doc->remove_node(attendees_node);
             }
 
-            const auto tmp = std::string("t:") + node_name;
-            auto ptr_to_qname = doc->allocate_string(tmp.c_str());
-            attendees_node = doc->allocate_node(rapidxml::node_element);
-            attendees_node->qname(ptr_to_qname, std::strlen(node_name) + 2,
-                                  ptr_to_qname + 2);
-            attendees_node->namespace_uri(
-                internal::uri<>::microsoft::types(),
-                internal::uri<>::microsoft::types_size);
-
-            doc->append_node(attendees_node);
+            attendees_node =
+                &internal::create_node(*doc, "t:" + std::string(node_name));
 
             for (const auto& a : attendees)
             {
@@ -11197,15 +10815,7 @@ namespace ews
                 doc->remove_node(to_recipients_node);
             }
 
-            auto ptr_to_qname = doc->allocate_string("t:ToRecipients");
-            to_recipients_node = doc->allocate_node(rapidxml::node_element);
-            to_recipients_node->qname(
-                ptr_to_qname, std::strlen("t:ToRecipients"), ptr_to_qname + 2);
-            to_recipients_node->namespace_uri(
-                internal::uri<>::microsoft::types(),
-                internal::uri<>::microsoft::types_size);
-
-            doc->append_node(to_recipients_node);
+            to_recipients_node = &internal::create_node(*doc, "t:ToRecipients");
 
             for (const auto& recipient : recipients)
             {
@@ -13561,15 +13171,11 @@ namespace ews
         auto obj = attachment();
         obj.type_ = type::item;
 
-        auto doc = obj.xml_.document();
-        auto str = doc->allocate_string("t:ItemAttachment");
-        auto attachment_node = doc->allocate_node(rapidxml::node_element);
-        attachment_node->qname(str, std::strlen(str), str + 2);
-        attachment_node->namespace_uri(internal::uri<>::microsoft::types(),
-                                       internal::uri<>::microsoft::types_size);
-        doc->append_node(attachment_node);
-        append_child_node(attachment_node, "t:Name", name);
-        props.append_to(*attachment_node);
+        using internal::create_node;
+        auto& attachment_node =
+            create_node(*obj.xml_.document(), "t:ItemAttachment");
+        create_node(attachment_node, "t:Name", name);
+        props.append_to(attachment_node);
 
         return obj;
     }
