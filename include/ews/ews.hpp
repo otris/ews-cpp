@@ -8586,6 +8586,7 @@ namespace ews
             return vep;
         }
 
+        //! Sets an extended property of an item
         void set_extended_property(const extended_property& extended_prop)
         {
             auto doc = xml().document();
