@@ -4817,6 +4817,11 @@ namespace ews
                 creds.certify(this);
             }
 
+            void set_timeout(long timeout)
+            {
+                curl_easy_setopt(handle_.get(), CURLOPT_TIMEOUT, timeout);
+            }
+
 #ifdef EWS_HAS_VARIADIC_TEMPLATES
             // Small wrapper around curl_easy_setopt(3).
             //
@@ -5032,10 +5037,8 @@ namespace ews
 #ifdef EWS_ENABLE_VERBOSE
             std::cerr << request_stream.str() << std::endl;
 #endif
-
             return handler.send(request_stream.str());
         }
-
 // Makes a raw SOAP request.
 //
 // url: The URL of the server to talk to.
@@ -7763,7 +7766,6 @@ namespace ews
             {
                 internal::create_node(*target_node, "t:String", category);
             }
-
         }
 
         //! \brief Returns the categories associated with this item.
