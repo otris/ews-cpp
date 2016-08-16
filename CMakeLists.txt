@@ -285,12 +285,9 @@ add_example(find_tasks)
 add_example(raw_soap_request)
 add_example(update_contact)
 
-find_package(PythonInterp)
-
+find_package(PythonInterp QUIET)
 if(PYTHONINTERP_FOUND)
-    if(${PYTHON_VERSION_MAJOR} STREQUAL "3")
-        add_definitions(-DEWS_HAS_PYTHON)
-    endif()
+    add_definitions(-DEWS_HAS_PYTHON_EXECUTABLE)
 endif()
 
 add_executable(tests
