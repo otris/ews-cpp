@@ -225,9 +225,8 @@ namespace tests
     {
         const auto path = assets_dir() / "ballmer_peak.png";
         auto attachment = ews::attachment::from_file(path.string(), "image/png",
-                                                   "Ballmer Peak");
+                                                     "Ballmer Peak");
         const auto xml = attachment.to_xml();
-
         EXPECT_FALSE(xml.empty());
         const char* prefix = "<t:FileAttachment>";
         EXPECT_TRUE(
