@@ -44,7 +44,7 @@ namespace tests
         try
         {
             ews::internal::http_request r("http://127.0.0.1:8080/");
-            r.set_timeout(1);
+            r.set_timeout(std::chrono::seconds(1));
 
             r.send("");
         }
@@ -63,7 +63,7 @@ namespace tests
         try
         {
             ews::internal::http_request r("http://127.0.0.1:8080/");
-            r.set_timeout(30);
+            r.set_timeout(std::chrono::seconds(30));
 
             r.send("");
         }

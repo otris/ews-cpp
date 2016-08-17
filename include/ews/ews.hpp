@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -4817,9 +4818,10 @@ namespace ews
                 creds.certify(this);
             }
 
-            void set_timeout(long timeout)
+            void set_timeout(std::chrono::seconds timeout)
             {
-                curl_easy_setopt(handle_.get(), CURLOPT_TIMEOUT, timeout);
+                curl_easy_setopt(handle_.get(), CURLOPT_TIMEOUT,
+                                 timeout.count());
             }
 
 #ifdef EWS_HAS_VARIADIC_TEMPLATES
@@ -12274,6 +12276,14 @@ namespace ews
         void set_request_server_version(server_version vers)
         {
             server_version_ = internal::enum_to_str(vers);
+        }
+
+        //! \brief Sets a timeout for short duration (<=2 Seconds)
+        //! if you try to use a longer timeout it will probably crash
+        //! if you set the timeout to 0 the standart behaviour will be restored.
+        void set_timeout(std::chrono::seconds d)
+        {
+            request_handler_.set_timeout(d);
         }
 
         //! \brief Returns the schema version that is used in requests by this
