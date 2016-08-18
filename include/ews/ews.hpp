@@ -12278,9 +12278,13 @@ namespace ews
             server_version_ = internal::enum_to_str(vers);
         }
 
-        //! \brief Sets a timeout for short duration (<=2 Seconds)
-        //! if you try to use a longer timeout it will probably crash
-        //! if you set the timeout to 0 the standart behaviour will be restored.
+        //! \brief Sets maximum time the request is allowed to take.
+        //!
+        //! This has been tested and works for short timeout values ( \c <2),
+        //! longer periods seem not to work.
+        //!
+        //! To remove any hard limit on a network communication (the default),
+        //! set the timeout to \c 0.
         void set_timeout(std::chrono::seconds d)
         {
             request_handler_.set_timeout(d);
