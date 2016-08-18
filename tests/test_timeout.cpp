@@ -33,13 +33,13 @@ namespace tests
         }
     }
 
-    class TimeoutTest : public TemporaryDirectoryFixture
+    class TimeoutTest : public BaseFixture
     {
     };
 
     TEST_F(TimeoutTest, ReachTimeout)
     {
-        timeout_test::start(assets_dir().string());
+        timeout_test::start(assets());
         bool reached_timeout = false;
         try
         {
@@ -57,7 +57,7 @@ namespace tests
 
     TEST_F(TimeoutTest, NotReachTimeout)
     {
-        timeout_test::start(assets_dir().string());
+        timeout_test::start(assets());
 
         bool reached_timeout = false;
         try
@@ -76,7 +76,7 @@ namespace tests
 
     TEST_F(TimeoutTest, NoTimeout)
     {
-        timeout_test::start(assets_dir().string());
+        timeout_test::start(assets());
 
         bool reached_timeout = false;
         try
