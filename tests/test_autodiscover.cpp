@@ -25,7 +25,7 @@
 
 namespace tests
 {
-    class AutodiscoverTest : public AssetsFixture
+    class AutodiscoverTest : public TemporaryDirectoryFixture
     {
     public:
         AutodiscoverTest() : creds_("", ""), smtp_address_() {}
@@ -49,7 +49,7 @@ namespace tests
 
         void SetUp()
         {
-            AssetsFixture::SetUp();
+            TemporaryDirectoryFixture::SetUp();
             creds_ = ews::basic_credentials("dduck@duckburg.onmicrosoft.com",
                                             "quack");
             smtp_address_ = "dduck@duckburg.onmicrosoft.com";

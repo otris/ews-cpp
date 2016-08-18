@@ -33,7 +33,7 @@ namespace tests
         }
     }
 
-    class TimeoutTest : public AssetsFixture
+    class TimeoutTest : public TemporaryDirectoryFixture
     {
     };
 

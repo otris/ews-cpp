@@ -152,12 +152,23 @@ namespace tests
     };
 
     // Per-test-case set-up and tear-down
-    class BaseFixture : public ::testing::Test
+    class BaseFixture : public testing::Test
     {
+    public:
+        BaseFixture()
+            : assets_(ews::test::global_data::instance().assets_dir)
+        {
+        }
+
+        const std::string& assets() const { return assets_; }
+
     protected:
         static void SetUpTestCase() { ews::set_up(); }
 
         static void TearDownTestCase() { ews::tear_down(); }
+
+    private:
+        std::string assets_;
     };
 
     class FakeServiceFixture : public BaseFixture
@@ -213,14 +224,20 @@ namespace tests
     };
 
     // Set-up and tear down a service object
-    class ServiceFixture : public BaseFixture
+    class ServiceMixin
     {
     public:
-#ifdef EWS_HAS_DEFAULT_AN_DELETE
-        virtual ~ServiceFixture() = default;
+        ServiceMixin()
+        {
+            const auto& env = ews::test::global_data::instance().env;
+#ifdef EWS_HAS_MAKE_UNIQUE
+            service_ptr_ = std::make_unique<ews::service>(
+                env.server_uri, env.domain, env.username, env.password);
 #else
-        virtual ~ServiceFixture() {}
+            service_ptr_ = std::unique_ptr<ews::service>(new ews::service(
+                env.server_uri, env.domain, env.username, env.password));
 #endif
+        }
 
         ews::service& service()
         {
@@ -232,41 +249,21 @@ namespace tests
             return *service_ptr_;
         }
 
-    protected:
-        virtual void SetUp()
-        {
-            BaseFixture::SetUp();
-            const auto& env = ews::test::global_data::instance().env;
-#ifdef EWS_HAS_MAKE_UNIQUE
-            service_ptr_ = std::make_unique<ews::service>(
-                env.server_uri, env.domain, env.username, env.password);
-#else
-            service_ptr_ = std::unique_ptr<ews::service>(new ews::service(
-                env.server_uri, env.domain, env.username, env.password));
-#endif
-        }
-
-        virtual void TearDown()
-        {
-            service_ptr_.reset();
-            BaseFixture::TearDown();
-        }
-
     private:
         std::unique_ptr<ews::service> service_ptr_;
     };
 
-    class ItemTest : public ServiceFixture
+    class ItemTest : public BaseFixture, public ServiceMixin
     {
     };
 
     // Create and remove a task on the server
-    class TaskTest : public ServiceFixture
+    class TaskTest : public BaseFixture, public ServiceMixin
     {
     public:
         void SetUp()
         {
-            ServiceFixture::SetUp();
+            BaseFixture::SetUp();
 
             task_.set_subject("Get some milk");
             task_.set_body(ews::body("Get some milk from the store"));
@@ -282,7 +279,7 @@ namespace tests
                 std::move(task_), ews::delete_type::hard_delete,
                 ews::affected_task_occurrences::all_occurrences);
 
-            ServiceFixture::TearDown();
+            BaseFixture::TearDown();
         }
 
         ews::task& test_task() { return task_; }
@@ -292,12 +289,12 @@ namespace tests
     };
 
     // Create and remove a contact on the server
-    class ContactTest : public ServiceFixture
+    class ContactTest : public BaseFixture, public ServiceMixin
     {
     public:
         void SetUp()
         {
-            ServiceFixture::SetUp();
+            BaseFixture::SetUp();
 
             contact_.set_given_name("Minnie");
             contact_.set_surname("Mouse");
@@ -309,7 +306,7 @@ namespace tests
         {
             service().delete_contact(std::move(contact_));
 
-            ServiceFixture::TearDown();
+            BaseFixture::TearDown();
         }
 
         ews::contact& test_contact() { return contact_; }
@@ -318,12 +315,12 @@ namespace tests
         ews::contact contact_;
     };
 
-    class MessageTest : public ServiceFixture
+    class MessageTest : public BaseFixture, public ServiceMixin
     {
     public:
         void SetUp()
         {
-            ServiceFixture::SetUp();
+            BaseFixture::SetUp();
 
             message_.set_subject("Meet the Fockers");
             const auto item_id = service().create_item(
@@ -334,7 +331,7 @@ namespace tests
         void TearDown()
         {
             service().delete_message(std::move(message_));
-            ServiceFixture::TearDown();
+            BaseFixture::TearDown();
         }
 
         ews::message& test_message() { return message_; }
@@ -343,12 +340,12 @@ namespace tests
         ews::message message_;
     };
 
-    class CalendarItemTest : public ServiceFixture
+    class CalendarItemTest : public BaseFixture, public ServiceMixin
     {
     public:
         void SetUp()
         {
-            ServiceFixture::SetUp();
+            BaseFixture::SetUp();
 
             calitem_.set_subject("Meet the Fockers");
             calitem_.set_start(ews::date_time("2004-12-25T10:00:00.000Z"));
@@ -361,7 +358,7 @@ namespace tests
         {
             service().delete_calendar_item(std::move(calitem_));
 
-            ServiceFixture::TearDown();
+            BaseFixture::TearDown();
         }
 
         ews::calendar_item& test_calendar_item() { return calitem_; }
@@ -370,12 +367,12 @@ namespace tests
         ews::calendar_item calitem_;
     };
 
-    class AttachmentTest : public ServiceFixture
+    class AttachmentTest : public BaseFixture, public ServiceMixin
     {
     public:
         void SetUp()
         {
-            ServiceFixture::SetUp();
+            BaseFixture::SetUp();
 
             auto msg = ews::message();
             msg.set_subject("Honorable Minister of Finance - Release Funds");
@@ -392,7 +389,7 @@ namespace tests
         {
             service().delete_message(std::move(message_));
 
-            ServiceFixture::TearDown();
+            BaseFixture::TearDown();
         }
 
         ews::message& test_message() { return message_; }
@@ -402,14 +399,9 @@ namespace tests
     };
 
 #ifdef EWS_USE_BOOST_LIBRARY
-    class AssetsFixture : public BaseFixture
+    class TemporaryDirectoryFixture : public BaseFixture
     {
     public:
-        AssetsFixture()
-            : assetsdir_(ews::test::global_data::instance().assets_dir)
-        {
-        }
-
         void SetUp()
         {
             BaseFixture::SetUp();
@@ -433,12 +425,14 @@ namespace tests
             BaseFixture::TearDown();
         }
 
-        const boost::filesystem::path& assets_dir() const { return assetsdir_; }
-
         const boost::filesystem::path& cwd() const { return workingdir_; }
 
+        const boost::filesystem::path assets_dir() const
+        {
+            return boost::filesystem::path(assets());
+        }
+
     private:
-        boost::filesystem::path assetsdir_;
         boost::filesystem::path olddir_;
         boost::filesystem::path workingdir_;
     };
