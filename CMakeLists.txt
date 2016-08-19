@@ -42,6 +42,16 @@ if(ENABLE_ASAN)
     endif()
 endif()
 
+set(GTEST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/gtest/googletest)
+set(GTEST_INCLUDE_DIR ${GTEST_ROOT}/include)
+set(GTEST_LIBRARIES gtest)
+if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+    set(gtest_force_shared_crt ON CACHE BOOL
+        "Use shared (DLL) run-time lib even when Google Test is built as static lib.")
+endif()
+add_subdirectory(${GTEST_ROOT})
+include_directories(${GTEST_INCLUDE_DIR})
+
 set(GNUCXX_MINIMUM_VERSION "4.8")
 set(CLANGCXX_MINIMUM_VERSION "3.5")
 set(CXX_STANDARD_TAG "c++14")
@@ -137,16 +147,6 @@ set(rapidxml_SOURCES
 # libcurl 7.35 is packed for Ubuntu 14.04 LTS, 7.29 for RHEL7
 find_package(CURL 7.29 REQUIRED)
 include_directories(${ews_INCLUDE_DIR} ${CURL_INCLUDE_DIRS})
-
-set(GTEST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/gtest/googletest)
-set(GTEST_INCLUDE_DIR ${GTEST_ROOT}/include)
-set(GTEST_LIBRARIES gtest)
-if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-    set(gtest_force_shared_crt ON CACHE BOOL
-        "Use shared (DLL) run-time lib even when Google Test is built as static lib.")
-endif()
-add_subdirectory(${GTEST_ROOT})
-include_directories(${GTEST_INCLUDE_DIR})
 
 # Boost is optional as it is only used by some test cases
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
