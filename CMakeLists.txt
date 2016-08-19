@@ -263,34 +263,6 @@ if(HAS_INITIALIZER_LISTS)
     add_definitions(-DEWS_HAS_INITIALIZER_LISTS)
 endif()
 
-add_executable(tests
-    ${ews_SOURCES}
-    ${rapidxml_SOURCES}
-    tests/fixtures.hpp
-    tests/main.cpp
-    tests/test_attachments.cpp
-    tests/test_autodiscover.cpp
-    tests/test_calendar_items.cpp
-    tests/test_contacts.cpp
-    tests/test_folders.cpp
-    tests/test_internals.cpp
-    tests/test_items.cpp
-    tests/test_messages.cpp
-    tests/test_restrictions.cpp
-    tests/test_service.cpp
-    tests/test_tasks.cpp)
-
-if(Boost_FOUND)
-    target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES}
-        ${Boost_LIBRARIES})
-else()
-    target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
-endif()
-set_target_properties(tests PROPERTIES
-    LINKER_LANGUAGE CXX
-    COMPILE_FLAGS "${SANITIZE_CXXFLAGS}"
-    LINK_FLAGS "${SANITIZE_LDFLAGS}")
-
 # Helper function for all those example executables
 function(add_example EXAMPLE_NAME)
     add_executable(${EXAMPLE_NAME}
@@ -312,6 +284,40 @@ add_example(find_unread_messages)
 add_example(find_tasks)
 add_example(raw_soap_request)
 add_example(update_contact)
+
+find_package(PythonInterp QUIET)
+if(PYTHONINTERP_FOUND)
+    add_definitions(-DEWS_HAS_PYTHON_EXECUTABLE)
+endif()
+
+add_executable(tests
+    ${ews_SOURCES}
+    ${rapidxml_SOURCES}
+    tests/fixtures.hpp
+    tests/main.cpp
+    tests/test_attachments.cpp
+    tests/test_autodiscover.cpp
+    tests/test_calendar_items.cpp
+    tests/test_contacts.cpp
+    tests/test_folders.cpp
+    tests/test_internals.cpp
+    tests/test_items.cpp
+    tests/test_messages.cpp
+    tests/test_restrictions.cpp
+    tests/test_service.cpp
+    tests/test_tasks.cpp
+    tests/test_timeout.cpp)
+
+if(Boost_FOUND)
+    target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES}
+        ${Boost_LIBRARIES})
+else()
+    target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
+endif()
+set_target_properties(tests PROPERTIES
+    LINKER_LANGUAGE CXX
+    COMPILE_FLAGS "${SANITIZE_CXXFLAGS}"
+    LINK_FLAGS "${SANITIZE_LDFLAGS}")
 
 # Target to generate API documentation with Doxygen
 find_package(Doxygen)

@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -4817,6 +4818,12 @@ namespace ews
                 creds.certify(this);
             }
 
+            void set_timeout(std::chrono::seconds timeout)
+            {
+                curl_easy_setopt(handle_.get(), CURLOPT_TIMEOUT,
+                                 timeout.count());
+            }
+
 #ifdef EWS_HAS_VARIADIC_TEMPLATES
             // Small wrapper around curl_easy_setopt(3).
             //
@@ -5032,10 +5039,8 @@ namespace ews
 #ifdef EWS_ENABLE_VERBOSE
             std::cerr << request_stream.str() << std::endl;
 #endif
-
             return handler.send(request_stream.str());
         }
-
 // Makes a raw SOAP request.
 //
 // url: The URL of the server to talk to.
@@ -7763,7 +7768,6 @@ namespace ews
             {
                 internal::create_node(*target_node, "t:String", category);
             }
-
         }
 
         //! \brief Returns the categories associated with this item.
@@ -12272,6 +12276,18 @@ namespace ews
         void set_request_server_version(server_version vers)
         {
             server_version_ = internal::enum_to_str(vers);
+        }
+
+        //! \brief Sets maximum time the request is allowed to take.
+        //!
+        //! This has been tested and works for short timeout values ( \c <2),
+        //! longer periods seem not to work.
+        //!
+        //! To remove any hard limit on a network communication (the default),
+        //! set the timeout to \c 0.
+        void set_timeout(std::chrono::seconds d)
+        {
+            request_handler_.set_timeout(d);
         }
 
         //! \brief Returns the schema version that is used in requests by this

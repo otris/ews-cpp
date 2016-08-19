@@ -194,7 +194,12 @@ namespace tests
     }
 
 #ifdef EWS_USE_BOOST_LIBRARY
-    TEST_F(AssetsFixture, ItemAttachmentFromXML)
+    class FileAttachmentTest : public TemporaryDirectoryFixture,
+                               public ServiceMixin
+    {
+    };
+
+    TEST_F(FileAttachmentTest, ItemAttachmentFromXML)
     {
         using ews::internal::get_element_by_qname;
 
@@ -221,7 +226,7 @@ namespace tests
         EXPECT_STREQ(expected_xml.c_str(), actual_xml.c_str());
     }
 
-    TEST_F(AssetsFixture, ToXML)
+    TEST_F(FileAttachmentTest, ToXML)
     {
         const auto path = assets_dir() / "ballmer_peak.png";
         auto attachment = ews::attachment::from_file(path.string(), "image/png",
@@ -233,7 +238,7 @@ namespace tests
             std::equal(prefix, prefix + std::strlen(prefix), begin(xml)));
     }
 
-    TEST_F(AssetsFixture, WriteContentToFileDoesNothingIfItemAttachment)
+    TEST_F(FileAttachmentTest, WriteContentToFileDoesNothingIfItemAttachment)
     {
         const auto target_path = cwd() / "output.bin";
         auto item = ews::item();
@@ -244,7 +249,7 @@ namespace tests
         EXPECT_FALSE(boost::filesystem::exists(target_path));
     }
 
-    TEST_F(AssetsFixture, WriteContentToFile)
+    TEST_F(FileAttachmentTest, WriteContentToFile)
     {
         using uri = ews::internal::uri<>;
         using ews::internal::get_element_by_qname;
@@ -268,7 +273,7 @@ namespace tests
         EXPECT_TRUE(boost::filesystem::exists(target_path));
     }
 
-    TEST_F(AssetsFixture, WriteContentToFileThrowsOnEmptyFileName)
+    TEST_F(FileAttachmentTest, WriteContentToFileThrowsOnEmptyFileName)
     {
         const auto path = assets_dir() / "ballmer_peak.png";
         auto attachment = ews::attachment::from_file(path.string(), "image/png",
@@ -281,7 +286,7 @@ namespace tests
             ews::exception);
     }
 
-    TEST_F(AssetsFixture, WriteContentToFileExceptionMessage)
+    TEST_F(FileAttachmentTest, WriteContentToFileExceptionMessage)
     {
         const auto path = assets_dir() / "ballmer_peak.png";
         auto attachment = ews::attachment::from_file(path.string(), "image/png",
@@ -298,7 +303,7 @@ namespace tests
         }
     }
 
-    TEST_F(AssetsFixture, CreateFromFile)
+    TEST_F(FileAttachmentTest, CreateFromFile)
     {
         const auto path = assets_dir() / "ballmer_peak.png";
         auto file_attachment = ews::attachment::from_file(
@@ -311,7 +316,7 @@ namespace tests
         EXPECT_EQ(93525U, file_attachment.content_size());
     }
 
-    TEST_F(AssetsFixture, CreateFromFileThrowsIfFileDoesNotExists)
+    TEST_F(FileAttachmentTest, CreateFromFileThrowsIfFileDoesNotExists)
     {
         const auto path = assets_dir() / "unlikely_to_exist.txt";
         EXPECT_THROW(
@@ -322,7 +327,7 @@ namespace tests
             ews::exception);
     }
 
-    TEST_F(AssetsFixture, CreateFromFileExceptionMessage)
+    TEST_F(FileAttachmentTest, CreateFromFileExceptionMessage)
     {
         const auto path = assets_dir() / "unlikely_to_exist.txt";
         try
@@ -337,7 +342,7 @@ namespace tests
         }
     }
 
-    TEST_F(AssetsFixture, FileAttachmentFromXML)
+    TEST_F(FileAttachmentTest, FileAttachmentFromXML)
     {
         using ews::internal::get_element_by_qname;
 
@@ -358,48 +363,18 @@ namespace tests
         EXPECT_EQ(0U, obj.content_size());
     }
 
-    class FileAttachmentTest : public AttachmentTest
-    {
-    public:
-        FileAttachmentTest()
-            : assetsdir_(ews::test::global_data::instance().assets_dir)
-        {
-        }
-
-        void SetUp()
-        {
-            AttachmentTest::SetUp();
-
-            olddir_ = boost::filesystem::current_path();
-            workingdir_ = boost::filesystem::unique_path(
-                boost::filesystem::temp_directory_path() /
-                "%%%%-%%%%-%%%%-%%%%");
-            ASSERT_TRUE(boost::filesystem::create_directory(workingdir_))
-                << "Unable to create temporary working directory";
-            boost::filesystem::current_path(workingdir_);
-        }
-
-        void TearDown()
-        {
-            EXPECT_TRUE(boost::filesystem::is_empty(workingdir_))
-                << "Temporary directory not empty on TearDown";
-            boost::filesystem::current_path(olddir_);
-            boost::filesystem::remove_all(workingdir_);
-
-            AttachmentTest::TearDown();
-        }
-
-        const boost::filesystem::path& assets_dir() const { return assetsdir_; }
-
-    private:
-        boost::filesystem::path assetsdir_;
-        boost::filesystem::path olddir_;
-        boost::filesystem::path workingdir_;
-    };
-
     TEST_F(FileAttachmentTest, CreateAndDeleteFileAttachmentOnServer)
     {
-        auto& msg = test_message();
+        auto msg = ews::message();
+        msg.set_subject("Honorable Minister of Finance - Release Funds");
+        std::vector<ews::mailbox> recipients;
+        recipients.push_back(
+            ews::mailbox("udom.emmanuel@zenith-bank.com.ng"));
+        msg.set_to_recipients(recipients);
+        auto item_id =
+            service().create_item(msg, ews::message_disposition::save_only);
+        msg = service().get_message(item_id);
+
         const auto path = assets_dir() / "ballmer_peak.png";
 
         auto file_attachment = ews::attachment::from_file(
