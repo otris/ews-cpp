@@ -285,6 +285,7 @@ add_example(find_tasks)
 add_example(raw_soap_request)
 add_example(update_contact)
 
+# Python is optional as it is only used by TimeoutTest
 find_package(PythonInterp QUIET)
 if(PYTHONINTERP_FOUND)
     add_definitions(-DEWS_HAS_PYTHON_EXECUTABLE)
