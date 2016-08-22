@@ -9,7 +9,7 @@ you want to submit a pull request.
 
 * You need a [GitHub account](https://github.com/signup/free)
 * Submit an [issue ticket](https://github.com/otris/ews-cpp/issues) for your
-  issue if there is no one yet.
+  issue if there isn't one yet.
   * Describe the issue and include steps to reproduce if it's a bug.
   * Ensure to mention the earliest version that you know is affected.
 * If you are able and want to fix this, fork the repository on GitHub.
@@ -22,7 +22,7 @@ you want to submit a pull request.
   * Create a branch based on master; `git branch
   my-work master` then checkout the new branch with `git
   checkout my-work`.  Please avoid working directly on the `master` branch.
-* Make sure you stick to the coding style that is used already.
+* Make sure you stick to the existing coding style.
 * Prior to committing, stage your changes and run `git clang-format` if it is
   available on your platform.
 * Make commits of logical units and describe them properly. See
@@ -33,9 +33,10 @@ you want to submit a pull request.
 * You should use `git pull --rebase` instead of `git pull` to avoid generating
   a non-linear history in your clone. To configure `git pull` to pass
   `--rebase` by default on the master branch, run the following command:
-  ```
-  git config branch.master.rebase true
-  ```
+
+ ```
+ git config branch.master.rebase true
+ ```
 
 ## Submit Changes
 
