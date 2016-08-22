@@ -6377,13 +6377,13 @@ namespace ews
             auto obj = attachment();
             obj.type_ = type::file;
 
-            auto& attachment_node = create_node(*obj.xml_.document(),
-                                                         "t:FileAttachment");
+            auto& attachment_node =
+                create_node(*obj.xml_.document(), "t:FileAttachment");
             create_node(attachment_node, "t:Name", name);
             create_node(attachment_node, "t:ContentType", content_type);
             create_node(attachment_node, "t:Content", content);
             create_node(attachment_node, "t:Size",
-                              std::to_string(buffer.size()));
+                        std::to_string(buffer.size()));
 
             return obj;
         }
@@ -12235,6 +12235,83 @@ namespace ews
     static_assert(std::is_move_assignable<calendar_view>::value, "");
 #endif
 
+    //! \brief An update to a single property of an item.
+    //!
+    //! Represents either a \<SetItemField>, an \<AppendToItemField>, or a
+    //! \<DeleteItemField> operation.
+    class update final
+    {
+    public:
+        enum class operation
+        {
+            //! \brief Replaces or creates a property.
+            //!
+            //! Replaces data for a property if the property already exists,
+            //! otherwise creates the property and sets its value. The
+            //! operation is only applicable to read-write properties.
+            set_item_field,
+
+            //! \brief Adds data to an existing property.
+            //!
+            //! This works only on some properties, such as
+            //! \li calendar:OptionalAttendees
+            //! \li calendar:RequiredAttendees
+            //! \li calendar:Resources
+            //! \li item:Body
+            //! \li message:ToRecipients
+            //! \li message:CcRecipients
+            //! \li message:BccRecipients
+            //! \li message:ReplyTo
+            append_to_item_field,
+
+            //! \brief Removes a property from an item.
+            //!
+            //! Only applicable to read-write properties.
+            delete_item_field,
+        };
+
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        update() = delete;
+#endif
+
+        // intentionally not explicit
+        update(property prop, operation action = operation::set_item_field)
+            : prop_(std::move(prop)), op_(std::move(action))
+        {
+        }
+
+        //! Serializes this update instance to an XML string
+        std::string to_xml() const
+        {
+            std::string action = "SetItemField";
+            if (op_ == operation::append_to_item_field)
+            {
+                action = "AppendToItemField";
+            }
+            else if (op_ == operation::delete_item_field)
+            {
+                action = "DeleteItemField";
+            }
+            std::stringstream sstr;
+            sstr << "<t:" << action << ">";
+            sstr << prop_.to_xml();
+            sstr << "</t:" << action << ">";
+            return sstr.str();
+        }
+
+    private:
+        property prop_;
+        update::operation op_;
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<update>::value, "");
+    static_assert(std::is_copy_constructible<update>::value, "");
+    static_assert(std::is_copy_assignable<update>::value, "");
+    static_assert(std::is_move_constructible<update>::value, "");
+    static_assert(std::is_move_assignable<update>::value, "");
+#endif
+
     //! \brief Contains the methods to perform operations on an Exchange server
     //!
     //! The service class contains all methods that can be performed on an
@@ -12593,29 +12670,12 @@ namespace ews
             return response_message.items();
         }
 
-        // TODO: currently, this can only do <SetItemField>, need to support
-        // <AppendToItemField> and <DeleteItemField>
         item_id
-        update_item(item_id id, property prop,
+        update_item(item_id id, update change,
                     conflict_resolution res = conflict_resolution::auto_resolve,
                     send_meeting_cancellations cancellations =
                         send_meeting_cancellations::send_to_none)
         {
-            auto item_change_open_tag = "<t:SetItemField>";
-            auto item_change_close_tag = "</t:SetItemField>";
-            if ( //   prop.path() == "calendar:OptionalAttendees"
-                 //|| prop.path() == "calendar:RequiredAttendees"
-                 //|| prop.path() == "calendar:Resources"
-                prop.path() == "item:Body" ||
-                prop.path() == "message:ToRecipients" ||
-                prop.path() == "message:CcRecipients" ||
-                prop.path() == "message:BccRecipients" ||
-                prop.path() == "message:ReplyTo")
-            {
-                item_change_open_tag = "<t:AppendToItemField>";
-                item_change_close_tag = "</t:AppendToItemField>";
-            }
-
             const std::string request_string =
                 "<m:UpdateItem "
                 "MessageDisposition=\"SaveOnly\" "
@@ -12626,11 +12686,52 @@ namespace ews
                 internal::enum_to_str(cancellations) + "\">"
                                                        "<m:ItemChanges>"
                                                        "<t:ItemChange>" +
-                id.to_xml() + "<t:Updates>" + item_change_open_tag +
-                prop.to_xml() + item_change_close_tag + "</t:Updates>"
-                                                        "</t:ItemChange>"
-                                                        "</m:ItemChanges>"
-                                                        "</m:UpdateItem>";
+                id.to_xml() + "<t:Updates>" + change.to_xml() +
+                "</t:Updates>"
+                "</t:ItemChange>"
+                "</m:ItemChanges>"
+                "</m:UpdateItem>";
+
+            auto response = request(request_string);
+            const auto response_message =
+                internal::update_item_response_message::parse(
+                    std::move(response));
+            if (!response_message.success())
+            {
+                throw exchange_error(response_message.get_response_code());
+            }
+            EWS_ASSERT(!response_message.items().empty() &&
+                       "Expected at least one item");
+            return response_message.items().front();
+        }
+
+        item_id
+        update_item(item_id id, const std::vector<update>& changes,
+                    conflict_resolution res = conflict_resolution::auto_resolve,
+                    send_meeting_cancellations cancellations =
+                        send_meeting_cancellations::send_to_none)
+        {
+            std::string request_string =
+                "<m:UpdateItem "
+                "MessageDisposition=\"SaveOnly\" "
+                "ConflictResolution=\"" +
+                internal::enum_to_str(res) +
+                "\" "
+                "SendMeetingInvitationsOrCancellations=\"" +
+                internal::enum_to_str(cancellations) + "\">"
+                                                       "<m:ItemChanges>"
+                                                       "<t:ItemChange>" +
+                id.to_xml() + "<t:Updates>";
+
+            for (const auto& change : changes)
+            {
+                request_string += change.to_xml();
+            }
+
+            request_string += "</t:Updates>"
+                              "</t:ItemChange>"
+                              "</m:ItemChanges>"
+                              "</m:UpdateItem>";
 
             auto response = request(request_string);
             const auto response_message =

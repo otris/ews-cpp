@@ -65,6 +65,7 @@ namespace ews
     class search_expression;
     class soap_fault;
     class task;
+    class update;
     enum class autodiscover_protocol;
     template <typename T> class basic_service;
     bool operator==(const date_time&, const date_time&);
