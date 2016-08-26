@@ -8623,12 +8623,12 @@ namespace ews
                 extended_prop.get_extended_field_uri();
             field_uri.to_xml_element(*top_node);
 
-            rapidxml::xml_node<char>* cover_node = nullptr;
+            rapidxml::xml_node<>* cover_node = nullptr;
             if (extended_prop.get_values().size() > 1)
             {
-                auto ptr_to_value = doc->allocate_string("t:Value");
+                auto ptr_to_values = doc->allocate_string("t:Values");
                 cover_node =
-                    doc->allocate_node(rapidxml::node_element, ptr_to_value);
+                    doc->allocate_node(rapidxml::node_element, ptr_to_values);
                 cover_node->namespace_uri(
                     internal::uri<>::microsoft::types(),
                     internal::uri<>::microsoft::types_size);
