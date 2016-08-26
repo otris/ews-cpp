@@ -7561,11 +7561,13 @@ namespace ews
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
             distinguished_property_set_id() = default;
 #else
-            distinguished_property_set_id(){}
+            distinguished_property_set_id() {}
 #endif
             //! Constructor to create an DistinguishedPropertySetId property
             explicit distinguished_property_set_id(std::string str)
-                : str_(std::move(str)){}
+                : str_(std::move(str))
+            {
+            }
 
             //! Returns this property as a string.
             const std::string& str() const EWS_NOEXCEPT { return str_; }
@@ -7606,10 +7608,10 @@ namespace ews
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
             property_set_id() = default;
 #else
-            property_set_id(){}
+            property_set_id() {}
 #endif
             //! Constructor to create a PropertySetId property
-            explicit property_set_id(std::string str) : str_(std::move(str)){}
+            explicit property_set_id(std::string str) : str_(std::move(str)) {}
 
             //! Returns this property as a string.
             const std::string& str() const EWS_NOEXCEPT { return str_; }
@@ -7655,10 +7657,10 @@ namespace ews
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
             property_tag() = default;
 #else
-            property_tag(){}
+            property_tag() {}
 #endif
             //! Constructor to create a PropertyTag property
-            explicit property_tag(std::string str) : str_(std::move(str)){}
+            explicit property_tag(std::string str) : str_(std::move(str)) {}
 
             //! Returns this property as a string.
             const std::string& str() const EWS_NOEXCEPT { return str_; }
@@ -7690,10 +7692,10 @@ namespace ews
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
             property_name() = default;
 #else
-            property_name(){}
+            property_name() {}
 #endif
             //! Constructor to create a PropertyTag property
-            explicit property_name(std::string str) : str_(std::move(str)){}
+            explicit property_name(std::string str) : str_(std::move(str)) {}
 
             //! Returns this property as a string.
             const std::string& str() const EWS_NOEXCEPT { return str_; }
@@ -7725,10 +7727,10 @@ namespace ews
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
             property_id() = default;
 #else
-            property_id(){}
+            property_id() {}
 #endif
             //! Constructor to create a PropertyId property
-            explicit property_id(std::string str) : str_(std::move(str)){}
+            explicit property_id(std::string str) : str_(std::move(str)) {}
 
             //! Returns this property as a string.
             const std::string& str() const EWS_NOEXCEPT { return str_; }
@@ -7751,10 +7753,10 @@ namespace ews
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
             property_type() = default;
 #else
-            property_type(){}
+            property_type() {}
 #endif
             //! Constructor to create a PropertyType property
-            explicit property_type(std::string str) : str_(std::move(str)){}
+            explicit property_type(std::string str) : str_(std::move(str)) {}
 
             //! Returns this property as a string.
             const std::string& str() const EWS_NOEXCEPT { return str_; }
@@ -7982,51 +7984,69 @@ namespace ews
 
         //! Converts a xml string into a extended_field_uri rapidxml
         //! representation.
-        rapidxml::xml_node<>& to_xml_element(rapidxml::xml_node<>& parent)
+        rapidxml::xml_node<>& to_xml_element(rapidxml::xml_node<>& parent) const
         {
             auto doc = parent.document();
-            rapidxml::xml_attribute<>* attr_new;
 
-            auto new_node = doc->allocate_node(rapidxml::node_element,
-                                               "t:ExtendedFieldURI");
+            auto ptr_to_node = doc->allocate_string("t:ExtendedFieldURI");
+            auto new_node =
+                doc->allocate_node(rapidxml::node_element, ptr_to_node);
             new_node->namespace_uri(internal::uri<>::microsoft::types(),
                                     internal::uri<>::microsoft::types_size);
 
             if (!get_distinguished_property_set_id().empty())
             {
-                attr_new = doc->allocate_attribute(
-                    "DistinguishedPropertySetId",
+                auto ptr_to_attr =
+                    doc->allocate_string("DistinguishedPropertySetId");
+                auto ptr_to_property = doc->allocate_string(
                     get_distinguished_property_set_id().c_str());
+                auto attr_new =
+                    doc->allocate_attribute(ptr_to_attr, ptr_to_property);
                 new_node->append_attribute(attr_new);
             }
             if (!get_property_set_id().empty())
             {
-                attr_new = doc->allocate_attribute(
-                    "PropertySetId", get_property_set_id().c_str());
+                auto ptr_to_attr = doc->allocate_string("PropertySetId");
+                auto ptr_to_property =
+                    doc->allocate_string(get_property_set_id().c_str());
+                auto attr_new =
+                    doc->allocate_attribute(ptr_to_attr, ptr_to_property);
                 new_node->append_attribute(attr_new);
             }
             if (!get_property_tag().empty())
             {
-                attr_new = doc->allocate_attribute("PropertyTag",
-                                                   get_property_tag().c_str());
+                auto ptr_to_attr = doc->allocate_string("PropertyTag");
+                auto ptr_to_property =
+                    doc->allocate_string(get_property_tag().c_str());
+                auto attr_new =
+                    doc->allocate_attribute(ptr_to_attr, ptr_to_property);
                 new_node->append_attribute(attr_new);
             }
             if (!get_property_name().empty())
             {
-                attr_new = doc->allocate_attribute("PropertyName",
-                                                   get_property_name().c_str());
+                auto ptr_to_attr = doc->allocate_string("PropertyName");
+                auto ptr_to_property =
+                    doc->allocate_string(get_property_name().c_str());
+                auto attr_new =
+                    doc->allocate_attribute(ptr_to_attr, ptr_to_property);
                 new_node->append_attribute(attr_new);
             }
             if (!get_property_type().empty())
             {
-                attr_new = doc->allocate_attribute("PropertyType",
-                                                   get_property_type().c_str());
+                auto ptr_to_attr = doc->allocate_string("PropertyType");
+                auto ptr_to_property =
+                    doc->allocate_string(get_property_type().c_str());
+                auto attr_new =
+                    doc->allocate_attribute(ptr_to_attr, ptr_to_property);
                 new_node->append_attribute(attr_new);
             }
             if (!get_property_id().empty())
             {
-                attr_new = doc->allocate_attribute("PropertyId",
-                                                   get_property_id().c_str());
+                auto ptr_to_attr = doc->allocate_string("PropertyId");
+                auto ptr_to_property =
+                    doc->allocate_string(get_property_id().c_str());
+                auto attr_new =
+                    doc->allocate_attribute(ptr_to_attr, ptr_to_property);
                 new_node->append_attribute(attr_new);
             }
 
@@ -8072,7 +8092,7 @@ namespace ews
 #else
         extended_property() {}
 #endif
-        //! \brief Constructor to initialize an <tt>\<ExtendedProperty\><tt>
+        //! \brief Constructor to initialize an <tt>\<ExtendedProperty\></tt>
         //! with the
         //! neccessary values
         extended_property(extended_field_uri ext_field_uri,
@@ -8602,13 +8622,13 @@ namespace ews
             extended_field_uri field_uri =
                 extended_prop.get_extended_field_uri();
             field_uri.to_xml_element(*top_node);
-            //top_node->append_node(&new_node);
 
-            rapidxml::xml_node<>* cover_node = nullptr;
+            rapidxml::xml_node<char>* cover_node = nullptr;
             if (extended_prop.get_values().size() > 1)
             {
+                auto ptr_to_value = doc->allocate_string("t:Value");
                 cover_node =
-                    doc->allocate_node(rapidxml::node_element, "t:Values");
+                    doc->allocate_node(rapidxml::node_element, ptr_to_value);
                 cover_node->namespace_uri(
                     internal::uri<>::microsoft::types(),
                     internal::uri<>::microsoft::types_size);
@@ -8618,8 +8638,9 @@ namespace ews
             for (auto str : extended_prop.get_values())
             {
                 auto new_str = doc->allocate_string(str.c_str());
+                auto ptr_to_value = doc->allocate_string("t:Value");
                 auto cur_node =
-                    doc->allocate_node(rapidxml::node_element, "t:Value");
+                    doc->allocate_node(rapidxml::node_element, ptr_to_value);
                 cur_node->namespace_uri(internal::uri<>::microsoft::types(),
                                         internal::uri<>::microsoft::types_size);
                 cur_node->value(new_str);
