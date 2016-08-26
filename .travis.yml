@@ -1,0 +1,54 @@
+# ews-cpp travis build
+
+os:
+    - linux 
+
+language: cpp
+
+sudo: required
+
+dist: trusty
+
+cache: apt
+
+compiler:  
+    - gcc
+    - clang
+
+before_install:
+#   - sudo add-apt-repository ppa:george-edison55/cmake-3.x --yes
+#   - sudo apt-get update
+#   - sudo apt-get remove clang llvm-dev
+install:
+#    - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+    - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.8" && export CC="clang-3.8"; fi 
+addons:
+  apt:
+    sources:
+#    - ubuntu-toolchain-r-test
+#    - llvm-toolchain-precise-3.8
+#    - george-edison55-precise-backports # cmake 3.2.3 / doxygen 1.8.3
+    packages:
+#    - gcc-4.8
+#    - g++-4.8
+#- clang
+    - clang-3.8
+    - llvm-3.8-dev
+    - libstdc++6
+#    - cmake
+#    - cmake-data
+#- libcurl4-openssl-dev
+    - libcurl4-gnutls-dev
+
+before_script:
+#    - export CFLAGS=-m64
+    - cmake -H. -Bbuild_gcc -DCMAKE_BUILD_TYPE=Release -G"Unix Makefiles"
+    - cmake -H. -Bbuild_clang -DENABLE_LIBCXX:BOOLEAN=ON -DCMAKE_BUILD_TYPE=Release -G"Unix Makefiles"
+#    - export CFLAGS=-m32
+#    - cmake -H. -Bbuild_gcc_32 -DCMAKE_BUILD_TYPE=Release -G"Unix Makefiles"
+#    - cmake -H. -Bbuild_clang_32 -DENABLE_LIBCXX:BOOLEAN=true -DCMAKE_BUILD_TYPE=Release -G"Unix Makefiles"
+
+script: 
+    - if [ "$CXX" = "g++" ]; then cmake --build build_gcc; fi
+    - if ! [ "$CXX" = "g++" ]; then cmake --build build_clang; fi
+
