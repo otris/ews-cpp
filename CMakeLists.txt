@@ -42,16 +42,6 @@ if(ENABLE_ASAN)
     endif()
 endif()
 
-set(GTEST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/gtest/googletest)
-set(GTEST_INCLUDE_DIR ${GTEST_ROOT}/include)
-set(GTEST_LIBRARIES gtest)
-if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-    set(gtest_force_shared_crt ON CACHE BOOL
-        "Use shared (DLL) run-time lib even when Google Test is built as static lib.")
-endif()
-add_subdirectory(${GTEST_ROOT})
-include_directories(${GTEST_INCLUDE_DIR})
-
 set(GNUCXX_MINIMUM_VERSION "4.8")
 set(CLANGCXX_MINIMUM_VERSION "3.5")
 set(CXX_STANDARD_TAG "c++14")
@@ -290,6 +280,17 @@ find_package(PythonInterp QUIET)
 if(PYTHONINTERP_FOUND)
     add_definitions(-DEWS_HAS_PYTHON_EXECUTABLE)
 endif()
+
+# Google Test
+set(GTEST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/gtest/googletest)
+set(GTEST_INCLUDE_DIR ${GTEST_ROOT}/include)
+set(GTEST_LIBRARIES gtest)
+if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+    set(gtest_force_shared_crt ON CACHE BOOL
+        "Use shared (DLL) run-time lib even when Google Test is built as static lib.")
+endif()
+add_subdirectory(${GTEST_ROOT})
+include_directories(${GTEST_INCLUDE_DIR})
 
 add_executable(tests
     ${ews_SOURCES}
