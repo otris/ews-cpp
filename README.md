@@ -17,16 +17,18 @@ C++ application.
 * Visual Studio 2012
 * Visual Studio 2013
 * Visual Studio 2015
-* Clang 3.5 with libc++
-* GCC 4.8 with libstdc++
+* Clang since 3.5
+    - with libc++ on Mac OS X
+    - with libstdc++ on Linux (Note that we don't support libc++ on Linux)
+* GCC since 4.8 with libstdc++
 
 
 ## Supported Operating Systems
 
 * Microsoft Windows 8.1 and Windows 10
-* Mac OS X 10.10
+* Mac OS X since 10.10
 * RHEL 7
-* Ubuntu 14.04 LTS (x86_64 and i386)
+* Ubuntu since 14.04 LTS (both, x86_64 and i386)
 * SLES12
 
 
@@ -46,6 +48,8 @@ However, our goal is to support all Exchange Server versions since 2007.
 * Git
 * CMake
 * Doxygen (optional)
+* Boost (optional)
+* Python 2 or 3 (optional)
 
 
 ## Note Windows Users
