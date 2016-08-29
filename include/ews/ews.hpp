@@ -7504,7 +7504,10 @@ namespace ews
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
         internet_message_header() = delete;
 #else
+    private:
         internet_message_header() {}
+
+    public:
 #endif
         //! Constructs a header filed with given values
         internet_message_header(std::string name, std::string value)
@@ -8090,7 +8093,10 @@ namespace ews
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
         extended_property() = delete;
 #else
+    private:
         extended_property() {}
+
+    public:
 #endif
         //! \brief Constructor to initialize an <tt>\<ExtendedProperty\></tt>
         //! with the
