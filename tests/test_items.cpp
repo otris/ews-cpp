@@ -874,7 +874,8 @@ namespace tests
         ews::extended_field_uri field_uri3(
             ews::extended_field_uri::distinguished_property_set_id(
                 "PublicStrings"),
-            "ShoeSize", ews::extended_field_uri::property_type("Float"));
+            ews::extended_field_uri::property_name("ShoeSize"),
+            ews::extended_field_uri::property_type("Float"));
         prop = ews::extended_property(field_uri3, values);
         msg.set_extended_property(prop);
 

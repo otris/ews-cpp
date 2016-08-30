@@ -7505,7 +7505,7 @@ namespace ews
         internet_message_header() = delete;
 #else
     private:
-        internet_message_header() {}
+        internet_message_header();
 
     public:
 #endif
@@ -7543,382 +7543,164 @@ namespace ews
     static_assert(std::is_move_assignable<internet_message_header>::value, "");
 #endif
 
-    //! The ExtendedFieldURI element identifies an extended MAPI property.
+    namespace internal
+    {
+        // Wraps a string so that it become its own type
+        template <int tag> class str_wrapper final
+        {
+        public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+            str_wrapper() = default;
+#else
+            str_wrapper() : value_() {}
+#endif
+
+            explicit str_wrapper(std::string str) : value_(std::move(str)) {}
+
+            const std::string& str() const noexcept { return value_; }
+
+        private:
+            std::string value_;
+        };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+        static_assert(std::is_default_constructible<str_wrapper<0>>::value, "");
+        static_assert(std::is_copy_constructible<str_wrapper<0>>::value, "");
+        static_assert(std::is_copy_assignable<str_wrapper<0>>::value, "");
+        static_assert(std::is_move_constructible<str_wrapper<0>>::value, "");
+        static_assert(std::is_move_assignable<str_wrapper<0>>::value, "");
+#endif
+
+        enum type_tags
+        {
+            distinguished_property_set_id,
+            property_set_id,
+            property_tag,
+            property_name,
+            property_id,
+            property_type
+        };
+    }
+
+    //! The ExtendedFieldURI element identifies an extended MAPI property
     class extended_field_uri final
     {
     public:
-        //! \brief Represents the <tt>\<PropertySetId\></tt> of an
-        //! <tt>\<ExtendedFieldUri\></tt>.
-        //!
-        //! Defines the well-known property set IDs for extended MAPI
-        //! properties. If this attribute is used, the PropertySetId and
-        //! PropertyTag attributes cannot be used. This attribute must be
-        //! used with either the PropertyId or PropertyName attribute, and
-        //! the PropertyType attribute. The DistinguishedPropertySetId
-        //! Attribute table later in this topic lists the possible values
-        //! for this attribute. This attribute is optional.
-        class distinguished_property_set_id final
-        {
-        public:
-//! Default constructor
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
+        using distinguished_property_set_id =
+            internal::str_wrapper<internal::distinguished_property_set_id>;
+        using property_set_id =
+            internal::str_wrapper<internal::property_set_id>;
+        using property_tag = internal::str_wrapper<internal::property_tag>;
+        using property_name = internal::str_wrapper<internal::property_name>;
+        using property_id = internal::str_wrapper<internal::property_id>;
+        using property_type = internal::str_wrapper<internal::property_type>;
+#endif
+
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
-            distinguished_property_set_id() = default;
+        extended_field_uri() = delete;
 #else
-            distinguished_property_set_id() {}
-#endif
-            //! Constructor to create an DistinguishedPropertySetId property
-            explicit distinguished_property_set_id(std::string str)
-                : str_(std::move(str))
-            {
-            }
+    private:
+        extended_field_uri();
 
-            //! Returns this property as a string.
-            const std::string& str() const EWS_NOEXCEPT { return str_; }
-
-        private:
-            std::string str_;
-        };
-
-#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-        static_assert(
-            std::is_default_constructible<distinguished_property_set_id>::value,
-            "");
-        static_assert(
-            std::is_copy_constructible<distinguished_property_set_id>::value,
-            "");
-        static_assert(
-            std::is_copy_assignable<distinguished_property_set_id>::value, "");
-        static_assert(
-            std::is_move_constructible<distinguished_property_set_id>::value,
-            "");
-        static_assert(
-            std::is_move_assignable<distinguished_property_set_id>::value, "");
+    public:
 #endif
 
-        //! \brief Represents the <tt>\<PropertySetId\></tt> of an
-        //! <tt>\<ExtendedFieldUri\></tt>.
-        //!
-        //! Identifies a MAPI extended property set or namespace by its
-        //! identifying GUID. If this attribute is used, the
-        //! DistinguishedPropertySetId and PropertyTag attribute cannot be used.
-        //! This attribute must be used with either the PropertyId or
-        //! PropertyName attribute, and the PropertyType attribute.
-        //! This attribute is optional.
-        class property_set_id final
-        {
-        public:
-//! Default constructor
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
-            property_set_id() = default;
-#else
-            property_set_id() {}
-#endif
-            //! Constructor to create a PropertySetId property
-            explicit property_set_id(std::string str) : str_(std::move(str)) {}
-
-            //! Returns this property as a string.
-            const std::string& str() const EWS_NOEXCEPT { return str_; }
-
-        private:
-            std::string str_;
-        };
-
-#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-        static_assert(std::is_default_constructible<property_set_id>::value,
-                      "");
-        static_assert(std::is_copy_constructible<property_set_id>::value, "");
-        static_assert(std::is_copy_assignable<property_set_id>::value, "");
-        static_assert(std::is_move_constructible<property_set_id>::value, "");
-        static_assert(std::is_move_assignable<property_set_id>::value, "");
-#endif
-
-        //! \brief Represents the <tt>\<PropertyTag\></tt> of an
-        //! <tt>\<ExtendedFieldUri\></tt>.
-        //!
-        //! Identifies the property tag without the type part of the tag.
-        //! The PropertyTag can be represented as either a hexadecimal or a
-        //! short integer. The range between 0x8000 and 0xFFFE represents the
-        //! custom range of properties. When a mailbox database encounters a
-        //! custom property for the first time, it assigns that custom property
-        //! a property tag within the custom property range of 0x8000-0xFFFE.
-        //! A given custom property tag will most likely differ across
-        //! databases.
-        //! Therefore, a custom property request by property tag can return
-        //! different properties on different databases. The use of the
-        //! PropertyTag attribute is prohibited for custom properties.
-        //! Instead, use the PropertySetId attribute and the PropertyName
-        //! or PropertyId attribute.
-        //! If the PropertyTag attribute is used, the
-        //! DistinguishedPropertySetId,
-        //! PropertySetId, PropertyName, and PropertyId attributes cannot be
-        //! used.
-        //! This attribute is optional.
-        class property_tag final
-        {
-        public:
-//! Default constructor
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
-            property_tag() = default;
-#else
-            property_tag() {}
-#endif
-            //! Constructor to create a PropertyTag property
-            explicit property_tag(std::string str) : str_(std::move(str)) {}
-
-            //! Returns this property as a string.
-            const std::string& str() const EWS_NOEXCEPT { return str_; }
-
-        private:
-            std::string str_;
-        };
-
-#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-        static_assert(std::is_default_constructible<property_tag>::value, "");
-        static_assert(std::is_copy_constructible<property_tag>::value, "");
-        static_assert(std::is_copy_assignable<property_tag>::value, "");
-        static_assert(std::is_move_constructible<property_tag>::value, "");
-        static_assert(std::is_move_assignable<property_tag>::value, "");
-#endif
-
-        //! \brief Represents the <tt>\<PropertyName\></tt> of an
-        //! <tt>\<ExtendedFieldUri\></tt>.
-        //!
-        //! Identifies an extended property by its name.
-        //! This property must be coupled with either DistinguishedPropertySetId
-        //! or PropertySetId.
-        //! If this attribute is used, the PropertyId and PropertyTag attributes
-        //! cannot be used. This attribute is optional.
-        class property_name final
-        {
-        public:
-//! Default constructor
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
-            property_name() = default;
-#else
-            property_name() {}
-#endif
-            //! Constructor to create a PropertyTag property
-            explicit property_name(std::string str) : str_(std::move(str)) {}
-
-            //! Returns this property as a string.
-            const std::string& str() const EWS_NOEXCEPT { return str_; }
-
-        private:
-            std::string str_;
-        };
-
-#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-        static_assert(std::is_default_constructible<property_name>::value, "");
-        static_assert(std::is_copy_constructible<property_name>::value, "");
-        static_assert(std::is_copy_assignable<property_name>::value, "");
-        static_assert(std::is_move_constructible<property_name>::value, "");
-        static_assert(std::is_move_assignable<property_name>::value, "");
-#endif
-
-        //! \brief Represents the <tt>\<PropertyId\></tt> of an
-        //! <tt>\<ExtendedFieldUri\></tt>.
-        //!
-        //! Identifies an extended property by its dispatch ID. The dispatch ID
-        //! can be identified in either decimal or hexadecimal formats.
-        //! This property must be coupled with either DistinguishedPropertySetId
-        //! or PropertySetId. If this attribute is used, the PropertyName and
-        //! PropertyTag attributes cannot be used. This attribute is optional.
-        class property_id final
-        {
-        public:
-//! Default constructor
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
-            property_id() = default;
-#else
-            property_id() {}
-#endif
-            //! Constructor to create a PropertyId property
-            explicit property_id(std::string str) : str_(std::move(str)) {}
-
-            //! Returns this property as a string.
-            const std::string& str() const EWS_NOEXCEPT { return str_; }
-
-        private:
-            std::string str_;
-        };
-
-        //! \brief Represents the <tt>\<PropertyType\></tt> of an
-        //! <tt>\<ExtendedFieldUri\></tt>.
-        //!
-        //! Represents the property type of a property tag. This corresponds
-        //! to the least significant word in a property tag. The PropertyType
-        //! Attribute table later in this topic contains the possible values
-        //! for this attribute. This attribute is required.
-        class property_type final
-        {
-        public:
-//! Default constructor
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
-            property_type() = default;
-#else
-            property_type() {}
-#endif
-            //! Constructor to create a PropertyType property
-            explicit property_type(std::string str) : str_(std::move(str)) {}
-
-            //! Returns this property as a string.
-            const std::string& str() const EWS_NOEXCEPT { return str_; }
-
-            extended_field_uri
-            form_xml_element(const rapidxml::xml_node<>& elem);
-
-        private:
-            std::string str_;
-        };
-
-        //! \brief Constructor for initialization based on
-        //! distinguished_property_set_id
-        //! and property_id
-        extended_field_uri(
-            distinguished_property_set_id distinguished_property_set_id,
-            property_id property_id, property_type property_type)
-            : distinguished_property_set_id_(
-                  std::move(distinguished_property_set_id)),
-              property_id_(std::move(property_id)),
-              property_type_(std::move(property_type))
+        extended_field_uri(distinguished_property_set_id set_id, property_id id,
+                           property_type type)
+            : distinguished_set_id_(std::move(set_id)), id_(std::move(id)),
+              type_(std::move(type))
         {
         }
 
-        //! \brief Constructor for initialization based on
-        //! distinguished_property_set_id
-        //! and property_name
-        extended_field_uri(
-            distinguished_property_set_id distinguished_property_set_id,
-            std::string property_name, property_type property_type)
-            : distinguished_property_set_id_(
-                  std::move(distinguished_property_set_id)),
-              property_name_(std::move(property_name)),
-              property_type_(std::move(property_type))
+        extended_field_uri(distinguished_property_set_id set_id,
+                           property_name name, property_type type)
+            : distinguished_set_id_(std::move(set_id)), name_(std::move(name)),
+              type_(std::move(type))
         {
         }
 
-        //! \brief Constructor for initialization based on property_set_id
-        //! and poperty_id
-        extended_field_uri(property_set_id property_set_id,
-                           property_id property_id, property_type property_type)
-            : property_set_id_(std::move(property_set_id)),
-              property_id_(std::move(property_id)),
-              property_type_(std::move(property_type))
+        extended_field_uri(property_set_id set_id, property_id id,
+                           property_type type)
+            : set_id_(std::move(set_id)), id_(std::move(id)),
+              type_(std::move(type))
         {
         }
 
-        //! \brief Constructor for initialization based on property_set_id
-        //! and property_name
-        extended_field_uri(property_set_id property_set_id,
-                           std::string property_name,
-                           property_type property_type)
-            : property_set_id_(std::move(property_set_id)),
-              property_name_(std::move(property_name)),
-              property_type_(std::move(property_type))
+        extended_field_uri(property_set_id set_id, property_name name,
+                           property_type type)
+            : set_id_(std::move(set_id)), name_(std::move(name)),
+              type_(std::move(type))
         {
         }
 
-        //! \brief Constructor for initialization based on property_tag
-        extended_field_uri(property_tag property_tag,
-                           property_type property_type)
-            : property_tag_(std::move(property_tag)),
-              property_type_(std::move(property_type))
+        extended_field_uri(property_tag tag, property_type type)
+            : tag_(std::move(tag)), type_(std::move(type))
         {
         }
 
-        //! Returns the <tt>\<DistinguishedPropertySetId\></tt> as a std::string
         const std::string&
         get_distinguished_property_set_id() const EWS_NOEXCEPT
         {
-            return distinguished_property_set_id_.str();
+            return distinguished_set_id_.str();
         }
 
-        //! Returns the <tt>\<PropertySetId\></tt> as a std::string
         const std::string& get_property_set_id() const EWS_NOEXCEPT
         {
-            return property_set_id_.str();
+            return set_id_.str();
         }
 
-        //! Returns the <tt>\<PropertyTag\></tt> as a std::string
         const std::string& get_property_tag() const EWS_NOEXCEPT
         {
-            return property_tag_.str();
+            return tag_.str();
         }
 
-        //! Returns the <tt>\<PropertyName\></tt> as a std::string
         const std::string& get_property_name() const EWS_NOEXCEPT
         {
-            return property_name_.str();
+            return name_.str();
         }
 
-        //! Returns the <tt>\<PropertyId\></tt> as a std::string
         const std::string& get_property_id() const EWS_NOEXCEPT
         {
-            return property_id_.str();
+            return id_.str();
         }
 
-        //! Returns the <tt>\<PropertyType\></tt> as a std::string
         const std::string& get_property_type() const EWS_NOEXCEPT
         {
-            return property_type_.str();
+            return type_.str();
         }
 
-        //! Sets a <tt>\<DistinguishedPropertySetId\></tt>
-        void set_distinguished_property_set_id(
-            const distinguished_property_set_id& dpsi)
-        {
-            distinguished_property_set_id_ = dpsi;
-        }
-
-        //! Sets a <tt>\<PropertySetId\></tt>
-        void set_property_set_id(const property_set_id& psi)
-        {
-            property_set_id_ = psi;
-        }
-
-        //! Sets a <tt>\<PropertyTag\></tt>
-        void set_property_tag(const property_tag& ptg) { property_tag_ = ptg; }
-
-        //! Sets a <tt>\<PropertyName\></tt>
-        void set_property_name(const property_name& pn) { property_name_ = pn; }
-
-        //! Sets a <tt>\<PropertyId\></tt>
-        void set_property_id(const property_id& pi) { property_id_ = pi; }
-
-        //! Sets a <tt>\<PropertyType\></tt>
-        void set_property_type(const property_type& pt) { property_type_ = pt; }
-
-        //! Converts an extended_field_uri into a xml string.
+        //! Returns a string representation of this extended_field_uri
         std::string to_xml()
         {
             std::stringstream sstr;
 
             sstr << "<t:ExtendedFieldURI ";
 
-            if (!distinguished_property_set_id_.str().empty())
+            if (!distinguished_set_id_.str().empty())
             {
                 sstr << "DistinguishedPropertySetId=\""
-                     << distinguished_property_set_id_.str() << "\" ";
+                     << distinguished_set_id_.str() << "\" ";
             }
-            if (!property_id_.str().empty())
+            if (!id_.str().empty())
             {
-                sstr << "PropertyId=\"" << property_id_.str() << "\" ";
+                sstr << "PropertyId=\"" << id_.str() << "\" ";
             }
-            if (!property_set_id_.str().empty())
+            if (!set_id_.str().empty())
             {
-                sstr << "PropertySetId=\"" << property_set_id_.str() << "\" ";
+                sstr << "PropertySetId=\"" << set_id_.str() << "\" ";
             }
-            if (!property_tag_.str().empty())
+            if (!tag_.str().empty())
             {
-                sstr << "PropertyTag=\"" << property_tag_.str() << "\" ";
+                sstr << "PropertyTag=\"" << tag_.str() << "\" ";
             }
-            if (!property_name_.str().empty())
+            if (!name_.str().empty())
             {
-                sstr << "PropertyName=\"" << property_name_.str() << "\" ";
+                sstr << "PropertyName=\"" << name_.str() << "\" ";
             }
-            if (!property_type_.str().empty())
+            if (!type_.str().empty())
             {
-                sstr << "PropertyType=\"" << property_type_.str() << "\"/>";
+                sstr << "PropertyType=\"" << type_.str() << "\"/>";
             }
             return sstr.str();
         }
@@ -7927,66 +7709,103 @@ namespace ews
         static extended_field_uri
         from_xml_element(const rapidxml::xml_node<>& elem)
         {
-            extended_field_uri ext_field_uri;
+            using rapidxml::internal::compare;
+
+            EWS_ASSERT(compare(elem.local_name(), elem.local_name_size(),
+                               "ExtendedFieldURI",
+                               std::strlen("ExtendedFieldURI")) &&
+                       "Expected a <ExtendedFieldURI/>, got something else");
+
+            std::string distinguished_set_id;
+            std::string set_id;
+            std::string tag;
+            std::string name;
+            std::string id;
+            std::string type;
 
             for (auto attr = elem.first_attribute(); attr != nullptr;
                  attr = attr->next_attribute())
             {
-                if (std::string(attr->name(), attr->name_size()) ==
-                    "DistinguishedPropertySetId")
+                if (compare(attr->name(), attr->name_size(),
+                            "DistinguishedPropertySetId",
+                            std::strlen("DistinguishedPropertySetId")))
                 {
-                    ext_field_uri.set_distinguished_property_set_id(
-                        distinguished_property_set_id(
-                            std::string(attr->value(), attr->value_size())));
+                    distinguished_set_id =
+                        std::string(attr->value(), attr->value_size());
                 }
-                else if (std::string(attr->name(), attr->name_size()) ==
-                         "PropertySetId")
+                else if (compare(attr->name(), attr->name_size(),
+                                 "PropertySetId", std::strlen("PropertySetId")))
                 {
-                    ext_field_uri.set_property_set_id(property_set_id(
-                        std::string(attr->value(), attr->value_size())));
+                    set_id = std::string(attr->value(), attr->value_size());
                 }
-                else if (std::string(attr->name(), attr->name_size()) ==
-                         "PropertyTag")
+                else if (compare(attr->name(), attr->name_size(), "PropertyTag",
+                                 std::strlen("PropertyTag")))
                 {
-                    ext_field_uri.set_property_tag(property_tag(
-                        std::string(attr->value(), attr->value_size())));
+                    tag = std::string(attr->value(), attr->value_size());
                 }
-                else if (std::string(attr->name(), attr->name_size()) ==
-                         "PropertyName")
+                else if (compare(attr->name(), attr->name_size(),
+                                 "PropertyName", std::strlen("PropertyName")))
                 {
-                    ext_field_uri.set_property_name(property_name(
-                        std::string(attr->value(), attr->value_size())));
+                    name = std::string(attr->value(), attr->value_size());
                 }
-                else if (std::string(attr->name(), attr->name_size()) ==
-                         "PropertyId")
+                else if (compare(attr->name(), attr->name_size(), "PropertyId",
+                                 std::strlen("PropertyId")))
                 {
-                    ext_field_uri.set_property_id(property_id(
-                        std::string(attr->value(), attr->value_size())));
+                    id = std::string(attr->value(), attr->value_size());
                 }
-                else if (std::string(attr->name(), attr->name_size()) ==
-                         "PropertyType")
+                else if (compare(attr->name(), attr->name_size(),
+                                 "PropertyType", std::strlen("PropertyType")))
                 {
-                    ext_field_uri.set_property_type(property_type(
-                        std::string(attr->value(), attr->value_size())));
+                    type = std::string(attr->value(), attr->value_size());
                 }
                 else
                 {
                     throw exception(
-                        "Unexpected child element in <ExtendedFieldURI>");
+                        "Unexpected attribute in <ExtendedFieldURI>");
                 }
             }
 
-            // Validate and constructor selection
-            if (ext_field_uri.get_property_type().empty())
+            EWS_ASSERT(!type.empty() && "Type attribute missing");
+
+            if (!distinguished_set_id.empty())
             {
-                throw exception(
-                    "Invalid empty <PropertyType> in <ExtendedFieldURI>");
+                if (!id.empty())
+                {
+                    return extended_field_uri(
+                        distinguished_property_set_id(distinguished_set_id),
+                        property_id(id), property_type(type));
+                }
+                else if (!name.empty())
+                {
+                    return extended_field_uri(
+                        distinguished_property_set_id(distinguished_set_id),
+                        property_name(name), property_type(type));
+                }
             }
-            return ext_field_uri;
+            else if (!set_id.empty())
+            {
+                if (!id.empty())
+                {
+                    return extended_field_uri(property_set_id(set_id),
+                                              property_id(id),
+                                              property_type(type));
+                }
+                else if (!name.empty())
+                {
+                    return extended_field_uri(property_set_id(set_id),
+                                              property_name(name),
+                                              property_type(type));
+                }
+            }
+            else if (!tag.empty())
+            {
+                return extended_field_uri(property_tag(tag),
+                                          property_type(type));
+            }
+
+            throw exception("Unexpected combination of ");
         }
 
-        //! Converts a xml string into a extended_field_uri rapidxml
-        //! representation.
         rapidxml::xml_node<>& to_xml_element(rapidxml::xml_node<>& parent) const
         {
             auto doc = parent.document();
@@ -8007,6 +7826,7 @@ namespace ews
                     doc->allocate_attribute(ptr_to_attr, ptr_to_property);
                 new_node->append_attribute(attr_new);
             }
+
             if (!get_property_set_id().empty())
             {
                 auto ptr_to_attr = doc->allocate_string("PropertySetId");
@@ -8016,6 +7836,7 @@ namespace ews
                     doc->allocate_attribute(ptr_to_attr, ptr_to_property);
                 new_node->append_attribute(attr_new);
             }
+
             if (!get_property_tag().empty())
             {
                 auto ptr_to_attr = doc->allocate_string("PropertyTag");
@@ -8025,6 +7846,7 @@ namespace ews
                     doc->allocate_attribute(ptr_to_attr, ptr_to_property);
                 new_node->append_attribute(attr_new);
             }
+
             if (!get_property_name().empty())
             {
                 auto ptr_to_attr = doc->allocate_string("PropertyName");
@@ -8034,6 +7856,7 @@ namespace ews
                     doc->allocate_attribute(ptr_to_attr, ptr_to_property);
                 new_node->append_attribute(attr_new);
             }
+
             if (!get_property_type().empty())
             {
                 auto ptr_to_attr = doc->allocate_string("PropertyType");
@@ -8043,6 +7866,7 @@ namespace ews
                     doc->allocate_attribute(ptr_to_attr, ptr_to_property);
                 new_node->append_attribute(attr_new);
             }
+
             if (!get_property_id().empty())
             {
                 auto ptr_to_attr = doc->allocate_string("PropertyId");
@@ -8054,23 +7878,18 @@ namespace ews
             }
 
             parent.append_node(new_node);
-
             return *new_node;
         }
 
     private:
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
-        extended_field_uri() = default;
-#else
-        extended_field_uri() {}
-#endif
-        distinguished_property_set_id distinguished_property_set_id_;
-        property_set_id property_set_id_;
-        property_tag property_tag_;
-        property_name property_name_;
-        property_id property_id_;
-        property_type property_type_;
+        distinguished_property_set_id distinguished_set_id_;
+        property_set_id set_id_;
+        property_tag tag_;
+        property_name name_;
+        property_id id_;
+        property_type type_;
     };
+
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(!std::is_default_constructible<extended_field_uri>::value,
                   "");
@@ -8094,7 +7913,7 @@ namespace ews
         extended_property() = delete;
 #else
     private:
-        extended_property() {}
+        extended_property();
 
     public:
 #endif
