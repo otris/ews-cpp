@@ -368,8 +368,7 @@ namespace tests
         auto msg = ews::message();
         msg.set_subject("Honorable Minister of Finance - Release Funds");
         std::vector<ews::mailbox> recipients;
-        recipients.push_back(
-            ews::mailbox("udom.emmanuel@zenith-bank.com.ng"));
+        recipients.push_back(ews::mailbox("udom.emmanuel@zenith-bank.com.ng"));
         msg.set_to_recipients(recipients);
         auto item_id =
             service().create_item(msg, ews::message_disposition::save_only);
