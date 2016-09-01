@@ -7504,7 +7504,10 @@ namespace ews
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
         internet_message_header() = delete;
 #else
-        internet_message_header() {}
+    private:
+        internet_message_header();
+
+    public:
 #endif
         //! Constructs a header filed with given values
         internet_message_header(std::string name, std::string value)
@@ -7538,6 +7541,416 @@ namespace ews
     static_assert(std::is_move_constructible<internet_message_header>::value,
                   "");
     static_assert(std::is_move_assignable<internet_message_header>::value, "");
+#endif
+
+    namespace internal
+    {
+        // Wraps a string so that it become its own type
+        template <int tag> class str_wrapper final
+        {
+        public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+            str_wrapper() = default;
+#else
+            str_wrapper() : value_() {}
+#endif
+
+            explicit str_wrapper(std::string str) : value_(std::move(str)) {}
+
+            const std::string& str() const noexcept { return value_; }
+
+        private:
+            std::string value_;
+        };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+        static_assert(std::is_default_constructible<str_wrapper<0>>::value, "");
+        static_assert(std::is_copy_constructible<str_wrapper<0>>::value, "");
+        static_assert(std::is_copy_assignable<str_wrapper<0>>::value, "");
+        static_assert(std::is_move_constructible<str_wrapper<0>>::value, "");
+        static_assert(std::is_move_assignable<str_wrapper<0>>::value, "");
+#endif
+
+        enum type_tags
+        {
+            distinguished_property_set_id,
+            property_set_id,
+            property_tag,
+            property_name,
+            property_id,
+            property_type
+        };
+    }
+
+    //! The ExtendedFieldURI element identifies an extended MAPI property
+    class extended_field_uri final
+    {
+    public:
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
+        using distinguished_property_set_id =
+            internal::str_wrapper<internal::distinguished_property_set_id>;
+        using property_set_id =
+            internal::str_wrapper<internal::property_set_id>;
+        using property_tag = internal::str_wrapper<internal::property_tag>;
+        using property_name = internal::str_wrapper<internal::property_name>;
+        using property_id = internal::str_wrapper<internal::property_id>;
+        using property_type = internal::str_wrapper<internal::property_type>;
+#endif
+
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        extended_field_uri() = delete;
+#else
+    private:
+        extended_field_uri();
+
+    public:
+#endif
+
+        extended_field_uri(distinguished_property_set_id set_id, property_id id,
+                           property_type type)
+            : distinguished_set_id_(std::move(set_id)), id_(std::move(id)),
+              type_(std::move(type))
+        {
+        }
+
+        extended_field_uri(distinguished_property_set_id set_id,
+                           property_name name, property_type type)
+            : distinguished_set_id_(std::move(set_id)), name_(std::move(name)),
+              type_(std::move(type))
+        {
+        }
+
+        extended_field_uri(property_set_id set_id, property_id id,
+                           property_type type)
+            : set_id_(std::move(set_id)), id_(std::move(id)),
+              type_(std::move(type))
+        {
+        }
+
+        extended_field_uri(property_set_id set_id, property_name name,
+                           property_type type)
+            : set_id_(std::move(set_id)), name_(std::move(name)),
+              type_(std::move(type))
+        {
+        }
+
+        extended_field_uri(property_tag tag, property_type type)
+            : tag_(std::move(tag)), type_(std::move(type))
+        {
+        }
+
+        const std::string&
+        get_distinguished_property_set_id() const EWS_NOEXCEPT
+        {
+            return distinguished_set_id_.str();
+        }
+
+        const std::string& get_property_set_id() const EWS_NOEXCEPT
+        {
+            return set_id_.str();
+        }
+
+        const std::string& get_property_tag() const EWS_NOEXCEPT
+        {
+            return tag_.str();
+        }
+
+        const std::string& get_property_name() const EWS_NOEXCEPT
+        {
+            return name_.str();
+        }
+
+        const std::string& get_property_id() const EWS_NOEXCEPT
+        {
+            return id_.str();
+        }
+
+        const std::string& get_property_type() const EWS_NOEXCEPT
+        {
+            return type_.str();
+        }
+
+        //! Returns a string representation of this extended_field_uri
+        std::string to_xml()
+        {
+            std::stringstream sstr;
+
+            sstr << "<t:ExtendedFieldURI ";
+
+            if (!distinguished_set_id_.str().empty())
+            {
+                sstr << "DistinguishedPropertySetId=\""
+                     << distinguished_set_id_.str() << "\" ";
+            }
+            if (!id_.str().empty())
+            {
+                sstr << "PropertyId=\"" << id_.str() << "\" ";
+            }
+            if (!set_id_.str().empty())
+            {
+                sstr << "PropertySetId=\"" << set_id_.str() << "\" ";
+            }
+            if (!tag_.str().empty())
+            {
+                sstr << "PropertyTag=\"" << tag_.str() << "\" ";
+            }
+            if (!name_.str().empty())
+            {
+                sstr << "PropertyName=\"" << name_.str() << "\" ";
+            }
+            if (!type_.str().empty())
+            {
+                sstr << "PropertyType=\"" << type_.str() << "\"/>";
+            }
+            return sstr.str();
+        }
+
+        //! Converts an xml string into a extended_field_uri property.
+        static extended_field_uri
+        from_xml_element(const rapidxml::xml_node<>& elem)
+        {
+            using rapidxml::internal::compare;
+
+            EWS_ASSERT(compare(elem.local_name(), elem.local_name_size(),
+                               "ExtendedFieldURI",
+                               std::strlen("ExtendedFieldURI")) &&
+                       "Expected a <ExtendedFieldURI/>, got something else");
+
+            std::string distinguished_set_id;
+            std::string set_id;
+            std::string tag;
+            std::string name;
+            std::string id;
+            std::string type;
+
+            for (auto attr = elem.first_attribute(); attr != nullptr;
+                 attr = attr->next_attribute())
+            {
+                if (compare(attr->name(), attr->name_size(),
+                            "DistinguishedPropertySetId",
+                            std::strlen("DistinguishedPropertySetId")))
+                {
+                    distinguished_set_id =
+                        std::string(attr->value(), attr->value_size());
+                }
+                else if (compare(attr->name(), attr->name_size(),
+                                 "PropertySetId", std::strlen("PropertySetId")))
+                {
+                    set_id = std::string(attr->value(), attr->value_size());
+                }
+                else if (compare(attr->name(), attr->name_size(), "PropertyTag",
+                                 std::strlen("PropertyTag")))
+                {
+                    tag = std::string(attr->value(), attr->value_size());
+                }
+                else if (compare(attr->name(), attr->name_size(),
+                                 "PropertyName", std::strlen("PropertyName")))
+                {
+                    name = std::string(attr->value(), attr->value_size());
+                }
+                else if (compare(attr->name(), attr->name_size(), "PropertyId",
+                                 std::strlen("PropertyId")))
+                {
+                    id = std::string(attr->value(), attr->value_size());
+                }
+                else if (compare(attr->name(), attr->name_size(),
+                                 "PropertyType", std::strlen("PropertyType")))
+                {
+                    type = std::string(attr->value(), attr->value_size());
+                }
+                else
+                {
+                    throw exception(
+                        "Unexpected attribute in <ExtendedFieldURI>");
+                }
+            }
+
+            EWS_ASSERT(!type.empty() && "Type attribute missing");
+
+            if (!distinguished_set_id.empty())
+            {
+                if (!id.empty())
+                {
+                    return extended_field_uri(
+                        distinguished_property_set_id(distinguished_set_id),
+                        property_id(id), property_type(type));
+                }
+                else if (!name.empty())
+                {
+                    return extended_field_uri(
+                        distinguished_property_set_id(distinguished_set_id),
+                        property_name(name), property_type(type));
+                }
+            }
+            else if (!set_id.empty())
+            {
+                if (!id.empty())
+                {
+                    return extended_field_uri(property_set_id(set_id),
+                                              property_id(id),
+                                              property_type(type));
+                }
+                else if (!name.empty())
+                {
+                    return extended_field_uri(property_set_id(set_id),
+                                              property_name(name),
+                                              property_type(type));
+                }
+            }
+            else if (!tag.empty())
+            {
+                return extended_field_uri(property_tag(tag),
+                                          property_type(type));
+            }
+
+            throw exception("Unexpected combination of ");
+        }
+
+        rapidxml::xml_node<>& to_xml_element(rapidxml::xml_node<>& parent) const
+        {
+            auto doc = parent.document();
+
+            auto ptr_to_node = doc->allocate_string("t:ExtendedFieldURI");
+            auto new_node =
+                doc->allocate_node(rapidxml::node_element, ptr_to_node);
+            new_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                    internal::uri<>::microsoft::types_size);
+
+            if (!get_distinguished_property_set_id().empty())
+            {
+                auto ptr_to_attr =
+                    doc->allocate_string("DistinguishedPropertySetId");
+                auto ptr_to_property = doc->allocate_string(
+                    get_distinguished_property_set_id().c_str());
+                auto attr_new =
+                    doc->allocate_attribute(ptr_to_attr, ptr_to_property);
+                new_node->append_attribute(attr_new);
+            }
+
+            if (!get_property_set_id().empty())
+            {
+                auto ptr_to_attr = doc->allocate_string("PropertySetId");
+                auto ptr_to_property =
+                    doc->allocate_string(get_property_set_id().c_str());
+                auto attr_new =
+                    doc->allocate_attribute(ptr_to_attr, ptr_to_property);
+                new_node->append_attribute(attr_new);
+            }
+
+            if (!get_property_tag().empty())
+            {
+                auto ptr_to_attr = doc->allocate_string("PropertyTag");
+                auto ptr_to_property =
+                    doc->allocate_string(get_property_tag().c_str());
+                auto attr_new =
+                    doc->allocate_attribute(ptr_to_attr, ptr_to_property);
+                new_node->append_attribute(attr_new);
+            }
+
+            if (!get_property_name().empty())
+            {
+                auto ptr_to_attr = doc->allocate_string("PropertyName");
+                auto ptr_to_property =
+                    doc->allocate_string(get_property_name().c_str());
+                auto attr_new =
+                    doc->allocate_attribute(ptr_to_attr, ptr_to_property);
+                new_node->append_attribute(attr_new);
+            }
+
+            if (!get_property_type().empty())
+            {
+                auto ptr_to_attr = doc->allocate_string("PropertyType");
+                auto ptr_to_property =
+                    doc->allocate_string(get_property_type().c_str());
+                auto attr_new =
+                    doc->allocate_attribute(ptr_to_attr, ptr_to_property);
+                new_node->append_attribute(attr_new);
+            }
+
+            if (!get_property_id().empty())
+            {
+                auto ptr_to_attr = doc->allocate_string("PropertyId");
+                auto ptr_to_property =
+                    doc->allocate_string(get_property_id().c_str());
+                auto attr_new =
+                    doc->allocate_attribute(ptr_to_attr, ptr_to_property);
+                new_node->append_attribute(attr_new);
+            }
+
+            parent.append_node(new_node);
+            return *new_node;
+        }
+
+    private:
+        distinguished_property_set_id distinguished_set_id_;
+        property_set_id set_id_;
+        property_tag tag_;
+        property_name name_;
+        property_id id_;
+        property_type type_;
+    };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<extended_field_uri>::value,
+                  "");
+    static_assert(std::is_copy_constructible<extended_field_uri>::value, "");
+    static_assert(std::is_copy_assignable<extended_field_uri>::value, "");
+    static_assert(std::is_move_constructible<extended_field_uri>::value, "");
+    static_assert(std::is_move_assignable<extended_field_uri>::value, "");
+#endif
+
+    //! \brief Represents an <tt>\<ExtendedProperty\><tt>
+    //
+    //! The ExtendedProperty element identifies extended MAPI properties on
+    //! folders and items. Extended properties enable Microsoft Exchange Server
+    //! clients to add customized properties to items and folders that are
+    //! stored in an Exchange mailbox. Custom properties can be used to store
+    //! data that is relevant to an object.
+    class extended_property final
+    {
+    public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        extended_property() = delete;
+#else
+    private:
+        extended_property();
+
+    public:
+#endif
+        //! \brief Constructor to initialize an <tt>\<ExtendedProperty\></tt>
+        //! with the
+        //! neccessary values
+        extended_property(extended_field_uri ext_field_uri,
+                          std::vector<std::string> values)
+            : extended_field_uri_(std::move(ext_field_uri)),
+              values_(std::move(values))
+        {
+        }
+
+        //! Returns the the extended_field_uri element of this
+        //! extended_property.
+        const extended_field_uri& get_extended_field_uri() const EWS_NOEXCEPT
+        {
+            return extended_field_uri_;
+        }
+
+        //! \brief Returns the values of the extended_property as a vector
+        //! even it is just one
+        const std::vector<std::string>& get_values() const EWS_NOEXCEPT
+        {
+            return values_;
+        }
+
+    private:
+        extended_field_uri extended_field_uri_;
+        std::vector<std::string> values_;
+    };
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+    static_assert(!std::is_default_constructible<extended_property>::value, "");
+    static_assert(std::is_copy_constructible<extended_property>::value, "");
+    static_assert(std::is_copy_assignable<extended_property>::value, "");
+    static_assert(std::is_move_constructible<extended_property>::value, "");
+    static_assert(std::is_move_assignable<extended_property>::value, "");
 #endif
 
     //! Represents a generic <tt>\<Item></tt> in the Exchange store
@@ -7974,9 +8387,93 @@ namespace ews
             return xml().get_value_as_string("HasAttachments") == "true";
         }
 
-        // List of zero or more extended properties that are requested for
-        // this item
-        // TODO: get_extended_property
+        //! List of zero or more extended properties that are requested for
+        //! an item
+        std::vector<extended_property> get_extended_properties() const
+        {
+            std::vector<extended_property> vep;
+
+            for (auto top_node = xml().get_node("ExtendedProperty");
+                 top_node != nullptr; top_node = top_node->next_sibling())
+            {
+                if (std::string(top_node->name(), top_node->name_size()) !=
+                    "t:ExtendedProperty")
+                    continue;
+
+                for (auto ep_node = top_node->first_node(); ep_node != nullptr;
+                     ep_node = ep_node->next_sibling())
+                {
+                    auto ext_field_uri =
+                        extended_field_uri::from_xml_element(*ep_node);
+
+                    std::vector<std::string> values;
+                    ep_node = ep_node->next_sibling(); // go to value(es)
+
+                    if (std::string(ep_node->name(), ep_node->name_size()) ==
+                        "t:Value")
+                    {
+                        values.emplace_back(std::string(ep_node->value(),
+                                                        ep_node->value_size()));
+                    }
+                    else if (std::string(ep_node->name(),
+                                         ep_node->name_size()) == "t:Values")
+                    {
+                        for (auto node = ep_node->first_node(); node != nullptr;
+                             node = node->next_sibling())
+                        {
+                            values.emplace_back(
+                                std::string(node->value(), node->value_size()));
+                        }
+                    }
+                    vep.emplace_back(extended_property(ext_field_uri, values));
+                }
+            }
+            return vep;
+        }
+
+        //! Sets an extended property of an item
+        void set_extended_property(const extended_property& extended_prop)
+        {
+            auto doc = xml().document();
+
+            auto ptr_to_qname = doc->allocate_string("t:ExtendedProperty");
+            auto top_node = doc->allocate_node(rapidxml::node_element);
+            top_node->qname(ptr_to_qname, std::strlen("t:ExtendedProperty"),
+                            ptr_to_qname + 2);
+            top_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                    internal::uri<>::microsoft::types_size);
+            doc->append_node(top_node);
+
+            extended_field_uri field_uri =
+                extended_prop.get_extended_field_uri();
+            field_uri.to_xml_element(*top_node);
+
+            rapidxml::xml_node<>* cover_node = nullptr;
+            if (extended_prop.get_values().size() > 1)
+            {
+                auto ptr_to_values = doc->allocate_string("t:Values");
+                cover_node =
+                    doc->allocate_node(rapidxml::node_element, ptr_to_values);
+                cover_node->namespace_uri(
+                    internal::uri<>::microsoft::types(),
+                    internal::uri<>::microsoft::types_size);
+                top_node->append_node(cover_node);
+            }
+
+            for (auto str : extended_prop.get_values())
+            {
+                auto new_str = doc->allocate_string(str.c_str());
+                auto ptr_to_value = doc->allocate_string("t:Value");
+                auto cur_node =
+                    doc->allocate_node(rapidxml::node_element, ptr_to_value);
+                cur_node->namespace_uri(internal::uri<>::microsoft::types(),
+                                        internal::uri<>::microsoft::types_size);
+                cur_node->value(new_str);
+
+                cover_node == nullptr ? top_node->append_node(cur_node)
+                                      : cover_node->append_node(cur_node);
+            }
+        }
 
         //! Sets the culture name associated with the body of this item
         void set_culture(const std::string& culture)
@@ -12441,6 +12938,12 @@ namespace ews
             return get_item_impl<message>(id, base_shape::all_properties,
                                           additional_properties);
         }
+        message
+        get_message(const item_id& id,
+                    const std::vector<extended_field_uri>& ext_field_uri)
+        {
+            return get_item_impl<message>(id, ext_field_uri);
+        }
 
         //! Delete an arbitrary item from the Exchange store
         void delete_item(const item_id& id,
@@ -12973,6 +13476,41 @@ namespace ews
             for (const auto& prop : additional_properties)
             {
                 sstr << "<t:FieldURI FieldURI=\"" << prop.field_uri() << "\"/>";
+            }
+            sstr << "</t:AdditionalProperties>"
+                    "</m:ItemShape>"
+                    "<m:ItemIds>"
+                 << id.to_xml() << "</m:ItemIds>"
+                                   "</m:GetItem>";
+
+            auto response = request(sstr.str());
+            const auto response_message =
+                internal::get_item_response_message<ItemType>::parse(
+                    std::move(response));
+            if (!response_message.success())
+            {
+                throw exchange_error(response_message.get_response_code());
+            }
+            EWS_ASSERT(!response_message.items().empty() &&
+                       "Expected at least one item");
+            return response_message.items().front();
+        }
+
+        template <typename ItemType>
+        ItemType
+        get_item_impl(const item_id& id,
+                      const std::vector<extended_field_uri>& ext_field_uris)
+        {
+            EWS_ASSERT(!ext_field_uris.empty());
+
+            std::stringstream sstr;
+            sstr << "<m:GetItem>"
+                    "<m:ItemShape>"
+                    "<t:BaseShape>AllProperties</t:BaseShape>"
+                    "<t:AdditionalProperties>";
+            for (auto item : ext_field_uris)
+            {
+                sstr << item.to_xml();
             }
             sstr << "</t:AdditionalProperties>"
                     "</m:ItemShape>"

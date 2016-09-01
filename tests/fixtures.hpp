@@ -155,8 +155,7 @@ namespace tests
     class BaseFixture : public testing::Test
     {
     public:
-        BaseFixture()
-            : assets_(ews::test::global_data::instance().assets_dir)
+        BaseFixture() : assets_(ews::test::global_data::instance().assets_dir)
         {
         }
 

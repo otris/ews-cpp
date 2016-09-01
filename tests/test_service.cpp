@@ -268,8 +268,8 @@ namespace tests
         additional_recipients.push_back(ews::mailbox("gus.goose@duckburg.com"));
         auto prop = ews::property(ews::message_property_path::to_recipients,
                                   additional_recipients);
-        auto change = ews::update(prop,
-                                  ews::update::operation::append_to_item_field);
+        auto change =
+            ews::update(prop, ews::update::operation::append_to_item_field);
         auto new_id = service().update_item(message.get_item_id(), change);
         message = service().get_message(item_id);
         ASSERT_EQ(2U, message.get_to_recipients().size());
