@@ -678,6 +678,26 @@ namespace tests
         auto minnie = ews::contact();
         EXPECT_TRUE(minnie.get_children().empty());
     }
+
+    TEST(OfflineContactTest, SetChildrenValue)
+    {
+        auto minnie = ews::contact();
+        std::vector<std::string> children {"Andie", "Bandie"};
+        minnie.set_children(children);
+        auto first_child = children[0].c_str();
+        EXPECT_STREQ("Andie", first_child);
+    }
+
+    TEST_F(ContactTest, UpdateChildrenValue)
+    {
+        auto minnie = test_contact();
+        std::vector<std::string> children {"Ando", "Bando"};
+        auto prop = ews::property(ews::contact_property_path::children, children);
+        auto new_id = service().update_item(minnie.get_item_id(), prop);
+        minnie = service().get_contact(new_id);
+        EXPECT_FALSE(minnie.get_children().empty());
+    }
+
     // TODO:
     // PhoneNumbers
     // Children

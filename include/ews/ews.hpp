@@ -9961,8 +9961,40 @@ namespace ews
         {
             return xml().get_value_as_string("BusinessHomePage");
         }
+
         // A collection of children's names associated with the contact
         // TODO: get_children
+         void set_children(std::vector<std::string> children)
+         {
+            auto doc = xml().document();
+            auto target_node = xml().get_node("Children");
+            if (!target_node)
+            {
+                target_node = &internal::create_node(*doc, "t:Children");
+            }
+
+            for (const auto& child : children)
+            {
+                internal::create_node(*target_node, "t:String", child);
+            }
+         }
+        std::vector<std::string> get_children()
+        {
+            const auto children_node = xml().get_node("Children");
+            if (!children_node)
+            {
+                return std::vector<std::string>();
+            }
+
+            std::vector<std::string> children;
+            for (auto child = children_node->first_node(); child != nullptr;
+                 child = child->next_sibling())
+            {
+                children.emplace_back(
+                    std::string(child->value(), child->value_size()));
+            }
+            return children;
+        }
 
         // A collection of companies a contact is associated with
         // TODO: get_companies
