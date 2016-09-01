@@ -7557,7 +7557,7 @@ namespace ews
 
             explicit str_wrapper(std::string str) : value_(std::move(str)) {}
 
-            const std::string& str() const noexcept { return value_; }
+            const std::string& str() const EWS_NOEXCEPT { return value_; }
 
         private:
             std::string value_;
@@ -7587,6 +7587,7 @@ namespace ews
     {
     public:
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
+#if 0
         using distinguished_property_set_id =
             internal::str_wrapper<internal::distinguished_property_set_id>;
         using property_set_id =
@@ -7595,6 +7596,14 @@ namespace ews
         using property_name = internal::str_wrapper<internal::property_name>;
         using property_id = internal::str_wrapper<internal::property_id>;
         using property_type = internal::str_wrapper<internal::property_type>;
+#else
+        typedef internal::str_wrapper<internal::distinguished_property_set_id> distinguished_property_set_id;
+        typedef internal::str_wrapper<internal::property_set_id> property_set_id;
+        typedef internal::str_wrapper<internal::property_tag> property_tag;
+        typedef internal::str_wrapper<internal::property_name> property_name;
+        typedef internal::str_wrapper<internal::property_id> property_id;
+        typedef internal::str_wrapper<internal::property_type> property_type;
+#endif
 #endif
 
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
