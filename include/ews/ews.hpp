@@ -9962,8 +9962,7 @@ namespace ews
             return xml().get_value_as_string("BusinessHomePage");
         }
 
-        // A collection of children's names associated with the contact
-        // TODO: get_children
+        //! A collection of children's names associated with the contact
          void set_children(std::vector<std::string> children)
          {
             auto doc = xml().document();
@@ -9998,6 +9997,39 @@ namespace ews
 
         // A collection of companies a contact is associated with
         // TODO: get_companies
+        void set_companies(std::vector<std::string> companies)
+        {
+            auto doc = xml().document();
+            auto target_node = xml().get_node("Companies");
+            if (!target_node)
+            {
+                target_node = &internal::create_node(*doc, "t:Companies");
+            }
+
+            for (const auto& company : companies)
+            {
+                internal::create_node(*target_node, "t:String", company);
+            }
+        }
+
+        std::vector<std::string> get_companies()
+        {
+            const auto companies_node = xml().get_node("Companies");
+            if (!companies_node)
+            {
+                return std::vector<std::string>();
+            }
+
+            std::vector<std::string> companies;
+            for (auto child = companies_node->first_node(); child != nullptr;
+                 child = child->next_sibling())
+            {
+                companies.emplace_back(
+                    std::string(child->value(), child->value_size()));
+            }
+            return companies;
+        }
+
 
         // Indicates whether this is a directory or a store contact
         // (read-only)

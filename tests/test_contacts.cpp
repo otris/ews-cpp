@@ -698,9 +698,34 @@ namespace tests
         EXPECT_FALSE(minnie.get_children().empty());
     }
 
+    TEST(OfflineContactTest, InitialCompaniesValue)
+    {
+        auto minnie = ews::contact();
+        EXPECT_TRUE(minnie.get_companies().empty());
+    }
+
+    TEST(OfflineContactTest, SetCompaniesValue)
+    {
+        auto minnie = ews::contact();
+        std::vector<std::string> companies {"Otris GmbH", "Aperture Science"};
+        minnie.set_companies(companies);
+        auto first_company = companies[0].c_str();
+        EXPECT_STREQ("Otris GmbH", first_company);
+    }
+
+    TEST_F(ContactTest, UpdateCompaniesValue)
+    {
+        auto minnie = test_contact();
+        std::vector<std::string> companies {"Otris GmbH", "Aperture Science"};
+        auto prop = ews::property(ews::contact_property_path::companies, companies);
+        auto new_id = service().update_item(minnie.get_item_id(), prop);
+        minnie = service().get_contact(new_id);
+        EXPECT_FALSE(minnie.get_companies().empty());
+    }
+
+
     // TODO:
     // PhoneNumbers
-    // Children
     // Companies
     // ContactSource read-only!!
     // ImAddresses
