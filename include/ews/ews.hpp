@@ -9795,8 +9795,7 @@ namespace ews
             set_email_address_by_key("EmailAddress3", std::move(address));
         }
 
-        // A collection of mailing addresses for the contact
-        // TODO: get_physical_addresses
+        //! A collection of mailing addresses for the contact
         std::vector<physical_address> get_physical_addresses() const
         {
             const auto addresses = xml().get_node("PhysicalAddresses");
@@ -9816,6 +9815,7 @@ namespace ews
         void set_physical_address(const physical_address& address)
         {
             using rapidxml::internal::compare;
+            using internal::create_node;
             auto doc = xml().document();
             auto addresses = xml().get_node("PhysicalAddresses");
             // <PhysicalAddresses>
@@ -9860,14 +9860,7 @@ namespace ews
             }
             else
             {
-                auto name = doc->allocate_string("t:PhysicalAddresses");
-                addresses = doc->allocate_node(rapidxml::node_element);
-                addresses->qname(name, std::strlen("t:PhysicalAddresses"),
-                                 name + 2);
-                addresses->namespace_uri(
-                    internal::uri<>::microsoft::types(),
-                    internal::uri<>::microsoft::types_size);
-                doc->append_node(addresses);
+                addresses = &create_node(*doc, "t:PhysicalAddresses");
             }
 
             // create entry & key
@@ -9940,8 +9933,22 @@ namespace ews
             return xml().get_value_as_string("AssistantName");
         }
 
-        // The contact's birthday
-        // TODO: get_birthday
+        //! The contact's birthday
+        // Be careful with the formating of the date string
+        // It has to be in the format YYYY-MM-DD(THH:MM:SSZ) <- can be left out
+        // if the time of the day isn't important, will automatically be set to
+        // YYYY-MM-DDT00:00:00Z
+        //
+        // This also applies to any other contact property with a date type string
+        void set_birthday(std::string birthday)
+        {
+            xml().set_or_update("Birthday", birthday);
+        }
+
+        std::string get_birthday()
+        {
+            return xml().get_value_as_string("Birthday");
+        }
 
         //! Sets the web page for the contact's business; typically a URL
         void set_business_homepage(const std::string& business_homepage)
@@ -10083,8 +10090,16 @@ namespace ews
             return xml().get_value_as_string("Surname");
         }
 
-        // Date that the contact was married
-        // TODO: get_wedding_anniversary
+        //! Date that the contact was married
+        void set_wedding_anniversary(std::string anniversary)
+        {
+            xml().set_or_update("WeddingAnniversary", anniversary);
+        }
+
+        std::string get_wedding_anniversary()
+        {
+            return xml().get_value_as_string("WeddingAnniversary");
+        }
 
         // Everything below is beyond EWS 2007 subset
 
@@ -12231,12 +12246,12 @@ namespace ews
         static const property_path phonetic_last_name =
             "contacts:PhoneticLastName";
         static const property_path photo = "contacts:Photo";
-        static const indexed_property_path
-            street("contacts:PhysicalAddress", "Street");
-        static const indexed_property_path
-            city("contacts:PhysicalAddress", "City");
-        static const indexed_property_path
-            state("contacts:PhysicalAddress", "State");
+        static const indexed_property_path street("contacts:PhysicalAddress",
+                                                  "Street");
+        static const indexed_property_path city("contacts:PhysicalAddress",
+                                                "City");
+        static const indexed_property_path state("contacts:PhysicalAddress",
+                                                 "State");
         static const indexed_property_path
             country_or_region("contacts:PhysicalAddress", "CountryOrRegion");
         static const indexed_property_path
@@ -12481,7 +12496,6 @@ namespace ews
         }
 
         bool empty_value() const EWS_NOEXCEPT { return value_.empty(); }
-
         const property_path& path() const EWS_NOEXCEPT { return path_; }
 
     private:

@@ -41,15 +41,41 @@ namespace tests
         }
     }
 
-    TEST_F(ContactTest, UpdateEmailAddressProperty)
+    TEST(OfflineContactTest, InitialFileAs)
+    {
+        auto minnie = ews::contact();
+        EXPECT_STREQ("", minnie.get_file_as().c_str());
+    }
+
+    TEST(OfflineContactTest, SetFileAs)
+    {
+        auto minnie = ews::contact();
+        minnie.set_file_as("Minnie Mouse");
+        EXPECT_STREQ("Minnie Mouse", minnie.get_file_as().c_str());
+    }
+
+    TEST_F(ContactTest, UpdateFileAs)
     {
         auto minnie = test_contact();
+        auto prop =
+            ews::property(ews::contact_property_path::file_as, "Minnie Mouse");
+        auto new_id = service().update_item(minnie.get_item_id(), prop);
+        minnie = service().get_contact(new_id);
+        EXPECT_STREQ("Minnie Mouse", minnie.get_file_as().c_str());
+    }
 
+    TEST(OfflineContactTest, InitialEmailAddressProperty)
+    {
+        auto minnie = ews::contact();
         EXPECT_STREQ("", minnie.get_email_address_1().c_str());
         EXPECT_STREQ("", minnie.get_email_address_2().c_str());
         EXPECT_STREQ("", minnie.get_email_address_3().c_str());
         EXPECT_TRUE(minnie.get_email_addresses().empty());
+    }
 
+    TEST(OfflineContactTest, SetEmailAddressProperty)
+    {
+        auto minnie = ews::contact();
         minnie.set_email_address_1(ews::mailbox("minnie.mouse@duckburg.com"));
         EXPECT_STREQ("minnie.mouse@duckburg.com",
                      minnie.get_email_address_1().c_str());
@@ -59,9 +85,20 @@ namespace tests
         ASSERT_FALSE(addresses.empty());
         EXPECT_STREQ("minnie.mouse@duckburg.com",
                      addresses.front().value().c_str());
-
-        // TODO: delete an email address entry from a contact
     }
+
+    TEST_F(ContactTest, UpdateEmailAddressProperty)
+    {
+        auto minnie = test_contact();
+        auto prop = ews::property(ews::contact_property_path::email_address_1,
+                                  "minnie.mouse@duckburg.com");
+        auto new_id = service().update_item(minnie.get_item_id(), prop);
+        minnie = service().get_contact(new_id);
+        EXPECT_STREQ("minnie.mouse@duckburg.com",
+                     minnie.get_email_address_1().c_str());
+    }
+
+    // TODO: delete an email address entry from a contact
 
     TEST(OfflineContactTest, InitialGivenNameValue)
     {
@@ -570,8 +607,8 @@ namespace tests
         minnie.set_physical_address(address2);
         const auto addresses = minnie.get_physical_addresses();
         ASSERT_EQ(2U, addresses.size());
-        auto home = ews::internal::enum_to_str(addresses[0].get_key().c_str());
-        EXPECT_EQ("Home", home);
+        auto home = ews::internal::enum_to_str(addresses[0].get_key()).c_str();
+        EXPECT_STREQ("Home", home);
         auto business =
             ews::internal::enum_to_str(addresses[1].get_key()).c_str();
         EXPECT_STREQ("Business", business);
@@ -583,24 +620,72 @@ namespace tests
         auto address =
             ews::physical_address(ews::physical_address::key::home, "Duckroad",
                                   "Duckburg", "", "", "");
-        auto prop = ews::property(
-            ews::contact_property_path::physical_address::city, "Duckburg");
+        auto prop = ews::property(ews::contact_property_path::city, "Duckburg");
         auto new_id = service().update_item(minnie.get_item_id(), prop);
         minnie = service().get_contact(new_id);
         EXPECT_FALSE(minnie.get_physical_addresses().empty());
     }
 
-        //TODO:
-        //PhysicalAddresses
-        //PhoneNumbers
-        //Birthday
-        //Children
-        //Companies
-        //ContactSource
-        //ImAddresses
-        //PostalAddressIndex
-        //WeddingAnniversary
-   
+    TEST(OfflineContactTest, InitialBirthdayValue)
+    {
+        auto minnie = ews::contact();
+        EXPECT_STREQ("", minnie.get_birthday().c_str());
+    }
+
+    TEST(OfflineContactTest, SetBirthdayValue)
+    {
+        auto minnie = ews::contact();
+        minnie.set_birthday("1994-11-03");
+        EXPECT_STREQ("1994-11-03", minnie.get_birthday().c_str());
+    }
+
+    TEST_F(ContactTest, UpdateBirthdayValue)
+    {
+        auto minnie = test_contact();
+        auto prop =
+            ews::property(ews::contact_property_path::birthday, "1994-11-03");
+        auto new_id = service().update_item(minnie.get_item_id(), prop);
+        minnie = service().get_contact(new_id);
+        EXPECT_STREQ("1994-11-03T00:00:00Z", minnie.get_birthday().c_str());
+    }
+
+    TEST(OfflineContactTest, InitialWeddingAnniversaryValue)
+    {
+        auto minnie = ews::contact();
+        EXPECT_STREQ("", minnie.get_wedding_anniversary().c_str());
+    }
+
+    TEST(OfflineContactTest, SetWeddingAnniversaryValue)
+    {
+        auto minnie = ews::contact();
+        minnie.set_wedding_anniversary("2001-09-11");
+        EXPECT_STREQ("2001-09-11", minnie.get_wedding_anniversary().c_str());
+    }
+
+    TEST_F(ContactTest, UpdateWeddingAnniversaryValue)
+    {
+        auto minnie = test_contact();
+        auto prop = ews::property(
+            ews::contact_property_path::wedding_anniversary, "2001-09-11");
+        auto new_id = service().update_item(minnie.get_item_id(), prop);
+        minnie = service().get_contact(new_id);
+        EXPECT_STREQ("2001-09-11T00:00:00Z",
+                     minnie.get_wedding_anniversary().c_str());
+    }
+
+    TEST(OfflineContactTest, InitialChildrenValue)
+    {
+        auto minnie = ews::contact();
+        EXPECT_TRUE(minnie.get_children().empty());
+    }
+    // TODO:
+    // PhoneNumbers
+    // Children
+    // Companies
+    // ContactSource read-only!!
+    // ImAddresses
+    // PostalAddressIndex
+
     TEST_F(ContactTest, GetCompleteNameProperty)
     {
         auto minnie = test_contact();
