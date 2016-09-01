@@ -7722,9 +7722,9 @@ namespace ews
         {
             using rapidxml::internal::compare;
 
-            EWS_ASSERT(compare(elem.local_name(), elem.local_name_size(),
-                               "ExtendedFieldURI",
-                               std::strlen("ExtendedFieldURI")) &&
+            EWS_ASSERT(compare(elem.name(), elem.name_size(),
+                               "t:ExtendedFieldURI",
+                               std::strlen("t:ExtendedFieldURI")) &&
                        "Expected a <ExtendedFieldURI/>, got something else");
 
             std::string distinguished_set_id;
