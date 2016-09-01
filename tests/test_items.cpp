@@ -724,6 +724,7 @@ namespace tests
         EXPECT_STREQ("42", obj.get_property_id().c_str());
         EXPECT_STREQ("Boolean", obj.get_property_type().c_str());
     }
+
     TEST(OfflineExtendedFieldUriTest, PropertySetIdIdRoundTrip)
     {
         // 3. based on property_set_id and property_id
@@ -747,6 +748,7 @@ namespace tests
         EXPECT_STREQ("2", obj.get_property_id().c_str());
         EXPECT_STREQ("IntegerArray", obj.get_property_type().c_str());
     }
+
     TEST(OfflineExtendedFieldUriTest, PropertySetIdNameRoundTrip)
     {
         // 4. based on property_set_id and property_name

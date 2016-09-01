@@ -7597,8 +7597,10 @@ namespace ews
         using property_id = internal::str_wrapper<internal::property_id>;
         using property_type = internal::str_wrapper<internal::property_type>;
 #else
-        typedef internal::str_wrapper<internal::distinguished_property_set_id> distinguished_property_set_id;
-        typedef internal::str_wrapper<internal::property_set_id> property_set_id;
+        typedef internal::str_wrapper<internal::distinguished_property_set_id>
+            distinguished_property_set_id;
+        typedef internal::str_wrapper<internal::property_set_id>
+            property_set_id;
         typedef internal::str_wrapper<internal::property_tag> property_tag;
         typedef internal::str_wrapper<internal::property_name> property_name;
         typedef internal::str_wrapper<internal::property_id> property_id;
@@ -7812,7 +7814,8 @@ namespace ews
                                           property_type(type));
             }
 
-            throw exception("Unexpected combination of ");
+            throw exception(
+                "Unexpected combination of <ExtendedFieldURI/> attributes");
         }
 
         rapidxml::xml_node<>& to_xml_element(rapidxml::xml_node<>& parent) const
@@ -8400,44 +8403,52 @@ namespace ews
         //! an item
         std::vector<extended_property> get_extended_properties() const
         {
-            std::vector<extended_property> vep;
+            using rapidxml::internal::compare;
+
+            std::vector<extended_property> properties;
 
             for (auto top_node = xml().get_node("ExtendedProperty");
                  top_node != nullptr; top_node = top_node->next_sibling())
             {
-                if (std::string(top_node->name(), top_node->name_size()) !=
-                    "t:ExtendedProperty")
+                if (!compare(top_node->name(), top_node->name_size(),
+                             "t:ExtendedProperty",
+                             std::strlen("t:ExtendedProperty")))
+                {
                     continue;
+                }
 
-                for (auto ep_node = top_node->first_node(); ep_node != nullptr;
-                     ep_node = ep_node->next_sibling())
+                for (auto node = top_node->first_node(); node != nullptr;
+                     node = node->next_sibling())
                 {
                     auto ext_field_uri =
-                        extended_field_uri::from_xml_element(*ep_node);
+                        extended_field_uri::from_xml_element(*node);
 
                     std::vector<std::string> values;
-                    ep_node = ep_node->next_sibling(); // go to value(es)
+                    node = node->next_sibling(); // go to value(es)
 
-                    if (std::string(ep_node->name(), ep_node->name_size()) ==
-                        "t:Value")
+                    if (compare(node->name(), node->name_size(), "t:Value",
+                                std::strlen("t:Value")))
                     {
-                        values.emplace_back(std::string(ep_node->value(),
-                                                        ep_node->value_size()));
+                        values.emplace_back(
+                            std::string(node->value(), node->value_size()));
                     }
-                    else if (std::string(ep_node->name(),
-                                         ep_node->name_size()) == "t:Values")
+                    else if (compare(node->name(), node->name_size(),
+                                     "t:Values", std::strlen("t:Values")))
                     {
-                        for (auto node = ep_node->first_node(); node != nullptr;
-                             node = node->next_sibling())
+                        for (auto child = node->first_node(); child != nullptr;
+                             child = child->next_sibling())
                         {
-                            values.emplace_back(
-                                std::string(node->value(), node->value_size()));
+                            values.emplace_back(std::string(
+                                child->value(), child->value_size()));
                         }
                     }
-                    vep.emplace_back(extended_property(ext_field_uri, values));
+
+                    properties.emplace_back(extended_property(
+                        std::move(ext_field_uri), std::move(values)));
                 }
             }
-            return vep;
+
+            return properties;
         }
 
         //! Sets an extended property of an item
