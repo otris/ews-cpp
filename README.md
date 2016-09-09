@@ -47,6 +47,7 @@ C++ application.
 
 However, our goal is to support all Exchange Server versions since 2007.
 
+
 ## Run-time Dependencies
 
 * libcurl, at least version 7.22

@@ -39,6 +39,7 @@ addons:
 #    - cmake-data
 #- libcurl4-openssl-dev
 #    - libcurl4-gnutls-dev
+    - libcurl4-gnutls-dev
 
 before_script:
 #    - export CFLAGS=-m64
