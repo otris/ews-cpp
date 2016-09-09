@@ -24,11 +24,12 @@ C++ application.
 
 |Compiler|64 bit|32 bit|
 |--------|:----:|:----:|
-|Visual Studio 2012| - | - |
+|Visual Studio 2012| * | * |
 |Visual Studio 2013|[![Build status](https://ci.appveyor.com/api/projects/status/6t0hsgh540vmml9c/branch/master?svg=true)](https://ci.appveyor.com/project/raldus/ews-cpp-ea5m3/branch/master)|[![Build status](https://ci.appveyor.com/api/projects/status/mv0vp5nujv3nj3kx/branch/master?svg=true)](https://ci.appveyor.com/project/raldus/ews-cpp-yxo80/branch/master)|
 |Visual Studio 2015|[![Build status](https://ci.appveyor.com/api/projects/status/h0pt39gcb97wrfys/branch/master?svg=true)](https://ci.appveyor.com/project/raldus/ews-cpp-do8dr/branch/master)|[![Build status](https://ci.appveyor.com/api/projects/status/dl2vrfa5c7wdprrf/branch/master?svg=true)](https://ci.appveyor.com/project/raldus/ews-cpp-pa626/branch/master)|
-|Clang 3.5 with libc++|[![Build Status](https://travis-ci.org/otris/ews-cpp.svg?branch=master)](https://travis-ci.org/otris/ews-cpp)| - |
-|GCC 4.8 with libstdc++|[![Build Status](https://travis-ci.org/otris/ews-cpp.svg?branch=master)](https://travis-ci.org/otris/ews-cpp)| - |
+|Clang 3.5 with libc++| * | * |
+|GCC 4.8 with libstdc++|[![Build Status](https://travis-ci.org/otris/ews-cpp.svg?branch=master)](https://travis-ci.org/otris/ews-cpp)| * |
+\* = CI will be implemented soon
 
 
 ## Supported Operating Systems
@@ -45,6 +46,7 @@ C++ application.
 * Microsoft Exchange Server 2013 SP1
 
 However, our goal is to support all Exchange Server versions since 2007.
+
 
 ## Run-time Dependencies
 
