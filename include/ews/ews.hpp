@@ -7587,7 +7587,7 @@ namespace ews
     {
     public:
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
-#if 0
+#ifdef EWS_HAS_TYPE_ALIAS
         using distinguished_property_set_id =
             internal::str_wrapper<internal::distinguished_property_set_id>;
         using property_set_id =
