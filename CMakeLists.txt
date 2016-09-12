@@ -185,6 +185,21 @@ if(HAS_MAKE_UNIQUE)
     add_definitions(-DEWS_HAS_MAKE_UNIQUE)
 endif()
 
+# Type alias declarations
+# http://en.cppreference.com/w/cpp/language/type_alias
+# negative: VS 2012
+CHECK_CXX_SOURCE_COMPILES("
+#include <ios>
+using flags = std::ios_base::fmtflags;
+flags f = std::ios_base::dec;
+template <typename T> using ptr = T*;
+ptr<int> x;
+int main() { }
+" HAS_TYPE_ALIAS)
+if(HAS_TYPE_ALIAS)
+    add_definitions(-DEWS_HAS_TYPE_ALIAS)
+endif()
+
 # Default template arguments for function templates - negative: VS 2012
 CHECK_CXX_SOURCE_COMPILES("
 template <typename Fu = int> void func() { }
