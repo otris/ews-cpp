@@ -9624,6 +9624,147 @@ namespace ews
         }
     }
 
+    class file_as_mapping final
+    {
+    public:
+        enum class mapping
+        {
+            none,
+            last_comma_first,
+            first_space_last,
+            company,
+            last_comma_first_company,
+            company_last_first,
+            last_first,
+            last_first_company,
+            company_last_comma_first,
+            last_first_suffix,
+            last_space_first_company,
+            company_last_space_first,
+            last_space_first
+        };
+
+        static mapping string_to_map(const std::string& maptype)
+        {
+            mapping map;
+
+            if (maptype == "LastCommaFirst")
+            {
+                map = file_as_mapping::mapping::last_comma_first;
+            }
+            else if (maptype == "FirstSpaceLast")
+            {
+                map = file_as_mapping::mapping::first_space_last;
+            }
+            else if (maptype == "Company")
+            {
+                map = file_as_mapping::mapping::company;
+            }
+            else if (maptype == "LastCommaFirstCompany")
+            {
+                map = file_as_mapping::mapping::last_comma_first_company;
+            }
+            else if (maptype == "CompanyLastFirst")
+            {
+                map = file_as_mapping::mapping::company_last_first;
+            }
+            else if (maptype == "LastFirst")
+            {
+                map = file_as_mapping::mapping::last_first;
+            }
+            else if (maptype == "LastFirstCompany")
+            {
+                map = file_as_mapping::mapping::last_first_company;
+            }
+            else if (maptype == "CompanyLastCommaFirst")
+            {
+                map = file_as_mapping::mapping::company_last_comma_first;
+            }
+            else if (maptype == "LastFirstSuffix")
+            {
+                map = file_as_mapping::mapping::last_first_suffix;
+            }
+            else if (maptype == "LastSpaceFirstCompany")
+            {
+                map = file_as_mapping::mapping::last_space_first_company;
+            }
+            else if (maptype == "CompanyLastSpaceFirst")
+            {
+                map = file_as_mapping::mapping::company_last_space_first;
+            }
+            else if (maptype == "LastSpaceFirst")
+            {
+                map = file_as_mapping::mapping::last_space_first;
+            }
+            else if (maptype == "None")
+            {
+                map = file_as_mapping::mapping::none;
+            }
+            else
+            {
+                throw exception(
+                    std::string("Unrecognized FileAsMapping Type: ") + maptype);
+            }
+            return map;
+        }
+
+
+    };
+
+    namespace internal
+    {
+        inline std::string enum_to_str(std::string maptype)
+        {
+           auto mapping_type = file_as_mapping::string_to_map(maptype);
+           std::string mappingtype;
+            switch (mapping_type)
+            {
+            case file_as_mapping::mapping::none:
+                mappingtype = "None";
+                break;
+            case file_as_mapping::mapping::last_comma_first:
+                mappingtype = "LastCommaFirst";
+                break;
+            case file_as_mapping::mapping::first_space_last:
+                mappingtype = "FirstSpaceLast";
+                break;
+            case file_as_mapping::mapping::company:
+                mappingtype = "Company";
+                break;
+            case file_as_mapping::mapping::last_comma_first_company:
+                mappingtype = "LastCommaFirstCompany";
+                break;
+            case file_as_mapping::mapping::company_last_first:
+                mappingtype = "CompanyLastFirst";
+                break;
+            case file_as_mapping::mapping::last_first:
+                mappingtype = "LastFirst";
+                break;
+            case file_as_mapping::mapping::last_first_company:
+                mappingtype = "LastFirstCompany";
+                break;
+            case file_as_mapping::mapping::company_last_comma_first:
+                mappingtype = "CompanyLastCommaFirst";
+                break;
+            case file_as_mapping::mapping::last_first_suffix:
+                mappingtype = "LastFirstSuffix";
+                break;
+            case file_as_mapping::mapping::last_space_first_company:
+                mappingtype = "LastSpaceFirstCompany";
+                break;
+            case file_as_mapping::mapping::company_last_space_first:
+                mappingtype = "CompanyLastSpaceFirst";
+                break;
+            case file_as_mapping::mapping::last_space_first:
+                mappingtype = "LastSpaceFirst";
+                break;
+            default:
+                break;
+            }
+            return mappingtype;
+        }
+    }
+
     //! A contact item in the Exchange store.
     class contact final : public item
     {
@@ -9642,23 +9783,32 @@ namespace ews
         {
         }
 #endif
-        /**
+
         //! How the name should be filed for display/sorting purposes
-        // TODO: file_as
-        std::string get_file_as_mapping(std::string maptype)
+        void set_file_as(std::string fileas)
         {
-            return xml().get_value_as_string(maptype);
+            xml().set_or_update("FileAs", fileas);
+        }
+
+        std::string get_file_as()
+        {
+            return xml().get_value_as_string("FileAs");
         }
 
         //! How the various parts of a contact's information interact to form
         //! the FileAs property value
-        // TODO: file_as_mapping
-
+        //! Overrides previously made FileAs settings
         void set_file_as_mapping(std::string maptype)
         {
-
+            auto mapping = internal::enum_to_str(maptype);
+            xml().set_or_update("FileAsMapping", mapping);
         }
-        */
+
+        std::string get_file_as_mapping()
+        {
+            return xml().get_value_as_string("FileAsMapping");
+        }
+
         //! Sets the name to display for a contact
         void set_display_name(const std::string& display_name)
         {
@@ -9995,8 +10145,7 @@ namespace ews
             return children;
         }
 
-        // A collection of companies a contact is associated with
-        // TODO: get_companies
+        //! A collection of companies a contact is associated with
         void set_companies(std::vector<std::string> companies)
         {
             auto doc = xml().document();

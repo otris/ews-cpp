@@ -64,6 +64,37 @@ namespace tests
         EXPECT_STREQ("Minnie Mouse", minnie.get_file_as().c_str());
     }
 
+    TEST(OfflineContactTest, InitialFileAsMappingValue)
+    {
+        auto minnie = ews::contact();
+        EXPECT_STREQ("", minnie.get_file_as_mapping().c_str());
+    }
+
+    TEST(OfflineContactTest, SetFileAsMappingValue)
+    {
+        auto minnie = ews::contact();
+        minnie.set_file_as_mapping("LastCommaFirst");
+        EXPECT_STREQ("LastCommaFirst", minnie.get_file_as_mapping().c_str());
+    }
+
+    TEST_F(ContactTest, UpdateFileAsMappingValue)
+    {
+        auto minnie = test_contact();
+        auto prop =
+            ews::property(ews::contact_property_path::file_as, "Minnie Mouse");
+        auto new_id = service().update_item(minnie.get_item_id(), prop);
+        minnie = service().get_contact(new_id);
+        EXPECT_STREQ("Minnie Mouse", minnie.get_file_as().c_str());
+
+        prop = ews::property(ews::contact_property_path::file_as_mapping,
+                             "LastSpaceFirst");
+        new_id = service().update_item(minnie.get_item_id(), prop);
+        minnie = service().get_contact(new_id);
+        EXPECT_STREQ("LastSpaceFirst", minnie.get_file_as_mapping().c_str());
+        EXPECT_STREQ("Mouse Minerva", minnie.get_file_as().c_str());
+
+    }
+
     TEST(OfflineContactTest, InitialEmailAddressProperty)
     {
         auto minnie = ews::contact();
