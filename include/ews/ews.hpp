@@ -4623,7 +4623,7 @@ namespace ews
             return doc;
         }
 
-        // TODO: explicitlz for nodes in Types XML namespace, document or
+        // TODO: explicitly for nodes in Types XML namespace, document or
         // change interface
         inline rapidxml::xml_node<>& create_node(rapidxml::xml_node<>& parent,
                                                  const std::string& name)
@@ -7545,7 +7545,7 @@ namespace ews
 
     namespace internal
     {
-        // Wraps a string so that it become its own type
+        // Wraps a string so that it becomes its own type
         template <int tag> class str_wrapper final
         {
         public:

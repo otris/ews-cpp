@@ -713,7 +713,7 @@ namespace tests
     TEST(OfflineContactTest, SetChildrenValue)
     {
         auto minnie = ews::contact();
-        std::vector<std::string> children {"Andie", "Bandie"};
+        std::vector<std::string> children{"Andie", "Bandie"};
         minnie.set_children(children);
         auto first_child = children[0].c_str();
         EXPECT_STREQ("Andie", first_child);
