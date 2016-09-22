@@ -92,7 +92,6 @@ namespace tests
         minnie = service().get_contact(new_id);
         EXPECT_STREQ("LastSpaceFirst", minnie.get_file_as_mapping().c_str());
         EXPECT_STREQ("Mouse Minerva", minnie.get_file_as().c_str());
-
     }
 
     TEST(OfflineContactTest, InitialEmailAddressProperty)
@@ -129,7 +128,21 @@ namespace tests
                      minnie.get_email_address_1().c_str());
     }
 
-    // TODO: delete an email address entry from a contact
+    TEST_F(ContactTest, DeleteEmailAddress)
+    {
+        auto minnie = test_contact();
+        auto prop = ews::property(ews::contact_property_path::email_address_1,
+                                  "minnie.mouse@duckburg.com");
+        auto new_id = service().update_item(minnie.get_item_id(), prop);
+        minnie = service().get_contact(new_id);
+        ASSERT_STREQ("minnie.mouse@duckburg.com",
+                     minnie.get_email_address_1().c_str());   
+    
+        prop = ews::property(ews::contact_property_path::email_address_1);
+        new_id = service().update_item(minnie.get_item_id(), prop);
+        minnie = service().get_contact(new_id);
+        EXPECT_STREQ("", minnie.get_email_address_1().c_str());
+    }
 
     TEST(OfflineContactTest, InitialGivenNameValue)
     {
