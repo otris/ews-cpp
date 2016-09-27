@@ -10388,7 +10388,66 @@ namespace ews
         }
 
         // A collection of phone numbers for the contact
-        // TODO: get_phone_numbers
+        void set_phone_number(const phone_number& number)
+        {
+            using rapidxml::internal::compare;
+            using internal::create_node;
+            auto doc = xml().document();
+            auto phone_numbers = xml().get_node("PhoneNumbers");
+
+            if (phone_numbers)
+            {
+                bool entry_exists = false;
+                auto entry = phone_numbers->first_node();
+                for (; entry != nullptr; entry = entry->next_sibling())
+                {
+                    auto key_attr = entry->first_attribute();
+                    EWS_ASSERT(key_attr);
+                    EWS_ASSERT(compare(key_attr->name(), key_attr->name_size(),
+                                       "Key", 3));
+                    const auto key = internal::enum_to_str(number.get_key());
+                    if (compare(key_attr->value(), key_attr->value_size(),
+                                key.c_str(), key.size()))
+                    {
+                        entry_exists = true;
+                        break;
+                    }
+                }
+                if (entry_exists)
+                {
+                    phone_numbers->remove_node(entry);
+                }
+            }
+            else
+            {
+                phone_numbers = &create_node(*doc, "t:PhoneNumbers");
+            }
+
+            // create entry & key
+            const auto value = number.get_value();
+            auto new_entry = &create_node(*phone_numbers, "t:Entry", value);
+            auto ptr_to_key = doc->allocate_string("Key");
+            const auto key = internal::enum_to_str(number.get_key());
+            auto ptr_to_value = doc->allocate_string(key.c_str());
+            new_entry->append_attribute(
+                doc->allocate_attribute(ptr_to_key, ptr_to_value));
+        }
+
+        std::vector<phone_number> get_phone_numbers() const
+        {
+            const auto numbers = xml().get_node("PhoneNumbers");
+            if (!numbers)
+            {
+                return std::vector<phone_number>();
+            }
+            std::vector<phone_number> result;
+            for (auto entry = numbers->first_node(); entry != nullptr;
+                 entry = entry->next_sibling())
+            {
+                result.push_back(phone_number::from_xml_element(*entry));
+            }
+            return result;
+        }
 
         //! Sets the name of the contact's assistant
         void set_assistant_name(const std::string& assistant_name)
@@ -12770,6 +12829,17 @@ namespace ews
         static const property_path notes = "contacts:Notes";
         static const property_path office_location = "contacts:OfficeLocation";
         static const property_path phone_numbers = "contacts:PhoneNumbers";
+
+        namespace phone_number
+        {
+            static const indexed_property_path
+                home_phone("contacts:PhoneNumber", "HomePhone");
+            static const indexed_property_path pager("contacts:PhoneNumber",
+                                                     "Pager");
+            static const indexed_property_path
+                business_phone("contacts:PhoneNumber", "BusinessPhone");
+        }
+
         static const property_path phonetic_full_name =
             "contacts:PhoneticFullName";
         static const property_path phonetic_first_name =

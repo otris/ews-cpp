@@ -761,19 +761,80 @@ namespace tests
     TEST_F(ContactTest, UpdateCompaniesValue)
     {
         auto minnie = test_contact();
-        std::vector<std::string> companies {"Otris GmbH", "Aperture Science"};
-        auto prop = ews::property(ews::contact_property_path::companies, companies);
+        std::vector<std::string> companies{"Otris GmbH", "Aperture Science"};
+        auto prop =
+            ews::property(ews::contact_property_path::companies, companies);
         auto new_id = service().update_item(minnie.get_item_id(), prop);
         minnie = service().get_contact(new_id);
         EXPECT_FALSE(minnie.get_companies().empty());
     }
 
+    TEST(OfflineContactTest, InitialImAddressesValue)
+    {
+        auto minnie = ews::contact();
+        EXPECT_TRUE(minnie.get_im_addresses().empty());
+    }
+
+    TEST(OfflineContactTest, SetImAddressesValue)
+    {
+        auto minnie = ews::contact();
+        std::vector<std::string> addresses{"MMouse", "MouseGirl1928"};
+        minnie.set_im_addresses(addresses);
+        auto im_addresses = minnie.get_im_addresses();
+        auto first_address = im_addresses[0].c_str();
+        EXPECT_STREQ("MMouse", first_address);
+    }
+
+    TEST_F(ContactTest, UpdateImAddressesValue)
+    {
+        auto minnie = test_contact();
+        auto prop =
+            ews::property(ews::contact_property_path::im_address_1, "MMouse");
+        auto new_id = service().update_item(minnie.get_item_id(), prop);
+        minnie = service().get_contact(new_id);
+        EXPECT_FALSE(minnie.get_im_addresses().empty());
+    }
+
+    TEST(OfflineContactTest, InitialPhoneNumberValue)
+    {
+        auto minnie = ews::contact();
+        EXPECT_TRUE(minnie.get_phone_numbers().empty());
+    }
+
+    TEST(OfflineContactTest, SetPhoneNumberValue)
+    {
+        auto minnie = ews::contact();
+        auto phone_number =
+            ews::phone_number(ews::phone_number::key::home_phone, "0123456789");
+        minnie.set_phone_number(phone_number);
+        auto new_number = minnie.get_phone_numbers();
+        ASSERT_FALSE(new_number.empty());
+        EXPECT_EQ(new_number[0], phone_number);
+    }
+
+    TEST_F(ContactTest, UpdatePhoneNumberValue)
+    {
+        auto minnie = test_contact();
+
+        auto prop =
+            ews::property(ews::contact_property_path::phone_number::home_phone,
+                    ews::phone_number(ews::phone_number::key::home_phone,
+                                      "9876543210"));
+        auto new_id = service().update_item(minnie.get_item_id(), prop);
+        minnie = service().get_contact(new_id);
+        ASSERT_FALSE(minnie.get_phone_numbers().empty());
+        auto numbers = minnie.get_phone_numbers();
+        EXPECT_EQ(ews::phone_number::key::home_phone, numbers[0].get_key());
+        EXPECT_EQ("9876543210", numbers[0].get_value());
+    }
+
+    TEST_F(ContactTest, ContactSourceValue)
+    {
+        auto minnie = test_contact();
+        EXPECT_STREQ("", minnie.get_contact_source().c_str());
+    }
 
     // TODO:
-    // PhoneNumbers
-    // Companies
-    // ContactSource read-only!!
-    // ImAddresses
     // PostalAddressIndex
 
     TEST_F(ContactTest, GetCompleteNameProperty)
