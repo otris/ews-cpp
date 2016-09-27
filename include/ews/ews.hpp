@@ -10558,10 +10558,13 @@ namespace ews
             return companies;
         }
 
+        //! Indicates whether this is a directory or a store contact
+        //! (read-only)
 
-        // Indicates whether this is a directory or a store contact
-        // (read-only)
-        // TODO: get_contact_source
+        std::string get_contact_source()
+        {
+            return xml().get_value_as_string("ContactSource");
+        }
 
         //! Set the department name that the contact is in
         void set_department(const std::string& department)
