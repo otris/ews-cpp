@@ -10139,8 +10139,8 @@ namespace ews
             return xml().get_value_as_string("DisplayName");
         }
 
-        // Sets the name by which a person is known to `given_name`; often
-        // referred to as a person's first name
+        //! Sets the name by which a person is known to `given_name`; often
+        //! referred to as a person's first name
         void set_given_name(const std::string& given_name)
         {
             xml().set_or_update("GivenName", given_name);
@@ -10210,6 +10210,7 @@ namespace ews
         {
             return xml().get_value_as_string("CompanyName");
         }
+
         //! A collection of email addresses for the contact
         std::vector<mailbox> get_email_addresses() const
         {
@@ -10407,7 +10408,8 @@ namespace ews
         // if the time of the day isn't important, will automatically be set to
         // YYYY-MM-DDT00:00:00Z
         //
-        // This also applies to any other contact property with a date type string
+        // This also applies to any other contact property with a date type
+        // string
         void set_birthday(std::string birthday)
         {
             xml().set_or_update("Birthday", birthday);
@@ -10431,8 +10433,8 @@ namespace ews
         }
 
         //! A collection of children's names associated with the contact
-         void set_children(std::vector<std::string> children)
-         {
+        void set_children(std::vector<std::string> children)
+        {
             auto doc = xml().document();
             auto target_node = xml().get_node("Children");
             if (!target_node)
@@ -10444,7 +10446,7 @@ namespace ews
             {
                 internal::create_node(*target_node, "t:String", child);
             }
-         }
+        }
         std::vector<std::string> get_children()
         {
             const auto children_node = xml().get_node("Children");
@@ -12475,8 +12477,6 @@ namespace ews
     static_assert(std::is_move_constructible<indexed_property_path>::value, "");
     static_assert(std::is_move_assignable<indexed_property_path>::value, "");
 #endif
-
-    // TODO: extended_property_path missing?
 
     namespace folder_property_path
     {

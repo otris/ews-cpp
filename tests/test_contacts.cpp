@@ -679,8 +679,8 @@ namespace tests
     TEST(OfflineContactTest, SetBirthdayValue)
     {
         auto minnie = ews::contact();
-        minnie.set_birthday("1994-11-03");
-        EXPECT_STREQ("1994-11-03", minnie.get_birthday().c_str());
+        minnie.set_birthday("1982-08-01");
+        EXPECT_STREQ("1982-08-01", minnie.get_birthday().c_str());
     }
 
     TEST_F(ContactTest, UpdateBirthdayValue)
@@ -702,8 +702,8 @@ namespace tests
     TEST(OfflineContactTest, SetWeddingAnniversaryValue)
     {
         auto minnie = ews::contact();
-        minnie.set_wedding_anniversary("2001-09-11");
-        EXPECT_STREQ("2001-09-11", minnie.get_wedding_anniversary().c_str());
+        minnie.set_wedding_anniversary("1953-03-16");
+        EXPECT_STREQ("1953-03-16", minnie.get_wedding_anniversary().c_str());
     }
 
     TEST_F(ContactTest, UpdateWeddingAnniversaryValue)
@@ -735,8 +735,9 @@ namespace tests
     TEST_F(ContactTest, UpdateChildrenValue)
     {
         auto minnie = test_contact();
-        std::vector<std::string> children {"Ando", "Bando"};
-        auto prop = ews::property(ews::contact_property_path::children, children);
+        std::vector<std::string> children{"Ando", "Bando"};
+        auto prop =
+            ews::property(ews::contact_property_path::children, children);
         auto new_id = service().update_item(minnie.get_item_id(), prop);
         minnie = service().get_contact(new_id);
         EXPECT_FALSE(minnie.get_children().empty());
@@ -751,7 +752,7 @@ namespace tests
     TEST(OfflineContactTest, SetCompaniesValue)
     {
         auto minnie = ews::contact();
-        std::vector<std::string> companies {"Otris GmbH", "Aperture Science"};
+        std::vector<std::string> companies{"Otris GmbH", "Aperture Science"};
         minnie.set_companies(companies);
         auto first_company = companies[0].c_str();
         EXPECT_STREQ("Otris GmbH", first_company);
