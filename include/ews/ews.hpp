@@ -9583,6 +9583,9 @@ namespace ews
         std::string country_or_region_;
         std::string postal_code_;
 
+        friend bool operator==(const physical_address&,
+                               const physical_address&);
+
         static key string_to_key(const std::string& keystring)
         {
             key k;
@@ -9605,6 +9608,22 @@ namespace ews
             return k;
         }
     };
+
+    inline bool operator==(const physical_address& lhs,
+                           const physical_address& rhs)
+    {
+        if (lhs.key_ == rhs.key_ && lhs.street_ == rhs.street_ &&
+            lhs.city_ == rhs.city_ && lhs.state_ == rhs.state_ &&
+            lhs.country_or_region_ == rhs.country_or_region_ &&
+            lhs.postal_code_ == rhs.postal_code_)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
     namespace internal
     {
