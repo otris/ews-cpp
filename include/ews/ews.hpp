@@ -12996,106 +12996,176 @@ namespace ews
     {
     public:
         //! Use this constructor if you want to delete a property from an item
-        explicit property(property_path path) : path_(std::move(path)), value_()
+        explicit property(property_path path) : value_()
         {
+            value_ = path.to_xml();
         }
 
         // Use this constructor (and following overloads) whenever you want to
         // set or update an item's property
         property(property_path path, std::string value)
-            : path_(std::move(path)), value_(std::move(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << value;
+            value_ = sstr.str();
         }
 
         property(property_path path, const char* value)
-            : path_(std::move(path)), value_(std::string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << std::string(value);
+            value_ = sstr.str();
         }
 
         property(property_path path, int value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << std::to_string(value);
+            value_ = sstr.str();
         }
 
         property(property_path path, long value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << std::to_string(value);
+            value_ = sstr.str();
         }
 
         property(property_path path, long long value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << std::to_string(value);
+            value_ = sstr.str();
         }
 
         property(property_path path, unsigned value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << std::to_string(value);
+            value_ = sstr.str();
         }
 
         property(property_path path, unsigned long value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << std::to_string(value);
+            value_ = sstr.str();
         }
 
         property(property_path path, unsigned long long value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << std::to_string(value);
+            value_ = sstr.str();
         }
 
         property(property_path path, float value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << std::to_string(value);
+            value_ = sstr.str();
         }
 
         property(property_path path, double value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << std::to_string(value);
+            value_ = sstr.str();
         }
 
         property(property_path path, long double value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << std::to_string(value);
+            value_ = sstr.str();
         }
 
         property(property_path path, bool value)
-            : path_(std::move(path)), value_(value ? "true" : "false")
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << (value ? "true" : "false");
+            value_ = sstr.str();
         }
 
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
         template <typename T, typename = typename std::enable_if<
                                   std::is_enum<T>::value>::type>
         property(property_path path, T enum_value)
-            : path_(std::move(path)), value_(internal::enum_to_str(enum_value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << internal::enum_to_str(enum_value);
+            value_ = sstr.str();
         }
 #else
         property(property_path path, ews::free_busy_status enum_value)
-            : path_(std::move(path)), value_(internal::enum_to_str(enum_value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << internal::enum_to_str(enum_value);
+            value_ = sstr.str();
         }
 
         property(property_path path, ews::sensitivity enum_value)
-            : path_(std::move(path)), value_(internal::enum_to_str(enum_value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << internal::enum_to_str(enum_value);
+            value_ = sstr.str();
         }
 #endif
 
         property(property_path path, const body& value)
-            : path_(std::move(path)), value_(value.to_xml())
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << value.to_xml();
+            value_ = sstr.str();
         }
 
         property(property_path path, const date_time& value)
-            : path_(std::move(path)), value_(value.to_string())
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << value.to_string();
+            value_ = sstr.str();
         }
 
         property(property_path path, const recurrence_pattern& pattern,
                  const recurrence_range& range)
-            : path_(std::move(path)), value_()
+            : value_()
         {
             std::stringstream sstr;
+            sstr << path.to_xml();
             sstr << "<t:Recurrence>" << pattern.to_xml() << range.to_xml()
                  << "</t:Recurrence>";
             value_ = sstr.str();
@@ -13103,9 +13173,10 @@ namespace ews
 
         template <typename T>
         property(property_path path, const std::vector<T>& value)
-            : path_(std::move(path)), value_()
+            : value_()
         {
             std::stringstream sstr;
+            path.to_xml();
             for (const auto& elem : value)
             {
                 sstr << elem.to_xml();
@@ -13114,9 +13185,10 @@ namespace ews
         }
 
         property(property_path path, const std::vector<std::string>& value)
-            : path_(std::move(path)), value_()
+            : value_()
         {
             std::stringstream sstr;
+            sstr << path.to_xml();
             for (const auto& str : value)
             {
                 sstr << "<t:String>" << str << "</t:String>";
@@ -13124,25 +13196,24 @@ namespace ews
             value_ = sstr.str();
         }
 
-        std::string to_xml() const
+        property(const indexed_property_path& path, const phone_number& number)
+            : value_()
         {
             std::stringstream sstr;
-
-            sstr << "<t:FieldURI FieldURI=\"";
-            sstr << path().field_uri() << "\"/>";
-            sstr << "<t:" << path().class_name() << ">";
-            sstr << "<t:" << path().property_name() << ">";
-            sstr << value_;
-            sstr << "</t:" << path().property_name() << ">";
-            sstr << "</t:" << path().class_name() << ">";
-            return sstr.str();
+            sstr << path.to_xml();
+            sstr << "<t:Entry Key=";
+            sstr << "\"" << internal::enum_to_str(number.get_key());
+            sstr << "\">";
+            sstr << number.get_value();
+            sstr << "</t:Entry>";
+            value_ = sstr.str();
         }
 
         bool empty_value() const EWS_NOEXCEPT { return value_.empty(); }
-        const property_path& path() const EWS_NOEXCEPT { return path_; }
+
+        const std::string& to_xml() const EWS_NOEXCEPT { return value_; }
 
     private:
-        property_path path_;
         std::string value_;
     };
 
