@@ -9641,12 +9641,8 @@ namespace ews
                 throw exception("Bad enum value");
             }
         }
-    }
 
-    class file_as_mapping final
-    {
-    public:
-        enum class mapping
+        enum file_as_mapping
         {
             none,
             last_comma_first,
@@ -9663,61 +9659,61 @@ namespace ews
             last_space_first
         };
 
-        static mapping string_to_map(const std::string& maptype)
+        inline file_as_mapping string_to_map(const std::string& maptype)
         {
-            mapping map;
+            file_as_mapping map;
 
             if (maptype == "LastCommaFirst")
             {
-                map = file_as_mapping::mapping::last_comma_first;
+                map = file_as_mapping::last_comma_first;
             }
             else if (maptype == "FirstSpaceLast")
             {
-                map = file_as_mapping::mapping::first_space_last;
+                map = file_as_mapping::first_space_last;
             }
             else if (maptype == "Company")
             {
-                map = file_as_mapping::mapping::company;
+                map = file_as_mapping::company;
             }
             else if (maptype == "LastCommaFirstCompany")
             {
-                map = file_as_mapping::mapping::last_comma_first_company;
+                map = file_as_mapping::last_comma_first_company;
             }
             else if (maptype == "CompanyLastFirst")
             {
-                map = file_as_mapping::mapping::company_last_first;
+                map = file_as_mapping::company_last_first;
             }
             else if (maptype == "LastFirst")
             {
-                map = file_as_mapping::mapping::last_first;
+                map = file_as_mapping::last_first;
             }
             else if (maptype == "LastFirstCompany")
             {
-                map = file_as_mapping::mapping::last_first_company;
+                map = file_as_mapping::last_first_company;
             }
             else if (maptype == "CompanyLastCommaFirst")
             {
-                map = file_as_mapping::mapping::company_last_comma_first;
+                map = file_as_mapping::company_last_comma_first;
             }
             else if (maptype == "LastFirstSuffix")
             {
-                map = file_as_mapping::mapping::last_first_suffix;
+                map = file_as_mapping::last_first_suffix;
             }
             else if (maptype == "LastSpaceFirstCompany")
             {
-                map = file_as_mapping::mapping::last_space_first_company;
+                map = file_as_mapping::last_space_first_company;
             }
             else if (maptype == "CompanyLastSpaceFirst")
             {
-                map = file_as_mapping::mapping::company_last_space_first;
+                map = file_as_mapping::company_last_space_first;
             }
             else if (maptype == "LastSpaceFirst")
             {
-                map = file_as_mapping::mapping::last_space_first;
+                map = file_as_mapping::last_space_first;
             }
             else if (maptype == "None")
             {
-                map = file_as_mapping::mapping::none;
+                map = file_as_mapping::none;
             }
             else
             {
@@ -9727,54 +9723,49 @@ namespace ews
             return map;
         }
 
-
-    };
-
-    namespace internal
-    {
         inline std::string enum_to_str(std::string maptype)
         {
-           auto mapping_type = file_as_mapping::string_to_map(maptype);
-           std::string mappingtype;
+            auto mapping_type = string_to_map(maptype);
+            std::string mappingtype;
             switch (mapping_type)
             {
-            case file_as_mapping::mapping::none:
+            case file_as_mapping::none:
                 mappingtype = "None";
                 break;
-            case file_as_mapping::mapping::last_comma_first:
+            case file_as_mapping::last_comma_first:
                 mappingtype = "LastCommaFirst";
                 break;
-            case file_as_mapping::mapping::first_space_last:
+            case file_as_mapping::first_space_last:
                 mappingtype = "FirstSpaceLast";
                 break;
-            case file_as_mapping::mapping::company:
+            case file_as_mapping::company:
                 mappingtype = "Company";
                 break;
-            case file_as_mapping::mapping::last_comma_first_company:
+            case file_as_mapping::last_comma_first_company:
                 mappingtype = "LastCommaFirstCompany";
                 break;
-            case file_as_mapping::mapping::company_last_first:
+            case file_as_mapping::company_last_first:
                 mappingtype = "CompanyLastFirst";
                 break;
-            case file_as_mapping::mapping::last_first:
+            case file_as_mapping::last_first:
                 mappingtype = "LastFirst";
                 break;
-            case file_as_mapping::mapping::last_first_company:
+            case file_as_mapping::last_first_company:
                 mappingtype = "LastFirstCompany";
                 break;
-            case file_as_mapping::mapping::company_last_comma_first:
+            case file_as_mapping::company_last_comma_first:
                 mappingtype = "CompanyLastCommaFirst";
                 break;
-            case file_as_mapping::mapping::last_first_suffix:
+            case file_as_mapping::last_first_suffix:
                 mappingtype = "LastFirstSuffix";
                 break;
-            case file_as_mapping::mapping::last_space_first_company:
+            case file_as_mapping::last_space_first_company:
                 mappingtype = "LastSpaceFirstCompany";
                 break;
-            case file_as_mapping::mapping::company_last_space_first:
+            case file_as_mapping::company_last_space_first:
                 mappingtype = "CompanyLastSpaceFirst";
                 break;
-            case file_as_mapping::mapping::last_space_first:
+            case file_as_mapping::last_space_first:
                 mappingtype = "LastSpaceFirst";
                 break;
             default:
