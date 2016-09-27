@@ -12841,6 +12841,7 @@ namespace ews
         static const property_path directory_id = "contacts:DirectoryId";
         static const property_path direct_reports = "contacts:DirectReports";
         static const property_path email_addresses = "contacts:EmailAddresses";
+        static const property_path email_address = "contacts:EmailAddress";
         static const indexed_property_path
             email_address_1("contacts:EmailAddress", "EmailAddress1");
         static const indexed_property_path
@@ -12889,16 +12890,24 @@ namespace ews
         static const property_path phonetic_last_name =
             "contacts:PhoneticLastName";
         static const property_path photo = "contacts:Photo";
-        static const indexed_property_path street("contacts:PhysicalAddress",
-                                                  "Street");
-        static const indexed_property_path city("contacts:PhysicalAddress",
-                                                "City");
-        static const indexed_property_path state("contacts:PhysicalAddress",
-                                                 "State");
-        static const indexed_property_path
-            country_or_region("contacts:PhysicalAddress", "CountryOrRegion");
-        static const indexed_property_path
-            postal_code("contacts:PhysicalAddress", "PostalCode");
+        static const property_path physical_addresses =
+            "contacts:PhysicalAddresses";
+
+        namespace physical_address
+        {
+            static const indexed_property_path
+                street("contacts:PhysicalAddress", "Street");
+            static const indexed_property_path
+                city("contacts:PhysicalAddress:City", "Home");
+            static const indexed_property_path state("contacts:PhysicalAddress",
+                                                     "State");
+            static const indexed_property_path
+                country_or_region("contacts:PhysicalAddress",
+                                  "CountryOrRegion");
+            static const indexed_property_path
+                postal_code("contacts:PhysicalAddress", "PostalCode");
+        }
+
         static const property_path postal_adress_index =
             "contacts:PostalAddressIndex";
         static const property_path profession = "contacts:Profession";
