@@ -9775,6 +9775,314 @@ namespace ews
         }
     }
 
+    class phone_number
+    {
+    public:
+        enum class key
+        {
+            assistant_phone,
+            business_fax,
+            business_phone,
+            business_phone_2,
+            callback,
+            car_phone,
+            company_main_phone,
+            home_fax,
+            home_phone,
+            home_phone_2,
+            isdn,
+            mobile_phone,
+            other_fax,
+            other_telephone,
+            pager,
+            primary_phone,
+            radio_phone,
+            telex,
+            ttytdd_phone
+        };
+
+        explicit phone_number(key k, std::string val)
+            : key_(std::move(k)), value_(std::move(val))
+        {
+        }
+
+        static phone_number
+        from_xml_element(const rapidxml::xml_node<char>& node)
+        {
+            using rapidxml::internal::compare;
+
+            // <t:PhoneNumbers>
+            //  <Entry Key="AssistantPhone">0123456789</Entry>
+            //  <Entry Key="BusinessFax">9876543210</Entry>
+            // </t:PhoneNumbers>
+
+            EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
+                               "Entry", std::strlen("Entry")));
+            auto key = node.first_attribute("Key");
+            EWS_ASSERT(key && "Expected attribute Key");
+            return phone_number(
+                str_to_key(std::string(key->value(), key->value_size())),
+                std::string(node.value(), node.value_size()));
+        }
+
+        key get_key() const { return key_; }
+        const std::string& get_value() const EWS_NOEXCEPT { return value_; }
+
+    private:
+        key key_;
+        std::string value_;
+        friend bool operator==(const phone_number&, const phone_number&);
+
+        static key str_to_key(const std::string& keystring)
+        {
+            key k;
+            if (keystring == "AssistantPhone")
+            {
+                k = phone_number::key::assistant_phone;
+            }
+            else if (keystring == "BusinessFax")
+            {
+                k = phone_number::key::business_fax;
+            }
+            else if (keystring == "BusinessPhone")
+            {
+                k = phone_number::key::business_phone;
+            }
+            else if (keystring == "BusinessPhone2")
+            {
+                k = phone_number::key::business_phone_2;
+            }
+            else if (keystring == "Callback")
+            {
+                k = phone_number::key::callback;
+            }
+            else if (keystring == "CarPhone")
+            {
+                k = phone_number::key::car_phone;
+            }
+            else if (keystring == "CompanyMainPhone")
+            {
+                k = phone_number::key::company_main_phone;
+            }
+            else if (keystring == "HomeFax")
+            {
+                k = phone_number::key::home_fax;
+            }
+            else if (keystring == "HomePhone")
+            {
+                k = phone_number::key::home_phone;
+            }
+            else if (keystring == "HomePhone2")
+            {
+                k = phone_number::key::home_phone_2;
+            }
+            else if (keystring == "Isdn")
+            {
+                k = phone_number::key::isdn;
+            }
+            else if (keystring == "MobilePhone")
+            {
+                k = phone_number::key::mobile_phone;
+            }
+            else if (keystring == "OtherFax")
+            {
+                k = phone_number::key::other_fax;
+            }
+            else if (keystring == "OtherTelephone")
+            {
+                k = phone_number::key::other_telephone;
+            }
+            else if (keystring == "Pager")
+            {
+                k = phone_number::key::pager;
+            }
+            else if (keystring == "PrimaryPhone")
+            {
+                k = phone_number::key::primary_phone;
+            }
+            else if (keystring == "RadioPhone")
+            {
+                k = phone_number::key::radio_phone;
+            }
+            else if (keystring == "Telex")
+            {
+                k = phone_number::key::telex;
+            }
+            else if (keystring == "TtyTddPhone")
+            {
+                k = phone_number::key::ttytdd_phone;
+            }
+            else
+            {
+                throw exception("Unrecognized key: " + keystring);
+            }
+            return k;
+        }
+    };
+
+    inline bool operator==(const phone_number& lhs, const phone_number& rhs)
+    {
+        if (lhs.key_ == rhs.key_ && lhs.value_ == rhs.value_)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    namespace internal
+    {
+        inline std::string enum_to_str(phone_number::key k)
+        {
+            switch (k)
+            {
+            case phone_number::key::assistant_phone:
+                return "AssistantPhone";
+            case phone_number::key::business_fax:
+                return "BusinessFax";
+            case phone_number::key::business_phone:
+                return "BusinessPhone";
+            case phone_number::key::business_phone_2:
+                return "BusinessPhone2";
+            case phone_number::key::callback:
+                return "Callback";
+            case phone_number::key::car_phone:
+                return "CarPhone";
+            case phone_number::key::company_main_phone:
+                return "CompanyMainPhone";
+            case phone_number::key::home_fax:
+                return "HomeFax";
+            case phone_number::key::home_phone:
+                return "HomePhone";
+            case phone_number::key::home_phone_2:
+                return "HomePhone2";
+            case phone_number::key::isdn:
+                return "Isdn";
+            case phone_number::key::mobile_phone:
+                return "MobilePhone";
+            case phone_number::key::other_fax:
+                return "OtherFax";
+            case phone_number::key::other_telephone:
+                return "OtherTelephone";
+            case phone_number::key::pager:
+                return "Pager";
+            case phone_number::key::primary_phone:
+                return "PrimaryPhone";
+            case phone_number::key::radio_phone:
+                return "RadioPhone";
+            case phone_number::key::telex:
+                return "Telex";
+            case phone_number::key::ttytdd_phone:
+                return "TtyTddPhone";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
+    namespace internal
+    {
+        enum field_types
+        {
+            field_uri,
+            field_index
+        };
+    }
+
+    class indexed_field_uri final
+    {
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
+#if 0
+        using field_uri = internal::str_wrapper<internal::field_uri>;
+        using field_index = internal::str_wrapper<internal::field_index>;
+#else
+        typedef internal::str_wrapper<internal::field_uri> field_uri;
+        typedef internal::str_wrapper<internal::field_index> field_index;
+#endif
+#endif
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        indexed_field_uri() = delete;
+#else
+    private:
+        indexed_field_uri();
+
+    public:
+#endif
+        indexed_field_uri(field_uri uri, field_index index)
+            : field_uri_(std::move(uri)), index_(std::move(index))
+        {
+        }
+
+        const std::string& get_field_uri() const EWS_NOEXCEPT
+        {
+            return field_uri_.str();
+        }
+
+        const std::string get_field_index() const EWS_NOEXCEPT
+        {
+            return index_.str();
+        }
+
+        //! Returns a string representation of this indexed_field_uri
+        std::string to_xml()
+        {
+            std::stringstream sstr;
+
+            sstr << "<t:IndexedFieldURI ";
+
+            if (!field_uri_.str().empty())
+            {
+                sstr << "FieldURI=\"" << field_uri_.str() << "\" ";
+            }
+            if (!index_.str().empty())
+            {
+                sstr << "FieldIndex=\"" << index_.str() << "\"/>";
+            }
+            return sstr.str();
+        }
+
+        //! Converts an xml string into a indexed_field_uri property.
+        static indexed_field_uri
+        from_xml_element(const rapidxml::xml_node<>& elem)
+        {
+            using rapidxml::internal::compare;
+
+            EWS_ASSERT(compare(elem.name(), elem.name_size(),
+                               "t:IndexedFieldURI",
+                               std::strlen("t:IndexedFieldURI")) &&
+                       "Expected a <IndexedFieldURI/>, got something else");
+
+            std::string uri;
+            std::string index;
+
+            for (auto attr = elem.first_attribute(); attr != nullptr;
+                 attr = attr->next_attribute())
+            {
+                if (compare(attr->name(), attr->name_size(), "FieldURI",
+                            std::strlen("FieldURI")))
+                {
+                    uri = std::string(attr->value(), attr->value_size());
+                }
+                if (compare(attr->name(), attr->name_size(), "FieldIndex",
+                            std::strlen("FieldIndex")))
+                {
+                    index = std::string(attr->value(), attr->value_size());
+                }
+                else
+                {
+                    throw exception(
+                        "Unexpected attribute in <IndexedFieldURI>");
+                }
+            }
+        }
+
+    private:
+        field_uri field_uri_;
+        field_index index_;
+    };
+
     //! A contact item in the Exchange store.
     class contact final : public item
     {
