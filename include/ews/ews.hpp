@@ -10591,8 +10591,40 @@ namespace ews
             return xml().get_value_as_string("Generation");
         }
 
-        // A collection of instant messaging addresses for the contact
-        // TODO: get_im_addresses
+        //! A collection of instant messaging addresses for the contact
+
+        void set_im_addresses(std::vector<std::string> im_addresses)
+        {
+            auto doc = xml().document();
+            auto target_node = xml().get_node("ImAddresses");
+            if (!target_node)
+            {
+                target_node = &internal::create_node(*doc, "t:ImAddresses");
+            }
+
+            for (const auto& address : im_addresses)
+            {
+                internal::create_node(*target_node, "t:Entry", address);
+            }
+        }
+
+        std::vector<std::string> get_im_addresses()
+        {
+            const auto im_addresses_node = xml().get_node("ImAddresses");
+            if (!im_addresses_node)
+            {
+                return std::vector<std::string>();
+            }
+
+            std::vector<std::string> addresses;
+            for (auto address = im_addresses_node->first_node();
+                 address != nullptr; address = address->next_sibling())
+            {
+                addresses.emplace_back(
+                    std::string(address->value(), address->value_size()));
+            }
+            return addresses;
+        }
 
         //! Sets this contact's job title.
         void set_job_title(const std::string& title)
@@ -12820,6 +12852,13 @@ namespace ews
         static const property_path generation = "contacts:Generation";
         static const property_path given_name = "contacts:GivenName";
         static const property_path im_addresses = "contacts:ImAddresses";
+        static const property_path im_address = "contacts:ImAddress";
+        static const indexed_property_path im_address_1("contacts:ImAddress",
+                                                        "ImAddress1");
+        static const indexed_property_path im_address_2("contacts:ImAddress",
+                                                        "ImAddress2");
+        static const indexed_property_path im_address_3("contacts:ImAddress",
+                                                        "ImAddress3");
         static const property_path initials = "contacts:Initials";
         static const property_path job_title = "contacts:JobTitle";
         static const property_path manager = "contacts:Manager";
