@@ -9775,7 +9775,88 @@ namespace ews
         }
     }
 
-    class phone_number
+    class im_address final
+    {
+    public:
+        enum class key
+        {
+            imaddress1,
+            imaddress2,
+            imaddress3
+        };
+        
+        explicit im_address(key k, std::string value)
+            : key_(std::move(k)), value_(std::move(value))
+        {
+        }
+        
+        static im_address
+              from_xml_element(const rapidxml::xml_node<char>& node)
+        {
+             using rapidxml::internal::compare;
+
+            // <t:ImAddresses>
+            //  <Entry Key="ImAddress1">WOWMLGPRO</Entry>
+            //  <Entry Key="ImAddress2">xXSwaggerBoiXx</Entry>
+            // </t:ImAddresses>
+
+            EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
+                               "Entry", std::strlen("Entry")));
+            auto key = node.first_attribute("Key");
+            EWS_ASSERT(key && "Expected attribute Key");
+            return im_address(
+                str_to_key(std::string(key->value(), key->value_size())),
+                std::string(node.value(), node.value_size()));
+        }
+
+        key get_key() const { return key_; }
+        const std::string& get_value() const EWS_NOEXCEPT { return value_; }
+
+        static key str_to_key(const std::string& keystring)
+        {
+            key k;
+            if (keystring == "ImAddress1")
+            {
+                k = im_address::key::imaddress1;
+            }
+            else if (keystring == "ImAddress2")
+            {
+                k = im_address::key::imaddress2;
+            }
+            else if (keystring == "ImAddress3")
+            {
+                k = im_address::key::imaddress3;
+            }
+            else
+            {
+                throw exception(std::string("Unrecognized key: ") + keystring);
+            }
+            return k;
+        }
+    private:
+        key key_;
+        std::string value_;
+    };
+
+    namespace internal
+    {
+        inline std::string enum_to_str(im_address::key k)
+        {
+            switch (k)
+            {
+            case im_address::key::imaddress1:
+                return "ImAddress1";
+            case im_address::key::imaddress2:
+                return "ImAddress2";
+            case im_address::key::imaddress3:
+                return "ImAddress3";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
+    class phone_number final
     {
     public:
         enum class key
@@ -12565,7 +12646,7 @@ namespace ews
     {
     public:
         indexed_property_path(const char* uri, const char* index) 
-            : property_path(uri), value_()
+            : property_path(uri), index_(std::move(index)), value_()
  
         {
             std::stringstream sstr;
@@ -12579,9 +12660,11 @@ namespace ews
             value_ =  sstr.str();
         }
 
+        const std::string& get_index() const EWS_NOEXCEPT { return index_; }
         const std::string& to_xml() const EWS_NOEXCEPT { return value_; }
 
     private:
+        std::string index_;
         std::string value_;
     };
 
@@ -13300,6 +13383,42 @@ namespace ews
                 sstr << "</t:" << path.get_property_name() << ">";
                 sstr << "</t:" << path.get_class_name() << ">";
             }
+            value_ = sstr.str();
+        }
+
+         property(const indexed_property_path& path, const im_address& address)
+            : value_()
+        {
+            std::string class_name = path.get_class_name();
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << " <t:" << class_name << ">";
+            sstr << " <t:" << "ImAddresses" << ">";
+            sstr << " <t:Entry Key=";
+            sstr << "\"" << internal::enum_to_str(address.get_key());
+            sstr << "\">";
+            sstr << address.get_value();
+            sstr << "</t:Entry>";
+            sstr << " </t:" << "ImAddresses" << ">";
+            sstr << " </t:" << class_name << ">";
+            value_ = sstr.str();
+        }
+
+         property(const indexed_property_path& path, const mailbox& address)
+            : value_()
+        {
+            std::string class_name = path.get_class_name();
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << " <t:" << class_name << ">";
+            sstr << " <t:" << "EmailAddresses" << ">";
+            sstr << " <t:Entry Key=";
+            sstr << "\"" << path.get_index();
+            sstr << "\">";
+            sstr << address.value();
+            sstr << "</t:Entry>";
+            sstr << " </t:" << "EmailAddresses" << ">";
+            sstr << " </t:" << class_name << ">";
             value_ = sstr.str();
         }
 

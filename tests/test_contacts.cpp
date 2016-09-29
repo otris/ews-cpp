@@ -790,8 +790,9 @@ namespace tests
     TEST_F(ContactTest, UpdateImAddressesValue)
     {
         auto minnie = test_contact();
+        auto address = ews::im_address(ews::im_address::key::imaddress1, "MMouse");
         auto prop =
-            ews::property(ews::contact_property_path::im_address_1, "MMouse");
+            ews::property(ews::contact_property_path::im_address_1, address);
         auto new_id = service().update_item(minnie.get_item_id(), prop);
         minnie = service().get_contact(new_id);
         EXPECT_FALSE(minnie.get_im_addresses().empty());
