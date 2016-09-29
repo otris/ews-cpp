@@ -685,8 +685,9 @@ namespace tests
     TEST_F(ContactTest, UpdateBirthdayValue)
     {
         auto minnie = test_contact();
+        auto birthday = ews::date_time("1994-11-03");
         auto prop =
-            ews::property(ews::contact_property_path::birthday, "1994-11-03");
+            ews::property(ews::contact_property_path::birthday, birthday);
         auto new_id = service().update_item(minnie.get_item_id(), prop);
         minnie = service().get_contact(new_id);
         EXPECT_STREQ("1994-11-03T00:00:00Z", minnie.get_birthday().c_str());
@@ -708,11 +709,12 @@ namespace tests
     TEST_F(ContactTest, UpdateWeddingAnniversaryValue)
     {
         auto minnie = test_contact();
+        auto wedding = ews::date_time("2006-06-06");
         auto prop = ews::property(
-            ews::contact_property_path::wedding_anniversary, "2001-09-11");
+            ews::contact_property_path::wedding_anniversary, wedding);
         auto new_id = service().update_item(minnie.get_item_id(), prop);
         minnie = service().get_contact(new_id);
-        EXPECT_STREQ("2001-09-11T00:00:00Z",
+        EXPECT_STREQ("2006-06-06T00:00:00Z",
                      minnie.get_wedding_anniversary().c_str());
     }
 
