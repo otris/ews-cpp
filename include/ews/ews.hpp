@@ -12459,26 +12459,41 @@ namespace ews
     {
     public:
         // Intentionally not explicit
-        property_path(const char* uri) : uri_(std::string(uri)) {}
+        property_path(const char* uri) : value_()
+        {
+            std::stringstream sstr;
+
+            sstr << "<t:FieldURI FieldURI=\"";
+            sstr << uri << "\"/>";
+            value_ = sstr.str();
+
+            prop_name_ = property_name(uri);
+            class_name_ = class_name(uri);
+
+        }
 
         //! Returns the \<FieldURI> element for this property.
         //!
         //! Identifies frequently referenced properties by URI
-        const std::string& field_uri() const EWS_NOEXCEPT { return uri_; }
 
-        std::string property_name() const
+        const std::string& to_xml() const EWS_NOEXCEPT { return value_; }
+        const std::string& get_property_name() const EWS_NOEXCEPT { return prop_name_; }
+        const std::string& get_class_name() const EWS_NOEXCEPT { return class_name_; }
+
+    private:
+        static std::string property_name(const std::string& uri)
         {
-            const auto n = uri_.rfind(':');
+            const auto n = uri.rfind(':');
             EWS_ASSERT(n != std::string::npos);
-            return uri_.substr(n + 1);
+            return uri.substr(n + 1);
         }
 
-        std::string class_name() const
+        static std::string class_name(const std::string& uri)
         {
             // TODO: we know at compile-time to which class a property belongs
-            const auto n = uri_.find(':');
+            const auto n = uri.find(':');
             EWS_ASSERT(n != std::string::npos);
-            const auto substr = uri_.substr(0, n);
+            const auto substr = uri.substr(0, n);
             if (substr == "folder")
             {
                 return "Folder";
@@ -12532,13 +12547,10 @@ namespace ews
         }
 
     private:
-        std::string uri_;
+        std::string prop_name_;
+        std::string class_name_;
+        std::string value_;
     };
-
-    inline bool operator==(const property_path& lhs, const property_path& rhs)
-    {
-        return lhs.field_uri() == rhs.field_uri();
-    }
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(!std::is_default_constructible<property_path>::value, "");
@@ -12552,15 +12564,25 @@ namespace ews
     class indexed_property_path : public property_path
     {
     public:
-        indexed_property_path(const char* uri, const char* index)
-            : property_path(uri), index_(std::string(index))
+        indexed_property_path(const char* uri, const char* index) 
+            : property_path(uri), value_()
+ 
         {
+            std::stringstream sstr;
+            sstr << "<t:IndexedFieldURI FieldURI=";
+            sstr << "\"" << uri << "\"";
+            sstr << " FieldIndex=";
+            sstr << "\"";
+            sstr << index;
+            sstr << "\"";
+            sstr << "/>";
+            value_ =  sstr.str();
         }
 
-        const std::string& field_index() const EWS_NOEXCEPT { return index_; }
+        const std::string& to_xml() const EWS_NOEXCEPT { return value_; }
 
     private:
-        std::string index_;
+        std::string value_;
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
@@ -13017,7 +13039,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
-            sstr << value;
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << std::string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13026,7 +13052,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << std::string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13035,7 +13065,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13044,7 +13078,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13053,7 +13091,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13062,7 +13104,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13071,7 +13117,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13080,7 +13130,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13089,7 +13143,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13098,7 +13156,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13107,7 +13169,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13116,7 +13182,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << (value ? "true" : "false");
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13128,7 +13198,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << internal::enum_to_str(enum_value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 #else
@@ -13137,7 +13211,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << internal::enum_to_str(enum_value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13146,7 +13224,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << internal::enum_to_str(enum_value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 #endif
@@ -13156,7 +13238,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << value.to_xml();
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13165,7 +13251,11 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << value.to_string();
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13185,10 +13275,14 @@ namespace ews
             : value_()
         {
             std::stringstream sstr;
-            path.to_xml();
             for (const auto& elem : value)
             {
+                sstr << path.to_xml();
+                sstr << "<t:" << path.get_class_name() << ">";
+                sstr << "<t:" << path.get_property_name() << ">";
                 sstr << elem.to_xml();
+                sstr << "</t:" << path.get_property_name() << ">";
+                sstr << "</t:" << path.get_class_name() << ">";
             }
             value_ = sstr.str();
         }
@@ -13197,10 +13291,14 @@ namespace ews
             : value_()
         {
             std::stringstream sstr;
-            sstr << path.to_xml();
             for (const auto& str : value)
             {
+                sstr << path.to_xml();
+                sstr << "<t:" << path.get_class_name() << ">";
+                sstr << "<t:" << path.get_property_name() << ">";
                 sstr << "<t:String>" << str << "</t:String>";
+                sstr << "</t:" << path.get_property_name() << ">";
+                sstr << "</t:" << path.get_class_name() << ">";
             }
             value_ = sstr.str();
         }
@@ -13208,13 +13306,18 @@ namespace ews
         property(const indexed_property_path& path, const phone_number& number)
             : value_()
         {
+            std::string class_name = path.get_class_name();
             std::stringstream sstr;
             sstr << path.to_xml();
-            sstr << "<t:Entry Key=";
+            sstr << " <t:" << class_name << ">";
+            sstr << " <t:" << "PhoneNumbers" << ">";
+            sstr << " <t:Entry Key=";
             sstr << "\"" << internal::enum_to_str(number.get_key());
             sstr << "\">";
             sstr << number.get_value();
             sstr << "</t:Entry>";
+            sstr << " </t:" << "PhoneNumbers" << ">";
+            sstr << " </t:" << class_name << ">";
             value_ = sstr.str();
         }
 
@@ -13274,9 +13377,8 @@ namespace ews
                   std::stringstream sstr;
 
                   sstr << "<t:" << term << ">";
-                  sstr << "<t:FieldURI FieldURI=\"";
-                  sstr << path.field_uri();
-                  sstr << "\"/><t:FieldURIOrConstant>";
+                  sstr << path.to_xml();
+                  sstr << "<t:FieldURIOrConstant>";
                   sstr << "<t:Constant Value=\"";
                   sstr << std::boolalpha << b;
                   sstr << "\"/></t:FieldURIOrConstant></t:";
@@ -13291,11 +13393,10 @@ namespace ews
                   std::stringstream sstr;
 
                   sstr << "<t:" << term << ">";
-                  sstr << "<t:FieldURI FieldURI=\"";
-                  sstr << path.field_uri();
-                  sstr << "\"/><t:"
+                  sstr << path.to_xml();
+                  sstr << "<t:"
                        << "FieldURIOrConstant><";
-                  sstr << "t:Constant Value=\"";
+                  sstr << "<t:Constant Value=\"";
                   sstr << std::to_string(i);
                   sstr << "\"/></t:FieldURIOrConstant></t:";
                   sstr << term << ">";
@@ -13309,9 +13410,8 @@ namespace ews
                   std::stringstream sstr;
 
                   sstr << "<t:" << term << ">";
-                  sstr << "<t:FieldURI FieldURI=\"";
-                  sstr << path.field_uri();
-                  sstr << "\"/><t:"
+                  sstr << path.to_xml();
+                  sstr << "<t:"
                        << "FieldURIOrConstant>";
                   sstr << "<t:Constant Value=\"";
                   sstr << str;
@@ -13328,10 +13428,8 @@ namespace ews
                   std::stringstream sstr;
 
                   sstr << "<t:" << term << ">";
-                  sstr << "<t:IndexedFieldURI FieldURI=\"";
-                  sstr << path.field_uri();
-                  sstr << "\" FieldIndex=\"" << path.field_index();
-                  sstr << "\"/><t:FieldURIOrConstant>";
+                  sstr << path.to_xml();
+                  sstr << "<t:FieldURIOrConstant>";
                   sstr << "<t:Constant Value=\"";
                   sstr << str;
                   sstr << "\"/></t:FieldURIOrConstant></t:";
@@ -13346,9 +13444,8 @@ namespace ews
                   std::stringstream sstr;
 
                   sstr << "<t:" << term << ">";
-                  sstr << "<t:FieldURI FieldURI=\"";
-                  sstr << path.field_uri();
-                  sstr << "\"/><t:FieldURIOrConstant>";
+                  sstr << path.to_xml();
+                  sstr << "<t:FieldURIOrConstant>";
                   sstr << "<t:Constant Value=\"";
                   sstr << when.to_string();
                   sstr << "\"/></t:FieldURIOrConstant></t:";
@@ -13808,9 +13905,8 @@ namespace ews
                        << "\" ";
                   sstr << "ContainmentComparison=\""
                        << internal::enum_to_str(comparison) << "\">";
-                  sstr << "<t:FieldURI FieldURI=\"";
-                  sstr << path.field_uri();
-                  sstr << "\"/><t:Constant Value=\"";
+                  sstr << path.to_xml();
+                  sstr << "t:Constant Value=\"";
                   sstr << str;
                   sstr << "\"/></t:Contains>";
                   return sstr.str();
@@ -14635,7 +14731,7 @@ namespace ews
                                                     "<t:AdditionalProperties>";
             for (const auto& prop : additional_properties)
             {
-                sstr << "<t:FieldURI FieldURI=\"" << prop.field_uri() << "\"/>";
+                sstr << prop.to_xml() << "\"/>";
             }
             sstr << "</t:AdditionalProperties>"
                     "</m:ItemShape>"
