@@ -10687,37 +10687,65 @@ namespace ews
 
         //! A collection of instant messaging addresses for the contact
 
-        void set_im_addresses(std::vector<std::string> im_addresses)
+        void set_im_address(const im_address& im_address)
         {
+            using rapidxml::internal::compare;
+            using internal::create_node;
             auto doc = xml().document();
-            auto target_node = xml().get_node("ImAddresses");
-            if (!target_node)
+            auto im_addresses = xml().get_node("ImAddresses");
+
+            if (im_addresses)
             {
-                target_node = &internal::create_node(*doc, "t:ImAddresses");
+                bool entry_exists = false;
+                auto entry = im_addresses->first_node();
+                for (; entry != nullptr; entry = entry->next_sibling())
+                {
+                    auto key_attr = entry->first_attribute();
+                    EWS_ASSERT(key_attr);
+                    EWS_ASSERT(compare(key_attr->name(), key_attr->name_size(),
+                                       "Key", 3));
+                    const auto key = internal::enum_to_str(im_address.get_key());
+                    if (compare(key_attr->value(), key_attr->value_size(),
+                                key.c_str(), key.size()))
+                    {
+                        entry_exists = true;
+                        break;
+                    }
+                }
+                if (entry_exists)
+                {
+                    im_addresses->remove_node(entry);
+                }
+            }
+            else
+            {
+                im_addresses = &create_node(*doc, "t:ImAddresses");
             }
 
-            for (const auto& address : im_addresses)
-            {
-                internal::create_node(*target_node, "t:Entry", address);
-            }
+            // create entry & key
+            const auto value = im_address.get_value();
+            auto new_entry = &create_node(*im_addresses, "t:Entry", value);
+            auto ptr_to_key = doc->allocate_string("Key");
+            const auto key = internal::enum_to_str(im_address.get_key());
+            auto ptr_to_value = doc->allocate_string(key.c_str());
+            new_entry->append_attribute(
+                doc->allocate_attribute(ptr_to_key, ptr_to_value));
         }
 
-        std::vector<std::string> get_im_addresses()
+        std::vector<im_address> get_im_addresses()
         {
-            const auto im_addresses_node = xml().get_node("ImAddresses");
-            if (!im_addresses_node)
+            const auto addresses = xml().get_node("ImAddresses");
+            if (!addresses)
             {
-                return std::vector<std::string>();
+                return std::vector<im_address>();
             }
-
-            std::vector<std::string> addresses;
-            for (auto address = im_addresses_node->first_node();
-                 address != nullptr; address = address->next_sibling())
+            std::vector<im_address> result;
+            for (auto entry = addresses->first_node(); entry != nullptr;
+                 entry = entry->next_sibling())
             {
-                addresses.emplace_back(
-                    std::string(address->value(), address->value_size()));
+                result.push_back(im_address::from_xml_element(*entry));
             }
-            return addresses;
+            return result;
         }
 
         //! Sets this contact's job title.
