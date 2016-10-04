@@ -13573,7 +13573,7 @@ namespace ews
                   sstr << "<t:" << term << ">";
                   sstr << path.to_xml();
                   sstr << "<t:"
-                       << "FieldURIOrConstant><";
+                       << "FieldURIOrConstant>";
                   sstr << "<t:Constant Value=\"";
                   sstr << std::to_string(i);
                   sstr << "\"/></t:FieldURIOrConstant></t:";
@@ -14084,7 +14084,7 @@ namespace ews
                   sstr << "ContainmentComparison=\""
                        << internal::enum_to_str(comparison) << "\">";
                   sstr << path.to_xml();
-                  sstr << "t:Constant Value=\"";
+                  sstr << "<t:Constant Value=\"";
                   sstr << str;
                   sstr << "\"/></t:Contains>";
                   return sstr.str();
