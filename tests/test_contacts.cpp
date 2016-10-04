@@ -777,14 +777,13 @@ namespace tests
         EXPECT_TRUE(minnie.get_im_addresses().empty());
     }
 
-    TEST(OfflineContactTest, SetImAddressesValue)
+    TEST(OfflineContactTest, SetImAddressValue)
     {
         auto minnie = ews::contact();
-        std::vector<std::string> addresses{"MMouse", "MouseGirl1928"};
-        minnie.set_im_addresses(addresses);
+        auto address = ews::im_address(ews::im_address::key::imaddress1, "MMouse");
+        minnie.set_im_address(address);
         auto im_addresses = minnie.get_im_addresses();
-        auto first_address = im_addresses[0].c_str();
-        EXPECT_STREQ("MMouse", first_address);
+        EXPECT_EQ(address, im_addresses[0]);
     }
 
     TEST_F(ContactTest, UpdateImAddressesValue)
@@ -795,7 +794,8 @@ namespace tests
             ews::property(ews::contact_property_path::im_address_1, address);
         auto new_id = service().update_item(minnie.get_item_id(), prop);
         minnie = service().get_contact(new_id);
-        EXPECT_FALSE(minnie.get_im_addresses().empty());
+        auto new_address = minnie.get_im_addresses();
+        EXPECT_EQ(address, new_address[0]);
     }
 
     TEST(OfflineContactTest, InitialPhoneNumberValue)
