@@ -9528,8 +9528,8 @@ namespace ews
             std::string cor;
             std::string postal_code;
 
-            for (auto child = node.first_attribute(); child != nullptr;
-                 child = child->next_attribute())
+            for (auto child = node.first_node(); child != nullptr;
+                 child = child->next_sibling())
             {
                 if (compare("Street", std::strlen("Street"),
                             child->local_name(), child->local_name_size()))
@@ -13435,13 +13435,43 @@ namespace ews
             : value_()
         {
             std::stringstream sstr;
-            sstr << path.to_xml();
+            auto path_ = path.to_xml();
+            sstr << path_;
             sstr << " <t:" << path.get_class_name() << ">";
             sstr << " <t:" << "PhysicalAddresses" << ">";
             sstr << " <t:Entry Key=";
             sstr << "\"" << internal::enum_to_str(address.get_key());
             sstr << "\">";
-            sstr << "<t:City>" << address.city() << "</t:City>";
+            if(path_.find("Street") != std::string::npos)
+            {
+                sstr << "<t:Street>";
+                sstr << address.street();
+                sstr << "</t:Street>";
+            }
+            if(path_.find("City") != std::string::npos)
+            {
+                sstr << "<t:City>";
+                sstr << address.city();
+                sstr << "</t:City>";
+            }
+            if(path_.find("State") != std::string::npos)
+            {
+                sstr << "<t:State>";
+                sstr << address.state();
+                sstr << "</t:State>";
+            }
+            if(path_.find("CountryOrRegion") != std::string::npos)
+            {
+                sstr << "<t:CountryOrRegion>";
+                sstr << address.country_or_region();
+                sstr << "</t:CountryOrRegion>";
+            }
+            if(path_.find("PostalCode") != std::string::npos)
+            {
+                sstr << "<t:PostalCode>";
+                sstr << address.postal_code();
+                sstr << "</t:PostalCode>";
+            }
             sstr << "</t:Entry>";
             sstr << " </t:" << "PhysicalAddresses" << ">";
             sstr << " </t:" << path.get_class_name() << ">";

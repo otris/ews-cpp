@@ -660,16 +660,16 @@ namespace tests
 
     TEST_F(ContactTest, UpdatePhysicalAddressesValues)
     {
-        // auto minnie = test_contact();
-        // auto address =
-        //     ews::physical_address(ews::physical_address::key::home, "",
-        //                           "Duckburg", "", "", "");
-        // auto prop = ews::property(ews::contact_property_path::city, "Duckburg");
-        // auto new_id = service().update_item(minnie.get_item_id(), prop);
-        // minnie = service().get_contact(new_id);
-        // ASSERT_FALSE(minnie.get_physical_addresses().empty());
-        // auto new_address = minnie.get_physical_address();
-        // EXPECT_EQ(address, new_address[0]);
+         auto minnie = test_contact();
+         auto address =
+             ews::physical_address(ews::physical_address::key::home, "",
+                                   "Duckburg", "", "", "");
+         auto prop = ews::property(ews::contact_property_path::physical_address::city, address);
+         auto new_id = service().update_item(minnie.get_item_id(), prop);
+         minnie = service().get_contact(new_id);
+         ASSERT_FALSE(minnie.get_physical_addresses().empty());
+         auto new_address = minnie.get_physical_addresses();
+         EXPECT_EQ(address, new_address[0]);
     }
 
     TEST(OfflineContactTest, InitialBirthdayValue)
