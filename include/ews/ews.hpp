@@ -9480,6 +9480,100 @@ namespace ews
         std::string nickname_;
     };
 
+    class email_address final
+    {
+        public:
+            enum class key
+            {
+                email_address_1,
+                email_address_2,
+                email_address_3
+            };
+
+            explicit email_address(key k, std::string value)
+                : key_(std::move(k)), value_(std::move(value))
+            {
+            }
+
+        static email_address
+            from_xml_element(const rapidxml::xml_node<char>& node)
+        {
+             using rapidxml::internal::compare;
+
+            // <t:EmailAddresses>
+            //  <Entry Key="EmailAddress1">donald.duck@duckburg.de</Entry>
+            //  <Entry Key="EmailAddress3">dragonmaster1999@yahoo.com</Entry>
+            // </t:EmailAddresses>
+
+            EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
+                               "Entry", std::strlen("Entry")));
+            auto key = node.first_attribute("Key");
+            EWS_ASSERT(key && "Expected attribute Key");
+            return email_address(
+                str_to_key(std::string(key->value(), key->value_size())),
+                std::string(node.value(), node.value_size()));
+        }
+
+        key get_key() const { return key_; }
+        const std::string& get_value() const EWS_NOEXCEPT { return value_; }
+
+    private:
+        key key_;
+        std::string value_;
+        friend bool operator==(const email_address&, const email_address&);
+        static key str_to_key(const std::string& keystring)
+        {
+            key k;
+            if (keystring == "EmailAddress1")
+            {
+                k = email_address::key::email_address_1;
+            }
+            else if (keystring == "EmailAddress2")
+            {
+                k = email_address::key::email_address_2;
+            }
+            else if (keystring == "EmailAddress3")
+            {
+                k = email_address::key::email_address_3;
+            }
+            else
+            {
+                throw exception(std::string("Unrecognized key: ") + keystring);
+            }
+            return k;
+        }
+    };
+
+    inline bool operator==(const email_address& lhs, const email_address& rhs)
+    {
+        if (lhs.key_ == rhs.key_ && lhs.value_ == rhs.value_)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    namespace internal
+    {
+        inline std::string enum_to_str(email_address::key k)
+        {
+            switch (k)
+            {
+            case email_address::key::email_address_1:
+                return "EmailAddress1";
+            case email_address::key::email_address_2:
+                return "EmailAddress2";
+            case email_address::key::email_address_3:
+                return "EmailAddress3";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
     class physical_address final
     {
     public:
@@ -10306,56 +10400,66 @@ namespace ews
         }
 
         //! A collection of email addresses for the contact
-        std::vector<mailbox> get_email_addresses() const
+        std::vector<email_address> get_email_addresses() const
         {
             const auto addresses = xml().get_node("EmailAddresses");
             if (!addresses)
             {
-                return std::vector<mailbox>();
+                return std::vector<email_address>();
             }
-            std::vector<mailbox> result;
-            for (auto entry = addresses->first_node(); entry;
+            std::vector<email_address> result;
+            for (auto entry = addresses->first_node(); entry != nullptr;
                  entry = entry->next_sibling())
             {
-                auto name_attr = entry->first_attribute("Name");
-                auto routing_type_attr = entry->first_attribute("RoutingType");
-                auto mailbox_type_attr = entry->first_attribute("MailboxType");
-                result.emplace_back(mailbox(
-                    entry->value(), name_attr ? name_attr->value() : "",
-                    routing_type_attr ? routing_type_attr->value() : "",
-                    mailbox_type_attr ? mailbox_type_attr->value() : ""));
+                result.push_back(email_address::from_xml_element(*entry));
             }
             return result;
         }
 
-        std::string get_email_address_1() const
+        void set_email_address(const email_address& address)
         {
-            return get_email_address_by_key("EmailAddress1");
-        }
+            using rapidxml::internal::compare;
+            using internal::create_node;
+            auto doc = xml().document();
+            auto email_addresses = xml().get_node("EmailAddresses");
 
-        void set_email_address_1(mailbox address)
-        {
-            set_email_address_by_key("EmailAddress1", std::move(address));
-        }
+            if (email_addresses)
+            {
+                bool entry_exists = false;
+                auto entry = email_addresses->first_node();
+                for (; entry != nullptr; entry = entry->next_sibling())
+                {
+                    auto key_attr = entry->first_attribute();
+                    EWS_ASSERT(key_attr);
+                    EWS_ASSERT(compare(key_attr->name(), key_attr->name_size(),
+                                       "Key", 3));
+                    const auto key = internal::enum_to_str(address.get_key());
+                    if (compare(key_attr->value(), key_attr->value_size(),
+                                key.c_str(), key.size()))
+                    {
+                        entry_exists = true;
+                        break;
+                    }
+                }
+                if (entry_exists)
+                {
+                    email_addresses->remove_node(entry);
+                }
+            }
+            else
+            {
+                email_addresses = &create_node(*doc, "t:EmailAddresses");
+            }
 
-        std::string get_email_address_2() const
-        {
-            return get_email_address_by_key("EmailAddress2");
-        }
+            // create entry & key
+            const auto value = address.get_value();
+            auto new_entry = &create_node(*email_addresses, "t:Entry", value);
+            auto ptr_to_key = doc->allocate_string("Key");
+            const auto key = internal::enum_to_str(address.get_key());
+            auto ptr_to_value = doc->allocate_string(key.c_str());
+            new_entry->append_attribute(
+                doc->allocate_attribute(ptr_to_key, ptr_to_value));
 
-        void set_email_address_2(mailbox address)
-        {
-            set_email_address_by_key("EmailAddress2", std::move(address));
-        }
-
-        std::string get_email_address_3() const
-        {
-            return get_email_address_by_key("EmailAddress3");
-        }
-
-        void set_email_address_3(mailbox address)
-        {
-            set_email_address_by_key("EmailAddress3", std::move(address));
         }
 
         //! A collection of mailing addresses for the contact
@@ -12687,8 +12791,7 @@ namespace ews
     {
     public:
         indexed_property_path(const char* uri, const char* index) 
-            : property_path(uri), index_(std::move(index)), value_()
- 
+            : property_path(uri), value_()
         {
             std::stringstream sstr;
             sstr << "<t:IndexedFieldURI FieldURI=";
@@ -12701,11 +12804,9 @@ namespace ews
             value_ =  sstr.str();
         }
 
-        const std::string& get_index() const EWS_NOEXCEPT { return index_; }
         const std::string& to_xml() const EWS_NOEXCEPT { return value_; }
 
     private:
-        std::string index_;
         std::string value_;
     };
 
@@ -13495,7 +13596,7 @@ namespace ews
             value_ = sstr.str();
         }
 
-         property(const indexed_property_path& path, const mailbox& address)
+         property(const indexed_property_path& path, const email_address& address)
             : value_()
         {
             std::stringstream sstr;
@@ -13503,9 +13604,9 @@ namespace ews
             sstr << " <t:" << path.get_class_name() << ">";
             sstr << " <t:" << "EmailAddresses" << ">";
             sstr << " <t:Entry Key=";
-            sstr << "\"" << path.get_index();
+            sstr << "\"" << internal::enum_to_str(address.get_key());
             sstr << "\">";
-            sstr << address.value();
+            sstr << address.get_value();
             sstr << "</t:Entry>";
             sstr << " </t:" << "EmailAddresses" << ">";
             sstr << " </t:" << path.get_class_name() << ">";

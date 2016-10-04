@@ -97,54 +97,48 @@ namespace tests
     TEST(OfflineContactTest, InitialEmailAddressProperty)
     {
         auto minnie = ews::contact();
-        EXPECT_STREQ("", minnie.get_email_address_1().c_str());
-        EXPECT_STREQ("", minnie.get_email_address_2().c_str());
-        EXPECT_STREQ("", minnie.get_email_address_3().c_str());
         EXPECT_TRUE(minnie.get_email_addresses().empty());
     }
 
     TEST(OfflineContactTest, SetEmailAddressProperty)
     {
         auto minnie = ews::contact();
-        minnie.set_email_address_1(ews::mailbox("minnie.mouse@duckburg.com"));
-        EXPECT_STREQ("minnie.mouse@duckburg.com",
-                     minnie.get_email_address_1().c_str());
-        EXPECT_STREQ("", minnie.get_email_address_2().c_str());
-        EXPECT_STREQ("", minnie.get_email_address_3().c_str());
-        auto addresses = minnie.get_email_addresses();
-        ASSERT_FALSE(addresses.empty());
-        EXPECT_STREQ("minnie.mouse@duckburg.com",
-                     addresses.front().value().c_str());
+        auto email = ews::email_address(ews::email_address::key::email_address_1,
+                    "minnie.mouse@duckburg.com");
+        minnie.set_email_address(email);
+        auto new_mail =  minnie.get_email_addresses();
+        EXPECT_EQ(email, new_mail[0]);
     }
 
     TEST_F(ContactTest, UpdateEmailAddressProperty)
     {
         auto minnie = test_contact();
-        auto mail_address = ews::mailbox("minnie.mouse@duckburg.com");
+        auto mail_address = ews::email_address(ews::email_address::key::email_address_1,
+                "minnie.mouse@duckburg.com");
         auto prop = ews::property(ews::contact_property_path::email_address_1,
                 mail_address);
         auto new_id = service().update_item(minnie.get_item_id(), prop);
         minnie = service().get_contact(new_id);
-        EXPECT_STREQ("minnie.mouse@duckburg.com",
-                     minnie.get_email_address_1().c_str());
+        auto new_mail = minnie.get_email_addresses();
+        EXPECT_EQ(mail_address, new_mail[0]);
     }
 
     TEST_F(ContactTest, DeleteEmailAddress)
     {
         auto minnie = test_contact();
-         auto mail_address = ews::mailbox("minnie.mouse@duckburg.com");
-         auto prop = ews::property(ews::contact_property_path::email_address_1,
+        auto mail_address = ews::email_address(ews::email_address::key::email_address_1,
+                 "minnie.mouse@duckburg.com");
+        auto prop = ews::property(ews::contact_property_path::email_address_1,
                                   mail_address);
         auto new_id = service().update_item(minnie.get_item_id(), prop);
         minnie = service().get_contact(new_id);
-        ASSERT_STREQ("minnie.mouse@duckburg.com",
-                     minnie.get_email_address_1().c_str());
+        auto new_mail = minnie.get_email_addresses();
+        ASSERT_EQ(mail_address, new_mail[0]);
     
-        prop = ews::property(ews::contact_property_path::email_address_1, ews::mailbox(""));
         auto update = ews::update(prop, ews::update::operation::delete_item_field);
         new_id = service().update_item(minnie.get_item_id(), update);
         minnie = service().get_contact(new_id);
-        EXPECT_STREQ("", minnie.get_email_address_1().c_str());
+        EXPECT_TRUE(minnie.get_email_addresses().empty());
     }
 
     TEST(OfflineContactTest, InitialGivenNameValue)
