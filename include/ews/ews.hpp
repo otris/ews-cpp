@@ -9812,6 +9812,10 @@ namespace ews
         key get_key() const { return key_; }
         const std::string& get_value() const EWS_NOEXCEPT { return value_; }
 
+    private:
+        key key_;
+        std::string value_;
+        friend bool operator==(const im_address&, const im_address&);
         static key str_to_key(const std::string& keystring)
         {
             key k;
@@ -9833,10 +9837,19 @@ namespace ews
             }
             return k;
         }
-    private:
-        key key_;
-        std::string value_;
     };
+
+    inline bool operator==(const im_address& lhs, const im_address& rhs)
+    {
+        if (lhs.key_ == rhs.key_ && lhs.value_ == rhs.value_)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
     namespace internal
     {
