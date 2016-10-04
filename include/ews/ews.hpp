@@ -13389,8 +13389,12 @@ namespace ews
         {
             std::stringstream sstr;
             sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << "<t:Recurrence>" << pattern.to_xml() << range.to_xml()
                  << "</t:Recurrence>";
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13399,15 +13403,15 @@ namespace ews
             : value_()
         {
             std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             for (const auto& elem : value)
             {
-                sstr << path.to_xml();
-                sstr << "<t:" << path.get_class_name() << ">";
-                sstr << "<t:" << path.get_property_name() << ">";
-                sstr << elem.to_xml();
-                sstr << "</t:" << path.get_property_name() << ">";
-                sstr << "</t:" << path.get_class_name() << ">";
+               sstr << elem.to_xml();
             }
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
@@ -13415,25 +13419,41 @@ namespace ews
             : value_()
         {
             std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             for (const auto& str : value)
             {
-                sstr << path.to_xml();
-                sstr << "<t:" << path.get_class_name() << ">";
-                sstr << "<t:" << path.get_property_name() << ">";
-                sstr << "<t:String>" << str << "</t:String>";
-                sstr << "</t:" << path.get_property_name() << ">";
-                sstr << "</t:" << path.get_class_name() << ">";
+               sstr << "<t:String>" << str << "</t:String>";
             }
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
+        }
+
+         property(const indexed_property_path& path, const physical_address& address)
+            : value_()
+        {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << " <t:" << path.get_class_name() << ">";
+            sstr << " <t:" << "PhysicalAddresses" << ">";
+            sstr << " <t:Entry Key=";
+            sstr << "\"" << internal::enum_to_str(address.get_key());
+            sstr << "\">";
+            sstr << "<t:City>" << address.city() << "</t:City>";
+            sstr << "</t:Entry>";
+            sstr << " </t:" << "PhysicalAddresses" << ">";
+            sstr << " </t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
          property(const indexed_property_path& path, const im_address& address)
             : value_()
         {
-            std::string class_name = path.get_class_name();
             std::stringstream sstr;
             sstr << path.to_xml();
-            sstr << " <t:" << class_name << ">";
+            sstr << " <t:" << path.get_class_name() << ">";
             sstr << " <t:" << "ImAddresses" << ">";
             sstr << " <t:Entry Key=";
             sstr << "\"" << internal::enum_to_str(address.get_key());
@@ -13441,17 +13461,16 @@ namespace ews
             sstr << address.get_value();
             sstr << "</t:Entry>";
             sstr << " </t:" << "ImAddresses" << ">";
-            sstr << " </t:" << class_name << ">";
+            sstr << " </t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
          property(const indexed_property_path& path, const mailbox& address)
             : value_()
         {
-            std::string class_name = path.get_class_name();
             std::stringstream sstr;
             sstr << path.to_xml();
-            sstr << " <t:" << class_name << ">";
+            sstr << " <t:" << path.get_class_name() << ">";
             sstr << " <t:" << "EmailAddresses" << ">";
             sstr << " <t:Entry Key=";
             sstr << "\"" << path.get_index();
@@ -13459,17 +13478,16 @@ namespace ews
             sstr << address.value();
             sstr << "</t:Entry>";
             sstr << " </t:" << "EmailAddresses" << ">";
-            sstr << " </t:" << class_name << ">";
+            sstr << " </t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
         property(const indexed_property_path& path, const phone_number& number)
             : value_()
         {
-            std::string class_name = path.get_class_name();
             std::stringstream sstr;
             sstr << path.to_xml();
-            sstr << " <t:" << class_name << ">";
+            sstr << " <t:" << path.get_class_name() << ">";
             sstr << " <t:" << "PhoneNumbers" << ">";
             sstr << " <t:Entry Key=";
             sstr << "\"" << internal::enum_to_str(number.get_key());
@@ -13477,7 +13495,7 @@ namespace ews
             sstr << number.get_value();
             sstr << "</t:Entry>";
             sstr << " </t:" << "PhoneNumbers" << ">";
-            sstr << " </t:" << class_name << ">";
+            sstr << " </t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
