@@ -639,17 +639,12 @@ namespace tests
     {
         auto minnie = ews::contact();
         auto address =
-            ews::physical_address(ews::physical_address::key::home, "Duckroad",
-                                  "Duckburg", "", "", "");
-        auto address2 =
-            ews::physical_address(ews::physical_address::key::business,
-                                  "Duckstreet", "Duckburg", "", "", "");
+            ews::physical_address(ews::physical_address::key::home, "Doomroad",
+                                      "Doomburg", "Doom", "Doomonia", "4 15 15 13");
         minnie.set_physical_address(address);
-        minnie.set_physical_address(address2);
         const auto addresses = minnie.get_physical_addresses();
-        ASSERT_EQ(2U, addresses.size());
+        ASSERT_FALSE(addresses.empty());
         EXPECT_EQ(address, addresses[0]);
-        EXPECT_EQ(address2, addresses[1]);
     }
 
     TEST_F(ContactTest, UpdatePhysicalAddressesValues)

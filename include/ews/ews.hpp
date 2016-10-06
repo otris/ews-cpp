@@ -9614,7 +9614,7 @@ namespace ews
             EWS_ASSERT(key_attr);
             EWS_ASSERT(
                 compare(key_attr->name(), key_attr->name_size(), "Key", 3));
-            auto key_ = string_to_key(key_attr->value());
+            const auto key = string_to_key(key_attr->value());
 
             std::string street;
             std::string city;
@@ -9652,7 +9652,7 @@ namespace ews
                         std::string(child->value(), child->value_size());
                 }
             }
-            return physical_address(key_, street, city, state, cor,
+            return physical_address(key, street, city, state, cor,
                                     postal_code);
         }
 
@@ -10531,58 +10531,34 @@ namespace ews
             }
 
             // create entry & key
-            auto entry_name = doc->allocate_string("t:Entry");
-            auto new_entry = doc->allocate_node(rapidxml::node_element);
-            new_entry->qname(entry_name, std::strlen("t:Entry"),
-                             entry_name + 2);
-            new_entry->namespace_uri(internal::uri<>::microsoft::types(),
-                                     internal::uri<>::microsoft::types_size);
-            new_entry->value(entry_name);
+            auto new_entry = &create_node(*addresses, "t:Entry");
 
             auto ptr_to_key = doc->allocate_string("Key");
-            const auto keystr = internal::enum_to_str(address.get_key());
+            auto keystr = internal::enum_to_str(address.get_key());
             auto ptr_to_value = doc->allocate_string(keystr.c_str());
             new_entry->append_attribute(
                 doc->allocate_attribute(ptr_to_key, ptr_to_value));
 
             if (!address.street().empty())
             {
-                ptr_to_key = doc->allocate_string("Street");
-                ptr_to_value = doc->allocate_string(address.street().c_str());
-                new_entry->append_attribute(
-                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
+                create_node(*new_entry, "t:Street", address.street());
             }
-            if (!address.street().empty())
+            if (!address.city().empty())
             {
-                ptr_to_key = doc->allocate_string("City");
-                ptr_to_value = doc->allocate_string(address.city().c_str());
-                new_entry->append_attribute(
-                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
+                create_node(*new_entry, "t:City", address.city());
             }
             if (!address.state().empty())
             {
-                ptr_to_key = doc->allocate_string("State");
-                ptr_to_value = doc->allocate_string(address.state().c_str());
-                new_entry->append_attribute(
-                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
+                create_node(*new_entry, "t:State", address.state());
             }
             if (!address.country_or_region().empty())
             {
-                ptr_to_key = doc->allocate_string("CountryOrRegion");
-                ptr_to_value =
-                    doc->allocate_string(address.country_or_region().c_str());
-                new_entry->append_attribute(
-                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
+                create_node(*new_entry, "t:CountryOrRegion", address.country_or_region());
             }
             if (!address.postal_code().empty())
             {
-                ptr_to_key = doc->allocate_string("PostalCode");
-                ptr_to_value =
-                    doc->allocate_string(address.postal_code().c_str());
-                new_entry->append_attribute(
-                    doc->allocate_attribute(ptr_to_key, ptr_to_value));
+                create_node(*new_entry, "t:PostalCode", address.postal_code());
             }
-            addresses->append_node(new_entry);
         }
 
         // A collection of phone numbers for the contact
