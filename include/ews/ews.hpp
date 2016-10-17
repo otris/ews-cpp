@@ -109,7 +109,7 @@ namespace ews
                 }
             }
 
-            void release() { func_ = nullptr; }
+            void release() EWS_NOEXCEPT { func_ = nullptr; }
 
         private:
             std::function<void(void)> func_;
@@ -118,6 +118,8 @@ namespace ews
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
         static_assert(!std::is_copy_constructible<on_scope_exit>::value, "");
         static_assert(!std::is_copy_assignable<on_scope_exit>::value, "");
+        static_assert(!std::is_move_constructible<on_scope_exit>::value, "");
+        static_assert(!std::is_move_assignable<on_scope_exit>::value, "");
         static_assert(!std::is_default_constructible<on_scope_exit>::value, "");
 #endif
 
