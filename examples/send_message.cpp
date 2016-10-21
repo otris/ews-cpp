@@ -38,11 +38,7 @@ int main()
         std::vector<ews::mailbox> recipients;
         recipients.push_back(ews::mailbox("president@example.com"));
         message.set_to_recipients(recipients);
-        auto text = ews::body(
-            R"(ようこそ (Welcome!)
-
-This is a test.
-)");
+        auto text = ews::body("ようこそ (Welcome!)\n\nThis is a test.\n");
         message.set_body(text);
         service.create_item(message,
                             ews::message_disposition::send_and_save_copy);
