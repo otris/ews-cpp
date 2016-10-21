@@ -13090,7 +13090,21 @@ namespace ews
             return response_message.items().front();
         }
 
-        //! Creates a new message in the Exchange store
+        //! \brief Creates a new message in the Exchange store.
+        //!
+        //! Creates a new message and, depending of the chosen message
+        //! disposition, sends it to the recipients.
+        //!
+        //! Note that if you pass message_disposition::send_only or
+        //! message_disposition::send_and_save_copy this function always
+        //! returns an invalid item id because Exchange does not include
+        //! the item identifier in the response. A common workaround for this
+        //! would be to create the item with message_disposition::save_only, get
+        //! the item identifier, and then use the send_item to send the message.
+        //!
+        //! \return The item id of the saved message when
+        //! message_disposition::save_only was given; otherwise an invalid item
+        //! id.
         item_id create_item(const message& the_message,
                             ews::message_disposition disposition)
         {
@@ -13105,9 +13119,15 @@ namespace ews
             {
                 throw exchange_error(response_message.get_response_code());
             }
-            EWS_ASSERT(!response_message.items().empty() &&
-                       "Expected a message item");
-            return response_message.items().front();
+
+            if (disposition == message_disposition::save_only)
+            {
+                EWS_ASSERT(!response_message.items().empty() &&
+                           "Expected a message item");
+                return response_message.items().front();
+            }
+
+            return item_id();
         }
 
         std::vector<item_id> find_item(const folder_id& parent_folder_id)

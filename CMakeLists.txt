@@ -285,9 +285,10 @@ add_example(autodiscover)
 add_example(create_contact)
 add_example(create_task)
 add_example(find_messages)
-add_example(find_unread_messages)
 add_example(find_tasks)
+add_example(find_unread_messages)
 add_example(raw_soap_request)
+add_example(send_message)
 add_example(update_contact)
 
 # Python is optional as it is only used by TimeoutTest
