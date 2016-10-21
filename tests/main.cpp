@@ -181,4 +181,4 @@ int main(int argc, char** argv)
     return RUN_ALL_TESTS();
 }
 
-// vim:et ts=4 sw=4 noic cc=80
+// vim:et ts=4 sw=4

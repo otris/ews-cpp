@@ -57,4 +57,4 @@ This is a test.
     return res;
 }
 
-// vim:et ts=4 sw=4 noic cc=80
+// vim:et ts=4 sw=4
