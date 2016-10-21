@@ -305,7 +305,7 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
     set(gtest_force_shared_crt ON CACHE BOOL
         "Use shared (DLL) run-time lib even when Google Test is built as static lib.")
 endif()
-add_subdirectory(${GTEST_ROOT})
+add_subdirectory(${GTEST_ROOT} EXCLUDE_FROM_ALL)
 include_directories(${GTEST_INCLUDE_DIR})
 
 add_executable(tests
