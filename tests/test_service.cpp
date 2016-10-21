@@ -200,7 +200,7 @@ namespace tests
 
         auto minnie = test_contact();
 
-        EXPECT_STREQ("", minnie.get_spouse_name().c_str());
+        EXPECT_STREQ("Mickey", minnie.get_spouse_name().c_str());
         auto spouse_name_property =
             ews::property(ews::contact_property_path::spouse_name, "Mickey");
         auto new_id =
@@ -227,13 +227,11 @@ namespace tests
 
         auto minnie = test_contact();
         ASSERT_FALSE(minnie.get_given_name().empty());
-        auto prop = ews::property(ews::contact_property_path::given_name);
-        auto new_id = service().update_item(minnie.get_item_id(), prop);
+        auto prop = ews::property(ews::contact_property_path::given_name, "");
+        auto update = ews::update(prop, ews::update::operation::delete_item_field);
+        auto new_id = service().update_item(minnie.get_item_id(), update);
         minnie = service().get_contact(new_id);
         EXPECT_TRUE(minnie.get_given_name().empty());
-
-        // FIXME: does not fail but request string contains <SetItemField>,
-        // should contain <DeleteItemField> instead
     }
 
     TEST_F(ServiceTest, UpdateItemWithAppendToItemField)

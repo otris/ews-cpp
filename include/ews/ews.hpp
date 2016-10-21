@@ -4625,7 +4625,7 @@ namespace ews
             return doc;
         }
 
-        // TODO: explicitlz for nodes in Types XML namespace, document or
+        // TODO: explicitly for nodes in Types XML namespace, document or
         // change interface
         inline rapidxml::xml_node<>& create_node(rapidxml::xml_node<>& parent,
                                                  const std::string& name)
@@ -7547,7 +7547,7 @@ namespace ews
 
     namespace internal
     {
-        // Wraps a string so that it become its own type
+        // Wraps a string so that it becomes its own type
         template <int tag> class str_wrapper final
         {
         public:
@@ -9482,6 +9482,797 @@ namespace ews
         std::string nickname_;
     };
 
+    class email_address final
+    {
+        public:
+            enum class key
+            {
+                email_address_1,
+                email_address_2,
+                email_address_3
+            };
+
+            explicit email_address(key k, std::string value)
+                : key_(std::move(k)), value_(std::move(value))
+            {
+            }
+
+        static email_address
+            from_xml_element(const rapidxml::xml_node<char>& node)
+        {
+             using rapidxml::internal::compare;
+
+            // <t:EmailAddresses>
+            //  <Entry Key="EmailAddress1">donald.duck@duckburg.de</Entry>
+            //  <Entry Key="EmailAddress3">dragonmaster1999@yahoo.com</Entry>
+            // </t:EmailAddresses>
+
+            EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
+                               "Entry", std::strlen("Entry")));
+            auto key = node.first_attribute("Key");
+            EWS_ASSERT(key && "Expected attribute Key");
+            return email_address(
+                str_to_key(std::string(key->value(), key->value_size())),
+                std::string(node.value(), node.value_size()));
+        }
+
+        key get_key() const { return key_; }
+        const std::string& get_value() const EWS_NOEXCEPT { return value_; }
+
+    private:
+        key key_;
+        std::string value_;
+        friend bool operator==(const email_address&, const email_address&);
+        static key str_to_key(const std::string& keystring)
+        {
+            key k;
+            if (keystring == "EmailAddress1")
+            {
+                k = email_address::key::email_address_1;
+            }
+            else if (keystring == "EmailAddress2")
+            {
+                k = email_address::key::email_address_2;
+            }
+            else if (keystring == "EmailAddress3")
+            {
+                k = email_address::key::email_address_3;
+            }
+            else
+            {
+                throw exception(std::string("Unrecognized key: ") + keystring);
+            }
+            return k;
+        }
+    };
+
+    inline bool operator==(const email_address& lhs, const email_address& rhs)
+    {
+        if (lhs.key_ == rhs.key_ && lhs.value_ == rhs.value_)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    namespace internal
+    {
+        inline std::string enum_to_str(email_address::key k)
+        {
+            switch (k)
+            {
+            case email_address::key::email_address_1:
+                return "EmailAddress1";
+            case email_address::key::email_address_2:
+                return "EmailAddress2";
+            case email_address::key::email_address_3:
+                return "EmailAddress3";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
+    class physical_address final
+    {
+    public:
+        enum class key
+        {
+            home,
+            business,
+            other
+        };
+
+        explicit physical_address(key k, std::string street, std::string city,
+                                  std::string state, std::string cor,
+                                  std::string postal_code)
+            : key_(std::move(k)), street_(std::move(street)),
+              city_(std::move(city)), state_(std::move(state)),
+              country_or_region_(std::move(cor)),
+              postal_code_(std::move(postal_code))
+        {
+        }
+
+        static physical_address
+        from_xml_element(const rapidxml::xml_node<char>& node)
+        {
+            using rapidxml::internal::compare;
+
+            EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
+                               "Entry", std::strlen("Entry")));
+
+            // <Entry Key="Home">
+            //      <Street>
+            //      <City>
+            //      <State>
+            //      <CountryOrRegion>
+            //      <PostalCode>
+            // </Entry>
+
+            auto key_attr = node.first_attribute();
+            EWS_ASSERT(key_attr);
+            EWS_ASSERT(
+                compare(key_attr->name(), key_attr->name_size(), "Key", 3));
+            const auto key = string_to_key(key_attr->value());
+
+            std::string street;
+            std::string city;
+            std::string state;
+            std::string cor;
+            std::string postal_code;
+
+            for (auto child = node.first_node(); child != nullptr;
+                 child = child->next_sibling())
+            {
+                if (compare("Street", std::strlen("Street"),
+                            child->local_name(), child->local_name_size()))
+                {
+                    street = std::string(child->value(), child->value_size());
+                }
+                if (compare("City", std::strlen("City"), child->local_name(),
+                            child->local_name_size()))
+                {
+                    city = std::string(child->value(), child->value_size());
+                }
+                if (compare("State", std::strlen("State"), child->local_name(),
+                            child->local_name_size()))
+                {
+                    state = std::string(child->value(), child->value_size());
+                }
+                if (compare("CountryOrRegion", std::strlen("CountryOrRegion"),
+                            child->local_name(), child->local_name_size()))
+                {
+                    cor = std::string(child->value(), child->value_size());
+                }
+                if (compare("PostalCode", std::strlen("PostalCode"),
+                            child->local_name(), child->local_name_size()))
+                {
+                    postal_code =
+                        std::string(child->value(), child->value_size());
+                }
+            }
+            return physical_address(key, street, city, state, cor,
+                                    postal_code);
+        }
+
+        key get_key() const { return key_; }
+        const std::string& street() const EWS_NOEXCEPT { return street_; }
+        const std::string& city() const EWS_NOEXCEPT { return city_; }
+        const std::string& state() const EWS_NOEXCEPT { return state_; }
+        const std::string& country_or_region() const EWS_NOEXCEPT
+        {
+            return country_or_region_;
+        }
+        const std::string& postal_code() const EWS_NOEXCEPT
+        {
+            return postal_code_;
+        }
+
+    private:
+        key key_;
+        std::string street_;
+        std::string city_;
+        std::string state_;
+        std::string country_or_region_;
+        std::string postal_code_;
+
+        friend bool operator==(const physical_address&,
+                               const physical_address&);
+
+        static key string_to_key(const std::string& keystring)
+        {
+            key k;
+            if (keystring == "Home")
+            {
+                k = physical_address::key::home;
+            }
+            else if (keystring == "Business")
+            {
+                k = physical_address::key::business;
+            }
+            else if (keystring == "Other")
+            {
+                k = physical_address::key::other;
+            }
+            else
+            {
+                throw exception(std::string("Unrecognized key: ") + keystring);
+            }
+            return k;
+        }
+    };
+
+    inline bool operator==(const physical_address& lhs,
+                           const physical_address& rhs)
+    {
+        if (lhs.key_ == rhs.key_ && lhs.street_ == rhs.street_ &&
+            lhs.city_ == rhs.city_ && lhs.state_ == rhs.state_ &&
+            lhs.country_or_region_ == rhs.country_or_region_ &&
+            lhs.postal_code_ == rhs.postal_code_)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    namespace internal
+    {
+        inline std::string enum_to_str(physical_address::key k)
+        {
+            switch (k)
+            {
+            case physical_address::key::home:
+                return "Home";
+            case physical_address::key::business:
+                return "Business";
+            case physical_address::key::other:
+                return "Other";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+
+        enum file_as_mapping
+        {
+            none,
+            last_comma_first,
+            first_space_last,
+            company,
+            last_comma_first_company,
+            company_last_first,
+            last_first,
+            last_first_company,
+            company_last_comma_first,
+            last_first_suffix,
+            last_space_first_company,
+            company_last_space_first,
+            last_space_first
+        };
+
+        inline file_as_mapping string_to_map(const std::string& maptype)
+        {
+            file_as_mapping map;
+
+            if (maptype == "LastCommaFirst")
+            {
+                map = file_as_mapping::last_comma_first;
+            }
+            else if (maptype == "FirstSpaceLast")
+            {
+                map = file_as_mapping::first_space_last;
+            }
+            else if (maptype == "Company")
+            {
+                map = file_as_mapping::company;
+            }
+            else if (maptype == "LastCommaFirstCompany")
+            {
+                map = file_as_mapping::last_comma_first_company;
+            }
+            else if (maptype == "CompanyLastFirst")
+            {
+                map = file_as_mapping::company_last_first;
+            }
+            else if (maptype == "LastFirst")
+            {
+                map = file_as_mapping::last_first;
+            }
+            else if (maptype == "LastFirstCompany")
+            {
+                map = file_as_mapping::last_first_company;
+            }
+            else if (maptype == "CompanyLastCommaFirst")
+            {
+                map = file_as_mapping::company_last_comma_first;
+            }
+            else if (maptype == "LastFirstSuffix")
+            {
+                map = file_as_mapping::last_first_suffix;
+            }
+            else if (maptype == "LastSpaceFirstCompany")
+            {
+                map = file_as_mapping::last_space_first_company;
+            }
+            else if (maptype == "CompanyLastSpaceFirst")
+            {
+                map = file_as_mapping::company_last_space_first;
+            }
+            else if (maptype == "LastSpaceFirst")
+            {
+                map = file_as_mapping::last_space_first;
+            }
+            else if (maptype == "None")
+            {
+                map = file_as_mapping::none;
+            }
+            else
+            {
+                throw exception(
+                    std::string("Unrecognized FileAsMapping Type: ") + maptype);
+            }
+            return map;
+        }
+
+        inline std::string enum_to_str(std::string maptype)
+        {
+            auto mapping_type = string_to_map(maptype);
+            std::string mappingtype;
+            switch (mapping_type)
+            {
+            case file_as_mapping::none:
+                mappingtype = "None";
+                break;
+            case file_as_mapping::last_comma_first:
+                mappingtype = "LastCommaFirst";
+                break;
+            case file_as_mapping::first_space_last:
+                mappingtype = "FirstSpaceLast";
+                break;
+            case file_as_mapping::company:
+                mappingtype = "Company";
+                break;
+            case file_as_mapping::last_comma_first_company:
+                mappingtype = "LastCommaFirstCompany";
+                break;
+            case file_as_mapping::company_last_first:
+                mappingtype = "CompanyLastFirst";
+                break;
+            case file_as_mapping::last_first:
+                mappingtype = "LastFirst";
+                break;
+            case file_as_mapping::last_first_company:
+                mappingtype = "LastFirstCompany";
+                break;
+            case file_as_mapping::company_last_comma_first:
+                mappingtype = "CompanyLastCommaFirst";
+                break;
+            case file_as_mapping::last_first_suffix:
+                mappingtype = "LastFirstSuffix";
+                break;
+            case file_as_mapping::last_space_first_company:
+                mappingtype = "LastSpaceFirstCompany";
+                break;
+            case file_as_mapping::company_last_space_first:
+                mappingtype = "CompanyLastSpaceFirst";
+                break;
+            case file_as_mapping::last_space_first:
+                mappingtype = "LastSpaceFirst";
+                break;
+            default:
+                break;
+            }
+            return mappingtype;
+        }
+    }
+
+    class im_address final
+    {
+    public:
+        enum class key
+        {
+            imaddress1,
+            imaddress2,
+            imaddress3
+        };
+        
+        explicit im_address(key k, std::string value)
+            : key_(std::move(k)), value_(std::move(value))
+        {
+        }
+        
+        static im_address
+              from_xml_element(const rapidxml::xml_node<char>& node)
+        {
+             using rapidxml::internal::compare;
+
+            // <t:ImAddresses>
+            //  <Entry Key="ImAddress1">WOWMLGPRO</Entry>
+            //  <Entry Key="ImAddress2">xXSwaggerBoiXx</Entry>
+            // </t:ImAddresses>
+
+            EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
+                               "Entry", std::strlen("Entry")));
+            auto key = node.first_attribute("Key");
+            EWS_ASSERT(key && "Expected attribute Key");
+            return im_address(
+                str_to_key(std::string(key->value(), key->value_size())),
+                std::string(node.value(), node.value_size()));
+        }
+
+        key get_key() const { return key_; }
+        const std::string& get_value() const EWS_NOEXCEPT { return value_; }
+
+    private:
+        key key_;
+        std::string value_;
+        friend bool operator==(const im_address&, const im_address&);
+        static key str_to_key(const std::string& keystring)
+        {
+            key k;
+            if (keystring == "ImAddress1")
+            {
+                k = im_address::key::imaddress1;
+            }
+            else if (keystring == "ImAddress2")
+            {
+                k = im_address::key::imaddress2;
+            }
+            else if (keystring == "ImAddress3")
+            {
+                k = im_address::key::imaddress3;
+            }
+            else
+            {
+                throw exception(std::string("Unrecognized key: ") + keystring);
+            }
+            return k;
+        }
+    };
+
+    inline bool operator==(const im_address& lhs, const im_address& rhs)
+    {
+        if (lhs.key_ == rhs.key_ && lhs.value_ == rhs.value_)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    namespace internal
+    {
+        inline std::string enum_to_str(im_address::key k)
+        {
+            switch (k)
+            {
+            case im_address::key::imaddress1:
+                return "ImAddress1";
+            case im_address::key::imaddress2:
+                return "ImAddress2";
+            case im_address::key::imaddress3:
+                return "ImAddress3";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
+    class phone_number final
+    {
+    public:
+        enum class key
+        {
+            assistant_phone,
+            business_fax,
+            business_phone,
+            business_phone_2,
+            callback,
+            car_phone,
+            company_main_phone,
+            home_fax,
+            home_phone,
+            home_phone_2,
+            isdn,
+            mobile_phone,
+            other_fax,
+            other_telephone,
+            pager,
+            primary_phone,
+            radio_phone,
+            telex,
+            ttytdd_phone
+        };
+
+        explicit phone_number(key k, std::string val)
+            : key_(std::move(k)), value_(std::move(val))
+        {
+        }
+
+        static phone_number
+        from_xml_element(const rapidxml::xml_node<char>& node)
+        {
+            using rapidxml::internal::compare;
+
+            // <t:PhoneNumbers>
+            //  <Entry Key="AssistantPhone">0123456789</Entry>
+            //  <Entry Key="BusinessFax">9876543210</Entry>
+            // </t:PhoneNumbers>
+
+            EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
+                               "Entry", std::strlen("Entry")));
+            auto key = node.first_attribute("Key");
+            EWS_ASSERT(key && "Expected attribute Key");
+            return phone_number(
+                str_to_key(std::string(key->value(), key->value_size())),
+                std::string(node.value(), node.value_size()));
+        }
+
+        key get_key() const { return key_; }
+        const std::string& get_value() const EWS_NOEXCEPT { return value_; }
+
+    private:
+        key key_;
+        std::string value_;
+        friend bool operator==(const phone_number&, const phone_number&);
+
+        static key str_to_key(const std::string& keystring)
+        {
+            key k;
+            if (keystring == "AssistantPhone")
+            {
+                k = phone_number::key::assistant_phone;
+            }
+            else if (keystring == "BusinessFax")
+            {
+                k = phone_number::key::business_fax;
+            }
+            else if (keystring == "BusinessPhone")
+            {
+                k = phone_number::key::business_phone;
+            }
+            else if (keystring == "BusinessPhone2")
+            {
+                k = phone_number::key::business_phone_2;
+            }
+            else if (keystring == "Callback")
+            {
+                k = phone_number::key::callback;
+            }
+            else if (keystring == "CarPhone")
+            {
+                k = phone_number::key::car_phone;
+            }
+            else if (keystring == "CompanyMainPhone")
+            {
+                k = phone_number::key::company_main_phone;
+            }
+            else if (keystring == "HomeFax")
+            {
+                k = phone_number::key::home_fax;
+            }
+            else if (keystring == "HomePhone")
+            {
+                k = phone_number::key::home_phone;
+            }
+            else if (keystring == "HomePhone2")
+            {
+                k = phone_number::key::home_phone_2;
+            }
+            else if (keystring == "Isdn")
+            {
+                k = phone_number::key::isdn;
+            }
+            else if (keystring == "MobilePhone")
+            {
+                k = phone_number::key::mobile_phone;
+            }
+            else if (keystring == "OtherFax")
+            {
+                k = phone_number::key::other_fax;
+            }
+            else if (keystring == "OtherTelephone")
+            {
+                k = phone_number::key::other_telephone;
+            }
+            else if (keystring == "Pager")
+            {
+                k = phone_number::key::pager;
+            }
+            else if (keystring == "PrimaryPhone")
+            {
+                k = phone_number::key::primary_phone;
+            }
+            else if (keystring == "RadioPhone")
+            {
+                k = phone_number::key::radio_phone;
+            }
+            else if (keystring == "Telex")
+            {
+                k = phone_number::key::telex;
+            }
+            else if (keystring == "TtyTddPhone")
+            {
+                k = phone_number::key::ttytdd_phone;
+            }
+            else
+            {
+                throw exception("Unrecognized key: " + keystring);
+            }
+            return k;
+        }
+    };
+
+    inline bool operator==(const phone_number& lhs, const phone_number& rhs)
+    {
+        if (lhs.key_ == rhs.key_ && lhs.value_ == rhs.value_)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    namespace internal
+    {
+        inline std::string enum_to_str(phone_number::key k)
+        {
+            switch (k)
+            {
+            case phone_number::key::assistant_phone:
+                return "AssistantPhone";
+            case phone_number::key::business_fax:
+                return "BusinessFax";
+            case phone_number::key::business_phone:
+                return "BusinessPhone";
+            case phone_number::key::business_phone_2:
+                return "BusinessPhone2";
+            case phone_number::key::callback:
+                return "Callback";
+            case phone_number::key::car_phone:
+                return "CarPhone";
+            case phone_number::key::company_main_phone:
+                return "CompanyMainPhone";
+            case phone_number::key::home_fax:
+                return "HomeFax";
+            case phone_number::key::home_phone:
+                return "HomePhone";
+            case phone_number::key::home_phone_2:
+                return "HomePhone2";
+            case phone_number::key::isdn:
+                return "Isdn";
+            case phone_number::key::mobile_phone:
+                return "MobilePhone";
+            case phone_number::key::other_fax:
+                return "OtherFax";
+            case phone_number::key::other_telephone:
+                return "OtherTelephone";
+            case phone_number::key::pager:
+                return "Pager";
+            case phone_number::key::primary_phone:
+                return "PrimaryPhone";
+            case phone_number::key::radio_phone:
+                return "RadioPhone";
+            case phone_number::key::telex:
+                return "Telex";
+            case phone_number::key::ttytdd_phone:
+                return "TtyTddPhone";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
+    namespace internal
+    {
+        enum field_types
+        {
+            field_uri,
+            field_index
+        };
+    }
+
+    class indexed_field_uri final
+    {
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
+#if 0
+        using field_uri = internal::str_wrapper<internal::field_uri>;
+        using field_index = internal::str_wrapper<internal::field_index>;
+#else
+        typedef internal::str_wrapper<internal::field_uri> field_uri;
+        typedef internal::str_wrapper<internal::field_index> field_index;
+#endif
+#endif
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+        indexed_field_uri() = delete;
+#else
+    private:
+        indexed_field_uri();
+
+    public:
+#endif
+        indexed_field_uri(field_uri uri, field_index index)
+            : field_uri_(std::move(uri)), index_(std::move(index))
+        {
+        }
+
+        const std::string& get_field_uri() const EWS_NOEXCEPT
+        {
+            return field_uri_.str();
+        }
+
+        const std::string get_field_index() const EWS_NOEXCEPT
+        {
+            return index_.str();
+        }
+
+        //! Returns a string representation of this indexed_field_uri
+        std::string to_xml()
+        {
+            std::stringstream sstr;
+
+            sstr << "<t:IndexedFieldURI ";
+
+            if (!field_uri_.str().empty())
+            {
+                sstr << "FieldURI=\"" << field_uri_.str() << "\" ";
+            }
+            if (!index_.str().empty())
+            {
+                sstr << "FieldIndex=\"" << index_.str() << "\"/>";
+            }
+            return sstr.str();
+        }
+
+        //! Converts an xml string into a indexed_field_uri property.
+        static indexed_field_uri
+        from_xml_element(const rapidxml::xml_node<>& elem)
+        {
+            using rapidxml::internal::compare;
+
+            EWS_ASSERT(compare(elem.name(), elem.name_size(),
+                               "t:IndexedFieldURI",
+                               std::strlen("t:IndexedFieldURI")) &&
+                       "Expected a <IndexedFieldURI/>, got something else");
+
+            std::string uri;
+            std::string index;
+
+            for (auto attr = elem.first_attribute(); attr != nullptr;
+                 attr = attr->next_attribute())
+            {
+                if (compare(attr->name(), attr->name_size(), "FieldURI",
+                            std::strlen("FieldURI")))
+                {
+                    uri = std::string(attr->value(), attr->value_size());
+                }
+                if (compare(attr->name(), attr->name_size(), "FieldIndex",
+                            std::strlen("FieldIndex")))
+                {
+                    index = std::string(attr->value(), attr->value_size());
+                }
+                else
+                {
+                    throw exception(
+                        "Unexpected attribute in <IndexedFieldURI>");
+                }
+            }
+        }
+
+    private:
+        field_uri field_uri_;
+        field_index index_;
+    };
+
     //! A contact item in the Exchange store.
     class contact final : public item
     {
@@ -9501,18 +10292,45 @@ namespace ews
         }
 #endif
 
-        // How the name should be filed for display/sorting purposes
-        // TODO: file_as
+        //! How the name should be filed for display/sorting purposes
+        void set_file_as(std::string fileas)
+        {
+            xml().set_or_update("FileAs", fileas);
+        }
 
-        // How the various parts of a contact's information interact to form
-        // the FileAs property value
-        // TODO: file_as_mapping
+        std::string get_file_as()
+        {
+            return xml().get_value_as_string("FileAs");
+        }
 
-        // The name to display for a contact
-        // TODO: get_display_name
+        //! How the various parts of a contact's information interact to form
+        //! the FileAs property value
+        //! Overrides previously made FileAs settings
+        void set_file_as_mapping(std::string maptype)
+        {
+            auto mapping = internal::enum_to_str(maptype);
+            xml().set_or_update("FileAsMapping", mapping);
+        }
 
-        // Sets the name by which a person is known to `given_name`; often
-        // referred to as a person's first name
+        std::string get_file_as_mapping()
+        {
+            return xml().get_value_as_string("FileAsMapping");
+        }
+
+        //! Sets the name to display for a contact
+        void set_display_name(const std::string& display_name)
+        {
+            xml().set_or_update("DisplayName", display_name);
+        }
+
+        //! Returns the displayed name of the contact
+        std::string get_display_name() const
+        {
+            return xml().get_value_as_string("DisplayName");
+        }
+
+        //! Sets the name by which a person is known to `given_name`; often
+        //! referred to as a person's first name
         void set_given_name(const std::string& given_name)
         {
             xml().set_or_update("GivenName", given_name);
@@ -9524,18 +10342,43 @@ namespace ews
             return xml().get_value_as_string("GivenName");
         }
 
-        // Initials for the contact
-        // TODO: get_initials
+        //! Set the Initials for the contact
+        void set_initials(const std::string& initials)
+        {
+            xml().set_or_update("Initials", initials);
+        }
 
-        // The middle name for the contact
-        // TODO: get_middle_name
+        //! Returns the person's initials
+        std::string get_initials() const
+        {
+            return xml().get_value_as_string("Initials");
+        }
 
-        // Another name by which the contact is known
-        // TODO: get_nickname
+        //! Set the middle name for the contact
+        void set_middle_name(const std::string& middle_name)
+        {
+            xml().set_or_update("MiddleName", middle_name);
+        }
 
-        // A combination of several name fields in one convenient place
-        // (read-only)
-        // TODO: get_complete_name
+        //! Returns the middle name of the contact
+        std::string get_middle_name() const
+        {
+            return xml().get_value_as_string("MiddleName");
+        }
+
+        //! Sets another name by which the contact is known
+        void set_nickname(const std::string& nickname)
+        {
+            xml().set_or_update("Nickname", nickname);
+        }
+
+        //! Returns the nickname of the contact
+        std::string get_nickname() const
+        {
+            return xml().get_value_as_string("Nickname");
+        }
+
+        //! A combination of several name fields in one convenient place
         complete_name get_complete_name() const
         {
             auto node = xml().get_node("CompleteName");
@@ -9546,95 +10389,446 @@ namespace ews
             return complete_name::from_xml_element(*node);
         }
 
-        // The company that the contact is affiliated with
-        // TODO: get_company_name
+        //! Sets the company that the contact is affiliated with
+        void set_company_name(const std::string& company_name)
+        {
+            xml().set_or_update("CompanyName", company_name);
+        }
+
+        //! Returns the comany of the contact
+        std::string get_company_name() const
+        {
+            return xml().get_value_as_string("CompanyName");
+        }
 
         //! A collection of email addresses for the contact
-        std::vector<mailbox> get_email_addresses() const
+        std::vector<email_address> get_email_addresses() const
         {
             const auto addresses = xml().get_node("EmailAddresses");
             if (!addresses)
             {
-                return std::vector<mailbox>();
+                return std::vector<email_address>();
             }
-            std::vector<mailbox> result;
-            for (auto entry = addresses->first_node(); entry;
+            std::vector<email_address> result;
+            for (auto entry = addresses->first_node(); entry != nullptr;
                  entry = entry->next_sibling())
             {
-                auto name_attr = entry->first_attribute("Name");
-                auto routing_type_attr = entry->first_attribute("RoutingType");
-                auto mailbox_type_attr = entry->first_attribute("MailboxType");
-                result.emplace_back(mailbox(
-                    entry->value(), name_attr ? name_attr->value() : "",
-                    routing_type_attr ? routing_type_attr->value() : "",
-                    mailbox_type_attr ? mailbox_type_attr->value() : ""));
+                result.push_back(email_address::from_xml_element(*entry));
             }
             return result;
         }
 
-        std::string get_email_address_1() const
+        void set_email_address(const email_address& address)
         {
-            return get_email_address_by_key("EmailAddress1");
+            using rapidxml::internal::compare;
+            using internal::create_node;
+            auto doc = xml().document();
+            auto email_addresses = xml().get_node("EmailAddresses");
+
+            if (email_addresses)
+            {
+                bool entry_exists = false;
+                auto entry = email_addresses->first_node();
+                for (; entry != nullptr; entry = entry->next_sibling())
+                {
+                    auto key_attr = entry->first_attribute();
+                    EWS_ASSERT(key_attr);
+                    EWS_ASSERT(compare(key_attr->name(), key_attr->name_size(),
+                                       "Key", 3));
+                    const auto key = internal::enum_to_str(address.get_key());
+                    if (compare(key_attr->value(), key_attr->value_size(),
+                                key.c_str(), key.size()))
+                    {
+                        entry_exists = true;
+                        break;
+                    }
+                }
+                if (entry_exists)
+                {
+                    email_addresses->remove_node(entry);
+                }
+            }
+            else
+            {
+                email_addresses = &create_node(*doc, "t:EmailAddresses");
+            }
+
+            // create entry & key
+            const auto value = address.get_value();
+            auto new_entry = &create_node(*email_addresses, "t:Entry", value);
+            auto ptr_to_key = doc->allocate_string("Key");
+            const auto key = internal::enum_to_str(address.get_key());
+            auto ptr_to_value = doc->allocate_string(key.c_str());
+            new_entry->append_attribute(
+                doc->allocate_attribute(ptr_to_key, ptr_to_value));
+
         }
 
-        void set_email_address_1(mailbox address)
+        //! A collection of mailing addresses for the contact
+        std::vector<physical_address> get_physical_addresses() const
         {
-            set_email_address_by_key("EmailAddress1", std::move(address));
+            const auto addresses = xml().get_node("PhysicalAddresses");
+            if (!addresses)
+            {
+                return std::vector<physical_address>();
+            }
+            std::vector<physical_address> result;
+            for (auto entry = addresses->first_node(); entry != nullptr;
+                 entry = entry->next_sibling())
+            {
+                result.push_back(physical_address::from_xml_element(*entry));
+            }
+            return result;
         }
 
-        std::string get_email_address_2() const
+        void set_physical_address(const physical_address& address)
         {
-            return get_email_address_by_key("EmailAddress2");
-        }
+            using rapidxml::internal::compare;
+            using internal::create_node;
+            auto doc = xml().document();
+            auto addresses = xml().get_node("PhysicalAddresses");
+            // <PhysicalAddresses>
+            //   <Entry Key="Home">
+            //     <Street>
+            //     <City>
+            //     <State>
+            //     <CountryOrRegion>
+            //     <PostalCode>
+            //   <Entry/>
+            //   <Entry Key="Business">
+            //     <Street>
+            //     <City>
+            //     <State>
+            //     <CountryOrRegion>
+            //     <PostalCode>
+            //   <Entry/>
+            // <PhysicalAddresses/>
 
-        void set_email_address_2(mailbox address)
-        {
-            set_email_address_by_key("EmailAddress2", std::move(address));
-        }
+            if (addresses)
+            {
+                bool entry_exists = false;
+                auto entry = addresses->first_node();
+                for (; entry != nullptr; entry = entry->next_sibling())
+                {
+                    auto key_attr = entry->first_attribute();
+                    EWS_ASSERT(key_attr);
+                    EWS_ASSERT(compare(key_attr->name(), key_attr->name_size(),
+                                       "Key", 3));
+                    const auto key = internal::enum_to_str(address.get_key());
+                    if (compare(key_attr->value(), key_attr->value_size(),
+                                key.c_str(), key.size()))
+                    {
+                        entry_exists = true;
+                        break;
+                    }
+                }
+                if (entry_exists)
+                {
+                    addresses->remove_node(entry);
+                }
+            }
+            else
+            {
+                addresses = &create_node(*doc, "t:PhysicalAddresses");
+            }
 
-        std::string get_email_address_3() const
-        {
-            return get_email_address_by_key("EmailAddress3");
-        }
+            // create entry & key
+            auto new_entry = &create_node(*addresses, "t:Entry");
 
-        void set_email_address_3(mailbox address)
-        {
-            set_email_address_by_key("EmailAddress3", std::move(address));
-        }
+            auto ptr_to_key = doc->allocate_string("Key");
+            auto keystr = internal::enum_to_str(address.get_key());
+            auto ptr_to_value = doc->allocate_string(keystr.c_str());
+            new_entry->append_attribute(
+                doc->allocate_attribute(ptr_to_key, ptr_to_value));
 
-        // A collection of mailing addresses for the contact
-        // TODO: get_physical_addresses
+            if (!address.street().empty())
+            {
+                create_node(*new_entry, "t:Street", address.street());
+            }
+            if (!address.city().empty())
+            {
+                create_node(*new_entry, "t:City", address.city());
+            }
+            if (!address.state().empty())
+            {
+                create_node(*new_entry, "t:State", address.state());
+            }
+            if (!address.country_or_region().empty())
+            {
+                create_node(*new_entry, "t:CountryOrRegion", address.country_or_region());
+            }
+            if (!address.postal_code().empty())
+            {
+                create_node(*new_entry, "t:PostalCode", address.postal_code());
+            }
+        }
 
         // A collection of phone numbers for the contact
-        // TODO: get_phone_numbers
+        void set_phone_number(const phone_number& number)
+        {
+            using rapidxml::internal::compare;
+            using internal::create_node;
+            auto doc = xml().document();
+            auto phone_numbers = xml().get_node("PhoneNumbers");
 
-        // The name of the contact's assistant
-        // TODO: get_assistant_name
+            if (phone_numbers)
+            {
+                bool entry_exists = false;
+                auto entry = phone_numbers->first_node();
+                for (; entry != nullptr; entry = entry->next_sibling())
+                {
+                    auto key_attr = entry->first_attribute();
+                    EWS_ASSERT(key_attr);
+                    EWS_ASSERT(compare(key_attr->name(), key_attr->name_size(),
+                                       "Key", 3));
+                    const auto key = internal::enum_to_str(number.get_key());
+                    if (compare(key_attr->value(), key_attr->value_size(),
+                                key.c_str(), key.size()))
+                    {
+                        entry_exists = true;
+                        break;
+                    }
+                }
+                if (entry_exists)
+                {
+                    phone_numbers->remove_node(entry);
+                }
+            }
+            else
+            {
+                phone_numbers = &create_node(*doc, "t:PhoneNumbers");
+            }
 
-        // The contact's birthday
-        // TODO: get_birthday
+            // create entry & key
+            const auto value = number.get_value();
+            auto new_entry = &create_node(*phone_numbers, "t:Entry", value);
+            auto ptr_to_key = doc->allocate_string("Key");
+            const auto key = internal::enum_to_str(number.get_key());
+            auto ptr_to_value = doc->allocate_string(key.c_str());
+            new_entry->append_attribute(
+                doc->allocate_attribute(ptr_to_key, ptr_to_value));
+        }
 
-        // Web page for the contact's business; typically a URL
-        // TODO: get_business_homepage
+        std::vector<phone_number> get_phone_numbers() const
+        {
+            const auto numbers = xml().get_node("PhoneNumbers");
+            if (!numbers)
+            {
+                return std::vector<phone_number>();
+            }
+            std::vector<phone_number> result;
+            for (auto entry = numbers->first_node(); entry != nullptr;
+                 entry = entry->next_sibling())
+            {
+                result.push_back(phone_number::from_xml_element(*entry));
+            }
+            return result;
+        }
 
-        // A collection of children's names associated with the contact
-        // TODO: get_children
+        //! Sets the name of the contact's assistant
+        void set_assistant_name(const std::string& assistant_name)
+        {
+            xml().set_or_update("AssistantName", assistant_name);
+        }
 
-        // A collection of companies a contact is associated with
-        // TODO: get_companies
+        //! Returns the contact's assistant's name
+        std::string get_assistant_name() const
+        {
+            return xml().get_value_as_string("AssistantName");
+        }
 
-        // Indicates whether this is a directory or a store contact
-        // (read-only)
-        // TODO: get_contact_source
+        //! The contact's birthday
+        // Be careful with the formating of the date string
+        // It has to be in the format YYYY-MM-DD(THH:MM:SSZ) <- can be left out
+        // if the time of the day isn't important, will automatically be set to
+        // YYYY-MM-DDT00:00:00Z
+        //
+        // This also applies to any other contact property with a date type
+        // string
+        void set_birthday(std::string birthday)
+        {
+            xml().set_or_update("Birthday", birthday);
+        }
 
-        // The department name that the contact is in
-        // TODO: get_department
+        std::string get_birthday()
+        {
+            return xml().get_value_as_string("Birthday");
+        }
 
-        // Sr, Jr, I, II, III, and so on
-        // TODO: get_generation
+        //! Sets the web page for the contact's business; typically a URL
+        void set_business_homepage(const std::string& business_homepage)
+        {
+            xml().set_or_update("BusinessHomePage", business_homepage);
+        }
 
-        // A collection of instant messaging addresses for the contact
-        // TODO: get_im_addresses
+        //! Returns the URL of the contact
+        std::string get_business_homepage() const
+        {
+            return xml().get_value_as_string("BusinessHomePage");
+        }
+
+        //! A collection of children's names associated with the contact
+        void set_children(std::vector<std::string> children)
+        {
+            auto doc = xml().document();
+            auto target_node = xml().get_node("Children");
+            if (!target_node)
+            {
+                target_node = &internal::create_node(*doc, "t:Children");
+            }
+
+            for (const auto& child : children)
+            {
+                internal::create_node(*target_node, "t:String", child);
+            }
+        }
+        std::vector<std::string> get_children()
+        {
+            const auto children_node = xml().get_node("Children");
+            if (!children_node)
+            {
+                return std::vector<std::string>();
+            }
+
+            std::vector<std::string> children;
+            for (auto child = children_node->first_node(); child != nullptr;
+                 child = child->next_sibling())
+            {
+                children.emplace_back(
+                    std::string(child->value(), child->value_size()));
+            }
+            return children;
+        }
+
+        //! A collection of companies a contact is associated with
+        void set_companies(std::vector<std::string> companies)
+        {
+            auto doc = xml().document();
+            auto target_node = xml().get_node("Companies");
+            if (!target_node)
+            {
+                target_node = &internal::create_node(*doc, "t:Companies");
+            }
+
+            for (const auto& company : companies)
+            {
+                internal::create_node(*target_node, "t:String", company);
+            }
+        }
+
+        std::vector<std::string> get_companies()
+        {
+            const auto companies_node = xml().get_node("Companies");
+            if (!companies_node)
+            {
+                return std::vector<std::string>();
+            }
+
+            std::vector<std::string> companies;
+            for (auto child = companies_node->first_node(); child != nullptr;
+                 child = child->next_sibling())
+            {
+                companies.emplace_back(
+                    std::string(child->value(), child->value_size()));
+            }
+            return companies;
+        }
+
+        //! Indicates whether this is a directory or a store contact
+        //! (read-only)
+
+        std::string get_contact_source()
+        {
+            return xml().get_value_as_string("ContactSource");
+        }
+
+        //! Set the department name that the contact is in
+        void set_department(const std::string& department)
+        {
+            xml().set_or_update("Department", department);
+        }
+
+        //! Return the department name of the contact
+        std::string get_department() const
+        {
+            return xml().get_value_as_string("Department");
+        }
+
+        //! Sets the generation of the contact
+        //! e.g.: Sr, Jr, I, II, III, and so on
+        void set_generation(const std::string& generation)
+        {
+            xml().set_or_update("Generation", generation);
+        }
+
+        //! Returns the generation of the contact
+        std::string get_generation() const
+        {
+            return xml().get_value_as_string("Generation");
+        }
+
+        //! A collection of instant messaging addresses for the contact
+
+        void set_im_address(const im_address& im_address)
+        {
+            using rapidxml::internal::compare;
+            using internal::create_node;
+            auto doc = xml().document();
+            auto im_addresses = xml().get_node("ImAddresses");
+
+            if (im_addresses)
+            {
+                bool entry_exists = false;
+                auto entry = im_addresses->first_node();
+                for (; entry != nullptr; entry = entry->next_sibling())
+                {
+                    auto key_attr = entry->first_attribute();
+                    EWS_ASSERT(key_attr);
+                    EWS_ASSERT(compare(key_attr->name(), key_attr->name_size(),
+                                       "Key", 3));
+                    const auto key = internal::enum_to_str(im_address.get_key());
+                    if (compare(key_attr->value(), key_attr->value_size(),
+                                key.c_str(), key.size()))
+                    {
+                        entry_exists = true;
+                        break;
+                    }
+                }
+                if (entry_exists)
+                {
+                    im_addresses->remove_node(entry);
+                }
+            }
+            else
+            {
+                im_addresses = &create_node(*doc, "t:ImAddresses");
+            }
+
+            // create entry & key
+            const auto value = im_address.get_value();
+            auto new_entry = &create_node(*im_addresses, "t:Entry", value);
+            auto ptr_to_key = doc->allocate_string("Key");
+            const auto key = internal::enum_to_str(im_address.get_key());
+            auto ptr_to_value = doc->allocate_string(key.c_str());
+            new_entry->append_attribute(
+                doc->allocate_attribute(ptr_to_key, ptr_to_value));
+        }
+
+        std::vector<im_address> get_im_addresses()
+        {
+            const auto addresses = xml().get_node("ImAddresses");
+            if (!addresses)
+            {
+                return std::vector<im_address>();
+            }
+            std::vector<im_address> result;
+            for (auto entry = addresses->first_node(); entry != nullptr;
+                 entry = entry->next_sibling())
+            {
+                result.push_back(im_address::from_xml_element(*entry));
+            }
+            return result;
+        }
 
         //! Sets this contact's job title.
         void set_job_title(const std::string& title)
@@ -9648,21 +10842,58 @@ namespace ews
             return xml().get_value_as_string("JobTitle");
         }
 
-        // The name of the contact's manager
-        // TODO: get_manager
+        //! Sets the name of the contact's manager
+        void set_manager(const std::string& manager)
+        {
+            xml().set_or_update("Manager", manager);
+        }
 
-        // The distance that the contact resides from some reference point
-        // TODO: get_mileage
+        //! Returns the name of the contact's manager
+        std::string get_manager() const
+        {
+            return xml().get_value_as_string("Manager");
+        }
 
-        // Location of the contact's office
-        // TODO: get_office_location
+        //! Sets the distance that the contact resides
+        //! from some reference point
+        void set_mileage(const std::string& mileage)
+        {
+            xml().set_or_update("Mileage", mileage);
+        }
+
+        //! Returns the distance to the reference point
+        std::string get_mileage() const
+        {
+            return xml().get_value_as_string("Mileage");
+        }
+
+        //! Sets the location of the contact's office
+        void set_office_location(const std::string& office_location)
+        {
+            xml().set_or_update("OfficeLocation", office_location);
+        }
+
+        //! Returns the location of the contact's office
+        std::string get_office_location() const
+        {
+            return xml().get_value_as_string("OfficeLocation");
+        }
 
         // The physical addresses in the PhysicalAddresses collection that
         // represents the mailing address for the contact
         // TODO: get_postal_address_index
 
-        // Occupation or discipline of the contact
-        // TODO: get_profession
+        //! Sets the occupation or discipline of the contact
+        void set_profession(const std::string& profession)
+        {
+            xml().set_or_update("Profession", profession);
+        }
+
+        //! Returns the occupation of the contact
+        std::string get_profession() const
+        {
+            return xml().get_value_as_string("Profession");
+        }
 
         //! Set name of the contact's significant other
         void set_spouse_name(const std::string& spouse_name)
@@ -9690,8 +10921,16 @@ namespace ews
             return xml().get_value_as_string("Surname");
         }
 
-        // Date that the contact was married
-        // TODO: get_wedding_anniversary
+        //! Date that the contact was married
+        void set_wedding_anniversary(std::string anniversary)
+        {
+            xml().set_or_update("WeddingAnniversary", anniversary);
+        }
+
+        std::string get_wedding_anniversary()
+        {
+            return xml().get_value_as_string("WeddingAnniversary");
+        }
 
         // Everything below is beyond EWS 2007 subset
 
@@ -11424,26 +12663,41 @@ namespace ews
     {
     public:
         // Intentionally not explicit
-        property_path(const char* uri) : uri_(std::string(uri)) {}
+        property_path(const char* uri) : value_()
+        {
+            std::stringstream sstr;
+
+            sstr << "<t:FieldURI FieldURI=\"";
+            sstr << uri << "\"/>";
+            value_ = sstr.str();
+
+            prop_name_ = property_name(uri);
+            class_name_ = class_name(uri);
+
+        }
 
         //! Returns the \<FieldURI> element for this property.
         //!
         //! Identifies frequently referenced properties by URI
-        const std::string& field_uri() const EWS_NOEXCEPT { return uri_; }
 
-        std::string property_name() const
+        const std::string& to_xml() const EWS_NOEXCEPT { return value_; }
+        const std::string& get_property_name() const EWS_NOEXCEPT { return prop_name_; }
+        const std::string& get_class_name() const EWS_NOEXCEPT { return class_name_; }
+
+    private:
+        static std::string property_name(const std::string& uri)
         {
-            const auto n = uri_.rfind(':');
+            const auto n = uri.rfind(':');
             EWS_ASSERT(n != std::string::npos);
-            return uri_.substr(n + 1);
+            return uri.substr(n + 1);
         }
 
-        std::string class_name() const
+        static std::string class_name(const std::string& uri)
         {
             // TODO: we know at compile-time to which class a property belongs
-            const auto n = uri_.find(':');
+            const auto n = uri.find(':');
             EWS_ASSERT(n != std::string::npos);
-            const auto substr = uri_.substr(0, n);
+            const auto substr = uri.substr(0, n);
             if (substr == "folder")
             {
                 return "Folder";
@@ -11497,13 +12751,10 @@ namespace ews
         }
 
     private:
-        std::string uri_;
+        std::string prop_name_;
+        std::string class_name_;
+        std::string value_;
     };
-
-    inline bool operator==(const property_path& lhs, const property_path& rhs)
-    {
-        return lhs.field_uri() == rhs.field_uri();
-    }
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
     static_assert(!std::is_default_constructible<property_path>::value, "");
@@ -11517,15 +12768,24 @@ namespace ews
     class indexed_property_path : public property_path
     {
     public:
-        indexed_property_path(const char* uri, const char* index)
-            : property_path(uri), index_(std::string(index))
+        indexed_property_path(const char* uri, const char* index) 
+            : property_path(uri), value_()
         {
+            std::stringstream sstr;
+            sstr << "<t:IndexedFieldURI FieldURI=";
+            sstr << "\"" << uri << "\"";
+            sstr << " FieldIndex=";
+            sstr << "\"";
+            sstr << index;
+            sstr << "\"";
+            sstr << "/>";
+            value_ =  sstr.str();
         }
 
-        const std::string& field_index() const EWS_NOEXCEPT { return index_; }
+        const std::string& to_xml() const EWS_NOEXCEPT { return value_; }
 
     private:
-        std::string index_;
+        std::string value_;
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
@@ -11536,8 +12796,6 @@ namespace ews
     static_assert(std::is_move_constructible<indexed_property_path>::value, "");
     static_assert(std::is_move_assignable<indexed_property_path>::value, "");
 #endif
-
-    // TODO: extended_property_path missing?
 
     namespace folder_property_path
     {
@@ -11808,6 +13066,7 @@ namespace ews
         static const property_path directory_id = "contacts:DirectoryId";
         static const property_path direct_reports = "contacts:DirectReports";
         static const property_path email_addresses = "contacts:EmailAddresses";
+        static const property_path email_address = "contacts:EmailAddress";
         static const indexed_property_path
             email_address_1("contacts:EmailAddress", "EmailAddress1");
         static const indexed_property_path
@@ -11819,6 +13078,13 @@ namespace ews
         static const property_path generation = "contacts:Generation";
         static const property_path given_name = "contacts:GivenName";
         static const property_path im_addresses = "contacts:ImAddresses";
+        static const property_path im_address = "contacts:ImAddress";
+        static const indexed_property_path im_address_1("contacts:ImAddress",
+                                                        "ImAddress1");
+        static const indexed_property_path im_address_2("contacts:ImAddress",
+                                                        "ImAddress2");
+        static const indexed_property_path im_address_3("contacts:ImAddress",
+                                                        "ImAddress3");
         static const property_path initials = "contacts:Initials";
         static const property_path job_title = "contacts:JobTitle";
         static const property_path manager = "contacts:Manager";
@@ -11831,6 +13097,17 @@ namespace ews
         static const property_path notes = "contacts:Notes";
         static const property_path office_location = "contacts:OfficeLocation";
         static const property_path phone_numbers = "contacts:PhoneNumbers";
+
+        namespace phone_number
+        {
+            static const indexed_property_path
+                home_phone("contacts:PhoneNumber", "HomePhone");
+            static const indexed_property_path pager("contacts:PhoneNumber",
+                                                     "Pager");
+            static const indexed_property_path
+                business_phone("contacts:PhoneNumber", "BusinessPhone");
+        }
+
         static const property_path phonetic_full_name =
             "contacts:PhoneticFullName";
         static const property_path phonetic_first_name =
@@ -11838,8 +13115,24 @@ namespace ews
         static const property_path phonetic_last_name =
             "contacts:PhoneticLastName";
         static const property_path photo = "contacts:Photo";
-        static const property_path physical_address =
+        static const property_path physical_addresses =
             "contacts:PhysicalAddresses";
+
+        namespace physical_address
+        {
+            static const indexed_property_path
+                street("contacts:PhysicalAddress", "Street");
+            static const indexed_property_path
+                city("contacts:PhysicalAddress:City", "Home");
+            static const indexed_property_path state("contacts:PhysicalAddress",
+                                                     "State");
+            static const indexed_property_path
+                country_or_region("contacts:PhysicalAddress",
+                                  "CountryOrRegion");
+            static const indexed_property_path
+                postal_code("contacts:PhysicalAddress", "PostalCode");
+        }
+
         static const property_path postal_adress_index =
             "contacts:PostalAddressIndex";
         static const property_path profession = "contacts:Profession";
@@ -11937,154 +13230,389 @@ namespace ews
     {
     public:
         //! Use this constructor if you want to delete a property from an item
-        explicit property(property_path path) : path_(std::move(path)), value_()
+        explicit property(property_path path) : value_()
         {
+            value_ = path.to_xml();
         }
 
         // Use this constructor (and following overloads) whenever you want to
         // set or update an item's property
         property(property_path path, std::string value)
-            : path_(std::move(path)), value_(std::move(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << std::string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
         property(property_path path, const char* value)
-            : path_(std::move(path)), value_(std::string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << std::string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
         property(property_path path, int value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
         property(property_path path, long value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
         property(property_path path, long long value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
         property(property_path path, unsigned value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
         property(property_path path, unsigned long value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
         property(property_path path, unsigned long long value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
         property(property_path path, float value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
         property(property_path path, double value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
         property(property_path path, long double value)
-            : path_(std::move(path)), value_(std::to_string(value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << std::to_string(value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
         property(property_path path, bool value)
-            : path_(std::move(path)), value_(value ? "true" : "false")
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << (value ? "true" : "false");
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
         template <typename T, typename = typename std::enable_if<
                                   std::is_enum<T>::value>::type>
         property(property_path path, T enum_value)
-            : path_(std::move(path)), value_(internal::enum_to_str(enum_value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << internal::enum_to_str(enum_value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 #else
         property(property_path path, ews::free_busy_status enum_value)
-            : path_(std::move(path)), value_(internal::enum_to_str(enum_value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << internal::enum_to_str(enum_value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
         property(property_path path, ews::sensitivity enum_value)
-            : path_(std::move(path)), value_(internal::enum_to_str(enum_value))
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << internal::enum_to_str(enum_value);
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 #endif
 
         property(property_path path, const body& value)
-            : path_(std::move(path)), value_(value.to_xml())
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << value.to_xml();
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
         property(property_path path, const date_time& value)
-            : path_(std::move(path)), value_(value.to_string())
+            : value_()
         {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
+            sstr << value.to_string();
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
         property(property_path path, const recurrence_pattern& pattern,
                  const recurrence_range& range)
-            : path_(std::move(path)), value_()
+            : value_()
         {
             std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             sstr << "<t:Recurrence>" << pattern.to_xml() << range.to_xml()
                  << "</t:Recurrence>";
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
         template <typename T>
         property(property_path path, const std::vector<T>& value)
-            : path_(std::move(path)), value_()
+            : value_()
         {
             std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             for (const auto& elem : value)
             {
-                sstr << elem.to_xml();
+               sstr << elem.to_xml();
             }
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
         property(property_path path, const std::vector<std::string>& value)
-            : path_(std::move(path)), value_()
+            : value_()
         {
             std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << "<t:" << path.get_class_name() << ">";
+            sstr << "<t:" << path.get_property_name() << ">";
             for (const auto& str : value)
             {
-                sstr << "<t:String>" << str << "</t:String>";
+               sstr << "<t:String>" << str << "</t:String>";
             }
+            sstr << "</t:" << path.get_property_name() << ">";
+            sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
-        std::string to_xml() const
+         property(const indexed_property_path& path, const physical_address& address)
+            : value_()
         {
             std::stringstream sstr;
+            auto path_ = path.to_xml();
+            sstr << path_;
+            sstr << " <t:" << path.get_class_name() << ">";
+            sstr << " <t:" << "PhysicalAddresses" << ">";
+            sstr << " <t:Entry Key=";
+            sstr << "\"" << internal::enum_to_str(address.get_key());
+            sstr << "\">";
+            if(path_.find("Street") != std::string::npos)
+            {
+                sstr << "<t:Street>";
+                sstr << address.street();
+                sstr << "</t:Street>";
+            }
+            if(path_.find("City") != std::string::npos)
+            {
+                sstr << "<t:City>";
+                sstr << address.city();
+                sstr << "</t:City>";
+            }
+            if(path_.find("State") != std::string::npos)
+            {
+                sstr << "<t:State>";
+                sstr << address.state();
+                sstr << "</t:State>";
+            }
+            if(path_.find("CountryOrRegion") != std::string::npos)
+            {
+                sstr << "<t:CountryOrRegion>";
+                sstr << address.country_or_region();
+                sstr << "</t:CountryOrRegion>";
+            }
+            if(path_.find("PostalCode") != std::string::npos)
+            {
+                sstr << "<t:PostalCode>";
+                sstr << address.postal_code();
+                sstr << "</t:PostalCode>";
+            }
+            sstr << "</t:Entry>";
+            sstr << " </t:" << "PhysicalAddresses" << ">";
+            sstr << " </t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
+        }
 
-            sstr << "<t:FieldURI FieldURI=\"";
-            sstr << path().field_uri() << "\"/>";
-            sstr << "<t:" << path().class_name() << ">";
-            sstr << "<t:" << path().property_name() << ">";
-            sstr << value_;
-            sstr << "</t:" << path().property_name() << ">";
-            sstr << "</t:" << path().class_name() << ">";
-            return sstr.str();
+         property(const indexed_property_path& path, const im_address& address)
+            : value_()
+        {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << " <t:" << path.get_class_name() << ">";
+            sstr << " <t:" << "ImAddresses" << ">";
+            sstr << " <t:Entry Key=";
+            sstr << "\"" << internal::enum_to_str(address.get_key());
+            sstr << "\">";
+            sstr << address.get_value();
+            sstr << "</t:Entry>";
+            sstr << " </t:" << "ImAddresses" << ">";
+            sstr << " </t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
+        }
+
+         property(const indexed_property_path& path, const email_address& address)
+            : value_()
+        {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << " <t:" << path.get_class_name() << ">";
+            sstr << " <t:" << "EmailAddresses" << ">";
+            sstr << " <t:Entry Key=";
+            sstr << "\"" << internal::enum_to_str(address.get_key());
+            sstr << "\">";
+            sstr << address.get_value();
+            sstr << "</t:Entry>";
+            sstr << " </t:" << "EmailAddresses" << ">";
+            sstr << " </t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
+        }
+
+        property(const indexed_property_path& path, const phone_number& number)
+            : value_()
+        {
+            std::stringstream sstr;
+            sstr << path.to_xml();
+            sstr << " <t:" << path.get_class_name() << ">";
+            sstr << " <t:" << "PhoneNumbers" << ">";
+            sstr << " <t:Entry Key=";
+            sstr << "\"" << internal::enum_to_str(number.get_key());
+            sstr << "\">";
+            sstr << number.get_value();
+            sstr << "</t:Entry>";
+            sstr << " </t:" << "PhoneNumbers" << ">";
+            sstr << " </t:" << path.get_class_name() << ">";
+            value_ = sstr.str();
         }
 
         bool empty_value() const EWS_NOEXCEPT { return value_.empty(); }
 
-        const property_path& path() const EWS_NOEXCEPT { return path_; }
+        const std::string& to_xml() const EWS_NOEXCEPT { return value_; }
 
     private:
-        property_path path_;
         std::string value_;
     };
 
@@ -12136,9 +13664,8 @@ namespace ews
                   std::stringstream sstr;
 
                   sstr << "<t:" << term << ">";
-                  sstr << "<t:FieldURI FieldURI=\"";
-                  sstr << path.field_uri();
-                  sstr << "\"/><t:FieldURIOrConstant>";
+                  sstr << path.to_xml();
+                  sstr << "<t:FieldURIOrConstant>";
                   sstr << "<t:Constant Value=\"";
                   sstr << std::boolalpha << b;
                   sstr << "\"/></t:FieldURIOrConstant></t:";
@@ -12153,11 +13680,10 @@ namespace ews
                   std::stringstream sstr;
 
                   sstr << "<t:" << term << ">";
-                  sstr << "<t:FieldURI FieldURI=\"";
-                  sstr << path.field_uri();
-                  sstr << "\"/><t:"
-                       << "FieldURIOrConstant><";
-                  sstr << "t:Constant Value=\"";
+                  sstr << path.to_xml();
+                  sstr << "<t:"
+                       << "FieldURIOrConstant>";
+                  sstr << "<t:Constant Value=\"";
                   sstr << std::to_string(i);
                   sstr << "\"/></t:FieldURIOrConstant></t:";
                   sstr << term << ">";
@@ -12171,9 +13697,8 @@ namespace ews
                   std::stringstream sstr;
 
                   sstr << "<t:" << term << ">";
-                  sstr << "<t:FieldURI FieldURI=\"";
-                  sstr << path.field_uri();
-                  sstr << "\"/><t:"
+                  sstr << path.to_xml();
+                  sstr << "<t:"
                        << "FieldURIOrConstant>";
                   sstr << "<t:Constant Value=\"";
                   sstr << str;
@@ -12190,10 +13715,8 @@ namespace ews
                   std::stringstream sstr;
 
                   sstr << "<t:" << term << ">";
-                  sstr << "<t:IndexedFieldURI FieldURI=\"";
-                  sstr << path.field_uri();
-                  sstr << "\" FieldIndex=\"" << path.field_index();
-                  sstr << "\"/><t:FieldURIOrConstant>";
+                  sstr << path.to_xml();
+                  sstr << "<t:FieldURIOrConstant>";
                   sstr << "<t:Constant Value=\"";
                   sstr << str;
                   sstr << "\"/></t:FieldURIOrConstant></t:";
@@ -12208,9 +13731,8 @@ namespace ews
                   std::stringstream sstr;
 
                   sstr << "<t:" << term << ">";
-                  sstr << "<t:FieldURI FieldURI=\"";
-                  sstr << path.field_uri();
-                  sstr << "\"/><t:FieldURIOrConstant>";
+                  sstr << path.to_xml();
+                  sstr << "<t:FieldURIOrConstant>";
                   sstr << "<t:Constant Value=\"";
                   sstr << when.to_string();
                   sstr << "\"/></t:FieldURIOrConstant></t:";
@@ -12670,9 +14192,8 @@ namespace ews
                        << "\" ";
                   sstr << "ContainmentComparison=\""
                        << internal::enum_to_str(comparison) << "\">";
-                  sstr << "<t:FieldURI FieldURI=\"";
-                  sstr << path.field_uri();
-                  sstr << "\"/><t:Constant Value=\"";
+                  sstr << path.to_xml();
+                  sstr << "<t:Constant Value=\"";
                   sstr << str;
                   sstr << "\"/></t:Contains>";
                   return sstr.str();
@@ -13517,7 +15038,7 @@ namespace ews
                                                     "<t:AdditionalProperties>";
             for (const auto& prop : additional_properties)
             {
-                sstr << "<t:FieldURI FieldURI=\"" << prop.field_uri() << "\"/>";
+                sstr << prop.to_xml() << "\"/>";
             }
             sstr << "</t:AdditionalProperties>"
                     "</m:ItemShape>"
