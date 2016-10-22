@@ -312,6 +312,9 @@ public:
         BaseFixture::SetUp();
 
         message_.set_subject("Meet the Fockers");
+        std::vector<ews::mailbox> recipients;
+        recipients.push_back(ews::mailbox("nirvana@example.com"));
+        message_.set_to_recipients(recipients);
         const auto item_id = service().create_item(
             message_, ews::message_disposition::save_only);
         message_ = service().get_message(item_id);
