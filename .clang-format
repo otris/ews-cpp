@@ -17,7 +17,7 @@ DerivePointerBinding: false
 ExperimentalAutoDetectBinPacking: false
 IndentCaseLabels: false
 MaxEmptyLinesToKeep: 1
-NamespaceIndentation: All
+NamespaceIndentation: Inner
 ObjCSpaceBeforeProtocolList: true
 PenaltyBreakComment: 60
 PenaltyBreakString: 1000
