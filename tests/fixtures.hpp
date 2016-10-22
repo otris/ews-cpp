@@ -29,7 +29,7 @@
 #include <ews/rapidxml/rapidxml.hpp>
 
 #ifdef EWS_USE_BOOST_LIBRARY
-#include <boost/filesystem.hpp>
+#include "boost-filesystem-wrapper.hpp"
 #include <fstream>
 #include <iostream>
 #include <iterator>
