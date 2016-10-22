@@ -26,56 +26,56 @@
 // Forward declarations
 namespace ews
 {
-    class and_;
-    class attachment;
-    class attachment_id;
-    class attendee;
-    class basic_credentials;
-    class body;
-    class calendar_item;
-    class contact;
-    class contains;
-    class date_time;
-    class distinguished_folder_id;
-    class duration;
-    class exception;
-    class exchange_error;
-    class folder_id;
-    class http_error;
-    class indexed_property_path;
-    class internet_message_header;
-    class is_equal_to;
-    class is_greater_than;
-    class is_greater_than_or_equal_to;
-    class is_less_than;
-    class is_less_than_or_equal_to;
-    class is_not_equal_to;
-    class item;
-    class item_id;
-    class mailbox;
-    class message;
-    class mime_content;
-    class not_;
-    class ntlm_credentials;
-    class or_;
-    class parse_error;
-    class property;
-    class property_path;
-    class schema_validation_error;
-    class search_expression;
-    class soap_fault;
-    class task;
-    class update;
-    enum class autodiscover_protocol;
-    template <typename T> class basic_service;
-    bool operator==(const date_time&, const date_time&);
-    bool operator==(const property_path&, const property_path&);
-    void set_up() EWS_NOEXCEPT;
-    void tear_down() EWS_NOEXCEPT;
-    template <typename T>
-    std::string get_exchange_web_services_url(const std::string&,
-                                              autodiscover_protocol,
-                                              const basic_credentials&);
+class and_;
+class attachment;
+class attachment_id;
+class attendee;
+class basic_credentials;
+class body;
+class calendar_item;
+class contact;
+class contains;
+class date_time;
+class distinguished_folder_id;
+class duration;
+class exception;
+class exchange_error;
+class folder_id;
+class http_error;
+class indexed_property_path;
+class internet_message_header;
+class is_equal_to;
+class is_greater_than;
+class is_greater_than_or_equal_to;
+class is_less_than;
+class is_less_than_or_equal_to;
+class is_not_equal_to;
+class item;
+class item_id;
+class mailbox;
+class message;
+class mime_content;
+class not_;
+class ntlm_credentials;
+class or_;
+class parse_error;
+class property;
+class property_path;
+class schema_validation_error;
+class search_expression;
+class soap_fault;
+class task;
+class update;
+enum class autodiscover_protocol;
+template <typename T> class basic_service;
+bool operator==(const date_time&, const date_time&);
+bool operator==(const property_path&, const property_path&);
+void set_up() EWS_NOEXCEPT;
+void tear_down() EWS_NOEXCEPT;
+template <typename T>
+std::string get_exchange_web_services_url(const std::string&,
+                                          autodiscover_protocol,
+                                          const basic_credentials&);
 }
 
 // vim:et ts=4 sw=4
