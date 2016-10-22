@@ -6641,6 +6641,28 @@ namespace internal
         std::vector<attachment> attachments_;
     };
 
+    class send_item_response_message final : public response_message_base
+    {
+    public:
+        static send_item_response_message parse(http_response&& response)
+        {
+            const auto doc = parse_response(std::move(response));
+            auto elem = get_element_by_qname(*doc, "SendItemResponseMessage",
+                                             uri<>::microsoft::messages());
+
+            EWS_ASSERT(elem &&
+                       "Expected <SendItemResponseMessage>, got nullptr");
+            const auto result = parse_response_class_and_code(*elem);
+            return send_item_response_message(result.first, result.second);
+        }
+
+    private:
+        send_item_response_message(response_class cls, response_code code)
+            : response_message_base(cls, code)
+        {
+        }
+    };
+
     class delete_item_response_message final : public response_message_base
     {
     public:
@@ -9547,6 +9569,7 @@ public:
 
 private:
     template <typename U> friend class basic_service;
+
     std::string create_item_request_string() const
     {
         std::stringstream sstr;
@@ -11046,6 +11069,7 @@ private:
     }
 
     template <typename U> friend class basic_service;
+
     std::string
     create_item_request_string(send_meeting_invitations meeting_invitations =
                                    send_meeting_invitations::send_to_none) const
@@ -11167,6 +11191,7 @@ public:
 
 private:
     template <typename U> friend class basic_service;
+
     std::string
     create_item_request_string(ews::message_disposition disposition) const
     {
@@ -12854,6 +12879,39 @@ public:
         }
 
         return item_id();
+    }
+
+    //! Sends a message that is already in the Exchange store.
+    //!
+    //! \param id The item id of the message you want to send
+    void send_item(const item_id& id) { send_item(id, folder_id()); }
+
+    //! \brief Sends a message that is already in the Exchange store.
+    //!
+    //! \param id The item id of the message you want to send
+    //! \param folder The folder in the mailbox in which the send message is
+    //! saved. If you pass an invalid id here, the message won't be saved.
+    void send_item(const item_id& id, const folder_id& folder)
+    {
+        std::stringstream sstr;
+        sstr << "<m:SendItem SaveItemToFolder=\"" << std::boolalpha
+             << folder.valid() << "\">"
+             << "<m:ItemIds>" << id.to_xml() << "</m:ItemIds>";
+        if (folder.valid())
+        {
+            sstr << "<m:SavedItemFolderId>" << folder.to_xml()
+                 << "</m:SavedItemFolderId>";
+        }
+        sstr << "</m:SendItem>";
+
+        auto response = request(sstr.str());
+
+        const auto response_message =
+            internal::send_item_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.get_response_code());
+        }
     }
 
     std::vector<item_id> find_item(const folder_id& parent_folder_id)
