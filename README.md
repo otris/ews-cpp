@@ -1,4 +1,4 @@
-## Overview
+# Overview
 
 EWS is an API that third-party programmers can use to communicate with
 Microsoft Exchange Server. The API exists since Exchange Server 2007 and is
@@ -12,6 +12,22 @@ C++ application.
 <img src="ews-overview.png" width=80%>
 
 
+## Supported Operations and Elements
+
+* Autodiscover
+* `<CreateItem/>`, `<SendItem/>`, `<FindItem/>`, `<GetItem/>`, `<UpdateItem/>`,
+  and `<DeleteItem/>` operations
+* `<CreateAttachment/>`, `<GetAttachment/>`, `<DeleteAttachment/>` for file
+  attachments. Item attachments are not supported yet
+* `<CalendarItem/>`, `<Message/>`, `<Contact/>`, `<Task/>` items. Note that we
+  still don't support all properties of these items. But we're working on it
+
+## Supported Authentication Schemes
+
+* HTTP basic auth
+* NTLM
+* Kerberos is currently not supported but its on the TODO list
+
 ## Supported Compilers
 
 * Visual Studio 2012
@@ -19,26 +35,26 @@ C++ application.
 * Visual Studio 2015
 * Clang since 3.5
     - with libc++ on Mac OS X
-    - with libstdc++ on Linux (Note that we don't support libc++ on Linux)
+    - with libstdc++ on Linux (Note that libc++ on Linux is not supported)
 * GCC since 4.8 with libstdc++
 
-|Compiler|64 bit|32 bit|
+|Compiler|64-bit|32-bit|
 |--------|:----:|:----:|
 |Visual Studio 2012| * | * |
 |Visual Studio 2013|[![Build status](https://ci.appveyor.com/api/projects/status/6t0hsgh540vmml9c/branch/master?svg=true)](https://ci.appveyor.com/project/raldus/ews-cpp-ea5m3/branch/master)|[![Build status](https://ci.appveyor.com/api/projects/status/mv0vp5nujv3nj3kx/branch/master?svg=true)](https://ci.appveyor.com/project/raldus/ews-cpp-yxo80/branch/master)|
 |Visual Studio 2015|[![Build status](https://ci.appveyor.com/api/projects/status/h0pt39gcb97wrfys/branch/master?svg=true)](https://ci.appveyor.com/project/raldus/ews-cpp-do8dr/branch/master)|[![Build status](https://ci.appveyor.com/api/projects/status/dl2vrfa5c7wdprrf/branch/master?svg=true)](https://ci.appveyor.com/project/raldus/ews-cpp-pa626/branch/master)|
 |Clang 3.5 with libc++| * | * |
 |GCC 4.8 with libstdc++|[![Build Status](https://travis-ci.org/otris/ews-cpp.svg?branch=master)](https://travis-ci.org/otris/ews-cpp)| * |
-\* = CI will be implemented soon
+\* = will be added soon
 
 
 ## Supported Operating Systems
 
 * Microsoft Windows 8.1 and Windows 10
-* Mac OS X since 10.10
+* macOS starting with 10.12
 * RHEL 7
 * Ubuntu since 14.04 LTS (both, x86_64 and i386)
-* SLES12
+* SLES 12
 
 
 ## Supported Microsoft Exchange Server Versions
@@ -71,8 +87,9 @@ Additionally, you probably need to tell CMake where to find it. Just set
 `CMAKE_PREFIX_PATH` to the path where you installed libcurl (e.g.
 ``C:\Program Files\cURL``) and re-configure.
 
-You can also use the script provided in ``scripts\build-curl.bat`` to compile
-libcurl for your particular version of Visual Studio.
+You can also use the Windows batch script provided in
+``scripts\build-curl.bat`` to download and compile libcurl for your particular
+version of Visual Studio.
 
 
 ## Source Code
@@ -99,7 +116,8 @@ cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_ASAN=ON /path/to/source
 make
 ```
 
-Type `make help` to see more configuration options.
+Type `make edit_cache` to see all configuration options. `make help` shows you
+all available targets.
 
 ### Windows
 
@@ -111,8 +129,8 @@ do something like this with the Windows `cmd.exe` command prompt:
 
 ```bat
 set PATH=%PATH%;C:\Program Files (x86)\CMake\bin
-mkdir build-dir
-cd build-dir
+mkdir builddir
+cd builddir
 cmake -G "Visual Studio 14 2015 Win64" ^
     -DCURL_LIBRARY="C:\Program Files\cURL\7.49.1\win64-debug\lib\libcurl_debug.lib" ^
     -DCURL_INCLUDE_DIR="C:\Program Files\cURL\7.49.1\win64-debug\include" ^
@@ -135,20 +153,23 @@ open html/index.html
 
 ### Test Suite
 
-Export the following environment variables in order to run individual examples
-or the test suite:
+In order to run individual examples or the test suite export following
+environment variables like this:
 
 ```bash
-EWS_TEST_DOMAIN
-EWS_TEST_USERNAME
-EWS_TEST_PASSWORD
-EWS_TEST_URI
+export EWS_TEST_DOMAIN="DUCKBURG"
+export EWS_TEST_USERNAME="mickey"
+export EWS_TEST_PASSWORD="pluto"
+export EWS_TEST_URI"https://hire-a-detective.com/ews/Exchange.asmx"
 ```
 
-Once you've build the project, you can run the test suite with:
+Be sure to change the values to an actual account on some Exchange server that
+you can use for testing. Do not run the tests on your own production account.
+
+Once you've build the project, you can execute the tests with:
 
 ```bash
-./tests
+./tests --assets=/path/to/source/tests/assets
 ```
 
 
@@ -191,7 +212,8 @@ Please note one important caveat though. ews-cpp's API is designed to be
 "blocking". This means whenever you call one of the service's member functions
 to talk to an Exchange server that call blocks until it receives a request from
 the server. And that may, well, just take forever (actually until a timeout is
-reached). You need to keep this in mind in order to not block your main thread.
+reached). You need to keep this in mind in order to not block your main or UI
+thread.
 
 Implications of this design choice
 
