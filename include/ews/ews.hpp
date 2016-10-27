@@ -11216,7 +11216,7 @@ static_assert(std::is_move_constructible<message>::value, "");
 static_assert(std::is_move_assignable<message>::value, "");
 #endif
 
-//! The XPath for a property
+//! Identifies frequently referenced properties by an URI
 class property_path
 {
 public:
@@ -11310,7 +11310,7 @@ static_assert(std::is_move_constructible<property_path>::value, "");
 static_assert(std::is_move_assignable<property_path>::value, "");
 #endif
 
-//! Defines the path to indexed properties
+//! Identifies individual members of a dictionary property by an URI and index
 class indexed_property_path : public property_path
 {
 public:
