@@ -86,12 +86,6 @@ TEST_F(MessageTest, UpdateIsReadProperty)
     msg = service().get_message(new_id);
     EXPECT_TRUE(msg.is_read());
 }
-
-TEST_F(MessageTest, SendItem)
-{
-    auto& msg = test_message();
-    EXPECT_NO_THROW({ service().send_item(msg.get_item_id()); });
-}
 }
 
 // vim:et ts=4 sw=4

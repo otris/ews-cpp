@@ -271,6 +271,19 @@ TEST_F(ServiceTest, UpdateItemWithAppendToItemField)
     message = service().get_message(item_id);
     ASSERT_EQ(2U, message.get_to_recipients().size());
 }
+
+TEST_F(ServiceTest, SendItem)
+{
+    auto msg = ews::message();
+    msg.set_subject("You are hiding again, aren't you?");
+    std::vector<ews::mailbox> recipients;
+    recipients.push_back(ews::mailbox("darkwing.duck@duckburg.com"));
+    msg.set_to_recipients(recipients);
+    const auto item_id =
+        service().create_item(msg, ews::message_disposition::save_only);
+    msg = service().get_message(item_id);
+    EXPECT_NO_THROW({ service().send_item(msg.get_item_id()); });
+}
 }
 
 // vim:et ts=4 sw=4
