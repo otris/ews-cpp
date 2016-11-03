@@ -9546,14 +9546,7 @@ namespace ews
 
     inline bool operator==(const email_address& lhs, const email_address& rhs)
     {
-        if (lhs.key_ == rhs.key_ && lhs.value_ == rhs.value_)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return (lhs.key_ == rhs.key_) && (lhs.value_ == rhs.value_);
     }
 
     namespace internal
@@ -9584,7 +9577,7 @@ namespace ews
             other
         };
 
-        explicit physical_address(key k, std::string street, std::string city,
+        physical_address(key k, std::string street, std::string city,
                                   std::string state, std::string cor,
                                   std::string postal_code)
             : key_(std::move(k)), street_(std::move(street)),
@@ -9656,7 +9649,7 @@ namespace ews
                                     postal_code);
         }
 
-        key get_key() const { return key_; }
+        key get_key() const EWS_NOEXCEPT { return key_; }
         const std::string& street() const EWS_NOEXCEPT { return street_; }
         const std::string& city() const EWS_NOEXCEPT { return city_; }
         const std::string& state() const EWS_NOEXCEPT { return state_; }
@@ -9706,17 +9699,10 @@ namespace ews
     inline bool operator==(const physical_address& lhs,
                            const physical_address& rhs)
     {
-        if (lhs.key_ == rhs.key_ && lhs.street_ == rhs.street_ &&
-            lhs.city_ == rhs.city_ && lhs.state_ == rhs.state_ &&
-            lhs.country_or_region_ == rhs.country_or_region_ &&
-            lhs.postal_code_ == rhs.postal_code_)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return (lhs.key_ == rhs.key_) && (lhs.street_ == rhs.street_) &&
+            (lhs.city_ == rhs.city_) && (lhs.state_ == rhs.state_) &&
+            (lhs.country_or_region_ == rhs.country_or_region_) &&
+            (lhs.postal_code_ == rhs.postal_code_);
     }
 
     namespace internal
@@ -9753,75 +9739,10 @@ namespace ews
             last_space_first
         };
 
-        inline file_as_mapping string_to_map(const std::string& maptype)
+        inline std::string enum_to_str(file_as_mapping maptype)
         {
-            file_as_mapping map;
-
-            if (maptype == "LastCommaFirst")
-            {
-                map = file_as_mapping::last_comma_first;
-            }
-            else if (maptype == "FirstSpaceLast")
-            {
-                map = file_as_mapping::first_space_last;
-            }
-            else if (maptype == "Company")
-            {
-                map = file_as_mapping::company;
-            }
-            else if (maptype == "LastCommaFirstCompany")
-            {
-                map = file_as_mapping::last_comma_first_company;
-            }
-            else if (maptype == "CompanyLastFirst")
-            {
-                map = file_as_mapping::company_last_first;
-            }
-            else if (maptype == "LastFirst")
-            {
-                map = file_as_mapping::last_first;
-            }
-            else if (maptype == "LastFirstCompany")
-            {
-                map = file_as_mapping::last_first_company;
-            }
-            else if (maptype == "CompanyLastCommaFirst")
-            {
-                map = file_as_mapping::company_last_comma_first;
-            }
-            else if (maptype == "LastFirstSuffix")
-            {
-                map = file_as_mapping::last_first_suffix;
-            }
-            else if (maptype == "LastSpaceFirstCompany")
-            {
-                map = file_as_mapping::last_space_first_company;
-            }
-            else if (maptype == "CompanyLastSpaceFirst")
-            {
-                map = file_as_mapping::company_last_space_first;
-            }
-            else if (maptype == "LastSpaceFirst")
-            {
-                map = file_as_mapping::last_space_first;
-            }
-            else if (maptype == "None")
-            {
-                map = file_as_mapping::none;
-            }
-            else
-            {
-                throw exception(
-                    std::string("Unrecognized FileAsMapping Type: ") + maptype);
-            }
-            return map;
-        }
-
-        inline std::string enum_to_str(std::string maptype)
-        {
-            auto mapping_type = string_to_map(maptype);
             std::string mappingtype;
-            switch (mapping_type)
+            switch (maptype)
             {
             case file_as_mapping::none:
                 mappingtype = "None";
@@ -9879,7 +9800,7 @@ namespace ews
             imaddress3
         };
         
-        explicit im_address(key k, std::string value)
+        im_address(key k, std::string value)
             : key_(std::move(k)), value_(std::move(value))
         {
         }
@@ -9927,7 +9848,7 @@ namespace ews
             }
             else
             {
-                throw exception(std::string("Unrecognized key: ") + keystring);
+                throw exception("Unrecognized key: " + keystring);
             }
             return k;
         }
@@ -9935,14 +9856,7 @@ namespace ews
 
     inline bool operator==(const im_address& lhs, const im_address& rhs)
     {
-        if (lhs.key_ == rhs.key_ && lhs.value_ == rhs.value_)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return (lhs.key_ == rhs.key_) && (lhs.value_ == rhs.value_);
     }
 
     namespace internal
@@ -9989,7 +9903,7 @@ namespace ews
             ttytdd_phone
         };
 
-        explicit phone_number(key k, std::string val)
+        phone_number(key k, std::string val)
             : key_(std::move(k)), value_(std::move(val))
         {
         }
@@ -10110,14 +10024,7 @@ namespace ews
 
     inline bool operator==(const phone_number& lhs, const phone_number& rhs)
     {
-        if (lhs.key_ == rhs.key_ && lhs.value_ == rhs.value_)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return (lhs.key_ == rhs.key_) && (lhs.value_ == rhs.value_);
     }
 
     namespace internal
@@ -10182,7 +10089,7 @@ namespace ews
     class indexed_field_uri final
     {
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
-#if 0
+#ifdef EWS_HAS_TYPE_ALIAS 
         using field_uri = internal::str_wrapper<internal::field_uri>;
         using field_index = internal::str_wrapper<internal::field_index>;
 #else
@@ -13605,8 +13512,6 @@ namespace ews
             sstr << " </t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
-
-        bool empty_value() const EWS_NOEXCEPT { return value_.empty(); }
 
         const std::string& to_xml() const EWS_NOEXCEPT { return value_; }
 
