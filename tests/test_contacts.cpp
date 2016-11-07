@@ -103,39 +103,46 @@ namespace tests
     TEST(OfflineContactTest, SetEmailAddressProperty)
     {
         auto minnie = ews::contact();
-        auto email = ews::email_address(ews::email_address::key::email_address_1,
-                    "minnie.mouse@duckburg.com");
+        auto email =
+            ews::email_address(ews::email_address::key::email_address_1,
+                               "minnie.mouse@duckburg.com");
         minnie.set_email_address(email);
-        auto new_mail =  minnie.get_email_addresses();
+        auto new_mail = minnie.get_email_addresses();
+        ASSERT_EQ(1U, new_mail.size());
         EXPECT_EQ(email, new_mail[0]);
     }
 
     TEST_F(ContactTest, UpdateEmailAddressProperty)
     {
         auto minnie = test_contact();
-        auto mail_address = ews::email_address(ews::email_address::key::email_address_1,
-                "minnie.mouse@duckburg.com");
+        auto mail_address =
+            ews::email_address(ews::email_address::key::email_address_1,
+                               "minnie.mouse@duckburg.com");
         auto prop = ews::property(ews::contact_property_path::email_address_1,
-                mail_address);
+                                  mail_address);
         auto new_id = service().update_item(minnie.get_item_id(), prop);
         minnie = service().get_contact(new_id);
         auto new_mail = minnie.get_email_addresses();
+        ASSERT_EQ(1U, new_mail.size());
         EXPECT_EQ(mail_address, new_mail[0]);
     }
 
     TEST_F(ContactTest, DeleteEmailAddress)
     {
         auto minnie = test_contact();
-        auto mail_address = ews::email_address(ews::email_address::key::email_address_1,
-                 "minnie.mouse@duckburg.com");
+        auto mail_address =
+            ews::email_address(ews::email_address::key::email_address_1,
+                               "minnie.mouse@duckburg.com");
         auto prop = ews::property(ews::contact_property_path::email_address_1,
                                   mail_address);
         auto new_id = service().update_item(minnie.get_item_id(), prop);
         minnie = service().get_contact(new_id);
         auto new_mail = minnie.get_email_addresses();
-        ASSERT_EQ(mail_address, new_mail[0]);
-    
-        auto update = ews::update(prop, ews::update::operation::delete_item_field);
+        ASSERT_EQ(1U, new_mail.size());
+        EXPECT_EQ(mail_address, new_mail[0]);
+
+        auto update =
+            ews::update(prop, ews::update::operation::delete_item_field);
         new_id = service().update_item(minnie.get_item_id(), update);
         minnie = service().get_contact(new_id);
         EXPECT_TRUE(minnie.get_email_addresses().empty());
@@ -640,7 +647,7 @@ namespace tests
         auto minnie = ews::contact();
         auto address =
             ews::physical_address(ews::physical_address::key::home, "Doomroad",
-                                      "Doomburg", "Doom", "Doomonia", "4 15 15 13");
+                                  "Doomburg", "Doom", "Doomonia", "4 15 15 13");
         minnie.set_physical_address(address);
         const auto addresses = minnie.get_physical_addresses();
         ASSERT_FALSE(addresses.empty());
@@ -649,16 +656,16 @@ namespace tests
 
     TEST_F(ContactTest, UpdatePhysicalAddressesValues)
     {
-         auto minnie = test_contact();
-         auto address =
-             ews::physical_address(ews::physical_address::key::home, "",
-                                   "Duckburg", "", "", "");
-         auto prop = ews::property(ews::contact_property_path::physical_address::city, address);
-         auto new_id = service().update_item(minnie.get_item_id(), prop);
-         minnie = service().get_contact(new_id);
-         ASSERT_FALSE(minnie.get_physical_addresses().empty());
-         auto new_address = minnie.get_physical_addresses();
-         EXPECT_EQ(address, new_address[0]);
+        auto minnie = test_contact();
+        auto address = ews::physical_address(ews::physical_address::key::home,
+                                             "", "Duckburg", "", "", "");
+        auto prop = ews::property(
+            ews::contact_property_path::physical_address::city, address);
+        auto new_id = service().update_item(minnie.get_item_id(), prop);
+        minnie = service().get_contact(new_id);
+        ASSERT_FALSE(minnie.get_physical_addresses().empty());
+        auto new_address = minnie.get_physical_addresses();
+        EXPECT_EQ(address, new_address[0]);
     }
 
     TEST(OfflineContactTest, InitialBirthdayValue)
@@ -771,7 +778,8 @@ namespace tests
     TEST(OfflineContactTest, SetImAddressValue)
     {
         auto minnie = ews::contact();
-        auto address = ews::im_address(ews::im_address::key::imaddress1, "MMouse");
+        auto address =
+            ews::im_address(ews::im_address::key::imaddress1, "MMouse");
         minnie.set_im_address(address);
         auto im_addresses = minnie.get_im_addresses();
         EXPECT_EQ(address, im_addresses[0]);
@@ -780,7 +788,8 @@ namespace tests
     TEST_F(ContactTest, UpdateImAddressesValue)
     {
         auto minnie = test_contact();
-        auto address = ews::im_address(ews::im_address::key::imaddress1, "MMouse");
+        auto address =
+            ews::im_address(ews::im_address::key::imaddress1, "MMouse");
         auto prop =
             ews::property(ews::contact_property_path::im_address_1, address);
         auto new_id = service().update_item(minnie.get_item_id(), prop);
@@ -812,8 +821,8 @@ namespace tests
 
         auto prop =
             ews::property(ews::contact_property_path::phone_number::home_phone,
-                    ews::phone_number(ews::phone_number::key::home_phone,
-                                      "9876543210"));
+                          ews::phone_number(ews::phone_number::key::home_phone,
+                                            "9876543210"));
         auto new_id = service().update_item(minnie.get_item_id(), prop);
         minnie = service().get_contact(new_id);
         ASSERT_FALSE(minnie.get_phone_numbers().empty());

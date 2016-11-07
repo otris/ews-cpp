@@ -9482,23 +9482,23 @@ namespace ews
 
     class email_address final
     {
-        public:
-            enum class key
-            {
-                email_address_1,
-                email_address_2,
-                email_address_3
-            };
+    public:
+        enum class key
+        {
+            email_address_1,
+            email_address_2,
+            email_address_3
+        };
 
-            explicit email_address(key k, std::string value)
-                : key_(std::move(k)), value_(std::move(value))
-            {
-            }
+        explicit email_address(key k, std::string value)
+            : key_(std::move(k)), value_(std::move(value))
+        {
+        }
 
         static email_address
-            from_xml_element(const rapidxml::xml_node<char>& node)
+        from_xml_element(const rapidxml::xml_node<char>& node)
         {
-             using rapidxml::internal::compare;
+            using rapidxml::internal::compare;
 
             // <t:EmailAddresses>
             //  <Entry Key="EmailAddress1">donald.duck@duckburg.de</Entry>
@@ -9578,8 +9578,8 @@ namespace ews
         };
 
         physical_address(key k, std::string street, std::string city,
-                                  std::string state, std::string cor,
-                                  std::string postal_code)
+                         std::string state, std::string cor,
+                         std::string postal_code)
             : key_(std::move(k)), street_(std::move(street)),
               city_(std::move(city)), state_(std::move(state)),
               country_or_region_(std::move(cor)),
@@ -9645,8 +9645,7 @@ namespace ews
                         std::string(child->value(), child->value_size());
                 }
             }
-            return physical_address(key, street, city, state, cor,
-                                    postal_code);
+            return physical_address(key, street, city, state, cor, postal_code);
         }
 
         key get_key() const EWS_NOEXCEPT { return key_; }
@@ -9700,9 +9699,9 @@ namespace ews
                            const physical_address& rhs)
     {
         return (lhs.key_ == rhs.key_) && (lhs.street_ == rhs.street_) &&
-            (lhs.city_ == rhs.city_) && (lhs.state_ == rhs.state_) &&
-            (lhs.country_or_region_ == rhs.country_or_region_) &&
-            (lhs.postal_code_ == rhs.postal_code_);
+               (lhs.city_ == rhs.city_) && (lhs.state_ == rhs.state_) &&
+               (lhs.country_or_region_ == rhs.country_or_region_) &&
+               (lhs.postal_code_ == rhs.postal_code_);
     }
 
     namespace internal
@@ -9799,16 +9798,15 @@ namespace ews
             imaddress2,
             imaddress3
         };
-        
+
         im_address(key k, std::string value)
             : key_(std::move(k)), value_(std::move(value))
         {
         }
-        
-        static im_address
-              from_xml_element(const rapidxml::xml_node<char>& node)
+
+        static im_address from_xml_element(const rapidxml::xml_node<char>& node)
         {
-             using rapidxml::internal::compare;
+            using rapidxml::internal::compare;
 
             // <t:ImAddresses>
             //  <Entry Key="ImAddress1">WOWMLGPRO</Entry>
@@ -10366,7 +10364,6 @@ namespace ews
             auto ptr_to_value = doc->allocate_string(key.c_str());
             new_entry->append_attribute(
                 doc->allocate_attribute(ptr_to_key, ptr_to_value));
-
         }
 
         //! A collection of mailing addresses for the contact
@@ -10460,7 +10457,8 @@ namespace ews
             }
             if (!address.country_or_region().empty())
             {
-                create_node(*new_entry, "t:CountryOrRegion", address.country_or_region());
+                create_node(*new_entry, "t:CountryOrRegion",
+                            address.country_or_region());
             }
             if (!address.postal_code().empty())
             {
@@ -10691,7 +10689,8 @@ namespace ews
                     EWS_ASSERT(key_attr);
                     EWS_ASSERT(compare(key_attr->name(), key_attr->name_size(),
                                        "Key", 3));
-                    const auto key = internal::enum_to_str(im_address.get_key());
+                    const auto key =
+                        internal::enum_to_str(im_address.get_key());
                     if (compare(key_attr->value(), key_attr->value_size(),
                                 key.c_str(), key.size()))
                     {
@@ -12578,7 +12577,6 @@ namespace ews
 
             prop_name_ = property_name(uri);
             class_name_ = class_name(uri);
-
         }
 
         //! Returns the \<FieldURI> element for this property.
@@ -12586,8 +12584,14 @@ namespace ews
         //! Identifies frequently referenced properties by URI
 
         const std::string& to_xml() const EWS_NOEXCEPT { return value_; }
-        const std::string& get_property_name() const EWS_NOEXCEPT { return prop_name_; }
-        const std::string& get_class_name() const EWS_NOEXCEPT { return class_name_; }
+        const std::string& get_property_name() const EWS_NOEXCEPT
+        {
+            return prop_name_;
+        }
+        const std::string& get_class_name() const EWS_NOEXCEPT
+        {
+            return class_name_;
+        }
 
     private:
         static std::string property_name(const std::string& uri)
@@ -12673,7 +12677,7 @@ namespace ews
     class indexed_property_path : public property_path
     {
     public:
-        indexed_property_path(const char* uri, const char* index) 
+        indexed_property_path(const char* uri, const char* index)
             : property_path(uri), value_()
         {
             std::stringstream sstr;
@@ -12684,7 +12688,7 @@ namespace ews
             sstr << index;
             sstr << "\"";
             sstr << "/>";
-            value_ =  sstr.str();
+            value_ = sstr.str();
         }
 
         const std::string& to_xml() const EWS_NOEXCEPT { return value_; }
@@ -13142,8 +13146,7 @@ namespace ews
 
         // Use this constructor (and following overloads) whenever you want to
         // set or update an item's property
-        property(property_path path, std::string value)
-            : value_()
+        property(property_path path, std::string value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13155,8 +13158,7 @@ namespace ews
             value_ = sstr.str();
         }
 
-        property(property_path path, const char* value)
-            : value_()
+        property(property_path path, const char* value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13168,8 +13170,7 @@ namespace ews
             value_ = sstr.str();
         }
 
-        property(property_path path, int value)
-            : value_()
+        property(property_path path, int value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13181,8 +13182,7 @@ namespace ews
             value_ = sstr.str();
         }
 
-        property(property_path path, long value)
-            : value_()
+        property(property_path path, long value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13194,8 +13194,7 @@ namespace ews
             value_ = sstr.str();
         }
 
-        property(property_path path, long long value)
-            : value_()
+        property(property_path path, long long value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13207,8 +13206,7 @@ namespace ews
             value_ = sstr.str();
         }
 
-        property(property_path path, unsigned value)
-            : value_()
+        property(property_path path, unsigned value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13220,8 +13218,7 @@ namespace ews
             value_ = sstr.str();
         }
 
-        property(property_path path, unsigned long value)
-            : value_()
+        property(property_path path, unsigned long value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13233,8 +13230,7 @@ namespace ews
             value_ = sstr.str();
         }
 
-        property(property_path path, unsigned long long value)
-            : value_()
+        property(property_path path, unsigned long long value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13246,8 +13242,7 @@ namespace ews
             value_ = sstr.str();
         }
 
-        property(property_path path, float value)
-            : value_()
+        property(property_path path, float value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13259,8 +13254,7 @@ namespace ews
             value_ = sstr.str();
         }
 
-        property(property_path path, double value)
-            : value_()
+        property(property_path path, double value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13272,8 +13266,7 @@ namespace ews
             value_ = sstr.str();
         }
 
-        property(property_path path, long double value)
-            : value_()
+        property(property_path path, long double value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13285,8 +13278,7 @@ namespace ews
             value_ = sstr.str();
         }
 
-        property(property_path path, bool value)
-            : value_()
+        property(property_path path, bool value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13301,8 +13293,7 @@ namespace ews
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
         template <typename T, typename = typename std::enable_if<
                                   std::is_enum<T>::value>::type>
-        property(property_path path, T enum_value)
-            : value_()
+        property(property_path path, T enum_value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13327,8 +13318,7 @@ namespace ews
             value_ = sstr.str();
         }
 
-        property(property_path path, ews::sensitivity enum_value)
-            : value_()
+        property(property_path path, ews::sensitivity enum_value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13341,8 +13331,7 @@ namespace ews
         }
 #endif
 
-        property(property_path path, const body& value)
-            : value_()
+        property(property_path path, const body& value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13354,8 +13343,7 @@ namespace ews
             value_ = sstr.str();
         }
 
-        property(property_path path, const date_time& value)
-            : value_()
+        property(property_path path, const date_time& value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13383,8 +13371,7 @@ namespace ews
         }
 
         template <typename T>
-        property(property_path path, const std::vector<T>& value)
-            : value_()
+        property(property_path path, const std::vector<T>& value) : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
@@ -13392,7 +13379,7 @@ namespace ews
             sstr << "<t:" << path.get_property_name() << ">";
             for (const auto& elem : value)
             {
-               sstr << elem.to_xml();
+                sstr << elem.to_xml();
             }
             sstr << "</t:" << path.get_property_name() << ">";
             sstr << "</t:" << path.get_class_name() << ">";
@@ -13408,90 +13395,104 @@ namespace ews
             sstr << "<t:" << path.get_property_name() << ">";
             for (const auto& str : value)
             {
-               sstr << "<t:String>" << str << "</t:String>";
+                sstr << "<t:String>" << str << "</t:String>";
             }
             sstr << "</t:" << path.get_property_name() << ">";
             sstr << "</t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
-         property(const indexed_property_path& path, const physical_address& address)
+        property(const indexed_property_path& path,
+                 const physical_address& address)
             : value_()
         {
             std::stringstream sstr;
             auto path_ = path.to_xml();
             sstr << path_;
             sstr << " <t:" << path.get_class_name() << ">";
-            sstr << " <t:" << "PhysicalAddresses" << ">";
+            sstr << " <t:"
+                 << "PhysicalAddresses"
+                 << ">";
             sstr << " <t:Entry Key=";
             sstr << "\"" << internal::enum_to_str(address.get_key());
             sstr << "\">";
-            if(path_.find("Street") != std::string::npos)
+            if (path_.find("Street") != std::string::npos)
             {
                 sstr << "<t:Street>";
                 sstr << address.street();
                 sstr << "</t:Street>";
             }
-            if(path_.find("City") != std::string::npos)
+            if (path_.find("City") != std::string::npos)
             {
                 sstr << "<t:City>";
                 sstr << address.city();
                 sstr << "</t:City>";
             }
-            if(path_.find("State") != std::string::npos)
+            if (path_.find("State") != std::string::npos)
             {
                 sstr << "<t:State>";
                 sstr << address.state();
                 sstr << "</t:State>";
             }
-            if(path_.find("CountryOrRegion") != std::string::npos)
+            if (path_.find("CountryOrRegion") != std::string::npos)
             {
                 sstr << "<t:CountryOrRegion>";
                 sstr << address.country_or_region();
                 sstr << "</t:CountryOrRegion>";
             }
-            if(path_.find("PostalCode") != std::string::npos)
+            if (path_.find("PostalCode") != std::string::npos)
             {
                 sstr << "<t:PostalCode>";
                 sstr << address.postal_code();
                 sstr << "</t:PostalCode>";
             }
             sstr << "</t:Entry>";
-            sstr << " </t:" << "PhysicalAddresses" << ">";
+            sstr << " </t:"
+                 << "PhysicalAddresses"
+                 << ">";
             sstr << " </t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
-         property(const indexed_property_path& path, const im_address& address)
+        property(const indexed_property_path& path, const im_address& address)
             : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
             sstr << " <t:" << path.get_class_name() << ">";
-            sstr << " <t:" << "ImAddresses" << ">";
+            sstr << " <t:"
+                 << "ImAddresses"
+                 << ">";
             sstr << " <t:Entry Key=";
             sstr << "\"" << internal::enum_to_str(address.get_key());
             sstr << "\">";
             sstr << address.get_value();
             sstr << "</t:Entry>";
-            sstr << " </t:" << "ImAddresses" << ">";
+            sstr << " </t:"
+                 << "ImAddresses"
+                 << ">";
             sstr << " </t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
 
-         property(const indexed_property_path& path, const email_address& address)
+        property(const indexed_property_path& path,
+                 const email_address& address)
             : value_()
         {
             std::stringstream sstr;
             sstr << path.to_xml();
             sstr << " <t:" << path.get_class_name() << ">";
-            sstr << " <t:" << "EmailAddresses" << ">";
+            sstr << " <t:"
+                 << "EmailAddresses"
+                 << ">";
             sstr << " <t:Entry Key=";
             sstr << "\"" << internal::enum_to_str(address.get_key());
             sstr << "\">";
             sstr << address.get_value();
             sstr << "</t:Entry>";
-            sstr << " </t:" << "EmailAddresses" << ">";
+            sstr << " </t:"
+                 << "EmailAddresses"
+                 << ">";
             sstr << " </t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
@@ -13502,13 +13503,17 @@ namespace ews
             std::stringstream sstr;
             sstr << path.to_xml();
             sstr << " <t:" << path.get_class_name() << ">";
-            sstr << " <t:" << "PhoneNumbers" << ">";
+            sstr << " <t:"
+                 << "PhoneNumbers"
+                 << ">";
             sstr << " <t:Entry Key=";
             sstr << "\"" << internal::enum_to_str(number.get_key());
             sstr << "\">";
             sstr << number.get_value();
             sstr << "</t:Entry>";
-            sstr << " </t:" << "PhoneNumbers" << ">";
+            sstr << " </t:"
+                 << "PhoneNumbers"
+                 << ">";
             sstr << " </t:" << path.get_class_name() << ">";
             value_ = sstr.str();
         }
