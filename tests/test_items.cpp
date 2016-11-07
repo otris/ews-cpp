@@ -143,14 +143,7 @@ namespace tests
         path = "conversation:ConversationId";
         EXPECT_STREQ("<t:FieldURI FieldURI=\"conversation:ConversationId\"/>", path.to_xml().c_str());
     }
-/*
-    TEST(PropertyPathTest, ClassNameThrowsOnInvalidURI)
-    {
-        EXPECT_THROW(
-        {ews::property_path path = "random:string";},
-        ews::exception);
-    }
-*/
+
     TEST(PropertyPathTest, ClassNameThrowsOnInvalidURIWhat)
     {
         try
