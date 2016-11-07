@@ -9738,7 +9738,71 @@ namespace ews
             last_space_first
         };
 
-        inline std::string enum_to_str(file_as_mapping maptype)
+        inline file_as_mapping str_to_map(const std::string& maptype)
+        {
+            file_as_mapping map;
+
+            if (maptype == "LastCommaFirst")
+            {
+                map = file_as_mapping::last_comma_first;
+            }
+            else if (maptype == "FirstSpaceLast")
+            {
+                map = file_as_mapping::first_space_last;
+            }
+            else if (maptype == "Company")
+            {
+                map = file_as_mapping::company;
+            }
+            else if (maptype == "LastCommaFirstCompany")
+            {
+                map = file_as_mapping::last_comma_first_company;
+            }
+            else if (maptype == "CompanyLastFirst")
+            {
+                map = file_as_mapping::company_last_first;
+            }
+            else if (maptype == "LastFirst")
+            {
+                map = file_as_mapping::last_first;
+            }
+            else if (maptype == "LastFirstCompany")
+            {
+                map = file_as_mapping::last_first_company;
+            }
+            else if (maptype == "CompanyLastCommaFirst")
+            {
+                map = file_as_mapping::company_last_comma_first;
+            }
+            else if (maptype == "LastFirstSuffix")
+            {
+                map = file_as_mapping::last_first_suffix;
+            }
+            else if (maptype == "LastSpaceFirstCompany")
+            {
+                map = file_as_mapping::last_space_first_company;
+            }
+            else if (maptype == "CompanyLastSpaceFirst")
+            {
+                map = file_as_mapping::company_last_space_first;
+            }
+            else if (maptype == "LastSpaceFirst")
+            {
+                map = file_as_mapping::last_space_first;
+            }
+            else if (maptype == "None" || maptype == "")
+            {
+                map = file_as_mapping::none;
+            }
+            else
+            {
+                throw exception(
+                    std::string("Unrecognized FileAsMapping Type: ") + maptype);
+            }
+            return map;
+        }
+
+        inline std::string enum_to_str(internal::file_as_mapping maptype)
         {
             std::string mappingtype;
             switch (maptype)
@@ -10209,15 +10273,16 @@ namespace ews
         //! How the various parts of a contact's information interact to form
         //! the FileAs property value
         //! Overrides previously made FileAs settings
-        void set_file_as_mapping(std::string maptype)
+        void set_file_as_mapping(internal::file_as_mapping maptype)
         {
             auto mapping = internal::enum_to_str(maptype);
             xml().set_or_update("FileAsMapping", mapping);
         }
 
-        std::string get_file_as_mapping()
+        internal::file_as_mapping get_file_as_mapping()
         {
-            return xml().get_value_as_string("FileAsMapping");
+            return internal::str_to_map(
+                xml().get_value_as_string("FileAsMapping"));
         }
 
         //! Sets the name to display for a contact

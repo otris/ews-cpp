@@ -67,14 +67,17 @@ namespace tests
     TEST(OfflineContactTest, InitialFileAsMappingValue)
     {
         auto minnie = ews::contact();
-        EXPECT_STREQ("", minnie.get_file_as_mapping().c_str());
+        EXPECT_EQ(ews::internal::file_as_mapping::none,
+                  minnie.get_file_as_mapping());
     }
 
     TEST(OfflineContactTest, SetFileAsMappingValue)
     {
         auto minnie = ews::contact();
-        minnie.set_file_as_mapping("LastCommaFirst");
-        EXPECT_STREQ("LastCommaFirst", minnie.get_file_as_mapping().c_str());
+        minnie.set_file_as_mapping(
+            ews::internal::file_as_mapping::last_comma_first);
+        EXPECT_EQ(ews::internal::file_as_mapping::last_comma_first,
+                  minnie.get_file_as_mapping());
     }
 
     TEST_F(ContactTest, UpdateFileAsMappingValue)
@@ -90,7 +93,8 @@ namespace tests
                              "LastSpaceFirst");
         new_id = service().update_item(minnie.get_item_id(), prop);
         minnie = service().get_contact(new_id);
-        EXPECT_STREQ("LastSpaceFirst", minnie.get_file_as_mapping().c_str());
+        EXPECT_EQ(ews::internal::file_as_mapping::last_space_first,
+                  minnie.get_file_as_mapping());
         EXPECT_STREQ("Mouse Minerva", minnie.get_file_as().c_str());
     }
 
