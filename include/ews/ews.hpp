@@ -12632,33 +12632,36 @@ namespace ews
     {
     public:
         // Intentionally not explicit
-        property_path(const char* uri) : value_()
-        {
-            std::stringstream sstr;
-
-            sstr << "<t:FieldURI FieldURI=\"";
-            sstr << uri << "\"/>";
-            value_ = sstr.str();
-
-            prop_name_ = property_name(uri);
-            class_name_ = class_name(uri);
+        property_path(const char* uri) : uri_(uri) {
+            class_name(uri_);
         }
 
         //! Returns the \<FieldURI> element for this property.
         //!
         //! Identifies frequently referenced properties by URI
 
-        const std::string& to_xml() const EWS_NOEXCEPT { return value_; }
-        const std::string& get_property_name() const EWS_NOEXCEPT
+        std::string to_xml() const
         {
-            return prop_name_;
-        }
-        const std::string& get_class_name() const EWS_NOEXCEPT
-        {
-            return class_name_;
+            std::stringstream sstr;
+            sstr << "<t:FieldURI FieldURI=\"";
+            sstr << uri_ << "\"/>";
+            return sstr.str();
         }
 
-    private:
+        std::string to_xml(const std::string& value) const
+        {
+            std::stringstream sstr;
+            sstr << "<t:FieldURI FieldURI=\"";
+            sstr << uri_ << "\"/>";
+            sstr << "<t:" << class_name(uri_) << ">";
+            sstr << "<t:" << property_name(uri_) << ">";
+            sstr << value;
+            sstr << "</t:" << property_name(uri_) << ">";
+            sstr << "</t:" << class_name(uri_) << ">";
+            return sstr.str();
+        }
+
+    protected:
         static std::string property_name(const std::string& uri)
         {
             const auto n = uri.rfind(':');
@@ -12724,10 +12727,8 @@ namespace ews
             throw exception("Unknown property path");
         }
 
-    private:
-        std::string prop_name_;
-        std::string class_name_;
-        std::string value_;
+    protected:
+        std::string uri_;
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
@@ -12739,27 +12740,45 @@ namespace ews
 #endif
 
     //! Defines the path to indexed properties
-    class indexed_property_path : public property_path
+    class indexed_property_path final : public property_path
     {
     public:
         indexed_property_path(const char* uri, const char* index)
-            : property_path(uri), value_()
+            : property_path(uri), index_(index)
+        {
+        }
+
+        std::string to_xml() const
         {
             std::stringstream sstr;
             sstr << "<t:IndexedFieldURI FieldURI=";
-            sstr << "\"" << uri << "\"";
+            sstr << "\"" << uri_ << "\"";
             sstr << " FieldIndex=";
             sstr << "\"";
-            sstr << index;
+            sstr << index_;
             sstr << "\"";
             sstr << "/>";
-            value_ = sstr.str();
+            return sstr.str();
         }
 
-        const std::string& to_xml() const EWS_NOEXCEPT { return value_; }
+        std::string to_xml(const std::string& value) const
+        {
+            std::stringstream sstr;
+            sstr << "<t:IndexedFieldURI FieldURI=";
+            sstr << "\"" << uri_ << "\"";
+            sstr << " FieldIndex=";
+            sstr << "\"";
+            sstr << index_;
+            sstr << "\"";
+            sstr << "/>";
+            sstr << "<t:" << class_name(uri_) << ">";
+            sstr << value;
+            sstr << " </t:" << class_name(uri_) << ">";
+            return sstr.str();
+        }
 
     private:
-        std::string value_;
+        std::string index_;
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
