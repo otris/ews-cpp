@@ -10018,56 +10018,88 @@ namespace ews
         }
     };
 
-    inline bool operator==(const im_address& lhs, const im_address& rhs)
+    enum class phone_number_key
     {
-        return (lhs.key_ == rhs.key_) && (lhs.value_ == rhs.value_);
-    }
+        assistant_phone,
+        business_fax,
+        business_phone,
+        business_phone_2,
+        callback,
+        car_phone,
+        company_main_phone,
+        home_fax,
+        home_phone,
+        home_phone_2,
+        isdn,
+        mobile_phone,
+        other_fax,
+        other_telephone,
+        pager,
+        primary_phone,
+        radio_phone,
+        telex,
+        ttytdd_phone
+    };
 
     namespace internal
     {
-        inline std::string enum_to_str(im_address::key k)
+        inline std::string enum_to_str(phone_number_key k)
         {
             switch (k)
             {
-            case im_address::key::imaddress1:
-                return "ImAddress1";
-            case im_address::key::imaddress2:
-                return "ImAddress2";
-            case im_address::key::imaddress3:
-                return "ImAddress3";
+            case phone_number_key::assistant_phone:
+                return "AssistantPhone";
+            case phone_number_key::business_fax:
+                return "BusinessFax";
+            case phone_number_key::business_phone:
+                return "BusinessPhone";
+            case phone_number_key::business_phone_2:
+                return "BusinessPhone2";
+            case phone_number_key::callback:
+                return "Callback";
+            case phone_number_key::car_phone:
+                return "CarPhone";
+            case phone_number_key::company_main_phone:
+                return "CompanyMainPhone";
+            case phone_number_key::home_fax:
+                return "HomeFax";
+            case phone_number_key::home_phone:
+                return "HomePhone";
+            case phone_number_key::home_phone_2:
+                return "HomePhone2";
+            case phone_number_key::isdn:
+                return "Isdn";
+            case phone_number_key::mobile_phone:
+                return "MobilePhone";
+            case phone_number_key::other_fax:
+                return "OtherFax";
+            case phone_number_key::other_telephone:
+                return "OtherTelephone";
+            case phone_number_key::pager:
+                return "Pager";
+            case phone_number_key::primary_phone:
+                return "PrimaryPhone";
+            case phone_number_key::radio_phone:
+                return "RadioPhone";
+            case phone_number_key::telex:
+                return "Telex";
+            case phone_number_key::ttytdd_phone:
+                return "TtyTddPhone";
             default:
                 throw exception("Bad enum value");
             }
         }
     }
 
+    inline bool operator==(const im_address& lhs, const im_address& rhs)
+    {
+        return (lhs.key_ == rhs.key_) && (lhs.value_ == rhs.value_);
+    }
+
     class phone_number final
     {
     public:
-        enum class key
-        {
-            assistant_phone,
-            business_fax,
-            business_phone,
-            business_phone_2,
-            callback,
-            car_phone,
-            company_main_phone,
-            home_fax,
-            home_phone,
-            home_phone_2,
-            isdn,
-            mobile_phone,
-            other_fax,
-            other_telephone,
-            pager,
-            primary_phone,
-            radio_phone,
-            telex,
-            ttytdd_phone
-        };
-
-        phone_number(key k, std::string val)
+        phone_number(phone_number_key k, std::string val)
             : key_(std::move(k)), value_(std::move(val))
         {
         }
@@ -10091,92 +10123,109 @@ namespace ews
                 std::string(node.value(), node.value_size()));
         }
 
-        key get_key() const { return key_; }
+        std::string to_xml() const
+        {
+            std::stringstream sstr;
+            sstr << " <t:"
+                 << "PhoneNumbers"
+                 << ">";
+            sstr << " <t:Entry Key=";
+            sstr << "\"" << internal::enum_to_str(key_);
+            sstr << "\">";
+            sstr << get_value();
+            sstr << "</t:Entry>";
+            sstr << " </t:"
+                 << "PhoneNumbers"
+                 << ">";
+            return sstr.str();
+        }
+
+        phone_number_key get_key() const { return key_; }
         const std::string& get_value() const EWS_NOEXCEPT { return value_; }
 
     private:
-        key key_;
+        phone_number_key key_;
         std::string value_;
         friend bool operator==(const phone_number&, const phone_number&);
 
-        static key str_to_key(const std::string& keystring)
+        static phone_number_key str_to_key(const std::string& keystring)
         {
-            key k;
+            phone_number_key k;
             if (keystring == "AssistantPhone")
             {
-                k = phone_number::key::assistant_phone;
+                k = phone_number_key::assistant_phone;
             }
             else if (keystring == "BusinessFax")
             {
-                k = phone_number::key::business_fax;
+                k = phone_number_key::business_fax;
             }
             else if (keystring == "BusinessPhone")
             {
-                k = phone_number::key::business_phone;
+                k = phone_number_key::business_phone;
             }
             else if (keystring == "BusinessPhone2")
             {
-                k = phone_number::key::business_phone_2;
+                k = phone_number_key::business_phone_2;
             }
             else if (keystring == "Callback")
             {
-                k = phone_number::key::callback;
+                k = phone_number_key::callback;
             }
             else if (keystring == "CarPhone")
             {
-                k = phone_number::key::car_phone;
+                k = phone_number_key::car_phone;
             }
             else if (keystring == "CompanyMainPhone")
             {
-                k = phone_number::key::company_main_phone;
+                k = phone_number_key::company_main_phone;
             }
             else if (keystring == "HomeFax")
             {
-                k = phone_number::key::home_fax;
+                k = phone_number_key::home_fax;
             }
             else if (keystring == "HomePhone")
             {
-                k = phone_number::key::home_phone;
+                k = phone_number_key::home_phone;
             }
             else if (keystring == "HomePhone2")
             {
-                k = phone_number::key::home_phone_2;
+                k = phone_number_key::home_phone_2;
             }
             else if (keystring == "Isdn")
             {
-                k = phone_number::key::isdn;
+                k = phone_number_key::isdn;
             }
             else if (keystring == "MobilePhone")
             {
-                k = phone_number::key::mobile_phone;
+                k = phone_number_key::mobile_phone;
             }
             else if (keystring == "OtherFax")
             {
-                k = phone_number::key::other_fax;
+                k = phone_number_key::other_fax;
             }
             else if (keystring == "OtherTelephone")
             {
-                k = phone_number::key::other_telephone;
+                k = phone_number_key::other_telephone;
             }
             else if (keystring == "Pager")
             {
-                k = phone_number::key::pager;
+                k = phone_number_key::pager;
             }
             else if (keystring == "PrimaryPhone")
             {
-                k = phone_number::key::primary_phone;
+                k = phone_number_key::primary_phone;
             }
             else if (keystring == "RadioPhone")
             {
-                k = phone_number::key::radio_phone;
+                k = phone_number_key::radio_phone;
             }
             else if (keystring == "Telex")
             {
-                k = phone_number::key::telex;
+                k = phone_number_key::telex;
             }
             else if (keystring == "TtyTddPhone")
             {
-                k = phone_number::key::ttytdd_phone;
+                k = phone_number_key::ttytdd_phone;
             }
             else
             {
@@ -10189,56 +10238,6 @@ namespace ews
     inline bool operator==(const phone_number& lhs, const phone_number& rhs)
     {
         return (lhs.key_ == rhs.key_) && (lhs.value_ == rhs.value_);
-    }
-
-    namespace internal
-    {
-        inline std::string enum_to_str(phone_number::key k)
-        {
-            switch (k)
-            {
-            case phone_number::key::assistant_phone:
-                return "AssistantPhone";
-            case phone_number::key::business_fax:
-                return "BusinessFax";
-            case phone_number::key::business_phone:
-                return "BusinessPhone";
-            case phone_number::key::business_phone_2:
-                return "BusinessPhone2";
-            case phone_number::key::callback:
-                return "Callback";
-            case phone_number::key::car_phone:
-                return "CarPhone";
-            case phone_number::key::company_main_phone:
-                return "CompanyMainPhone";
-            case phone_number::key::home_fax:
-                return "HomeFax";
-            case phone_number::key::home_phone:
-                return "HomePhone";
-            case phone_number::key::home_phone_2:
-                return "HomePhone2";
-            case phone_number::key::isdn:
-                return "Isdn";
-            case phone_number::key::mobile_phone:
-                return "MobilePhone";
-            case phone_number::key::other_fax:
-                return "OtherFax";
-            case phone_number::key::other_telephone:
-                return "OtherTelephone";
-            case phone_number::key::pager:
-                return "Pager";
-            case phone_number::key::primary_phone:
-                return "PrimaryPhone";
-            case phone_number::key::radio_phone:
-                return "RadioPhone";
-            case phone_number::key::telex:
-                return "Telex";
-            case phone_number::key::ttytdd_phone:
-                return "TtyTddPhone";
-            default:
-                throw exception("Bad enum value");
-            }
-        }
     }
 
     //! A contact item in the Exchange store.
