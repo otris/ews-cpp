@@ -7588,14 +7588,14 @@ namespace ews
     public:
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
 #if 0
-        using distinguished_property_set_id =
-            internal::str_wrapper<internal::distinguished_property_set_id>;
-        using property_set_id =
-            internal::str_wrapper<internal::property_set_id>;
-        using property_tag = internal::str_wrapper<internal::property_tag>;
-        using property_name = internal::str_wrapper<internal::property_name>;
-        using property_id = internal::str_wrapper<internal::property_id>;
-        using property_type = internal::str_wrapper<internal::property_type>;
+            using distinguished_property_set_id =
+                internal::str_wrapper<internal::distinguished_property_set_id>;
+            using property_set_id =
+                internal::str_wrapper<internal::property_set_id>;
+            using property_tag = internal::str_wrapper<internal::property_tag>;
+            using property_name = internal::str_wrapper<internal::property_name>;
+            using property_id = internal::str_wrapper<internal::property_id>;
+            using property_type = internal::str_wrapper<internal::property_type>;
 #else
         typedef internal::str_wrapper<internal::distinguished_property_set_id>
             distinguished_property_set_id;
@@ -9159,16 +9159,16 @@ namespace ews
 // TODO
 // This is a read-only property.
 #if 0
-        int is_assignment_editable() const
-        {
-            // Possible values:
-            // 0 The default for all task items
-            // 1 A task request
-            // 2 A task acceptance from a recipient of a task request
-            // 3 A task declination from a recipient of a task request
-            // 4 An update to a previous task request
-            // 5 Not used
-        }
+            int is_assignment_editable() const
+            {
+                // Possible values:
+                // 0 The default for all task items
+                // 1 A task request
+                // 2 A task acceptance from a recipient of a task request
+                // 3 A task declination from a recipient of a task request
+                // 4 An update to a previous task request
+                // 5 Not used
+            }
 #endif
 
         //! \brief True if the task is marked as complete.
@@ -9212,10 +9212,10 @@ namespace ews
 // The name of the user who owns the task.
 // This is a read-only property
 #if 0
-        std::string get_owner() const
-        {
-            return xml().get_value_as_string("Owner");
-        }
+            std::string get_owner() const
+            {
+                return xml().get_value_as_string("Owner");
+            }
 #endif
 
         //! \brief Returns the percentage of the task that has been completed.
