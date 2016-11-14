@@ -9920,17 +9920,35 @@ namespace ews
         }
     }
 
+    enum class im_address_key
+    {
+        imaddress1,
+        imaddress2,
+        imaddress3
+    };
+
+    namespace internal
+    {
+        inline std::string enum_to_str(im_address_key k)
+        {
+            switch (k)
+            {
+            case im_address_key::imaddress1:
+                return "ImAddress1";
+            case im_address_key::imaddress2:
+                return "ImAddress2";
+            case im_address_key::imaddress3:
+                return "ImAddress3";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
     class im_address final
     {
     public:
-        enum class key
-        {
-            imaddress1,
-            imaddress2,
-            imaddress3
-        };
-
-        im_address(key k, std::string value)
+        im_address(im_address_key k, std::string value)
             : key_(std::move(k)), value_(std::move(value))
         {
         }
@@ -9953,27 +9971,44 @@ namespace ews
                 std::string(node.value(), node.value_size()));
         }
 
-        key get_key() const { return key_; }
+        std::string to_xml() const
+        {
+            std::stringstream sstr;
+            sstr << " <t:"
+                 << "ImAddresses"
+                 << ">";
+            sstr << " <t:Entry Key=";
+            sstr << "\"" << internal::enum_to_str(key_);
+            sstr << "\">";
+            sstr << get_value();
+            sstr << "</t:Entry>";
+            sstr << " </t:"
+                 << "ImAddresses"
+                 << ">";
+            return sstr.str();
+        }
+
+        im_address_key get_key() const { return key_; }
         const std::string& get_value() const EWS_NOEXCEPT { return value_; }
 
     private:
-        key key_;
+        im_address_key key_;
         std::string value_;
         friend bool operator==(const im_address&, const im_address&);
-        static key str_to_key(const std::string& keystring)
+        static im_address_key str_to_key(const std::string& keystring)
         {
-            key k;
+            im_address_key k;
             if (keystring == "ImAddress1")
             {
-                k = im_address::key::imaddress1;
+                k = im_address_key::imaddress1;
             }
             else if (keystring == "ImAddress2")
             {
-                k = im_address::key::imaddress2;
+                k = im_address_key::imaddress2;
             }
             else if (keystring == "ImAddress3")
             {
-                k = im_address::key::imaddress3;
+                k = im_address_key::imaddress3;
             }
             else
             {
