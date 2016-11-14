@@ -9584,18 +9584,25 @@ namespace ews
         return (lhs.key_ == rhs.key_) && (lhs.value_ == rhs.value_);
     }
 
+    enum class physical_address_key
+    {
+        home,
+        business,
+        other
+    };
+
     namespace internal
     {
-        inline std::string enum_to_str(email_address::key k)
+        inline std::string enum_to_str(physical_address_key k)
         {
             switch (k)
             {
-            case email_address::key::email_address_1:
-                return "EmailAddress1";
-            case email_address::key::email_address_2:
-                return "EmailAddress2";
-            case email_address::key::email_address_3:
-                return "EmailAddress3";
+            case physical_address_key::home:
+                return "Home";
+            case physical_address_key::business:
+                return "Business";
+            case physical_address_key::other:
+                return "Other";
             default:
                 throw exception("Bad enum value");
             }
@@ -9605,15 +9612,8 @@ namespace ews
     class physical_address final
     {
     public:
-        enum class key
-        {
-            home,
-            business,
-            other
-        };
-
-        physical_address(key k, std::string street, std::string city,
-                         std::string state, std::string cor,
+        physical_address(physical_address_key k, std::string street,
+                         std::string city, std::string state, std::string cor,
                          std::string postal_code)
             : key_(std::move(k)), street_(std::move(street)),
               city_(std::move(city)), state_(std::move(state)),
@@ -9642,7 +9642,7 @@ namespace ews
             EWS_ASSERT(key_attr);
             EWS_ASSERT(
                 compare(key_attr->name(), key_attr->name_size(), "Key", 3));
-            const auto key = string_to_key(key_attr->value());
+            const physical_address_key key = string_to_key(key_attr->value());
 
             std::string street;
             std::string city;
@@ -9683,7 +9683,53 @@ namespace ews
             return physical_address(key, street, city, state, cor, postal_code);
         }
 
-        key get_key() const EWS_NOEXCEPT { return key_; }
+        std::string to_xml() const
+        {
+            std::stringstream sstr;
+            sstr << " <t:"
+                 << "PhysicalAddresses"
+                 << ">";
+            sstr << " <t:Entry Key=";
+            sstr << "\"" << internal::enum_to_str(get_key());
+            sstr << "\">";
+            if (!street().empty())
+            {
+                sstr << "<t:Street>";
+                sstr << street();
+                sstr << "</t:Street>";
+            }
+            if (!city().empty())
+            {
+                sstr << "<t:City>";
+                sstr << city();
+                sstr << "</t:City>";
+            }
+            if (!state().empty())
+            {
+                sstr << "<t:State>";
+                sstr << state();
+                sstr << "</t:State>";
+            }
+            if (!country_or_region().empty())
+            {
+                sstr << "<t:CountryOrRegion>";
+                sstr << country_or_region();
+                sstr << "</t:CountryOrRegion>";
+            }
+            if (!postal_code().empty())
+            {
+                sstr << "<t:PostalCode>";
+                sstr << postal_code();
+                sstr << "</t:PostalCode>";
+            }
+            sstr << "</t:Entry>";
+            sstr << " </t:"
+                 << "PhysicalAddresses"
+                 << ">";
+            return sstr.str();
+        }
+
+        physical_address_key get_key() const EWS_NOEXCEPT { return key_; }
         const std::string& street() const EWS_NOEXCEPT { return street_; }
         const std::string& city() const EWS_NOEXCEPT { return city_; }
         const std::string& state() const EWS_NOEXCEPT { return state_; }
@@ -9697,7 +9743,7 @@ namespace ews
         }
 
     private:
-        key key_;
+        physical_address_key key_;
         std::string street_;
         std::string city_;
         std::string state_;
@@ -9707,20 +9753,20 @@ namespace ews
         friend bool operator==(const physical_address&,
                                const physical_address&);
 
-        static key string_to_key(const std::string& keystring)
+        static physical_address_key string_to_key(const std::string& keystring)
         {
-            key k;
+            physical_address_key k;
             if (keystring == "Home")
             {
-                k = physical_address::key::home;
+                k = physical_address_key::home;
             }
             else if (keystring == "Business")
             {
-                k = physical_address::key::business;
+                k = physical_address_key::business;
             }
             else if (keystring == "Other")
             {
-                k = physical_address::key::other;
+                k = physical_address_key::other;
             }
             else
             {
@@ -9741,20 +9787,6 @@ namespace ews
 
     namespace internal
     {
-        inline std::string enum_to_str(physical_address::key k)
-        {
-            switch (k)
-            {
-            case physical_address::key::home:
-                return "Home";
-            case physical_address::key::business:
-                return "Business";
-            case physical_address::key::other:
-                return "Other";
-            default:
-                throw exception("Bad enum value");
-            }
-        }
 
         enum file_as_mapping
         {
