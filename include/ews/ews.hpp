@@ -9480,17 +9480,35 @@ namespace ews
         std::string nickname_;
     };
 
+    enum class email_address_key
+    {
+        email_address_1,
+        email_address_2,
+        email_address_3
+    };
+
+    namespace internal
+    {
+        inline std::string enum_to_str(email_address_key k)
+        {
+            switch (k)
+            {
+            case email_address_key::email_address_1:
+                return "EmailAddress1";
+            case email_address_key::email_address_2:
+                return "EmailAddress2";
+            case email_address_key::email_address_3:
+                return "EmailAddress3";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
     class email_address final
     {
     public:
-        enum class key
-        {
-            email_address_1,
-            email_address_2,
-            email_address_3
-        };
-
-        explicit email_address(key k, std::string value)
+        explicit email_address(email_address_key k, std::string value)
             : key_(std::move(k)), value_(std::move(value))
         {
         }
@@ -9514,27 +9532,44 @@ namespace ews
                 std::string(node.value(), node.value_size()));
         }
 
-        key get_key() const { return key_; }
+        std::string to_xml() const
+        {
+            std::stringstream sstr;
+            sstr << " <t:"
+                 << "EmailAddresses"
+                 << ">";
+            sstr << " <t:Entry Key=";
+            sstr << "\"" << internal::enum_to_str(get_key());
+            sstr << "\">";
+            sstr << get_value();
+            sstr << "</t:Entry>";
+            sstr << " </t:"
+                 << "EmailAddresses"
+                 << ">";
+            return sstr.str();
+        }
+
+        email_address_key get_key() const { return key_; }
         const std::string& get_value() const EWS_NOEXCEPT { return value_; }
 
     private:
-        key key_;
+        email_address_key key_;
         std::string value_;
         friend bool operator==(const email_address&, const email_address&);
-        static key str_to_key(const std::string& keystring)
+        static email_address_key str_to_key(const std::string& keystring)
         {
-            key k;
+            email_address_key k;
             if (keystring == "EmailAddress1")
             {
-                k = email_address::key::email_address_1;
+                k = email_address_key::email_address_1;
             }
             else if (keystring == "EmailAddress2")
             {
-                k = email_address::key::email_address_2;
+                k = email_address_key::email_address_2;
             }
             else if (keystring == "EmailAddress3")
             {
-                k = email_address::key::email_address_3;
+                k = email_address_key::email_address_3;
             }
             else
             {
