@@ -27,6 +27,9 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
         option(ENABLE_LIBCXX ${_ews_option_text} OFF)
     endif()
 endif()
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+    option(ENABLE_PROFILE "Generate extra code to write profile information." OFF)
+endif()
 
 set(SANITIZE_CXXFLAGS)
 set(SANITIZE_LDFLAGS)
@@ -80,6 +83,10 @@ elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     else()
         set(CMAKE_CXX_FLAGS
             "${CMAKE_CXX_FLAGS} -std=${CXX_STANDARD_TAG}")
+    endif()
+
+    if(ENABLE_PROFILE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
     endif()
 
     # https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
