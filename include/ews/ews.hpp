@@ -13223,101 +13223,83 @@ namespace ews
     {
     public:
         //! Use this constructor if you want to delete a property from an item
-        explicit property(property_path path) : value_()
+        explicit property(property_path path) : value_(path.to_xml())
         {
-            value_ = path.to_xml();
         }
 
         // Use this constructor (and following overloads) whenever you want to
         // set or update an item's property
-        property(property_path path, std::string value) : value_()
+        property(property_path path, std::string value) : value_(path.to_xml(value))
         {
-            value_ = path.to_xml(value);
         }
 
-        property(property_path path, const char* value) : value_()
+        property(property_path path, const char* value) : value_(path.to_xml(std::string(value)))
         {
-            value_ = path.to_xml(std::string(value));
         }
 
-        property(property_path path, int value) : value_()
+        property(property_path path, int value) : value_(path.to_xml(std::to_string(value)))
         {
-            value_ = path.to_xml(std::to_string(value));
         }
 
-        property(property_path path, long value) : value_()
+        property(property_path path, long value) : value_(path.to_xml(std::to_string(value)))
         {
-            value_ = path.to_xml(std::to_string(value));
         }
 
-        property(property_path path, long long value) : value_()
+        property(property_path path, long long value) : value_(path.to_xml(std::to_string(value)))
         {
-            value_ = path.to_xml(std::to_string(value));
         }
 
-        property(property_path path, unsigned value) : value_()
+        property(property_path path, unsigned value) : value_(path.to_xml(std::to_string(value)))
         {
-            value_ = path.to_xml(std::to_string(value));
         }
 
-        property(property_path path, unsigned long value) : value_()
+        property(property_path path, unsigned long value) : value_(path.to_xml(std::to_string(value)))
         {
-            value_ = path.to_xml(std::to_string(value));
         }
 
-        property(property_path path, unsigned long long value) : value_()
+        property(property_path path, unsigned long long value) : value_(path.to_xml(std::to_string(value)))
         {
-            value_ = path.to_xml(std::to_string(value));
         }
 
-        property(property_path path, float value) : value_()
+        property(property_path path, float value) : value_(path.to_xml(std::to_string(value)))
         {
-            value_ = path.to_xml(std::to_string(value));
         }
 
-        property(property_path path, double value) : value_()
+        property(property_path path, double value) : value_(path.to_xml(std::to_string(value)))
         {
-            value_ = path.to_xml(std::to_string(value));
         }
 
-        property(property_path path, long double value) : value_()
+        property(property_path path, long double value) : value_(path.to_xml(std::to_string(value)))
         {
-            value_ = path.to_xml(std::to_string(value));
         }
 
-        property(property_path path, bool value) : value_()
+        property(property_path path, bool value) : value_(path.to_xml((value ? "true" : "false")))
         {
-            value_ = path.to_xml((value ? "true" : "false"));
         }
 
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
         template <typename T, typename = typename std::enable_if<
                                   std::is_enum<T>::value>::type>
-        property(property_path path, T enum_value) : value_()
+        property(property_path path, T enum_value) : value_(path.to_xml(internal::enum_to_str(enum_value)))
         {
-            value_ = path.to_xml(internal::enum_to_str(enum_value));
         }
 #else
         property(property_path path, ews::free_busy_status enum_value)
-            : value_()
+            : value_(path.to_xml(internal::enum_to_str(enum_value)))
         {
-            value_ = path.to_xml(internal::enum_to_str(enum_value));
         }
 
-        property(property_path path, ews::sensitivity enum_value) : value_()
+        property(property_path path, ews::sensitivity enum_value) : value_(path.to_xml(internal::enum_to_str(enum_value)))
         {
-            value_ = path.to_xml(internal::enum_to_str(enum_value));
         }
 #endif
 
-        property(property_path path, const body& value) : value_()
+        property(property_path path, const body& value) : value_(path.to_xml(value.to_xml()))
         {
-            value_ = path.to_xml(value.to_xml());
         }
 
-        property(property_path path, const date_time& value) : value_()
+        property(property_path path, const date_time& value) : value_(path.to_xml(value.to_string()))
         {
-            value_ = path.to_xml(value.to_string());
         }
 
         property(property_path path, const recurrence_pattern& pattern,
@@ -13354,28 +13336,24 @@ namespace ews
 
         property(const indexed_property_path& path,
                  const physical_address& address)
-            : value_()
+            : value_(path.to_xml(address.to_xml()))
         {
-            value_ = path.to_xml(address.to_xml());
         }
 
         property(const indexed_property_path& path, const im_address& address)
-            : value_()
+            : value_(path.to_xml(address.to_xml()))
         {
-            value_ = path.to_xml(address.to_xml());
         }
 
         property(const indexed_property_path& path,
                  const email_address& address)
-            : value_()
+            : value_(path.to_xml(address.to_xml()))
         {
-            value_ = path.to_xml(address.to_xml());
         }
 
         property(const indexed_property_path& path, const phone_number& number)
-            : value_()
+           : value_(path.to_xml(number.to_xml()))
         {
-            value_ = path.to_xml(number.to_xml());
         }
 
         const std::string& to_xml() const EWS_NOEXCEPT { return value_; }
