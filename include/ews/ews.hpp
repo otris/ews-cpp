@@ -9573,7 +9573,7 @@ namespace ews
             }
             else
             {
-                throw exception(std::string("Unrecognized key: ") + keystring);
+                throw exception("Unrecognized key: " + keystring);
             }
             return k;
         }
@@ -9770,7 +9770,7 @@ namespace ews
             }
             else
             {
-                throw exception(std::string("Unrecognized key: ") + keystring);
+                throw exception("Unrecognized key: " + keystring);
             }
             return k;
         }
