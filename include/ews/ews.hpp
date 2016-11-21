@@ -9549,7 +9549,7 @@ namespace ews
             return sstr.str();
         }
 
-        email_address_key get_key() const { return key_; }
+        email_address_key get_key() const EWS_NOEXCEPT { return key_; }
         const std::string& get_value() const EWS_NOEXCEPT { return value_; }
 
     private:
@@ -9988,7 +9988,7 @@ namespace ews
             return sstr.str();
         }
 
-        im_address_key get_key() const { return key_; }
+        im_address_key get_key() const EWS_NOEXCEPT  { return key_; }
         const std::string& get_value() const EWS_NOEXCEPT { return value_; }
 
     private:
@@ -10140,7 +10140,7 @@ namespace ews
             return sstr.str();
         }
 
-        phone_number_key get_key() const { return key_; }
+        phone_number_key get_key() const EWS_NOEXCEPT { return key_; }
         const std::string& get_value() const EWS_NOEXCEPT { return value_; }
 
     private:
