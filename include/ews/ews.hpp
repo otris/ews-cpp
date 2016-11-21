@@ -9509,7 +9509,8 @@ namespace ews
 
     namespace internal
     {
-        inline email_address::key str_to_email_address_key(const std::string& keystring)
+        inline email_address::key
+        str_to_email_address_key(const std::string& keystring)
         {
             email_address::key k;
             if (keystring == "EmailAddress1")
@@ -9558,13 +9559,13 @@ namespace ews
         //  <Entry Key="EmailAddress3">dragonmaster1999@yahoo.com</Entry>
         // </t:EmailAddresses>
 
-        EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
-                           "Entry", std::strlen("Entry")));
+        EWS_ASSERT(compare(node.local_name(), node.local_name_size(), "Entry",
+                           std::strlen("Entry")));
         auto key = node.first_attribute("Key");
         EWS_ASSERT(key && "Expected attribute Key");
-        return email_address(
-            str_to_email_address_key(std::string(key->value(), key->value_size())),
-            std::string(node.value(), node.value_size()));
+        return email_address(str_to_email_address_key(
+                                 std::string(key->value(), key->value_size())),
+                             std::string(node.value(), node.value_size()));
     }
 
     inline std::string email_address::to_xml() const
@@ -9598,7 +9599,7 @@ namespace ews
 
     namespace internal
     {
-       inline std::string enum_to_str(physical_address_key k)
+        inline std::string enum_to_str(physical_address_key k)
         {
             switch (k)
             {
@@ -9935,12 +9936,13 @@ namespace ews
             imaddress3
         };
 
-       im_address(key k, std::string value)
+        im_address(key k, std::string value)
             : key_(std::move(k)), value_(std::move(value))
         {
         }
 
-        static im_address from_xml_element(const rapidxml::xml_node<char>& node);
+        static im_address
+        from_xml_element(const rapidxml::xml_node<char>& node);
         std::string to_xml() const;
 
         key get_key() const EWS_NOEXCEPT { return key_; }
@@ -9969,7 +9971,8 @@ namespace ews
             }
         }
 
-        inline im_address::key str_to_im_address_key(const std::string& keystring)
+        inline im_address::key
+        str_to_im_address_key(const std::string& keystring)
         {
             im_address::key k;
             if (keystring == "ImAddress1")
@@ -9992,24 +9995,25 @@ namespace ews
         }
     }
 
-    inline im_address im_address::from_xml_element(const rapidxml::xml_node<char>& node)
+    inline im_address
+    im_address::from_xml_element(const rapidxml::xml_node<char>& node)
     {
-       using namespace internal;
-       using rapidxml::internal::compare;
+        using namespace internal;
+        using rapidxml::internal::compare;
 
-       // <t:ImAddresses>
-       //  <Entry Key="ImAddress1">WOWMLGPRO</Entry>
-       //  <Entry Key="ImAddress2">xXSwaggerBoiXx</Entry>
-       // </t:ImAddresses>
+        // <t:ImAddresses>
+        //  <Entry Key="ImAddress1">WOWMLGPRO</Entry>
+        //  <Entry Key="ImAddress2">xXSwaggerBoiXx</Entry>
+        // </t:ImAddresses>
 
-       EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
-                          "Entry", std::strlen("Entry")));
-       auto key = node.first_attribute("Key");
-       EWS_ASSERT(key && "Expected attribute Key");
-       return im_address(
-           str_to_im_address_key(std::string(key->value(), key->value_size())),
-           std::string(node.value(), node.value_size()));
-   }
+        EWS_ASSERT(compare(node.local_name(), node.local_name_size(), "Entry",
+                           std::strlen("Entry")));
+        auto key = node.first_attribute("Key");
+        EWS_ASSERT(key && "Expected attribute Key");
+        return im_address(
+            str_to_im_address_key(std::string(key->value(), key->value_size())),
+            std::string(node.value(), node.value_size()));
+    }
 
     inline std::string im_address::to_xml() const
     {
@@ -10078,7 +10082,8 @@ namespace ews
 
     namespace internal
     {
-        inline phone_number::key str_to_phone_number_key(const std::string& keystring)
+        inline phone_number::key
+        str_to_phone_number_key(const std::string& keystring)
         {
             phone_number::key k;
             if (keystring == "AssistantPhone")
@@ -10223,13 +10228,13 @@ namespace ews
         //  <Entry Key="BusinessFax">9876543210</Entry>
         // </t:PhoneNumbers>
 
-        EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
-                           "Entry", std::strlen("Entry")));
+        EWS_ASSERT(compare(node.local_name(), node.local_name_size(), "Entry",
+                           std::strlen("Entry")));
         auto key = node.first_attribute("Key");
         EWS_ASSERT(key && "Expected attribute Key");
-        return phone_number(
-            str_to_phone_number_key(std::string(key->value(), key->value_size())),
-            std::string(node.value(), node.value_size()));
+        return phone_number(str_to_phone_number_key(
+                                std::string(key->value(), key->value_size())),
+                            std::string(node.value(), node.value_size()));
     }
 
     inline std::string phone_number::to_xml() const
