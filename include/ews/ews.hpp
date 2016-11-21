@@ -9480,96 +9480,49 @@ namespace ews
         std::string nickname_;
     };
 
-    enum class email_address_key
-    {
-        email_address_1,
-        email_address_2,
-        email_address_3
-    };
-
-    namespace internal
-    {
-        inline std::string enum_to_str(email_address_key k)
-        {
-            switch (k)
-            {
-            case email_address_key::email_address_1:
-                return "EmailAddress1";
-            case email_address_key::email_address_2:
-                return "EmailAddress2";
-            case email_address_key::email_address_3:
-                return "EmailAddress3";
-            default:
-                throw exception("Bad enum value");
-            }
-        }
-    }
-
     class email_address final
     {
     public:
-        explicit email_address(email_address_key k, std::string value)
+        enum class key
+        {
+            email_address_1,
+            email_address_2,
+            email_address_3
+        };
+
+        explicit email_address(key k, std::string value)
             : key_(std::move(k)), value_(std::move(value))
         {
         }
 
         static email_address
-        from_xml_element(const rapidxml::xml_node<char>& node)
-        {
-            using rapidxml::internal::compare;
-
-            // <t:EmailAddresses>
-            //  <Entry Key="EmailAddress1">donald.duck@duckburg.de</Entry>
-            //  <Entry Key="EmailAddress3">dragonmaster1999@yahoo.com</Entry>
-            // </t:EmailAddresses>
-
-            EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
-                               "Entry", std::strlen("Entry")));
-            auto key = node.first_attribute("Key");
-            EWS_ASSERT(key && "Expected attribute Key");
-            return email_address(
-                str_to_key(std::string(key->value(), key->value_size())),
-                std::string(node.value(), node.value_size()));
-        }
-
-        std::string to_xml() const
-        {
-            std::stringstream sstr;
-            sstr << " <t:"
-                 << "EmailAddresses"
-                 << ">";
-            sstr << " <t:Entry Key=";
-            sstr << "\"" << internal::enum_to_str(get_key());
-            sstr << "\">";
-            sstr << get_value();
-            sstr << "</t:Entry>";
-            sstr << " </t:"
-                 << "EmailAddresses"
-                 << ">";
-            return sstr.str();
-        }
-
-        email_address_key get_key() const EWS_NOEXCEPT { return key_; }
+        from_xml_element(const rapidxml::xml_node<char>& node); // defined below
+        std::string to_xml() const;
+        key get_key() const EWS_NOEXCEPT { return key_; }
         const std::string& get_value() const EWS_NOEXCEPT { return value_; }
 
     private:
-        email_address_key key_;
+        key key_;
         std::string value_;
         friend bool operator==(const email_address&, const email_address&);
-        static email_address_key str_to_key(const std::string& keystring)
+    };
+
+    namespace internal
+    {
+        inline email_address::key str_to_email_address_key(const std::string& keystring)
         {
-            email_address_key k;
+            email_address::key k;
             if (keystring == "EmailAddress1")
             {
-                k = email_address_key::email_address_1;
+                k = email_address::key::email_address_1;
             }
             else if (keystring == "EmailAddress2")
             {
-                k = email_address_key::email_address_2;
+                k = email_address::key::email_address_2;
             }
             else if (keystring == "EmailAddress3")
             {
-                k = email_address_key::email_address_3;
+                k = email_address::key::email_address_3;
             }
             else
             {
@@ -9577,7 +9530,59 @@ namespace ews
             }
             return k;
         }
-    };
+
+        inline std::string enum_to_str(email_address::key k)
+        {
+            switch (k)
+            {
+            case email_address::key::email_address_1:
+                return "EmailAddress1";
+            case email_address::key::email_address_2:
+                return "EmailAddress2";
+            case email_address::key::email_address_3:
+                return "EmailAddress3";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
+    inline email_address
+    email_address::from_xml_element(const rapidxml::xml_node<char>& node)
+    {
+        using namespace internal;
+        using rapidxml::internal::compare;
+
+        // <t:EmailAddresses>
+        //  <Entry Key="EmailAddress1">donald.duck@duckburg.de</Entry>
+        //  <Entry Key="EmailAddress3">dragonmaster1999@yahoo.com</Entry>
+        // </t:EmailAddresses>
+
+        EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
+                           "Entry", std::strlen("Entry")));
+        auto key = node.first_attribute("Key");
+        EWS_ASSERT(key && "Expected attribute Key");
+        return email_address(
+            str_to_email_address_key(std::string(key->value(), key->value_size())),
+            std::string(node.value(), node.value_size()));
+    }
+
+    inline std::string email_address::to_xml() const
+    {
+        std::stringstream sstr;
+        sstr << " <t:"
+             << "EmailAddresses"
+             << ">";
+        sstr << " <t:Entry Key=";
+        sstr << "\"" << internal::enum_to_str(get_key());
+        sstr << "\">";
+        sstr << get_value();
+        sstr << "</t:Entry>";
+        sstr << " </t:"
+             << "EmailAddresses"
+             << ">";
+        return sstr.str();
+    }
 
     inline bool operator==(const email_address& lhs, const email_address& rhs)
     {
@@ -9593,7 +9598,7 @@ namespace ews
 
     namespace internal
     {
-        inline std::string enum_to_str(physical_address_key k)
+       inline std::string enum_to_str(physical_address_key k)
         {
             switch (k)
             {
@@ -9920,95 +9925,64 @@ namespace ews
         }
     }
 
-    enum class im_address_key
+    class im_address final
     {
-        imaddress1,
-        imaddress2,
-        imaddress3
+    public:
+        enum class key
+        {
+            imaddress1,
+            imaddress2,
+            imaddress3
+        };
+
+       im_address(key k, std::string value)
+            : key_(std::move(k)), value_(std::move(value))
+        {
+        }
+
+        static im_address from_xml_element(const rapidxml::xml_node<char>& node);
+        std::string to_xml() const;
+
+        key get_key() const EWS_NOEXCEPT { return key_; }
+        const std::string& get_value() const EWS_NOEXCEPT { return value_; }
+
+    private:
+        key key_;
+        std::string value_;
+        friend bool operator==(const im_address&, const im_address&);
     };
 
     namespace internal
     {
-        inline std::string enum_to_str(im_address_key k)
+        inline std::string enum_to_str(im_address::key k)
         {
             switch (k)
             {
-            case im_address_key::imaddress1:
+            case im_address::key::imaddress1:
                 return "ImAddress1";
-            case im_address_key::imaddress2:
+            case im_address::key::imaddress2:
                 return "ImAddress2";
-            case im_address_key::imaddress3:
+            case im_address::key::imaddress3:
                 return "ImAddress3";
             default:
                 throw exception("Bad enum value");
             }
         }
-    }
 
-    class im_address final
-    {
-    public:
-        im_address(im_address_key k, std::string value)
-            : key_(std::move(k)), value_(std::move(value))
+        inline im_address::key str_to_im_address_key(const std::string& keystring)
         {
-        }
-
-        static im_address from_xml_element(const rapidxml::xml_node<char>& node)
-        {
-            using rapidxml::internal::compare;
-
-            // <t:ImAddresses>
-            //  <Entry Key="ImAddress1">WOWMLGPRO</Entry>
-            //  <Entry Key="ImAddress2">xXSwaggerBoiXx</Entry>
-            // </t:ImAddresses>
-
-            EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
-                               "Entry", std::strlen("Entry")));
-            auto key = node.first_attribute("Key");
-            EWS_ASSERT(key && "Expected attribute Key");
-            return im_address(
-                str_to_key(std::string(key->value(), key->value_size())),
-                std::string(node.value(), node.value_size()));
-        }
-
-        std::string to_xml() const
-        {
-            std::stringstream sstr;
-            sstr << " <t:"
-                 << "ImAddresses"
-                 << ">";
-            sstr << " <t:Entry Key=";
-            sstr << "\"" << internal::enum_to_str(key_);
-            sstr << "\">";
-            sstr << get_value();
-            sstr << "</t:Entry>";
-            sstr << " </t:"
-                 << "ImAddresses"
-                 << ">";
-            return sstr.str();
-        }
-
-        im_address_key get_key() const EWS_NOEXCEPT { return key_; }
-        const std::string& get_value() const EWS_NOEXCEPT { return value_; }
-
-    private:
-        im_address_key key_;
-        std::string value_;
-        friend bool operator==(const im_address&, const im_address&);
-        static im_address_key str_to_key(const std::string& keystring)
-        {
-            im_address_key k;
+            im_address::key k;
             if (keystring == "ImAddress1")
             {
-                k = im_address_key::imaddress1;
+                k = im_address::key::imaddress1;
             }
             else if (keystring == "ImAddress2")
             {
-                k = im_address_key::imaddress2;
+                k = im_address::key::imaddress2;
             }
             else if (keystring == "ImAddress3")
             {
-                k = im_address_key::imaddress3;
+                k = im_address::key::imaddress3;
             }
             else
             {
@@ -10016,79 +9990,42 @@ namespace ews
             }
             return k;
         }
-    };
+    }
 
-    enum class phone_number_key
+    inline im_address im_address::from_xml_element(const rapidxml::xml_node<char>& node)
     {
-        assistant_phone,
-        business_fax,
-        business_phone,
-        business_phone_2,
-        callback,
-        car_phone,
-        company_main_phone,
-        home_fax,
-        home_phone,
-        home_phone_2,
-        isdn,
-        mobile_phone,
-        other_fax,
-        other_telephone,
-        pager,
-        primary_phone,
-        radio_phone,
-        telex,
-        ttytdd_phone
-    };
+       using namespace internal;
+       using rapidxml::internal::compare;
 
-    namespace internal
+       // <t:ImAddresses>
+       //  <Entry Key="ImAddress1">WOWMLGPRO</Entry>
+       //  <Entry Key="ImAddress2">xXSwaggerBoiXx</Entry>
+       // </t:ImAddresses>
+
+       EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
+                          "Entry", std::strlen("Entry")));
+       auto key = node.first_attribute("Key");
+       EWS_ASSERT(key && "Expected attribute Key");
+       return im_address(
+           str_to_im_address_key(std::string(key->value(), key->value_size())),
+           std::string(node.value(), node.value_size()));
+   }
+
+    inline std::string im_address::to_xml() const
     {
-        inline std::string enum_to_str(phone_number_key k)
-        {
-            switch (k)
-            {
-            case phone_number_key::assistant_phone:
-                return "AssistantPhone";
-            case phone_number_key::business_fax:
-                return "BusinessFax";
-            case phone_number_key::business_phone:
-                return "BusinessPhone";
-            case phone_number_key::business_phone_2:
-                return "BusinessPhone2";
-            case phone_number_key::callback:
-                return "Callback";
-            case phone_number_key::car_phone:
-                return "CarPhone";
-            case phone_number_key::company_main_phone:
-                return "CompanyMainPhone";
-            case phone_number_key::home_fax:
-                return "HomeFax";
-            case phone_number_key::home_phone:
-                return "HomePhone";
-            case phone_number_key::home_phone_2:
-                return "HomePhone2";
-            case phone_number_key::isdn:
-                return "Isdn";
-            case phone_number_key::mobile_phone:
-                return "MobilePhone";
-            case phone_number_key::other_fax:
-                return "OtherFax";
-            case phone_number_key::other_telephone:
-                return "OtherTelephone";
-            case phone_number_key::pager:
-                return "Pager";
-            case phone_number_key::primary_phone:
-                return "PrimaryPhone";
-            case phone_number_key::radio_phone:
-                return "RadioPhone";
-            case phone_number_key::telex:
-                return "Telex";
-            case phone_number_key::ttytdd_phone:
-                return "TtyTddPhone";
-            default:
-                throw exception("Bad enum value");
-            }
-        }
+        std::stringstream sstr;
+        sstr << " <t:"
+             << "ImAddresses"
+             << ">";
+        sstr << " <t:Entry Key=";
+        sstr << "\"" << internal::enum_to_str(key_);
+        sstr << "\">";
+        sstr << get_value();
+        sstr << "</t:Entry>";
+        sstr << " </t:"
+             << "ImAddresses"
+             << ">";
+        return sstr.str();
     }
 
     inline bool operator==(const im_address& lhs, const im_address& rhs)
@@ -10099,133 +10036,126 @@ namespace ews
     class phone_number final
     {
     public:
-        phone_number(phone_number_key k, std::string val)
+        enum class key
+        {
+            assistant_phone,
+            business_fax,
+            business_phone,
+            business_phone_2,
+            callback,
+            car_phone,
+            company_main_phone,
+            home_fax,
+            home_phone,
+            home_phone_2,
+            isdn,
+            mobile_phone,
+            other_fax,
+            other_telephone,
+            pager,
+            primary_phone,
+            radio_phone,
+            telex,
+            ttytdd_phone
+        };
+
+        phone_number(key k, std::string val)
             : key_(std::move(k)), value_(std::move(val))
         {
         }
 
         static phone_number
-        from_xml_element(const rapidxml::xml_node<char>& node)
-        {
-            using rapidxml::internal::compare;
-
-            // <t:PhoneNumbers>
-            //  <Entry Key="AssistantPhone">0123456789</Entry>
-            //  <Entry Key="BusinessFax">9876543210</Entry>
-            // </t:PhoneNumbers>
-
-            EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
-                               "Entry", std::strlen("Entry")));
-            auto key = node.first_attribute("Key");
-            EWS_ASSERT(key && "Expected attribute Key");
-            return phone_number(
-                str_to_key(std::string(key->value(), key->value_size())),
-                std::string(node.value(), node.value_size()));
-        }
-
-        std::string to_xml() const
-        {
-            std::stringstream sstr;
-            sstr << " <t:"
-                 << "PhoneNumbers"
-                 << ">";
-            sstr << " <t:Entry Key=";
-            sstr << "\"" << internal::enum_to_str(key_);
-            sstr << "\">";
-            sstr << get_value();
-            sstr << "</t:Entry>";
-            sstr << " </t:"
-                 << "PhoneNumbers"
-                 << ">";
-            return sstr.str();
-        }
-
-        phone_number_key get_key() const EWS_NOEXCEPT { return key_; }
+        from_xml_element(const rapidxml::xml_node<char>& node);
+        std::string to_xml() const;
+        key get_key() const EWS_NOEXCEPT { return key_; }
         const std::string& get_value() const EWS_NOEXCEPT { return value_; }
 
     private:
-        phone_number_key key_;
+        key key_;
         std::string value_;
         friend bool operator==(const phone_number&, const phone_number&);
+    };
 
-        static phone_number_key str_to_key(const std::string& keystring)
+    namespace internal
+    {
+        inline phone_number::key str_to_phone_number_key(const std::string& keystring)
         {
-            phone_number_key k;
+            phone_number::key k;
             if (keystring == "AssistantPhone")
             {
-                k = phone_number_key::assistant_phone;
+                k = phone_number::key::assistant_phone;
             }
             else if (keystring == "BusinessFax")
             {
-                k = phone_number_key::business_fax;
+                k = phone_number::key::business_fax;
             }
             else if (keystring == "BusinessPhone")
             {
-                k = phone_number_key::business_phone;
+                k = phone_number::key::business_phone;
             }
             else if (keystring == "BusinessPhone2")
             {
-                k = phone_number_key::business_phone_2;
+                k = phone_number::key::business_phone_2;
             }
             else if (keystring == "Callback")
             {
-                k = phone_number_key::callback;
+                k = phone_number::key::callback;
             }
             else if (keystring == "CarPhone")
             {
-                k = phone_number_key::car_phone;
+                k = phone_number::key::car_phone;
             }
             else if (keystring == "CompanyMainPhone")
             {
-                k = phone_number_key::company_main_phone;
+                k = phone_number::key::company_main_phone;
             }
             else if (keystring == "HomeFax")
             {
-                k = phone_number_key::home_fax;
+                k = phone_number::key::home_fax;
             }
             else if (keystring == "HomePhone")
             {
-                k = phone_number_key::home_phone;
+                k = phone_number::key::home_phone;
             }
             else if (keystring == "HomePhone2")
             {
-                k = phone_number_key::home_phone_2;
+                k = phone_number::key::home_phone_2;
             }
             else if (keystring == "Isdn")
             {
-                k = phone_number_key::isdn;
+                k = phone_number::key::isdn;
             }
             else if (keystring == "MobilePhone")
             {
-                k = phone_number_key::mobile_phone;
+                k = phone_number::key::mobile_phone;
             }
             else if (keystring == "OtherFax")
             {
-                k = phone_number_key::other_fax;
+                k = phone_number::key::other_fax;
             }
             else if (keystring == "OtherTelephone")
             {
-                k = phone_number_key::other_telephone;
+                k = phone_number::key::other_telephone;
             }
             else if (keystring == "Pager")
             {
-                k = phone_number_key::pager;
+                k = phone_number::key::pager;
             }
             else if (keystring == "PrimaryPhone")
             {
-                k = phone_number_key::primary_phone;
+                k = phone_number::key::primary_phone;
             }
             else if (keystring == "RadioPhone")
             {
-                k = phone_number_key::radio_phone;
+                k = phone_number::key::radio_phone;
             }
             else if (keystring == "Telex")
             {
-                k = phone_number_key::telex;
+                k = phone_number::key::telex;
             }
             else if (keystring == "TtyTddPhone")
             {
-                k = phone_number_key::ttytdd_phone;
+                k = phone_number::key::ttytdd_phone;
             }
             else
             {
@@ -10233,7 +10163,91 @@ namespace ews
             }
             return k;
         }
-    };
+
+        inline std::string enum_to_str(phone_number::key k)
+        {
+            switch (k)
+            {
+            case phone_number::key::assistant_phone:
+                return "AssistantPhone";
+            case phone_number::key::business_fax:
+                return "BusinessFax";
+            case phone_number::key::business_phone:
+                return "BusinessPhone";
+            case phone_number::key::business_phone_2:
+                return "BusinessPhone2";
+            case phone_number::key::callback:
+                return "Callback";
+            case phone_number::key::car_phone:
+                return "CarPhone";
+            case phone_number::key::company_main_phone:
+                return "CompanyMainPhone";
+            case phone_number::key::home_fax:
+                return "HomeFax";
+            case phone_number::key::home_phone:
+                return "HomePhone";
+            case phone_number::key::home_phone_2:
+                return "HomePhone2";
+            case phone_number::key::isdn:
+                return "Isdn";
+            case phone_number::key::mobile_phone:
+                return "MobilePhone";
+            case phone_number::key::other_fax:
+                return "OtherFax";
+            case phone_number::key::other_telephone:
+                return "OtherTelephone";
+            case phone_number::key::pager:
+                return "Pager";
+            case phone_number::key::primary_phone:
+                return "PrimaryPhone";
+            case phone_number::key::radio_phone:
+                return "RadioPhone";
+            case phone_number::key::telex:
+                return "Telex";
+            case phone_number::key::ttytdd_phone:
+                return "TtyTddPhone";
+            default:
+                throw exception("Bad enum value");
+            }
+        }
+    }
+
+    inline phone_number
+    phone_number::from_xml_element(const rapidxml::xml_node<char>& node)
+    {
+        using namespace internal;
+        using rapidxml::internal::compare;
+
+        // <t:PhoneNumbers>
+        //  <Entry Key="AssistantPhone">0123456789</Entry>
+        //  <Entry Key="BusinessFax">9876543210</Entry>
+        // </t:PhoneNumbers>
+
+        EWS_ASSERT(compare(node.local_name(), node.local_name_size(),
+                           "Entry", std::strlen("Entry")));
+        auto key = node.first_attribute("Key");
+        EWS_ASSERT(key && "Expected attribute Key");
+        return phone_number(
+            str_to_phone_number_key(std::string(key->value(), key->value_size())),
+            std::string(node.value(), node.value_size()));
+    }
+
+    inline std::string phone_number::to_xml() const
+    {
+        std::stringstream sstr;
+        sstr << " <t:"
+             << "PhoneNumbers"
+             << ">";
+        sstr << " <t:Entry Key=";
+        sstr << "\"" << internal::enum_to_str(key_);
+        sstr << "\">";
+        sstr << get_value();
+        sstr << "</t:Entry>";
+        sstr << " </t:"
+             << "PhoneNumbers"
+             << ">";
+        return sstr.str();
+    }
 
     inline bool operator==(const phone_number& lhs, const phone_number& rhs)
     {
