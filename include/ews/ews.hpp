@@ -2879,7 +2879,7 @@ namespace ews
                 return response_code::error_working_hours_xml_malformed;
             }
 
-            throw exception(std::string("Unrecognized response code: ") + str);
+            throw exception("Unrecognized response code: " + str);
         }
 
         inline std::string enum_to_str(response_code code)
