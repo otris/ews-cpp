@@ -12651,47 +12651,38 @@ namespace ews
     {
     public:
         // Intentionally not explicit
-        property_path(const char* uri) : uri_(uri) { class_name(uri_); }
+        property_path(const char* uri) : uri_(uri) { class_name(); }
 
+        virtual ~property_path() {}
         //! Returns the \<FieldURI> element for this property.
         //!
         //! Identifies frequently referenced properties by URI
 
         std::string to_xml() const
         {
-            std::stringstream sstr;
-            sstr << "<t:FieldURI FieldURI=\"";
-            sstr << uri_ << "\"/>";
-            return sstr.str();
+            return parse_to_xml();
         }
 
         std::string to_xml(const std::string& value) const
         {
-            std::stringstream sstr;
-            sstr << "<t:FieldURI FieldURI=\"";
-            sstr << uri_ << "\"/>";
-            sstr << "<t:" << class_name(uri_) << ">";
-            sstr << "<t:" << property_name(uri_) << ">";
-            sstr << value;
-            sstr << "</t:" << property_name(uri_) << ">";
-            sstr << "</t:" << class_name(uri_) << ">";
-            return sstr.str();
+            return parse_to_xml(value);
         }
 
-    protected:
-        std::string property_name(const std::string& uri) const
+        const std::string& field_uri() const EWS_NOEXCEPT { return uri_; }
+
+        std::string property_name() const
         {
-            const auto n = uri.rfind(':');
+            const auto n = uri_.rfind(':');
             EWS_ASSERT(n != std::string::npos);
-            return uri.substr(n + 1);
+            return uri_.substr(n + 1);
         }
 
-        std::string class_name(const std::string& uri) const
+        std::string class_name() const
         {
             // TODO: we know at compile-time to which class a property belongs
-            const auto n = uri.find(':');
+            const auto n = uri_.find(':');
             EWS_ASSERT(n != std::string::npos);
-            const auto substr = uri.substr(0, n);
+            const auto substr = uri_.substr(0, n);
             if (substr == "folder")
             {
                 return "Folder";
@@ -12744,7 +12735,28 @@ namespace ews
             throw exception("Unknown property path");
         }
 
-    protected:
+    private:
+        virtual std::string parse_to_xml() const
+        {
+            std::stringstream sstr;
+            sstr << "<t:FieldURI FieldURI=\"";
+            sstr << uri_ << "\"/>";
+            return sstr.str();
+        }
+
+        virtual std::string parse_to_xml(const std::string& value) const
+        {
+            std::stringstream sstr;
+            sstr << "<t:FieldURI FieldURI=\"";
+            sstr << uri_ << "\"/>";
+            sstr << "<t:" << class_name() << ">";
+            sstr << "<t:" << property_name() << ">";
+            sstr << value;
+            sstr << "</t:" << property_name() << ">";
+            sstr << "</t:" << class_name() << ">";
+            return sstr.str();
+        }
+
         std::string uri_;
     };
 
@@ -12767,34 +12779,44 @@ namespace ews
 
         std::string to_xml() const
         {
-            std::stringstream sstr;
-            sstr << "<t:IndexedFieldURI FieldURI=";
-            sstr << "\"" << uri_ << "\"";
-            sstr << " FieldIndex=";
-            sstr << "\"";
-            sstr << index_;
-            sstr << "\"";
-            sstr << "/>";
-            return sstr.str();
+            return parse_to_xml();
         }
 
         std::string to_xml(const std::string& value) const
         {
+            return parse_to_xml(value);
+        }
+
+    private:
+        std::string parse_to_xml() const override
+        {
             std::stringstream sstr;
             sstr << "<t:IndexedFieldURI FieldURI=";
-            sstr << "\"" << uri_ << "\"";
+            sstr << "\"" << field_uri() << "\"";
             sstr << " FieldIndex=";
             sstr << "\"";
             sstr << index_;
             sstr << "\"";
             sstr << "/>";
-            sstr << "<t:" << class_name(uri_) << ">";
-            sstr << value;
-            sstr << " </t:" << class_name(uri_) << ">";
             return sstr.str();
         }
 
-    private:
+        std::string parse_to_xml(const std::string& value) const override
+        {
+            std::stringstream sstr;
+            sstr << "<t:IndexedFieldURI FieldURI=";
+            sstr << "\"" << field_uri() << "\"";
+            sstr << " FieldIndex=";
+            sstr << "\"";
+            sstr << index_;
+            sstr << "\"";
+            sstr << "/>";
+            sstr << "<t:" << class_name() << ">";
+            sstr << value;
+            sstr << " </t:" << class_name() << ">";
+            return sstr.str();
+        }
+
         std::string index_;
     };
 
