@@ -12658,10 +12658,7 @@ namespace ews
         //!
         //! Identifies frequently referenced properties by URI
 
-        std::string to_xml() const
-        {
-            return parse_to_xml();
-        }
+        std::string to_xml() const { return parse_to_xml(); }
 
         std::string to_xml(const std::string& value) const
         {
@@ -12777,10 +12774,7 @@ namespace ews
         {
         }
 
-        std::string to_xml() const
-        {
-            return parse_to_xml();
-        }
+        std::string to_xml() const { return parse_to_xml(); }
 
         std::string to_xml(const std::string& value) const
         {
