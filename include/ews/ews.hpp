@@ -12679,14 +12679,14 @@ namespace ews
         }
 
     protected:
-        static std::string property_name(const std::string& uri)
+        std::string property_name(const std::string& uri) const
         {
             const auto n = uri.rfind(':');
             EWS_ASSERT(n != std::string::npos);
             return uri.substr(n + 1);
         }
 
-        static std::string class_name(const std::string& uri)
+        std::string class_name(const std::string& uri) const
         {
             // TODO: we know at compile-time to which class a property belongs
             const auto n = uri.find(':');
