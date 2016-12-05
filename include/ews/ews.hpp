@@ -12651,29 +12651,23 @@ namespace ews
     {
     public:
         // Intentionally not explicit
-        property_path(const char* uri) : uri_(uri) { class_name(); }
+        property_path(const char* uri) : uri_(uri) { EWS_ASSERT(!class_name().empty()); }
 
         virtual ~property_path() {}
         //! Returns the \<FieldURI> element for this property.
         //!
         //! Identifies frequently referenced properties by URI
 
-        std::string to_xml() const { return parse_to_xml(); }
+        std::string to_xml() const { return this->to_xml_impl(); }
 
         std::string to_xml(const std::string& value) const
         {
-            return parse_to_xml(value);
+            return this->to_xml_impl(value);
         }
 
         const std::string& field_uri() const EWS_NOEXCEPT { return uri_; }
 
-        std::string property_name() const
-        {
-            const auto n = uri_.rfind(':');
-            EWS_ASSERT(n != std::string::npos);
-            return uri_.substr(n + 1);
-        }
-
+    protected:
         std::string class_name() const
         {
             // TODO: we know at compile-time to which class a property belongs
@@ -12732,8 +12726,7 @@ namespace ews
             throw exception("Unknown property path");
         }
 
-    private:
-        virtual std::string parse_to_xml() const
+        virtual std::string to_xml_impl() const
         {
             std::stringstream sstr;
             sstr << "<t:FieldURI FieldURI=\"";
@@ -12741,7 +12734,7 @@ namespace ews
             return sstr.str();
         }
 
-        virtual std::string parse_to_xml(const std::string& value) const
+        virtual std::string to_xml_impl(const std::string& value) const
         {
             std::stringstream sstr;
             sstr << "<t:FieldURI FieldURI=\"";
@@ -12752,6 +12745,14 @@ namespace ews
             sstr << "</t:" << property_name() << ">";
             sstr << "</t:" << class_name() << ">";
             return sstr.str();
+        }
+
+    private:
+        std::string property_name() const
+        {
+            const auto n = uri_.rfind(':');
+            EWS_ASSERT(n != std::string::npos);
+            return uri_.substr(n + 1);
         }
 
         std::string uri_;
@@ -12774,15 +12775,8 @@ namespace ews
         {
         }
 
-        std::string to_xml() const { return parse_to_xml(); }
-
-        std::string to_xml(const std::string& value) const
-        {
-            return parse_to_xml(value);
-        }
-
     private:
-        std::string parse_to_xml() const override
+        std::string to_xml_impl() const override
         {
             std::stringstream sstr;
             sstr << "<t:IndexedFieldURI FieldURI=";
@@ -12795,7 +12789,7 @@ namespace ews
             return sstr.str();
         }
 
-        std::string parse_to_xml(const std::string& value) const override
+        std::string to_xml_impl(const std::string& value) const override
         {
             std::stringstream sstr;
             sstr << "<t:IndexedFieldURI FieldURI=";
