@@ -54,7 +54,7 @@ C++ application.
 * macOS starting with 10.12
 * RHEL 7
 * Ubuntu since 14.04 LTS (both, x86_64 and i386)
-* SLES 12
+* SLES 12.1
 
 
 ## Supported Microsoft Exchange Server Versions
