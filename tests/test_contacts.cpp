@@ -716,7 +716,9 @@ TEST(OfflineContactTest, InitialChildrenValue)
 TEST(OfflineContactTest, SetChildrenValue)
 {
     auto minnie = ews::contact();
-    std::vector<std::string> children{"Andie", "Bandie"};
+    std::vector<std::string> children;
+    children.push_back("Andie");
+    children.push_back("Bandie");
     minnie.set_children(children);
     auto first_child = children[0].c_str();
     EXPECT_STREQ("Andie", first_child);
@@ -725,7 +727,9 @@ TEST(OfflineContactTest, SetChildrenValue)
 TEST_F(ContactTest, UpdateChildrenValue)
 {
     auto minnie = test_contact();
-    std::vector<std::string> children{"Ando", "Bando"};
+    std::vector<std::string> children;
+    children.push_back("Ando");
+    children.push_back("Bando");
     auto prop = ews::property(ews::contact_property_path::children, children);
     auto new_id = service().update_item(minnie.get_item_id(), prop);
     minnie = service().get_contact(new_id);
@@ -741,7 +745,9 @@ TEST(OfflineContactTest, InitialCompaniesValue)
 TEST(OfflineContactTest, SetCompaniesValue)
 {
     auto minnie = ews::contact();
-    std::vector<std::string> companies{"Otris GmbH", "Aperture Science"};
+    std::vector<std::string> companies;
+    companies.push_back("Otris GmbH");
+    companies.push_back("Aperture Science");
     minnie.set_companies(companies);
     auto first_company = companies[0].c_str();
     EXPECT_STREQ("Otris GmbH", first_company);
@@ -750,7 +756,9 @@ TEST(OfflineContactTest, SetCompaniesValue)
 TEST_F(ContactTest, UpdateCompaniesValue)
 {
     auto minnie = test_contact();
-    std::vector<std::string> companies{"Otris GmbH", "Aperture Science"};
+    std::vector<std::string> companies;
+    companies.push_back("Otris GmbH");
+    companies.push_back("Aperture Science");
     auto prop = ews::property(ews::contact_property_path::companies, companies);
     auto new_id = service().update_item(minnie.get_item_id(), prop);
     minnie = service().get_contact(new_id);
