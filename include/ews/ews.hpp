@@ -9441,35 +9441,17 @@ inline bool operator==(const email_address& lhs, const email_address& rhs)
     return (lhs.key_ == rhs.key_) && (lhs.value_ == rhs.value_);
 }
 
-enum class physical_address_key
-{
-    home,
-    business,
-    other
-};
-
-namespace internal
-{
-    inline std::string enum_to_str(physical_address_key k)
-    {
-        switch (k)
-        {
-        case physical_address_key::home:
-            return "Home";
-        case physical_address_key::business:
-            return "Business";
-        case physical_address_key::other:
-            return "Other";
-        default:
-            throw exception("Bad enum value");
-        }
-    }
-}
-
 class physical_address final
 {
 public:
-    physical_address(physical_address_key k, std::string street,
+    enum class key
+    {
+        home,
+        business,
+        other
+    };
+
+    physical_address(key k, std::string street,
                      std::string city, std::string state, std::string cor,
                      std::string postal_code)
         : key_(std::move(k)), street_(std::move(street)),
@@ -9480,111 +9462,9 @@ public:
     }
 
     static physical_address
-    from_xml_element(const rapidxml::xml_node<char>& node)
-    {
-        using rapidxml::internal::compare;
-
-        EWS_ASSERT(compare(node.local_name(), node.local_name_size(), "Entry",
-                           std::strlen("Entry")));
-
-        // <Entry Key="Home">
-        //      <Street>
-        //      <City>
-        //      <State>
-        //      <CountryOrRegion>
-        //      <PostalCode>
-        // </Entry>
-
-        auto key_attr = node.first_attribute();
-        EWS_ASSERT(key_attr);
-        EWS_ASSERT(compare(key_attr->name(), key_attr->name_size(), "Key", 3));
-        const physical_address_key key = string_to_key(key_attr->value());
-
-        std::string street;
-        std::string city;
-        std::string state;
-        std::string cor;
-        std::string postal_code;
-
-        for (auto child = node.first_node(); child != nullptr;
-             child = child->next_sibling())
-        {
-            if (compare("Street", std::strlen("Street"), child->local_name(),
-                        child->local_name_size()))
-            {
-                street = std::string(child->value(), child->value_size());
-            }
-            if (compare("City", std::strlen("City"), child->local_name(),
-                        child->local_name_size()))
-            {
-                city = std::string(child->value(), child->value_size());
-            }
-            if (compare("State", std::strlen("State"), child->local_name(),
-                        child->local_name_size()))
-            {
-                state = std::string(child->value(), child->value_size());
-            }
-            if (compare("CountryOrRegion", std::strlen("CountryOrRegion"),
-                        child->local_name(), child->local_name_size()))
-            {
-                cor = std::string(child->value(), child->value_size());
-            }
-            if (compare("PostalCode", std::strlen("PostalCode"),
-                        child->local_name(), child->local_name_size()))
-            {
-                postal_code = std::string(child->value(), child->value_size());
-            }
-        }
-        return physical_address(key, street, city, state, cor, postal_code);
-    }
-
-    std::string to_xml() const
-    {
-        std::stringstream sstr;
-        sstr << " <t:"
-             << "PhysicalAddresses"
-             << ">";
-        sstr << " <t:Entry Key=";
-        sstr << "\"" << internal::enum_to_str(get_key());
-        sstr << "\">";
-        if (!street().empty())
-        {
-            sstr << "<t:Street>";
-            sstr << street();
-            sstr << "</t:Street>";
-        }
-        if (!city().empty())
-        {
-            sstr << "<t:City>";
-            sstr << city();
-            sstr << "</t:City>";
-        }
-        if (!state().empty())
-        {
-            sstr << "<t:State>";
-            sstr << state();
-            sstr << "</t:State>";
-        }
-        if (!country_or_region().empty())
-        {
-            sstr << "<t:CountryOrRegion>";
-            sstr << country_or_region();
-            sstr << "</t:CountryOrRegion>";
-        }
-        if (!postal_code().empty())
-        {
-            sstr << "<t:PostalCode>";
-            sstr << postal_code();
-            sstr << "</t:PostalCode>";
-        }
-        sstr << "</t:Entry>";
-        sstr << " </t:"
-             << "PhysicalAddresses"
-             << ">";
-        return sstr.str();
-    }
-
-    physical_address_key get_key() const EWS_NOEXCEPT { return key_; }
+    from_xml_element(const rapidxml::xml_node<char>& node); // defined below
+    std::string to_xml() const;
+    key get_key() const EWS_NOEXCEPT { return key_; }
     const std::string& street() const EWS_NOEXCEPT { return street_; }
     const std::string& city() const EWS_NOEXCEPT { return city_; }
     const std::string& state() const EWS_NOEXCEPT { return state_; }
@@ -9595,7 +9475,7 @@ public:
     const std::string& postal_code() const EWS_NOEXCEPT { return postal_code_; }
 
 private:
-    physical_address_key key_;
+    key key_;
     std::string street_;
     std::string city_;
     std::string state_;
@@ -9603,28 +9483,6 @@ private:
     std::string postal_code_;
 
     friend bool operator==(const physical_address&, const physical_address&);
-
-    static physical_address_key string_to_key(const std::string& keystring)
-    {
-        physical_address_key k;
-        if (keystring == "Home")
-        {
-            k = physical_address_key::home;
-        }
-        else if (keystring == "Business")
-        {
-            k = physical_address_key::business;
-        }
-        else if (keystring == "Other")
-        {
-            k = physical_address_key::other;
-        }
-        else
-        {
-            throw exception("Unrecognized key: " + keystring);
-        }
-        return k;
-    }
 };
 
 inline bool operator==(const physical_address& lhs, const physical_address& rhs)
@@ -9637,7 +9495,152 @@ inline bool operator==(const physical_address& lhs, const physical_address& rhs)
 
 namespace internal
 {
+    inline physical_address::key string_to_physical_address_key(const std::string& keystring)
+    {
+        physical_address::key k;
+        if (keystring == "Home")
+        {
+            k = physical_address::key::home;
+        }
+        else if (keystring == "Business")
+        {
+            k = physical_address::key::business;
+        }
+        else if (keystring == "Other")
+        {
+            k = physical_address::key::other;
+        }
+        else
+        {
+            throw exception("Unrecognized key: " + keystring);
+        }
+        return k;
+    }
 
+    inline std::string enum_to_str(physical_address::key k)
+    {
+        switch (k)
+        {
+        case physical_address::key::home:
+            return "Home";
+        case physical_address::key::business:
+            return "Business";
+        case physical_address::key::other:
+            return "Other";
+        default:
+            throw exception("Bad enum value");
+        }
+    }
+}
+
+inline physical_address
+physical_address::from_xml_element(const rapidxml::xml_node<char>& node)
+{
+    using namespace internal;
+    using rapidxml::internal::compare;
+
+    EWS_ASSERT(compare(node.local_name(), node.local_name_size(), "Entry",
+                       std::strlen("Entry")));
+
+    // <Entry Key="Home">
+    //      <Street>
+    //      <City>
+    //      <State>
+    //      <CountryOrRegion>
+    //      <PostalCode>
+    // </Entry>
+
+    auto key_attr = node.first_attribute();
+    EWS_ASSERT(key_attr);
+    EWS_ASSERT(compare(key_attr->name(), key_attr->name_size(), "Key", 3));
+    const key key = string_to_physical_address_key(key_attr->value());
+
+    std::string street;
+    std::string city;
+    std::string state;
+    std::string cor;
+    std::string postal_code;
+
+    for (auto child = node.first_node(); child != nullptr;
+         child = child->next_sibling())
+    {
+        if (compare("Street", std::strlen("Street"), child->local_name(),
+                    child->local_name_size()))
+        {
+            street = std::string(child->value(), child->value_size());
+        }
+        if (compare("City", std::strlen("City"), child->local_name(),
+                    child->local_name_size()))
+        {
+            city = std::string(child->value(), child->value_size());
+        }
+        if (compare("State", std::strlen("State"), child->local_name(),
+                    child->local_name_size()))
+        {
+            state = std::string(child->value(), child->value_size());
+        }
+        if (compare("CountryOrRegion", std::strlen("CountryOrRegion"),
+                    child->local_name(), child->local_name_size()))
+        {
+            cor = std::string(child->value(), child->value_size());
+        }
+        if (compare("PostalCode", std::strlen("PostalCode"),
+                    child->local_name(), child->local_name_size()))
+        {
+            postal_code = std::string(child->value(), child->value_size());
+        }
+    }
+    return physical_address(key, street, city, state, cor, postal_code);
+}
+
+inline std::string physical_address::to_xml() const
+{
+    std::stringstream sstr;
+    sstr << " <t:"
+         << "PhysicalAddresses"
+         << ">";
+    sstr << " <t:Entry Key=";
+    sstr << "\"" << internal::enum_to_str(get_key());
+    sstr << "\">";
+    if (!street().empty())
+    {
+        sstr << "<t:Street>";
+        sstr << street();
+        sstr << "</t:Street>";
+    }
+    if (!city().empty())
+    {
+        sstr << "<t:City>";
+        sstr << city();
+        sstr << "</t:City>";
+    }
+    if (!state().empty())
+    {
+        sstr << "<t:State>";
+        sstr << state();
+        sstr << "</t:State>";
+    }
+    if (!country_or_region().empty())
+    {
+        sstr << "<t:CountryOrRegion>";
+        sstr << country_or_region();
+        sstr << "</t:CountryOrRegion>";
+    }
+    if (!postal_code().empty())
+    {
+        sstr << "<t:PostalCode>";
+        sstr << postal_code();
+        sstr << "</t:PostalCode>";
+    }
+    sstr << "</t:Entry>";
+    sstr << " </t:"
+         << "PhysicalAddresses"
+         << ">";
+    return sstr.str();
+}
+
+namespace internal
+{
     enum file_as_mapping
     {
         none,
