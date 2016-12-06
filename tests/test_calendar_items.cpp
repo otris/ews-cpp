@@ -785,7 +785,8 @@ TEST_F(CalendarItemTest, UpdateRequiredAttendeesProperty)
     // Remove all again
     prop = ews::property(ews::calendar_property_path::required_attendees,
                          std::vector<ews::attendee>());
-    new_id = service().update_item(cal.get_item_id(), prop);
+    auto update = ews::update(prop, ews::update::operation::delete_item_field);
+    new_id = service().update_item(cal.get_item_id(), update);
     cal = service().get_calendar_item(new_id);
     EXPECT_TRUE(cal.get_required_attendees().empty());
 }
@@ -845,7 +846,8 @@ TEST_F(CalendarItemTest, UpdateOptionalAttendeesProperty)
     // Remove all again
     prop = ews::property(ews::calendar_property_path::optional_attendees,
                          std::vector<ews::attendee>());
-    new_id = service().update_item(cal.get_item_id(), prop);
+    auto update = ews::update(prop, ews::update::operation::delete_item_field);
+    new_id = service().update_item(cal.get_item_id(), update);
     cal = service().get_calendar_item(new_id);
     EXPECT_TRUE(cal.get_optional_attendees().empty());
 }
@@ -904,7 +906,8 @@ TEST_F(CalendarItemTest, UpdateResourcesProperty)
     // Remove all again
     prop = ews::property(ews::calendar_property_path::resources,
                          std::vector<ews::attendee>());
-    new_id = service().update_item(cal.get_item_id(), prop);
+    auto update = ews::update(prop, ews::update::operation::delete_item_field);
+    new_id = service().update_item(cal.get_item_id(), update);
     cal = service().get_calendar_item(new_id);
     EXPECT_TRUE(cal.get_resources().empty());
 }

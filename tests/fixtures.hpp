@@ -285,8 +285,12 @@ public:
     {
         BaseFixture::SetUp();
 
-        contact_.set_given_name("Minnie");
+        contact_.set_given_name("Minerva");
+        contact_.set_nickname("Minnie");
         contact_.set_surname("Mouse");
+        contact_.set_spouse_name("Mickey");
+        contact_.set_job_title("Damsel in distress");
+
         const auto item_id = service().create_item(contact_);
         contact_ = service().get_contact(item_id);
     }
