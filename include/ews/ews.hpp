@@ -12433,7 +12433,7 @@ public:
     // Intentionally not explicit
     property_path(const char* uri) : uri_(uri)
     {
-        EWS_ASSERT(!class_name().empty());
+        class_name();
     }
 
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
