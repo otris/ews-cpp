@@ -637,7 +637,7 @@ TEST(OfflineContactTest, SetPhysicalAddressesValues)
 {
     auto minnie = ews::contact();
     auto address =
-        ews::physical_address(ews::physical_address_key::home, "Doomroad",
+        ews::physical_address(ews::physical_address::key::home, "Doomroad",
                               "Doomburg", "Doom", "Doomonia", "4 15 15 13");
     minnie.set_physical_address(address);
     const auto addresses = minnie.get_physical_addresses();
@@ -648,7 +648,7 @@ TEST(OfflineContactTest, SetPhysicalAddressesValues)
 TEST_F(ContactTest, UpdatePhysicalAddressesValues)
 {
     auto minnie = test_contact();
-    auto address = ews::physical_address(ews::physical_address_key::home, "",
+    auto address = ews::physical_address(ews::physical_address::key::home, "",
                                          "Duckburg", "", "", "");
     auto prop = ews::property(
         ews::contact_property_path::physical_address::city, address);
