@@ -12436,10 +12436,13 @@ public:
         EWS_ASSERT(!class_name().empty());
     }
 
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    virtual ~property_path() = default;
+    property_path(const property_path&) = default;
+    property_path& operator=(const property_path&) = default;
+#else
     virtual ~property_path() {}
-    //! Returns the \<FieldURI> element for this property.
-    //!
-    //! Identifies frequently referenced properties by URI
+#endif
 
     std::string to_xml() const { return this->to_xml_impl(); }
 
@@ -12448,6 +12451,7 @@ public:
         return this->to_xml_impl(value);
     }
 
+    //! Returns the value of the \<FieldURI> element
     const std::string& field_uri() const EWS_NOEXCEPT { return uri_; }
 
 protected:
