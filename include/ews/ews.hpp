@@ -12383,7 +12383,7 @@ public:
     //!
     //! If is_read_receipt_requested() evaluates to true, updating this
     //! property to true sends a read receipt.
-    void set_read(bool value)
+    void set_is_read(bool value)
     {
         xml().set_or_update("IsRead", value ? "true" : "false");
     }

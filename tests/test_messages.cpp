@@ -74,7 +74,7 @@ TEST(OfflineMessageTest, IsReadPropertyInitialValue)
 TEST(OfflineMessageTest, SetIsReadProperty)
 {
     auto msg = ews::message();
-    msg.set_read(true);
+    msg.set_is_read(true);
     EXPECT_TRUE(msg.is_read());
 }
 
