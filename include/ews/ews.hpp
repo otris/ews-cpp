@@ -12348,7 +12348,7 @@ public:
         }
     }
 
-    std::vector<mailbox> get_to_recipients()
+    std::vector<mailbox> get_to_recipients() const
     {
         const auto recipients = xml().get_node("ToRecipients");
         if (!recipients)
