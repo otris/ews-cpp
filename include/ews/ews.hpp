@@ -5267,192 +5267,9 @@ namespace internal
 #else
     template <typename RequestHandler>
 #endif
-    inline std::string get_exchange_web_services_url(
-        const std::string& user_smtp_address, autodiscover_protocol protocol,
-        const basic_credentials& credentials, unsigned int redirections)
-    {
-        using rapidxml::internal::compare;
-
-        // Check redirection counter. We don't want to get in an endless
-        // loop
-        if (redirections > 2)
-        {
-            throw exception("Maximum of two redirections reached");
-        }
-
-        // Check SMTP address
-        if (user_smtp_address.empty())
-        {
-            throw exception("Empty SMTP address given");
-        }
-
-        // Get user name and domain part from the SMTP address
-        const auto at_sign_idx = user_smtp_address.find_first_of("@");
-        if (at_sign_idx == std::string::npos)
-        {
-            throw exception("No valid SMTP address given");
-        }
-
-        const auto username = user_smtp_address.substr(0, at_sign_idx);
-        const auto domain =
-            user_smtp_address.substr(at_sign_idx + 1, user_smtp_address.size());
-
-        // It is important that we use an HTTPS end-point here because we
-        // authenticate with HTTP basic auth; specifically we send the
-        // passphrase in plain-text
-        const auto autodiscover_url =
-            "https://" + domain + "/autodiscover/autodiscover.xml";
-
-        // Create an Outlook provider <Autodiscover/> request
-        std::stringstream sstr;
-        sstr << "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
-             << "<Autodiscover "
-             << "xmlns=\"http://schemas.microsoft.com/exchange/"
-                "autodiscover/outlook/requestschema/2006\">"
-             << "<Request>"
-             << "<EMailAddress>" << user_smtp_address << "</EMailAddress>"
-             << "<AcceptableResponseSchema>"
-             << internal::uri<>::microsoft::autodiscover()
-             << "</AcceptableResponseSchema>"
-             << "</Request>"
-             << "</Autodiscover>";
-        const auto request_string = sstr.str();
-
-        RequestHandler handler(autodiscover_url);
-        handler.set_method(RequestHandler::method::POST);
-        handler.set_credentials(credentials);
-        handler.set_content_type("text/xml; charset=utf-8");
-        handler.set_content_length(request_string.size());
-
-#ifdef EWS_ENABLE_VERBOSE
-        std::cerr << request_string << std::endl;
-#endif
-
-        auto response = handler.send(request_string);
-        if (!response.ok())
-        {
-            throw http_error(response.code());
-        }
-
-        const auto doc = parse_response(std::move(response));
-
-        const auto protocol_string =
-            protocol == ews::autodiscover_protocol::internal ? "EXCH" : "EXPR";
-
-        const auto account_node = get_element_by_qname(
-            *doc, "Account", internal::uri<>::microsoft::autodiscover());
-        if (!account_node)
-        {
-            // Check for <Error/> element
-            const auto error_node = get_element_by_qname(
-                *doc, "Error", "http://schemas.microsoft.com/exchange/"
-                               "autodiscover/responseschema/2006");
-            if (error_node)
-            {
-                std::string error_code;
-                std::string message;
-
-                for (auto node = error_node->first_node(); node;
-                     node = node->next_sibling())
-                {
-                    if (compare(node->local_name(), node->local_name_size(),
-                                "ErrorCode", std::strlen("ErrorCode")))
-                    {
-                        error_code =
-                            std::string(node->value(), node->value_size());
-                    }
-                    else if (compare(node->local_name(),
-                                     node->local_name_size(), "Message",
-                                     std::strlen("Message")))
-                    {
-                        message =
-                            std::string(node->value(), node->value_size());
-                    }
-
-                    if (!error_code.empty() && !message.empty())
-                    {
-                        throw exception(message + " (error code: " +
-                                        error_code + ")");
-                    }
-                }
-            }
-
-            throw exception("Unable to parse response");
-        }
-
-        // For each protocol in the response, look for the appropriate
-        // protocol type (internal/external) and then look for the
-        // corresponding <ASUrl/> element
-
-        for (auto protocol_node = account_node->first_node(); protocol_node;
-             protocol_node = protocol_node->next_sibling())
-        {
-            if (compare(protocol_node->local_name(),
-                        protocol_node->local_name_size(), "Protocol",
-                        std::strlen("Protocol")))
-            {
-                for (auto type_node = protocol_node->first_node(); type_node;
-                     type_node = type_node->next_sibling())
-                {
-                    if (compare(type_node->local_name(),
-                                type_node->local_name_size(), "Type",
-                                std::strlen("Type")) &&
-                        compare(type_node->value(), type_node->value_size(),
-                                protocol_string, std::strlen(protocol_string)))
-                    {
-                        for (auto asurl_node = protocol_node->first_node();
-                             asurl_node;
-                             asurl_node = asurl_node->next_sibling())
-                        {
-                            if (compare(asurl_node->local_name(),
-                                        asurl_node->local_name_size(), "ASUrl",
-                                        std::strlen("ASUrl")))
-                            {
-                                return std::string(asurl_node->value(),
-                                                   asurl_node->value_size());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // If we reach this point, then either autodiscovery returned an
-        // error or there is a redirect address to retry the autodiscover
-        // lookup
-
-        for (auto redirect_node = account_node->first_node(); redirect_node;
-             redirect_node = redirect_node->next_sibling())
-        {
-            if (compare(redirect_node->local_name(),
-                        redirect_node->local_name_size(), "RedirectAddr",
-                        std::strlen("RedirectAddr")))
-            {
-                // Retry
-                redirections++;
-                const auto redirect_address = std::string(
-                    redirect_node->value(), redirect_node->value_size());
-                return get_exchange_web_services_url<RequestHandler>(
-                    redirect_address, protocol, credentials, redirections);
-            }
-        }
-
-        throw exception("Autodiscovery failed unexpectedly");
-    }
-
-struct autodiscover_result
-{
-    std::string internal_ews_url;
-    std::string external_ews_url;
-};
-
-#ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
-    template <typename RequestHandler = http_request>
-#else
-    template <typename RequestHandler>
-#endif
     inline autodiscover_result get_exchange_web_services_url(
-        const std::string& user_smtp_address, const basic_credentials& credentials, unsigned int redirections)
+        const std::string& user_smtp_address, const basic_credentials& credentials, unsigned int redirections,
+        autodiscover_hints& hints)
     {
         autodiscover_result result;
         using rapidxml::internal::compare;
@@ -5589,7 +5406,7 @@ struct autodiscover_result
                                     type_node->local_name_size(), "Type",
                                     std::strlen("Type")) &&
                             compare(type_node->value(), type_node->value_size(),
-                                    protocol, protocol.length()))
+                                    protocol.c_str(), std::strlen(protocol.c_str())))
                         {
                             for (auto asurl_node = protocol_node->first_node();
                                  asurl_node;
@@ -5601,14 +5418,205 @@ struct autodiscover_result
                                 {
                                     if(i == 1)
                                     {
-                                        result.internal_ews_url(asurl_node->value(),
-                                                       asurl_node->value_size());
+                                        result.internal_ews_url = std::string(asurl_node->value(), asurl_node->value_size());
                                         return result;
                                     }
                                     else
                                     {
-                                        result.external_ews_url(asurl_node->value(),
-                                                        asurl_node->value_size());
+                                        result.external_ews_url = std::string(asurl_node->value(), asurl_node->value_size());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // If we reach this point, then either autodiscovery returned an
+        // error or there is a redirect address to retry the autodiscover
+        // lookup
+
+        for (auto redirect_node = account_node->first_node(); redirect_node;
+             redirect_node = redirect_node->next_sibling())
+        {
+            if (compare(redirect_node->local_name(),
+                        redirect_node->local_name_size(), "RedirectAddr",
+                        std::strlen("RedirectAddr")))
+            {
+                // Retry
+                redirections++;
+                const auto redirect_address = std::string(
+                    redirect_node->value(), redirect_node->value_size());
+                return get_exchange_web_services_url<RequestHandler>(
+                    redirect_address, protocol, credentials, redirections);
+            }
+        }
+
+        throw exception("Autodiscovery failed unexpectedly");
+    }
+
+#ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
+    template <typename RequestHandler = http_request>
+#else
+    template <typename RequestHandler>
+#endif
+    inline autodiscover_result get_exchange_web_services_url(
+        const std::string& user_smtp_address, const basic_credentials& credentials, unsigned int redirections)
+    {
+        autodiscover_result result;
+        using rapidxml::internal::compare;
+
+        // Check redirection counter. We don't want to get in an endless
+        // loop
+        if (redirections > 2)
+        {
+            throw exception("Maximum of two redirections reached");
+        }
+
+        // Check SMTP address
+        if (user_smtp_address.empty())
+        {
+            throw exception("Empty SMTP address given");
+        }
+
+        // Get user name and domain part from the SMTP address
+        const auto at_sign_idx = user_smtp_address.find_first_of("@");
+        if (at_sign_idx == std::string::npos)
+        {
+            throw exception("No valid SMTP address given");
+        }
+
+        const auto username = user_smtp_address.substr(0, at_sign_idx);
+        const auto domain =
+            user_smtp_address.substr(at_sign_idx + 1, user_smtp_address.size());
+
+        // It is important that we use an HTTPS end-point here because we
+        // authenticate with HTTP basic auth; specifically we send the
+        // passphrase in plain-text
+        const auto autodiscover_url =
+            "https://" + domain + "/autodiscover/autodiscover.xml";
+
+        // Create an Outlook provider <Autodiscover/> request
+        std::stringstream sstr;
+        sstr << "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
+             << "<Autodiscover "
+             << "xmlns=\"http://schemas.microsoft.com/exchange/"
+                "autodiscover/outlook/requestschema/2006\">"
+             << "<Request>"
+             << "<EMailAddress>" << user_smtp_address << "</EMailAddress>"
+             << "<AcceptableResponseSchema>"
+             << internal::uri<>::microsoft::autodiscover()
+             << "</AcceptableResponseSchema>"
+             << "</Request>"
+             << "</Autodiscover>";
+        const auto request_string = sstr.str();
+
+        RequestHandler handler(autodiscover_url);
+        handler.set_method(RequestHandler::method::POST);
+        handler.set_credentials(credentials);
+        handler.set_content_type("text/xml; charset=utf-8");
+        handler.set_content_length(request_string.size());
+
+#ifdef EWS_ENABLE_VERBOSE
+        std::cerr << request_string << std::endl;
+#endif
+
+        auto response = handler.send(request_string);
+        if (!response.ok())
+        {
+            throw http_error(response.code());
+        }
+
+        const auto doc = parse_response(std::move(response));
+
+        const auto account_node = get_element_by_qname(
+            *doc, "Account", internal::uri<>::microsoft::autodiscover());
+        if (!account_node)
+        {
+            // Check for <Error/> element
+            const auto error_node = get_element_by_qname(
+                *doc, "Error", "http://schemas.microsoft.com/exchange/"
+                               "autodiscover/responseschema/2006");
+            if (error_node)
+            {
+                std::string error_code;
+                std::string message;
+
+                for (auto node = error_node->first_node(); node;
+                     node = node->next_sibling())
+                {
+                    if (compare(node->local_name(), node->local_name_size(),
+                                "ErrorCode", std::strlen("ErrorCode")))
+                    {
+                        error_code =
+                            std::string(node->value(), node->value_size());
+                    }
+                    else if (compare(node->local_name(),
+                                     node->local_name_size(), "Message",
+                                     std::strlen("Message")))
+                    {
+                        message =
+                            std::string(node->value(), node->value_size());
+                    }
+
+                    if (!error_code.empty() && !message.empty())
+                    {
+                        throw exception(message + " (error code: " +
+                                        error_code + ")");
+                    }
+                }
+            }
+
+            throw exception("Unable to parse response");
+        }
+
+        // For each protocol in the response, look for the appropriate
+        // protocol type (internal/external) and then look for the
+        // corresponding <ASUrl/> element
+        std::string protocol;
+        for(int i = 0; i < 2; i++)
+        {
+            for (auto protocol_node = account_node->first_node(); protocol_node;
+                 protocol_node = protocol_node->next_sibling())
+            {
+                if (i == 1)
+                {
+                    protocol = "EXCH";
+                }
+                else
+                {
+                    protocol = "EXPR";
+                }
+                if (compare(protocol_node->local_name(),
+                            protocol_node->local_name_size(), "Protocol",
+                            std::strlen("Protocol")))
+                {
+                    for (auto type_node = protocol_node->first_node(); type_node;
+                         type_node = type_node->next_sibling())
+                    {
+                        if (compare(type_node->local_name(),
+                                    type_node->local_name_size(), "Type",
+                                    std::strlen("Type")) &&
+                            compare(type_node->value(), type_node->value_size(),
+                                    protocol.c_str(), std::strlen(protocol.c_str())))
+                        {
+                            for (auto asurl_node = protocol_node->first_node();
+                                 asurl_node;
+                                 asurl_node = asurl_node->next_sibling())
+                            {
+                                if (compare(asurl_node->local_name(),
+                                            asurl_node->local_name_size(), "ASUrl",
+                                            std::strlen("ASUrl")))
+                                {
+                                    if(i == 1)
+                                    {
+                                        result.internal_ews_url = std::string(asurl_node->value(), asurl_node->value_size());
+                                        return result;
+                                    }
+                                    else
+                                    {
+                                        result.external_ews_url = std::string(asurl_node->value(), asurl_node->value_size());
                                     }
                                 }
                             }
@@ -5668,13 +5676,12 @@ template <typename RequestHandler = internal::http_request>
 #else
 template <typename RequestHandler>
 #endif
-inline std::string
+inline autodiscover_result
 get_exchange_web_services_url(const std::string& user_smtp_address,
-                              autodiscover_protocol protocol,
                               const basic_credentials& credentials)
 {
     return internal::get_exchange_web_services_url<RequestHandler>(
-        user_smtp_address, protocol, credentials, 0U);
+        user_smtp_address, credentials, 0U);
 }
 
 //! \brief The unique identifier and change key of an item in the
