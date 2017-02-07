@@ -64,7 +64,7 @@ TEST_F(AutodiscoverTest, EmptyAddressThrows)
     EXPECT_THROW(
         {
             auto result = ews::get_exchange_web_services_url<http_request_mock>(
-                "", ews::autodiscover_protocol::internal, credentials());
+                "", credentials());
         },
         ews::exception);
 }
@@ -77,7 +77,7 @@ TEST_F(AutodiscoverTest, EmptyAddressExceptionText)
     try
     {
         auto result = ews::get_exchange_web_services_url<http_request_mock>(
-            "", ews::autodiscover_protocol::internal, credentials());
+            "", credentials());
         FAIL() << "Expected an exception";
     }
     catch (ews::exception& exc)
@@ -94,7 +94,7 @@ TEST_F(AutodiscoverTest, InvalidAddressThrows)
     EXPECT_THROW(
         {
             auto result = ews::get_exchange_web_services_url<http_request_mock>(
-                "typo", ews::autodiscover_protocol::internal, credentials());
+                "typo", credentials());
         },
         ews::exception);
 }
@@ -107,7 +107,7 @@ TEST_F(AutodiscoverTest, InvalidAddressExceptionText)
     try
     {
         auto result = ews::get_exchange_web_services_url<http_request_mock>(
-            "typo", ews::autodiscover_protocol::internal, credentials());
+            "typo", credentials());
         FAIL() << "Expected an exception";
     }
     catch (ews::exception& exc)
@@ -123,15 +123,15 @@ TEST_F(AutodiscoverTest, GetExchangeWebServicesURL)
 
     // Internal should return ASUrl element's value in EXCH protocol
     auto result = ews::get_exchange_web_services_url<http_request_mock>(
-        address(), ews::autodiscover_protocol::internal, credentials());
+        address(), credentials());
     EXPECT_STREQ("https://outlook.office365.com/EWS/Exchange.asmx",
-                 result.c_str());
+                 result.internal_ews_url.c_str());
 
     // External should return ASUrl element's value in EXPR protocol
     result = ews::get_exchange_web_services_url<http_request_mock>(
-        address(), ews::autodiscover_protocol::external, credentials());
+        address(), credentials());
     EXPECT_STREQ("https://outlook.another.office365.com/EWS/Exchange.asmx",
-                 result.c_str());
+                 result.external_ews_url.c_str());
 }
 
 TEST_F(AutodiscoverTest, GetExchangeWebServicesURLThrowsOnError)
@@ -146,7 +146,7 @@ TEST_F(AutodiscoverTest, GetExchangeWebServicesURLThrowsOnError)
     EXPECT_THROW(
         {
             ews::get_exchange_web_services_url<http_request_mock>(
-                address(), ews::autodiscover_protocol::internal, credentials());
+                address(), credentials());
         },
         ews::exception);
 }
@@ -159,7 +159,7 @@ TEST_F(AutodiscoverTest, GetExchangeWebServicesURLExceptionText)
     try
     {
         ews::get_exchange_web_services_url<http_request_mock>(
-            address(), ews::autodiscover_protocol::internal, credentials());
+            address(), credentials());
         FAIL() << "Expected an exception";
     }
     catch (ews::exception& exc)
