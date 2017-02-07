@@ -66,16 +66,20 @@ class search_expression;
 class soap_fault;
 class task;
 class update;
-enum class autodiscover_protocol;
+struct autodiscover_result;
+struct autodiscover_hints;
 template <typename T> class basic_service;
 bool operator==(const date_time&, const date_time&);
 bool operator==(const property_path&, const property_path&);
 void set_up() EWS_NOEXCEPT;
 void tear_down() EWS_NOEXCEPT;
 template <typename T>
-std::string get_exchange_web_services_url(const std::string&,
-                                          autodiscover_protocol,
-                                          const basic_credentials&);
+autodiscover_result get_exchange_web_services_url(const std::string&,
+                                                  const basic_credentials&);
+template <typename T>
+autodiscover_result get_exchange_web_services_url(const std::string&,
+                                                  const basic_credentials&,
+                                                  const autodiscover_hints&);
 }
 
 // vim:et ts=4 sw=4
