@@ -3983,17 +3983,18 @@ enum class standard_folder
     favorites
 };
 
-//! \brief Indicates whether a user is interested in the internal or
-//! external EWS URL when using Autodiscover.
+//! Contains the internal and external EWS URL when using Autodiscover.
 //!
 //! \sa get_exchange_web_services_url
-enum class autodiscover_protocol
+struct autodiscover_result
 {
-    //! Access the EWS end-point from within the corporate firewall
-    internal,
+    std::string internal_ews_url;
+    std::string external_ews_url;
+};
 
-    //! Access the EWS end-point from outside of the corporate firewall
-    external
+struct autodiscover_hints
+{
+    std::string autodiscover_url;
 };
 
 //! This enumeration indicates the sensitivity of an item.
@@ -5266,10 +5267,11 @@ namespace internal
 #else
     template <typename RequestHandler>
 #endif
-    inline std::string get_exchange_web_services_url(
-        const std::string& user_smtp_address, autodiscover_protocol protocol,
-        const basic_credentials& credentials, unsigned int redirections)
+    inline autodiscover_result get_exchange_web_services_url(
+        const std::string& user_smtp_address, const basic_credentials& credentials, unsigned int redirections,
+        const autodiscover_hints& hints)
     {
+        autodiscover_result result;
         using rapidxml::internal::compare;
 
         // Check redirection counter. We don't want to get in an endless
@@ -5299,9 +5301,12 @@ namespace internal
         // It is important that we use an HTTPS end-point here because we
         // authenticate with HTTP basic auth; specifically we send the
         // passphrase in plain-text
-        const auto autodiscover_url =
+        auto autodiscover_url =
             "https://" + domain + "/autodiscover/autodiscover.xml";
-
+        if(hints.autodiscover_url.size() != 0)
+        {
+            autodiscover_url = hints.autodiscover_url;
+        }
         // Create an Outlook provider <Autodiscover/> request
         std::stringstream sstr;
         sstr << "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
@@ -5334,9 +5339,6 @@ namespace internal
         }
 
         const auto doc = parse_response(std::move(response));
-
-        const auto protocol_string =
-            protocol == ews::autodiscover_protocol::internal ? "EXCH" : "EXPR";
 
         const auto account_node = get_element_by_qname(
             *doc, "Account", internal::uri<>::microsoft::autodiscover());
@@ -5382,33 +5384,51 @@ namespace internal
         // For each protocol in the response, look for the appropriate
         // protocol type (internal/external) and then look for the
         // corresponding <ASUrl/> element
-
-        for (auto protocol_node = account_node->first_node(); protocol_node;
-             protocol_node = protocol_node->next_sibling())
+        std::string protocol;
+        for(int i = 0; i < 2; i++)
         {
-            if (compare(protocol_node->local_name(),
-                        protocol_node->local_name_size(), "Protocol",
-                        std::strlen("Protocol")))
+            for (auto protocol_node = account_node->first_node(); protocol_node;
+                 protocol_node = protocol_node->next_sibling())
             {
-                for (auto type_node = protocol_node->first_node(); type_node;
-                     type_node = type_node->next_sibling())
+                if (i >= 1)
                 {
-                    if (compare(type_node->local_name(),
-                                type_node->local_name_size(), "Type",
-                                std::strlen("Type")) &&
-                        compare(type_node->value(), type_node->value_size(),
-                                protocol_string, std::strlen(protocol_string)))
+                    protocol = "EXCH";
+                }
+                else
+                {
+                    protocol = "EXPR";
+                }
+                if (compare(protocol_node->local_name(),
+                            protocol_node->local_name_size(), "Protocol",
+                            std::strlen("Protocol")))
+                {
+                    for (auto type_node = protocol_node->first_node(); type_node;
+                         type_node = type_node->next_sibling())
                     {
-                        for (auto asurl_node = protocol_node->first_node();
-                             asurl_node;
-                             asurl_node = asurl_node->next_sibling())
+                        if (compare(type_node->local_name(),
+                                    type_node->local_name_size(), "Type",
+                                    std::strlen("Type")) &&
+                            compare(type_node->value(), type_node->value_size(),
+                                    protocol.c_str(), std::strlen(protocol.c_str())))
                         {
-                            if (compare(asurl_node->local_name(),
-                                        asurl_node->local_name_size(), "ASUrl",
-                                        std::strlen("ASUrl")))
+                            for (auto asurl_node = protocol_node->first_node();
+                                 asurl_node;
+                                 asurl_node = asurl_node->next_sibling())
                             {
-                                return std::string(asurl_node->value(),
-                                                   asurl_node->value_size());
+                                if (compare(asurl_node->local_name(),
+                                            asurl_node->local_name_size(), "ASUrl",
+                                            std::strlen("ASUrl")))
+                                {
+                                    if(i >= 1)
+                                    {
+                                        result.internal_ews_url = std::string(asurl_node->value(), asurl_node->value_size());
+                                        return result;
+                                    }
+                                    else
+                                    {
+                                        result.external_ews_url = std::string(asurl_node->value(), asurl_node->value_size());
+                                    }
+                                }
                             }
                         }
                     }
@@ -5432,14 +5452,13 @@ namespace internal
                 const auto redirect_address = std::string(
                     redirect_node->value(), redirect_node->value_size());
                 return get_exchange_web_services_url<RequestHandler>(
-                    redirect_address, protocol, credentials, redirections);
+                    redirect_address, credentials, redirections, hints);
             }
         }
 
         throw exception("Autodiscovery failed unexpectedly");
     }
 }
-
 //! Set-up EWS library.
 //!
 //! Should be called when application is still in single-threaded context.
@@ -5467,13 +5486,26 @@ template <typename RequestHandler = internal::http_request>
 #else
 template <typename RequestHandler>
 #endif
-inline std::string
+inline autodiscover_result
 get_exchange_web_services_url(const std::string& user_smtp_address,
-                              autodiscover_protocol protocol,
                               const basic_credentials& credentials)
 {
+    ews::autodiscover_hints hints;
     return internal::get_exchange_web_services_url<RequestHandler>(
-        user_smtp_address, protocol, credentials, 0U);
+        user_smtp_address, credentials, 0U, hints);
+}
+
+#ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
+template <typename RequestHandler = internal::http_request>
+#else
+template <typename RequestHandler>
+#endif
+inline autodiscover_result
+get_exchange_web_services_url(const std::string& user_smtp_address,
+                              const basic_credentials& credentials, const autodiscover_hints& hints)
+{
+    return internal::get_exchange_web_services_url<RequestHandler>(
+        user_smtp_address, credentials, 0U, hints);
 }
 
 //! \brief The unique identifier and change key of an item in the
