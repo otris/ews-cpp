@@ -3983,17 +3983,18 @@ enum class standard_folder
     favorites
 };
 
-//! \brief Indicates whether a user is interested in the internal or
-//! external EWS URL when using Autodiscover.
+//! Contains the internal and external EWS URL when using Autodiscover.
 //!
 //! \sa get_exchange_web_services_url
-enum class autodiscover_protocol
+struct autodiscover_result
 {
-    //! Access the EWS end-point from within the corporate firewall
-    internal,
+    std::string internal_ews_url;
+    std::string external_ews_url;
+};
 
-    //! Access the EWS end-point from outside of the corporate firewall
-    external
+struct autodiscover_hints
+{
+    std::string autodiscover_url;
 };
 
 //! This enumeration indicates the sensitivity of an item.
