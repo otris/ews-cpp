@@ -34,14 +34,16 @@ int main()
         const auto env = ews::test::environment();
         ews::basic_credentials credentials(env.autodiscover_smtp_address,
                                            env.autodiscover_password);
+        ews::autodiscover_hints hints;
+        hints.autodiscover_url = "https://exch.otris.de/autodiscover/autodiscover.xml";
 
-        auto ews_url =
+        auto result =
             ews::get_exchange_web_services_url<http_request>(
                                     env.autodiscover_smtp_address,
-                                    ews::autodiscover_protocol::internal,
-                                    credentials);
+                                    credentials, hints);
 
-        std::cout << ews_url << std::endl;
+        std::cout << result.internal_ews_url << std::endl;
+        std::cout << result.external_ews_url << std::endl;
     }
     catch (std::exception& exc)
     {
