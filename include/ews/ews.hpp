@@ -5267,9 +5267,11 @@ namespace internal
 #else
     template <typename RequestHandler>
 #endif
-    inline autodiscover_result get_exchange_web_services_url(
-        const std::string& user_smtp_address, const basic_credentials& credentials, unsigned int redirections,
-        const autodiscover_hints& hints)
+    inline autodiscover_result
+    get_exchange_web_services_url(const std::string& user_smtp_address,
+                                  const basic_credentials& credentials,
+                                  unsigned int redirections,
+                                  const autodiscover_hints& hints)
     {
         autodiscover_result result;
         using rapidxml::internal::compare;
@@ -5303,7 +5305,7 @@ namespace internal
         // passphrase in plain-text
         auto autodiscover_url =
             "https://" + domain + "/autodiscover/autodiscover.xml";
-        if(hints.autodiscover_url.size() != 0)
+        if (hints.autodiscover_url.size() != 0)
         {
             autodiscover_url = hints.autodiscover_url;
         }
@@ -5385,7 +5387,7 @@ namespace internal
         // protocol type (internal/external) and then look for the
         // corresponding <ASUrl/> element
         std::string protocol;
-        for(int i = 0; i < 2; i++)
+        for (int i = 0; i < 2; i++)
         {
             for (auto protocol_node = account_node->first_node(); protocol_node;
                  protocol_node = protocol_node->next_sibling())
@@ -5402,31 +5404,36 @@ namespace internal
                             protocol_node->local_name_size(), "Protocol",
                             std::strlen("Protocol")))
                 {
-                    for (auto type_node = protocol_node->first_node(); type_node;
-                         type_node = type_node->next_sibling())
+                    for (auto type_node = protocol_node->first_node();
+                         type_node; type_node = type_node->next_sibling())
                     {
                         if (compare(type_node->local_name(),
                                     type_node->local_name_size(), "Type",
                                     std::strlen("Type")) &&
                             compare(type_node->value(), type_node->value_size(),
-                                    protocol.c_str(), std::strlen(protocol.c_str())))
+                                    protocol.c_str(),
+                                    std::strlen(protocol.c_str())))
                         {
                             for (auto asurl_node = protocol_node->first_node();
                                  asurl_node;
                                  asurl_node = asurl_node->next_sibling())
                             {
                                 if (compare(asurl_node->local_name(),
-                                            asurl_node->local_name_size(), "ASUrl",
-                                            std::strlen("ASUrl")))
+                                            asurl_node->local_name_size(),
+                                            "ASUrl", std::strlen("ASUrl")))
                                 {
-                                    if(i >= 1)
+                                    if (i >= 1)
                                     {
-                                        result.internal_ews_url = std::string(asurl_node->value(), asurl_node->value_size());
+                                        result.internal_ews_url = std::string(
+                                            asurl_node->value(),
+                                            asurl_node->value_size());
                                         return result;
                                     }
                                     else
                                     {
-                                        result.external_ews_url = std::string(asurl_node->value(), asurl_node->value_size());
+                                        result.external_ews_url = std::string(
+                                            asurl_node->value(),
+                                            asurl_node->value_size());
                                     }
                                 }
                             }
@@ -5502,7 +5509,8 @@ template <typename RequestHandler>
 #endif
 inline autodiscover_result
 get_exchange_web_services_url(const std::string& user_smtp_address,
-                              const basic_credentials& credentials, const autodiscover_hints& hints)
+                              const basic_credentials& credentials,
+                              const autodiscover_hints& hints)
 {
     return internal::get_exchange_web_services_url<RequestHandler>(
         user_smtp_address, credentials, 0U, hints);
@@ -9483,8 +9491,8 @@ public:
         other
     };
 
-    physical_address(key k, std::string street,
-                     std::string city, std::string state, std::string cor,
+    physical_address(key k, std::string street, std::string city,
+                     std::string state, std::string cor,
                      std::string postal_code)
         : key_(std::move(k)), street_(std::move(street)),
           city_(std::move(city)), state_(std::move(state)),
@@ -9527,7 +9535,8 @@ inline bool operator==(const physical_address& lhs, const physical_address& rhs)
 
 namespace internal
 {
-    inline physical_address::key string_to_physical_address_key(const std::string& keystring)
+    inline physical_address::key
+    string_to_physical_address_key(const std::string& keystring)
     {
         physical_address::key k;
         if (keystring == "Home")
@@ -12466,10 +12475,7 @@ class property_path
 {
 public:
     // Intentionally not explicit
-    property_path(const char* uri) : uri_(uri)
-    {
-        class_name();
-    }
+    property_path(const char* uri) : uri_(uri) { class_name(); }
 
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
     virtual ~property_path() = default;

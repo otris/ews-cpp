@@ -16,11 +16,11 @@
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
 
-#include <string>
+#include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <ostream>
-#include <exception>
-#include <cstdlib>
+#include <string>
 
 using ews::internal::http_request;
 
@@ -35,12 +35,11 @@ int main()
         ews::basic_credentials credentials(env.autodiscover_smtp_address,
                                            env.autodiscover_password);
         ews::autodiscover_hints hints;
-        hints.autodiscover_url = "https://exch.otris.de/autodiscover/autodiscover.xml";
+        hints.autodiscover_url =
+            "https://exch.otris.de/autodiscover/autodiscover.xml";
 
-        auto result =
-            ews::get_exchange_web_services_url<http_request>(
-                                    env.autodiscover_smtp_address,
-                                    credentials, hints);
+        auto result = ews::get_exchange_web_services_url<http_request>(
+            env.autodiscover_smtp_address, credentials, hints);
 
         std::cout << result.internal_ews_url << std::endl;
         std::cout << result.external_ews_url << std::endl;

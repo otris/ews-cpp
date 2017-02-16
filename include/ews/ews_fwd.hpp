@@ -75,11 +75,8 @@ void set_up() EWS_NOEXCEPT;
 void tear_down() EWS_NOEXCEPT;
 template <typename T>
 autodiscover_result get_exchange_web_services_url(const std::string&,
-                                        const basic_credentials&);
-template <typename T>
-autodiscover_result get_exchange_web_services_url(const std::string&,
-                                        const basic_credentials&,
-                                        const autodiscover_hints&);
+                                                  const basic_credentials&,
+                                                  const autodiscover_hints&);
 }
 
 // vim:et ts=4 sw=4
