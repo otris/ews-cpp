@@ -97,6 +97,7 @@ struct http_request_mock final
 
         std::string request_string;
         std::vector<char> fake_response;
+        std::string url;
     };
 
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -120,7 +121,11 @@ struct http_request_mock final
         POST
     };
 
-    explicit http_request_mock(const std::string&) {}
+    explicit http_request_mock(const std::string& url)
+    {
+        auto& s = storage::instance();
+        s.url = url;
+    }
 
     void set_method(method) {}
 
