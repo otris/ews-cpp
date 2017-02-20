@@ -5273,8 +5273,6 @@ namespace internal
                                   unsigned int redirections,
                                   const autodiscover_hints& hints)
     {
-        autodiscover_result result;
-        std::string autodiscover_url;
         using rapidxml::internal::compare;
 
         // Check redirection counter. We don't want to get in an endless
@@ -5290,6 +5288,7 @@ namespace internal
             throw exception("Empty SMTP address given");
         }
 
+        std::string autodiscover_url;
         if (hints.autodiscover_url.empty())
         {
             // Get user name and domain part from the SMTP address
@@ -5391,6 +5390,7 @@ namespace internal
         // protocol type (internal/external) and then look for the
         // corresponding <ASUrl/> element
         std::string protocol;
+        autodiscover_result result;
         for (int i = 0; i < 2; i++)
         {
             for (auto protocol_node = account_node->first_node(); protocol_node;
