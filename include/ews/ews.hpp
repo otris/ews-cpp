@@ -8445,7 +8445,8 @@ protected:
     }
 #endif
 
-    void set_array_of_strings_helper(const std::vector<std::string>& strings, const char* name)
+    void set_array_of_strings_helper(const std::vector<std::string>& strings,
+                                     const char* name)
     {
         // TODO: this does not meet strong exception safety guarantees
 
@@ -8480,7 +8481,7 @@ protected:
         }
         auto res = std::vector<std::string>();
         for (auto entry = node->first_node(); entry;
-            entry = entry->next_sibling())
+             entry = entry->next_sibling())
         {
             res.emplace_back(std::string(entry->value(), entry->value_size()));
         }
@@ -9025,7 +9026,6 @@ public:
     std::vector<std::string> get_contacts() const
     {
         return get_array_of_strings_helper("Contacts");
-
     }
 
     //! Sets the contacts associated with this task to \p contacts.
@@ -10190,7 +10190,7 @@ public:
 #endif
 
     //! How the name should be filed for display/sorting purposes
-    void set_file_as(std::string fileas)
+    void set_file_as(const std::string& fileas)
     {
         xml().set_or_update("FileAs", fileas);
     }
@@ -10539,12 +10539,15 @@ public:
     //
     // This also applies to any other contact property with a date type
     // string
-    void set_birthday(std::string birthday)
+    void set_birthday(const std::string& birthday)
     {
         xml().set_or_update("Birthday", birthday);
     }
 
-    std::string get_birthday() { return xml().get_value_as_string("Birthday"); }
+    std::string get_birthday() const
+    {
+        return xml().get_value_as_string("Birthday");
+    }
 
     //! Sets the web page for the contact's business; typically a URL
     void set_business_homepage(const std::string& business_homepage)
@@ -10580,10 +10583,10 @@ public:
         return get_array_of_strings_helper("Companies");
     }
 
-    //! Indicates whether this is a directory or a store contact
-    //! (read-only)
-
-    std::string get_contact_source()
+    //! \brief Indicates whether this is a directory or a store contact.
+    //!
+    //! This is a read-only property.
+    std::string get_contact_source() const
     {
         return xml().get_value_as_string("ContactSource");
     }
@@ -10660,7 +10663,7 @@ public:
             doc->allocate_attribute(ptr_to_key, ptr_to_value));
     }
 
-    std::vector<im_address> get_im_addresses()
+    std::vector<im_address> get_im_addresses() const
     {
         const auto addresses = xml().get_node("ImAddresses");
         if (!addresses)
@@ -10768,12 +10771,12 @@ public:
     }
 
     //! Date that the contact was married
-    void set_wedding_anniversary(std::string anniversary)
+    void set_wedding_anniversary(const std::string& anniversary)
     {
         xml().set_or_update("WeddingAnniversary", anniversary);
     }
 
-    std::string get_wedding_anniversary()
+    std::string get_wedding_anniversary() const
     {
         return xml().get_value_as_string("WeddingAnniversary");
     }
