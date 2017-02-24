@@ -234,12 +234,41 @@ TEST_F(TaskTest, CompleteDatePropertyInitialValue)
 TEST_F(TaskTest, ContactsPropertyInitialValue)
 {
     auto task = ews::task();
-    auto contacts = task.get_contacts();
-    EXPECT_TRUE(contacts.empty());
+    auto associated_contacts = task.get_contacts();
+    EXPECT_TRUE(associated_contacts.empty());
 }
 
-// TODO: SetContactsProperty
-// TODO: UpdateContactsProperty, especially with multiple contacts
+TEST_F(TaskTest, SetContactsProperty)
+{
+    auto contacts = std::vector<std::string>();
+    contacts.push_back("Edgar Allan Poe");
+    contacts.push_back("Ernest Hemingway");
+    contacts.push_back("W. Somerset Maugham");
+
+    auto task = ews::task();
+    task.set_contacts(contacts);
+    contacts = task.get_contacts();
+    ASSERT_EQ(3U, contacts.size());
+    EXPECT_STREQ("Edgar Allan Poe", contacts[0].c_str());
+    EXPECT_STREQ("Ernest Hemingway", contacts[1].c_str());
+    EXPECT_STREQ("W. Somerset Maugham", contacts[2].c_str());
+}
+
+TEST_F(TaskTest, UpdateContactsProperty)
+{
+    auto contacts = std::vector<std::string>();
+    contacts.push_back("T. E. Lawrence");
+    contacts.push_back("Dick Yates");
+
+    auto task = test_task();
+    auto prop = ews::property(ews::task_property_path::contacts, contacts);
+    auto new_id = service().update_item(task.get_item_id(), prop);
+    task = service().get_task(new_id);
+    contacts = task.get_contacts();
+    ASSERT_EQ(2U, contacts.size());
+    EXPECT_STREQ("T. E. Lawrence", contacts[0].c_str());
+    EXPECT_STREQ("Dick Yates", contacts[1].c_str());
+}
 
 TEST_F(TaskTest, DelegationStatePropertyInitialValue)
 {

@@ -8189,7 +8189,7 @@ public:
 
     //! \brief True if this item is unmodified.
     //!
-    //! Default: false TODO: maybe better default == true?
+    //! Default: false.
     bool is_unmodified() const
     {
         return xml().get_value_as_string("isUnmodified") == "true";
@@ -9008,14 +9008,47 @@ public:
         return date_time(xml().get_value_as_string("CompleteDate"));
     }
 
-    //! Returns the contact names associated with this task
+    //! Returns a list of contacts associated with this task
     std::vector<std::string> get_contacts() const
     {
-        // TODO
-        return std::vector<std::string>();
+        auto node = xml().get_node("Contacts");
+        if (!node)
+        {
+            return std::vector<std::string>();
+        }
+        auto res = std::vector<std::string>();
+        for (auto entry = node->first_node(); entry;
+            entry = entry->next_sibling())
+        {
+            res.emplace_back(std::string(entry->value(), entry->value_size()));
+        }
+        return res;
     }
 
-    // TODO: set_contacts()
+    //! Sets the contacts associated with this task to \p contacts.
+    void set_contacts(const std::vector<std::string>& contacts)
+    {
+        using namespace internal;
+
+        auto contacts_node = xml().get_node("Contacts");
+        if (contacts_node)
+        {
+            auto doc = contacts_node->document();
+            doc->remove_node(contacts_node);
+        }
+
+        if (contacts.empty())
+        {
+            // Nothing to do
+            return;
+        }
+
+        contacts_node = &create_node(*xml().document(), "t:Contacts");
+        for (const auto& c : contacts)
+        {
+            create_node(*contacts_node, "t:String", c);
+        }
+    }
 
     //! \brief Returns the delegation state of this task
     //!
