@@ -8445,6 +8445,48 @@ protected:
     }
 #endif
 
+    void set_array_of_strings_helper(const std::vector<std::string>& strings, const char* name)
+    {
+        // TODO: this does not meet strong exception safety guarantees
+
+        using namespace internal;
+
+        auto outer_node = xml().get_node(name);
+        if (outer_node)
+        {
+            auto doc = outer_node->document();
+            doc->remove_node(outer_node);
+        }
+
+        if (strings.empty())
+        {
+            // Nothing to do
+            return;
+        }
+
+        outer_node = &create_node(*xml().document(), std::string("t:") + name);
+        for (const auto& element : strings)
+        {
+            create_node(*outer_node, "t:String", element);
+        }
+    }
+
+    std::vector<std::string> get_array_of_strings_helper(const char* name) const
+    {
+        auto node = xml().get_node(name);
+        if (!node)
+        {
+            return std::vector<std::string>();
+        }
+        auto res = std::vector<std::string>();
+        for (auto entry = node->first_node(); entry;
+            entry = entry->next_sibling())
+        {
+            res.emplace_back(std::string(entry->value(), entry->value_size()));
+        }
+        return res;
+    }
+
 private:
     friend class attachment;
 
@@ -8961,18 +9003,7 @@ public:
     //! element here, although it is an ArrayOfStringsType.
     std::vector<std::string> get_companies() const
     {
-        auto node = xml().get_node("Companies");
-        if (!node)
-        {
-            return std::vector<std::string>();
-        }
-        auto res = std::vector<std::string>();
-        for (auto entry = node->first_node(); entry;
-             entry = entry->next_sibling())
-        {
-            res.emplace_back(std::string(entry->value(), entry->value_size()));
-        }
-        return res;
+        return get_array_of_strings_helper("Companies");
     }
 
     //! \brief Sets the companies associated with this task.
@@ -8981,25 +9012,7 @@ public:
     //! element here, although it is an ArrayOfStringsType.
     void set_companies(const std::vector<std::string>& companies)
     {
-        using namespace internal;
-
-        auto companies_node = xml().get_node("Companies");
-        if (companies_node)
-        {
-            auto doc = companies_node->document();
-            doc->remove_node(companies_node);
-        }
-        if (companies.empty())
-        {
-            // Nothing to do
-            return;
-        }
-
-        companies_node = &create_node(*xml().document(), "t:Companies");
-        for (const auto& company : companies)
-        {
-            create_node(*companies_node, "t:String", company);
-        }
+        set_array_of_strings_helper(companies, "Companies");
     }
 
     //! Returns the time the task was completed
@@ -9011,43 +9024,14 @@ public:
     //! Returns a list of contacts associated with this task
     std::vector<std::string> get_contacts() const
     {
-        auto node = xml().get_node("Contacts");
-        if (!node)
-        {
-            return std::vector<std::string>();
-        }
-        auto res = std::vector<std::string>();
-        for (auto entry = node->first_node(); entry;
-            entry = entry->next_sibling())
-        {
-            res.emplace_back(std::string(entry->value(), entry->value_size()));
-        }
-        return res;
+        return get_array_of_strings_helper("Contacts");
+
     }
 
     //! Sets the contacts associated with this task to \p contacts.
     void set_contacts(const std::vector<std::string>& contacts)
     {
-        using namespace internal;
-
-        auto contacts_node = xml().get_node("Contacts");
-        if (contacts_node)
-        {
-            auto doc = contacts_node->document();
-            doc->remove_node(contacts_node);
-        }
-
-        if (contacts.empty())
-        {
-            // Nothing to do
-            return;
-        }
-
-        contacts_node = &create_node(*xml().document(), "t:Contacts");
-        for (const auto& c : contacts)
-        {
-            create_node(*contacts_node, "t:String", c);
-        }
+        set_array_of_strings_helper(contacts, "Contacts");
     }
 
     //! \brief Returns the delegation state of this task
@@ -10575,70 +10559,25 @@ public:
     }
 
     //! A collection of children's names associated with the contact
-    void set_children(std::vector<std::string> children)
+    void set_children(const std::vector<std::string>& children)
     {
-        auto doc = xml().document();
-        auto target_node = xml().get_node("Children");
-        if (!target_node)
-        {
-            target_node = &internal::create_node(*doc, "t:Children");
-        }
-
-        for (const auto& child : children)
-        {
-            internal::create_node(*target_node, "t:String", child);
-        }
+        set_array_of_strings_helper(children, "Children");
     }
-    std::vector<std::string> get_children()
-    {
-        const auto children_node = xml().get_node("Children");
-        if (!children_node)
-        {
-            return std::vector<std::string>();
-        }
 
-        std::vector<std::string> children;
-        for (auto child = children_node->first_node(); child != nullptr;
-             child = child->next_sibling())
-        {
-            children.emplace_back(
-                std::string(child->value(), child->value_size()));
-        }
-        return children;
+    std::vector<std::string> get_children() const
+    {
+        return get_array_of_strings_helper("Children");
     }
 
     //! A collection of companies a contact is associated with
-    void set_companies(std::vector<std::string> companies)
+    void set_companies(const std::vector<std::string>& companies)
     {
-        auto doc = xml().document();
-        auto target_node = xml().get_node("Companies");
-        if (!target_node)
-        {
-            target_node = &internal::create_node(*doc, "t:Companies");
-        }
-
-        for (const auto& company : companies)
-        {
-            internal::create_node(*target_node, "t:String", company);
-        }
+        set_array_of_strings_helper(companies, "Companies");
     }
 
-    std::vector<std::string> get_companies()
+    std::vector<std::string> get_companies() const
     {
-        const auto companies_node = xml().get_node("Companies");
-        if (!companies_node)
-        {
-            return std::vector<std::string>();
-        }
-
-        std::vector<std::string> companies;
-        for (auto child = companies_node->first_node(); child != nullptr;
-             child = child->next_sibling())
-        {
-            companies.emplace_back(
-                std::string(child->value(), child->value_size()));
-        }
-        return companies;
+        return get_array_of_strings_helper("Companies");
     }
 
     //! Indicates whether this is a directory or a store contact
