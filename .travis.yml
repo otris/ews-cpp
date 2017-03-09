@@ -8,7 +8,7 @@ before_script:
 cache: apt
 compiler:
   - gcc
-dist: trusty
+dist: xenial
 language: cpp
 os:
   - linux

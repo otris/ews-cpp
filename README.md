@@ -53,7 +53,7 @@ C++ application.
 * Microsoft Windows 8.1 and Windows 10
 * macOS starting with 10.12
 * RHEL 7
-* Ubuntu since 14.04 LTS (both, x86_64 and i386)
+* Ubuntu starting with 16.04 LTS
 * SLES 12.1
 
 
