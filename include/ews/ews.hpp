@@ -13979,13 +13979,13 @@ public:
         return internal::str_to_server_version(server_version_);
     }
 
-    //! Gets a task from the Exchange store
+    //! Gets a task from the Exchange store.
     task get_task(const item_id& id)
     {
         return get_item_impl<task>(id, base_shape::all_properties);
     }
 
-    //! \brief Gets a task from the Exchange store
+    //! \brief Gets a task from the Exchange store.
     //!
     //! The returned task includes specified additional properties.
     task get_task(const item_id& id,
@@ -13995,13 +13995,13 @@ public:
                                    additional_properties);
     }
 
-    //! Gets a contact from the Exchange store
+    //! Gets a contact from the Exchange store.
     contact get_contact(const item_id& id)
     {
         return get_item_impl<contact>(id, base_shape::all_properties);
     }
 
-    //! \brief Gets a contact from the Exchange store
+    //! \brief Gets a contact from the Exchange store.
     //!
     //! The returned contact includes specified additional properties.
     contact get_contact(const item_id& id,
@@ -14011,13 +14011,13 @@ public:
                                       additional_properties);
     }
 
-    //! Gets a calendar item from the Exchange store
+    //! Gets a calendar item from the Exchange store.
     calendar_item get_calendar_item(const item_id& id)
     {
         return get_item_impl<calendar_item>(id, base_shape::all_properties);
     }
 
-    //! \brief Gets a calendar item from the Exchange store
+    //! \brief Gets a calendar item from the Exchange store.
     //!
     //! The returned calendar item includes specified additional
     //! properties.
@@ -14029,13 +14029,13 @@ public:
                                             additional_properties);
     }
 
-    //! Gets a message item from the Exchange store
+    //! Gets a message item from the Exchange store.
     message get_message(const item_id& id)
     {
         return get_item_impl<message>(id, base_shape::all_properties);
     }
 
-    //! \brief Gets a message from the Exchange store
+    //! \brief Gets a message from the Exchange store.
     //!
     //! The returned message includes specified additional properties.
     message get_message(const item_id& id,
@@ -14044,6 +14044,7 @@ public:
         return get_item_impl<message>(id, base_shape::all_properties,
                                       additional_properties);
     }
+
     message get_message(const item_id& id,
                         const std::vector<extended_field_uri>& ext_field_uri)
     {
@@ -14264,7 +14265,7 @@ public:
         return response_message.items();
     }
 
-    //! \brief Returns all calendar items in given calendar view
+    //! \brief Returns all calendar items in given calendar view.
     //!
     //! Sends a \<FindItem/> operation to the server containing a
     //! \<CalendarView/> element. It returns single calendar items and all
