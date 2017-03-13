@@ -488,7 +488,7 @@ TEST_F(CalendarItemTest, GetCalendarItemWithInvalidIdExceptionResponse)
     }
 }
 
-TEST_F(CalendarItemTest, CreateAndDeleteCalendarItem)
+TEST_F(CalendarItemTest, CreateAndDeleteCalendarItem1)
 {
     const ews::distinguished_folder_id calendar_folder =
         ews::standard_folder::calendar;
@@ -496,6 +496,8 @@ TEST_F(CalendarItemTest, CreateAndDeleteCalendarItem)
 
     auto calitem = ews::calendar_item();
     calitem.set_subject("Write chapter explaining Vogon poetry");
+    ews::body calbody("What is six times seven?");
+    calitem.set_body(calbody);
 
     {
         ews::internal::on_scope_exit remove_item([&] {
@@ -509,6 +511,55 @@ TEST_F(CalendarItemTest, CreateAndDeleteCalendarItem)
         calitem = service().get_calendar_item(item_id);
         auto subject = calitem.get_subject();
         EXPECT_STREQ("Write chapter explaining Vogon poetry", subject.c_str());
+        auto body = calitem.get_body();
+        EXPECT_STREQ("What is six times seven?", body.content().c_str());
+    }
+
+    // Check sink argument
+    EXPECT_TRUE(calitem.get_subject().empty());
+
+    auto items = service().find_item(calendar_folder);
+    EXPECT_EQ(initial_count, items.size());
+}
+
+TEST_F(CalendarItemTest, CreateAndDeleteCalendarItem2)
+{
+    const ews::distinguished_folder_id calendar_folder =
+        ews::standard_folder::calendar;
+    const auto initial_count = service().find_item(calendar_folder).size();
+
+    std::string start_date_time("2000-04-01T09:00:00Z");
+    std::string end_date_time("2000-04-01T10:00:00Z");
+
+    auto calitem = ews::calendar_item();
+    calitem.set_subject("Write chapter explaining Vogon poetry");
+    ews::body calbody("What is six times seven?");
+    calitem.set_body(calbody);
+    calitem.set_start(ews::date_time(start_date_time));
+    calitem.set_end(ews::date_time(end_date_time));
+
+    {
+        ews::internal::on_scope_exit remove_item([&] {
+            service().delete_calendar_item(
+                std::move(calitem), ews::delete_type::hard_delete,
+                ews::send_meeting_cancellations::send_to_none);
+        });
+
+        auto item_id = service().create_item(calitem);
+
+        ews::calendar_view cal_view(start_date_time, end_date_time);
+        auto cal_items = service().find_item(cal_view, calendar_folder);
+        EXPECT_EQ(cal_items.size(), 1U);
+        calitem = cal_items[0];
+
+        auto subject = calitem.get_subject();
+        EXPECT_STREQ("Write chapter explaining Vogon poetry", subject.c_str());
+        auto body = calitem.get_body();
+        EXPECT_STREQ("What is six times seven?", body.content().c_str());
+        EXPECT_STREQ(calitem.get_start().to_string().c_str(),
+                     start_date_time.c_str());
+        EXPECT_STREQ(calitem.get_end().to_string().c_str(),
+                     end_date_time.c_str());
     }
 
     // Check sink argument
