@@ -16,12 +16,76 @@
 //   This project is hosted at https://github.com/otris
 
 #include "fixtures.hpp"
+
+#include <fstream>
+#include <ios>
+#include <iostream>
+#include <iterator>
+#include <stdexcept>
 #include <utility>
+
+#ifdef EWS_USE_BOOST_LIBRARY
+#include "boost-filesystem-wrapper.hpp"
+#endif
 
 using ews::internal::on_scope_exit;
 
 namespace tests
 {
+
+#ifdef EWS_USE_BOOST_LIBRARY
+class GetItemRequestTest : public FakeServiceFixture
+{
+private:
+    void SetUp()
+    {
+        FakeServiceFixture::SetUp();
+
+        const auto assets = boost::filesystem::path(
+            ews::test::global_data::instance().assets_dir);
+        const auto file_path = assets / "get_item_response_message.xml";
+        std::ifstream ifstr(file_path.string(),
+                            std::ifstream::in | std::ios::binary);
+        if (!ifstr.is_open())
+        {
+            throw std::runtime_error("Could not open file for reading: " +
+                                     file_path.string());
+        }
+        ifstr.unsetf(std::ios::skipws);
+        ifstr.seekg(0, std::ios::end);
+        const auto file_size = ifstr.tellg();
+        ifstr.seekg(0, std::ios::beg);
+
+        std::vector<char> buf;
+        buf.reserve(file_size);
+        buf.insert(begin(buf), std::istream_iterator<char>(ifstr),
+                   std::istream_iterator<char>());
+        ifstr.close();
+        buf.push_back('\0');
+
+        set_next_fake_response(std::move(buf));
+    }
+};
+
+TEST_F(GetItemRequestTest, WithAdditionalProperties)
+{
+    auto& serv = service();
+    auto fake_id = ews::item_id();
+
+    auto additional_props = std::vector<ews::property_path>();
+    additional_props.push_back(ews::item_property_path::body);
+
+    auto cal_item = serv.get_calendar_item(fake_id, additional_props);
+    (void)cal_item;
+
+    EXPECT_NE(get_last_request().request_string().find(
+        "<t:AdditionalProperties>"
+        "<t:FieldURI FieldURI=\"item:Body\"/>"
+        "</t:AdditionalProperties>"), std::string::npos);
+
+}
+#endif // EWS_USE_BOOST_LIBRARY
+
 class RequestServerVersionTest : public FakeServiceFixture
 {
 private:

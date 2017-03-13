@@ -115,6 +115,11 @@ struct http_request_mock final
                search_str_idx < header_end_idx;
     }
 
+    const std::string& request_string() const
+    {
+        return storage::instance().request_string;
+    }
+
     // Below same public interface as ews::internal::http_request class
     enum class method
     {
@@ -190,6 +195,12 @@ public:
         auto& storage = http_request_mock::storage::instance();
         storage.fake_response = std::vector<char>(str, str + std::strlen(str));
         storage.fake_response.push_back('\0');
+    }
+
+    void set_next_fake_response(std::vector<char>&& buffer)
+    {
+        auto& storage = http_request_mock::storage::instance();
+        storage.fake_response = std::move(buffer);
     }
 
 protected:

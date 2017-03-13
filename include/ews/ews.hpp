@@ -14620,7 +14620,7 @@ private:
                                                 "<t:AdditionalProperties>";
         for (const auto& prop : additional_properties)
         {
-            sstr << prop.to_xml() << "\"/>";
+            sstr << prop.to_xml();
         }
         sstr << "</t:AdditionalProperties>"
                 "</m:ItemShape>"
