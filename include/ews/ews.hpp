@@ -4556,6 +4556,11 @@ namespace internal
     inline std::unique_ptr<rapidxml::xml_document<char>>
     parse_response(http_response&& response)
     {
+        if (response.content().empty())
+        {
+            throw xml_parse_error("Cannot parse empty response");
+        }
+
 #ifdef EWS_HAS_MAKE_UNIQUE
         auto doc = std::make_unique<rapidxml::xml_document<char>>();
 #else
