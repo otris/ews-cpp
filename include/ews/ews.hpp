@@ -14029,6 +14029,24 @@ public:
                                             additional_properties);
     }
 
+    //! Gets a bunch of calendar items from the Exchange store at once.
+    std::vector<calendar_item>
+    get_calendar_items(const std::vector<item_id>& ids, base_shape shape)
+    {
+        return get_item_impl<calendar_item>(ids, shape);
+    }
+
+    //! \brief Gets a bunch of calendar items from the Exchange store at once.
+    //!
+    //! Each of the returned calendar items include the specified additional
+    //! properties.
+    std::vector<calendar_item>
+    get_calendar_items(const std::vector<item_id>& ids, base_shape shape,
+                       const std::vector<property_path>& additional_properties)
+    {
+        return get_item_impl<calendar_item>(ids, shape, additional_properties);
+    }
+
     //! Gets a message item from the Exchange store.
     message get_message(const item_id& id)
     {
@@ -14640,6 +14658,81 @@ private:
         EWS_ASSERT(!response_message.items().empty() &&
                    "Expected at least one item");
         return response_message.items().front();
+    }
+
+    // Gets a bunch of items from the server all at once
+    template <typename ItemType>
+    std::vector<ItemType> get_item_impl(const std::vector<item_id>& ids,
+                                        base_shape shape)
+    {
+        EWS_ASSERT(!ids.empty());
+
+        std::stringstream sstr;
+        sstr << "<m:GetItem>"
+                "<m:ItemShape>"
+                "<t:BaseShape>"
+             << internal::enum_to_str(shape) << "</t:BaseShape>"
+                                                "</m:ItemShape>"
+                                                "<m:ItemIds>";
+        for (const auto& id : ids)
+        {
+            sstr << id.to_xml();
+        }
+        sstr << "</m:ItemIds>"
+                "</m:GetItem>";
+
+        auto response = request(sstr.str());
+        const auto response_message =
+            internal::get_item_response_message<ItemType>::parse(
+                std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.get_response_code());
+        }
+        return response_message.items();
+    }
+
+    // Gets a bunch of items from the server all at once including given
+    // additional properties
+    template <typename ItemType>
+    std::vector<ItemType>
+    get_item_impl(const std::vector<item_id>& ids, base_shape shape,
+                  const std::vector<property_path>& additional_properties)
+    {
+        EWS_ASSERT(!ids.empty());
+        EWS_ASSERT(!additional_properties.empty());
+
+        std::stringstream sstr;
+        sstr << "<m:GetItem>"
+                "<m:ItemShape>"
+                "<t:BaseShape>"
+             << internal::enum_to_str(shape) << "</t:BaseShape>"
+                                                "<t:AdditionalProperties>";
+        for (const auto& prop : additional_properties)
+        {
+            sstr << prop.to_xml();
+        }
+        sstr << "</t:AdditionalProperties>"
+                "</m:ItemShape>"
+                "<m:ItemIds>";
+        for (const auto& id : ids)
+        {
+            sstr << id.to_xml();
+        }
+        sstr << "</m:ItemIds>"
+                "</m:GetItem>";
+
+        auto response = request(sstr.str());
+        const auto response_message =
+            internal::get_item_response_message<ItemType>::parse(
+                std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.get_response_code());
+        }
+        EWS_ASSERT(!response_message.items().empty() &&
+                   "Expected at least one item");
+        return response_message.items();
     }
 
     template <typename ItemType>
