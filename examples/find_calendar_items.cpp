@@ -71,64 +71,69 @@ int main()
         std::cout << "# calender items found: " << found_items.size()
                   << std::endl;
 
-        // Then we retrieve the entire calendar items in a subsequent
-        // GetItem operation.
-
-        std::vector<ews::item_id> ids;
-        ids.reserve(found_items.size());
-        std::transform(begin(found_items), end(found_items),
-                       std::back_inserter(ids),
-                       [](const ews::calendar_item& calitem) {
-                           return calitem.get_item_id();
-                       });
-
-        const auto calendar_items =
-            service.get_calendar_items(ids, ews::base_shape::all_properties);
-
-        // Done. Now we print some basic properties of each item.
-
-        for (const auto& cal_item : calendar_items)
+        if (!found_items.empty())
         {
-            std::cout << "\n";
 
-            std::cout << "Subject:" << cal_item.get_subject() << "\n"
-                      << "Start: " << cal_item.get_start().to_string() << "\n"
-                      << "End: " << cal_item.get_end().to_string() << "\n"
-                      << "Where: " << cal_item.get_location() << "\n";
+            // Then we retrieve the entire calendar items in a subsequent
+            // GetItem operation.
 
-            const auto body = cal_item.get_body();
-            if (body.type() == ews::body_type::html)
+            std::vector<ews::item_id> ids;
+            ids.reserve(found_items.size());
+            std::transform(begin(found_items), end(found_items),
+                           std::back_inserter(ids),
+                           [](const ews::calendar_item& calitem) {
+                               return calitem.get_item_id();
+                           });
+
+            const auto calendar_items = service.get_calendar_items(
+                ids, ews::base_shape::all_properties);
+
+            // Done. Now we print some basic properties of each item.
+
+            for (const auto& cal_item : calendar_items)
             {
-                std::cout << "Body: We got some HTML content here!\n";
-            }
-            else if (body.type() == ews::body_type::plain_text)
-            {
-                std::cout << "Body: '" << body.content() << "'\n";
-            }
+                std::cout << "\n";
 
-            auto resources = cal_item.get_resources();
-            for (const auto& resource : resources)
-            {
-                auto mailbox = resource.get_mailbox();
-                std::cout << " R: " << mailbox.name() << "\n";
-            }
+                std::cout << "Subject:" << cal_item.get_subject() << "\n"
+                          << "Start: " << cal_item.get_start().to_string()
+                          << "\n"
+                          << "End: " << cal_item.get_end().to_string() << "\n"
+                          << "Where: " << cal_item.get_location() << "\n";
 
-            auto req_attendees = cal_item.get_required_attendees();
-            for (const auto& att : req_attendees)
-            {
-                auto mailbox = att.get_mailbox();
-                std::cout << "AR: " << mailbox.name() << "\n";
-            }
+                const auto body = cal_item.get_body();
+                if (body.type() == ews::body_type::html)
+                {
+                    std::cout << "Body: We got some HTML content here!\n";
+                }
+                else if (body.type() == ews::body_type::plain_text)
+                {
+                    std::cout << "Body: '" << body.content() << "'\n";
+                }
 
-            auto opt_attendees = cal_item.get_optional_attendees();
-            for (const auto& att : opt_attendees)
-            {
-                auto mailbox = att.get_mailbox();
-                std::cout << "AO: " << mailbox.name() << "\n";
-            }
+                auto resources = cal_item.get_resources();
+                for (const auto& resource : resources)
+                {
+                    auto mailbox = resource.get_mailbox();
+                    std::cout << " R: " << mailbox.name() << "\n";
+                }
 
-            auto organizer = cal_item.get_organizer();
-            std::cout << " O: " << organizer.name() << std::endl;
+                auto req_attendees = cal_item.get_required_attendees();
+                for (const auto& att : req_attendees)
+                {
+                    auto mailbox = att.get_mailbox();
+                    std::cout << "AR: " << mailbox.name() << "\n";
+                }
+
+                auto opt_attendees = cal_item.get_optional_attendees();
+                for (const auto& att : opt_attendees)
+                {
+                    auto mailbox = att.get_mailbox();
+                    std::cout << "AO: " << mailbox.name() << "\n";
+                }
+
+                auto organizer = cal_item.get_organizer();
+                std::cout << " O: " << organizer.name() << std::endl;
+            }
         }
     }
     catch (std::exception& exc)
