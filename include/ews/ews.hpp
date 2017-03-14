@@ -14289,13 +14289,15 @@ public:
     //! \<CalendarView/> element. It returns single calendar items and all
     //! occurrences of recurring meetings.
     std::vector<calendar_item> find_item(const calendar_view& view,
-                                         const folder_id& parent_folder_id)
+                                         const folder_id& parent_folder_id,
+                                         base_shape shape = base_shape::id_only)
     {
         const std::string request_string =
             "<m:FindItem Traversal=\"Shallow\">"
             "<m:ItemShape>"
-            "<t:BaseShape>Default</t:BaseShape>"
-            "</m:ItemShape>" +
+            "<t:BaseShape>" +
+            internal::enum_to_str(shape) + "</t:BaseShape>"
+                                           "</m:ItemShape>" +
             view.to_xml() + "<m:ParentFolderIds>" + parent_folder_id.to_xml() +
             "</m:ParentFolderIds>"
             "</m:FindItem>";

@@ -548,7 +548,8 @@ TEST_F(CalendarItemTest, CreateAndDeleteCalendarItem2)
         auto item_id = service().create_item(calitem);
 
         ews::calendar_view cal_view(start_date_time, end_date_time);
-        auto cal_items = service().find_item(cal_view, calendar_folder);
+        auto cal_items = service().find_item(cal_view, calendar_folder,
+                                             ews::base_shape::default_shape);
         EXPECT_EQ(cal_items.size(), 1U);
         calitem = cal_items[0];
 
