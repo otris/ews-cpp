@@ -6449,12 +6449,12 @@ namespace internal
     // message's <Items> array. A const rapidxml::xml_node& is passed to
     // that callable.
     template <typename Func>
-    inline void for_each_item(const rapidxml::xml_node<>& items_elem, Func func)
+    inline void for_each_child_node(const rapidxml::xml_node<>& parent_node, Func func)
     {
-        for (auto elem = items_elem.first_node(); elem;
-             elem = elem->next_sibling())
+        for (auto child = parent_node.first_node(); child;
+             child = child->next_sibling())
         {
-            func(*elem);
+            func(*child);
         }
     }
 
@@ -14844,7 +14844,7 @@ namespace internal
             elem->first_node_ns(uri<>::microsoft::messages(), "Items");
         EWS_ASSERT(items_elem && "Expected <Items> element");
 
-        for_each_item(
+        for_each_child_node(
             *items_elem, [&item_ids](const rapidxml::xml_node<>& item_elem) {
                 auto item_id_elem = item_elem.first_node();
                 EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
@@ -14902,7 +14902,7 @@ namespace internal
         EWS_ASSERT(items_elem && "Expected <t:Items> element");
 
         auto items = std::vector<calendar_item>();
-        for_each_item(
+        for_each_child_node(
             *items_elem, [&items](const rapidxml::xml_node<>& item_elem) {
                 items.emplace_back(calendar_item::from_xml_element(item_elem));
             });
@@ -14950,7 +14950,7 @@ namespace internal
             elem->first_node_ns(uri<>::microsoft::messages(), "Items");
         EWS_ASSERT(items_elem && "Expected <Items> element");
         auto items = std::vector<ItemType>();
-        for_each_item(
+        for_each_child_node(
             *items_elem, [&items](const rapidxml::xml_node<>& item_elem) {
                 items.emplace_back(ItemType::from_xml_element(item_elem));
             });
