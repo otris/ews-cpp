@@ -10617,6 +10617,198 @@ static_assert(std::is_move_constructible<item>::value, "");
 static_assert(std::is_move_assignable<item>::value, "");
 #endif
 
+//! Specifies the permission level for the delegator
+enum class delegator_permission_level
+{
+    none,
+    editor,
+    author,
+    reviewer
+};
+
+//! Class for adding delegates and managing the permissions
+class delegate_user final
+{
+public:
+    typedef std::tuple<standard_folder, delegator_permission_level>
+        folder_permissions;
+
+    // C'tor for the delegator
+    delegate_user(std::string primary_smtp_address,
+                  ews::mailbox delegated_account)
+        : primary_smtp_address_(std::move(primary_smtp_address)),
+          delegated_account_(std::move(delegated_account))
+    {
+    }
+
+    void set_permission(standard_folder folder,
+                        delegator_permission_level permission_level)
+    {
+        permissions_.push_back(std::make_tuple(folder, permission_level));
+    }
+    void set_receive_copies_of_meeting_messages(bool receive)
+    {
+        receive_ = receive;
+    }
+    void set_view_private_items(bool view) { view_ = view; }
+    void set_sid(std::string SID) { SID_ = SID; }
+
+    const std::string get_sid() const
+    {
+        return SID_;
+    }
+    const std::vector<folder_permissions>& get_permissions() const
+    {
+        return permissions_;
+    }
+    const std::string& get_delegator_address() const EWS_NOEXCEPT
+    {
+        return primary_smtp_address_;
+    }
+    const std::string& get_delegated_account() const EWS_NOEXCEPT
+    {
+        return delegated_account_.value();
+    }
+    const std::string get_view_private_items() const
+    {
+        return view_ ? "True" : "False";
+    }
+    const std::string get_receive_copies_of_meeting_messages() const
+    {
+        return receive_ ? "True" : "False";
+    }
+    // defined below
+    static delegate_user from_xml_element(const rapidxml::xml_node<char>& node);
+    std::string to_xml() const;
+    std::string folders_to_permissions(std::vector<folder_permissions>&) const;
+
+    // TODO: DeliverMeetingRequests what options are there?
+
+private:
+    std::string primary_smtp_address_;
+    delegator_permission_level permission_level_;
+    std::vector<folder_permissions> permissions_;
+    ews::mailbox delegated_account_;
+    std::string SID_;
+    bool view_;
+    bool receive_;
+};
+
+namespace internal
+{
+    inline std::string enum_to_str(delegator_permission_level level)
+    {
+        std::string lvl;
+        switch (level)
+        {
+        case delegator_permission_level::none:
+            lvl = "None";
+            break;
+
+        case delegator_permission_level::editor:
+            lvl = "Editor";
+            break;
+
+        case delegator_permission_level::author:
+            lvl = "Author";
+            break;
+
+        case delegator_permission_level::reviewer:
+            lvl = "Reviewer";
+            break;
+
+        default:
+            throw exception("Unknown permission level");
+        };
+        return lvl;
+    }
+}
+
+//! Returns the well-known name for given standard_folder as string.
+inline std::string delegate_user::folders_to_permissions(
+    std::vector<delegate_user::folder_permissions>& perms) const
+{
+    std::stringstream sstr;
+    for (auto perm : perms)
+    {
+        auto folder = std::get<0>(perm);
+        std::string level = internal::enum_to_str(std::get<1>(perm));
+        if (folder == ews::standard_folder::calendar)
+        {
+            sstr << "<t:CalendarFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:CalendarFolderPermissionLevel>";
+        }
+        if (folder == ews::standard_folder::contacts)
+        {
+            sstr << "<t:ContactsFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:ContactsFolderPermissionLevel>";
+        }
+        if (folder == ews::standard_folder::tasks)
+        {
+            sstr << "<t:TasksFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:TasksFolderPermissionLevel>";
+        }
+        if (folder == ews::standard_folder::inbox)
+        {
+            sstr << "<t:InboxFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:InboxFolderPermissionLevel>";
+        }
+        if (folder == ews::standard_folder::notes)
+        {
+            sstr << "<t:NotesFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:NotesFolderPermissionLevel>";
+        }
+        if (folder == ews::standard_folder::journal)
+        {
+            sstr << "<t:JournalFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:JournalFolderPermissionLevel>";
+        }
+    }
+
+    return sstr.str();
+}
+
+inline std::string delegate_user::to_xml() const
+{
+    std::stringstream sstr;
+    auto folders = get_permissions();
+    auto perms = folders_to_permissions(folders);
+    sstr << "<m:AddDelegate>"
+         << "<m:Mailbox>"
+         << "<t:EmailAddress>" << delegated_account_.value();
+    sstr << "</t:EmailAddress>"
+         << "</m:Mailbox>"
+         << "<m:DelegateUsers>";
+    sstr << "<t:DelegateUser>"
+         << "<t:UserId>";
+    sstr << "<t:PrimarySmtpAddress>" << get_delegator_address()
+         << "</t:PrimarySmtpAddress>"
+         << "</t:UserId>";
+    sstr << "<t:DelegatePermissions>"
+         << perms
+         << "</t:DelegatePermissions>";
+    sstr << "<t:ReceiveCopiesOfMeetingMessages>"
+         << get_receive_copies_of_meeting_messages()
+         << "</t:ReceiveCopiesOfMeetingMessages>";
+    sstr << "<t:ViewPrivateItems>"
+         << get_view_private_items()
+         << "</t:ViewPrivateItems>";
+    sstr << "</t:DelegateUser>"
+         << "</m:DelegateUsers>"
+         << "<m:DeliverMeetingRequests>"
+         // check if this makes sense
+         << "DelegatesAndMe"
+         << "</m:DeliverMeetingRequests>"
+         << "</m:AddDelegate>";
+    return sstr.str();
+}
+
 //! \brief Describes the state of a delegated task.
 //!
 //! Values indicate whether the delegated task was accepted or not.
