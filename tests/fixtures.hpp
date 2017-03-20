@@ -81,6 +81,8 @@ inline std::vector<char> read_file(const boost::filesystem::path& path)
 }
 #endif // EWS_USE_BOOST_LIBRARY
 
+// Allows you to test requests w/o sending anything to the server. See also
+// FakeServiceFixture.
 struct http_request_mock final
 {
     struct storage
@@ -113,6 +115,11 @@ struct http_request_mock final
         const auto search_str_idx = request_str.find(search_str);
         return search_str_idx != std::string::npos &&
                search_str_idx < header_end_idx;
+    }
+
+    const std::string& request_string() const
+    {
+        return storage::instance().request_string;
     }
 
     // Below same public interface as ews::internal::http_request class
@@ -190,6 +197,12 @@ public:
         auto& storage = http_request_mock::storage::instance();
         storage.fake_response = std::vector<char>(str, str + std::strlen(str));
         storage.fake_response.push_back('\0');
+    }
+
+    void set_next_fake_response(std::vector<char>&& buffer)
+    {
+        auto& storage = http_request_mock::storage::instance();
+        storage.fake_response = std::move(buffer);
     }
 
 protected:

@@ -496,6 +496,8 @@ TEST_F(CalendarItemTest, CreateAndDeleteCalendarItem)
 
     auto calitem = ews::calendar_item();
     calitem.set_subject("Write chapter explaining Vogon poetry");
+    ews::body calbody("What is six times seven?");
+    calitem.set_body(calbody);
 
     {
         ews::internal::on_scope_exit remove_item([&] {
@@ -509,6 +511,8 @@ TEST_F(CalendarItemTest, CreateAndDeleteCalendarItem)
         calitem = service().get_calendar_item(item_id);
         auto subject = calitem.get_subject();
         EXPECT_STREQ("Write chapter explaining Vogon poetry", subject.c_str());
+        auto body = calitem.get_body();
+        EXPECT_STREQ("What is six times seven?", body.content().c_str());
     }
 
     // Check sink argument
@@ -1258,7 +1262,8 @@ TEST_F(CalendarItemTest, FindCalendarItemsWithCalendarViews)
     // 11:01 AM - 12 PM -> B
     auto view2 = ews::calendar_view(ews::date_time("2016-01-12T11:01:00Z"),
                                     ews::date_time("2016-01-12T12:00:00Z"));
-    result = service().find_item(view2, calendar_folder);
+    result = service().find_item(view2, calendar_folder,
+                                 ews::base_shape::default_shape);
     ASSERT_EQ(1U, result.size());
     EXPECT_STREQ("Appointment B", result[0].get_subject().c_str());
 

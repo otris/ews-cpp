@@ -47,3 +47,7 @@ doc/html
 
 # ctags
 tags
+
+# cscope
+cscope.files
+cscope.out

@@ -1,0 +1,96 @@
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+	<s:Header>
+		<h:ServerVersionInfo MajorVersion="15" MinorVersion="0" MajorBuildNumber="847" MinorBuildNumber="31" Version="V2_8" xmlns:h="http://schemas.microsoft.com/exchange/services/2006/types" xmlns="http://schemas.microsoft.com/exchange/services/2006/types" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+	</s:Header>
+	<s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+		<m:GetItemResponse xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+			<m:ResponseMessages>
+				<m:GetItemResponseMessage ResponseClass="Success">
+					<m:ResponseCode>NoError</m:ResponseCode>
+					<m:Items>
+						<t:CalendarItem>
+							<t:ItemId Id="AAMkADQzNzJlZjAxLWUzMTQtNDg3ZC1iYjMwLTQ4MDE3MWM4MmNjMABGAAAAAAAhdxWhE07BRrfPftvhose0BwA1K/I3QJuHR6lGm6VX39g2AAAAAAEOAAA1K/I3QJuHR6lGm6VX39g2AACuvlWHAAA=" ChangeKey="DwAAABYAAAA1K/I3QJuHR6lGm6VX39g2AACuvxwi"/>
+							<t:ParentFolderId Id="AAMkADQzNzJlZjAxLWUzMTQtNDg3ZC1iYjMwLTQ4MDE3MWM4MmNjMAAuAAAAAAAhdxWhE07BRrfPftvhose0AQA1K/I3QJuHR6lGm6VX39g2AAAAAAEOAAA=" ChangeKey="AQAAAA=="/>
+							<t:ItemClass>IPM.Appointment</t:ItemClass>
+							<t:Subject>Meet the Fockers</t:Subject>
+							<t:Sensitivity>Normal</t:Sensitivity>
+							<t:Body BodyType="Text" IsTruncated="false"/>
+							<t:DateTimeReceived>2017-03-13T09:04:43Z</t:DateTimeReceived>
+							<t:Size>3614</t:Size>
+							<t:Importance>Normal</t:Importance>
+							<t:IsSubmitted>false</t:IsSubmitted>
+							<t:IsDraft>false</t:IsDraft>
+							<t:IsFromMe>false</t:IsFromMe>
+							<t:IsResend>false</t:IsResend>
+							<t:IsUnmodified>false</t:IsUnmodified>
+							<t:DateTimeSent>2017-03-13T09:04:43Z</t:DateTimeSent>
+							<t:DateTimeCreated>2017-03-13T09:04:43Z</t:DateTimeCreated>
+							<t:ResponseObjects>
+								<t:ForwardItem/>
+							</t:ResponseObjects>
+							<t:ReminderDueBy>2004-12-25T10:00:00Z</t:ReminderDueBy>
+							<t:ReminderIsSet>true</t:ReminderIsSet>
+							<t:ReminderNextTime>2004-12-25T09:45:00Z</t:ReminderNextTime>
+							<t:ReminderMinutesBeforeStart>15</t:ReminderMinutesBeforeStart>
+							<t:DisplayCc/>
+							<t:DisplayTo/>
+							<t:HasAttachments>false</t:HasAttachments>
+							<t:Culture>de-DE</t:Culture>
+							<t:EffectiveRights>
+								<t:CreateAssociated>false</t:CreateAssociated>
+								<t:CreateContents>false</t:CreateContents>
+								<t:CreateHierarchy>false</t:CreateHierarchy>
+								<t:Delete>true</t:Delete>
+								<t:Modify>true</t:Modify>
+								<t:Read>true</t:Read>
+								<t:ViewPrivateItems>true</t:ViewPrivateItems>
+							</t:EffectiveRights>
+							<t:LastModifiedName>Test2 Tester</t:LastModifiedName>
+							<t:LastModifiedTime>2017-03-13T09:04:43Z</t:LastModifiedTime>
+							<t:IsAssociated>false</t:IsAssociated>
+							<t:WebClientReadFormQueryString>?ItemID=AAMkADQzNzJlZjAxLWUzMTQtNDg3ZC1iYjMwLTQ4MDE3MWM4MmNjMABGAAAAAAAhdxWhE07BRrfPftvhose0BwA1K%2FI3QJuHR6lGm6VX39g2AAAAAAEOAAA1K%2FI3QJuHR6lGm6VX39g2AACuvlWHAAA%3D&amp;exvsurl=1&amp;viewmodel=CalendarItemDetailsViewModelFactory</t:WebClientReadFormQueryString>
+							<t:WebClientEditFormQueryString>?ItemID=AAMkADQzNzJlZjAxLWUzMTQtNDg3ZC1iYjMwLTQ4MDE3MWM4MmNjMABGAAAAAAAhdxWhE07BRrfPftvhose0BwA1K%2FI3QJuHR6lGm6VX39g2AAAAAAEOAAA1K%2FI3QJuHR6lGm6VX39g2AACuvlWHAAA%3D&amp;exvsurl=1&amp;viewmodel=ComposeCalendarItemViewModelFactory</t:WebClientEditFormQueryString>
+							<t:ConversationId Id="AAQkADQzNzJlZjAxLWUzMTQtNDg3ZC1iYjMwLTQ4MDE3MWM4MmNjMAAQAI+m+flZLwhIpZTNSPLzo5U="/>
+							<t:Flag>
+								<t:FlagStatus>NotFlagged</t:FlagStatus>
+							</t:Flag>
+							<t:InstanceKey>AQAAAAAAAQ4BAAAArr5VhwAAAAA=</t:InstanceKey>
+							<t:EntityExtractionResult/>
+							<t:UID>040000008200E00074C5B7101A82E008000000007A2DD6DAD89BD20100000000000000001000000036CFC4E960204E49AFF4D9A4C9D9BF6E</t:UID>
+							<t:DateTimeStamp>2017-03-13T09:04:43Z</t:DateTimeStamp>
+							<t:Start>2004-12-25T10:00:00Z</t:Start>
+							<t:End>2004-12-27T10:00:00Z</t:End>
+							<t:IsAllDayEvent>false</t:IsAllDayEvent>
+							<t:LegacyFreeBusyStatus>Busy</t:LegacyFreeBusyStatus>
+							<t:IsMeeting>false</t:IsMeeting>
+							<t:IsCancelled>false</t:IsCancelled>
+							<t:IsRecurring>false</t:IsRecurring>
+							<t:MeetingRequestWasSent>false</t:MeetingRequestWasSent>
+							<t:IsResponseRequested>true</t:IsResponseRequested>
+							<t:CalendarItemType>Single</t:CalendarItemType>
+							<t:MyResponseType>Organizer</t:MyResponseType>
+							<t:Organizer>
+								<t:Mailbox>
+									<t:Name>Test2 Tester</t:Name>
+									<t:EmailAddress>test2@otris.de</t:EmailAddress>
+									<t:RoutingType>SMTP</t:RoutingType>
+									<t:MailboxType>Mailbox</t:MailboxType>
+								</t:Mailbox>
+							</t:Organizer>
+							<t:Duration>P2D</t:Duration>
+							<t:TimeZone>UTC</t:TimeZone>
+							<t:AppointmentSequenceNumber>0</t:AppointmentSequenceNumber>
+							<t:AppointmentState>0</t:AppointmentState>
+							<t:StartWallClock>2004-12-25T10:00:00Z</t:StartWallClock>
+							<t:EndWallClock>2004-12-27T10:00:00Z</t:EndWallClock>
+							<t:StartTimeZoneId>tzone://Microsoft/Utc</t:StartTimeZoneId>
+							<t:EndTimeZoneId>tzone://Microsoft/Utc</t:EndTimeZoneId>
+							<t:IntendedFreeBusyStatus>NoData</t:IntendedFreeBusyStatus>
+							<t:IsOrganizer>true</t:IsOrganizer>
+						</t:CalendarItem>
+					</m:Items>
+				</m:GetItemResponseMessage>
+			</m:ResponseMessages>
+		</m:GetItemResponse>
+	</s:Body>
+</s:Envelope>

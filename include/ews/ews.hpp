@@ -32,6 +32,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -4556,6 +4557,11 @@ namespace internal
     inline std::unique_ptr<rapidxml::xml_document<char>>
     parse_response(http_response&& response)
     {
+        if (response.content().empty())
+        {
+            throw xml_parse_error("Cannot parse empty response");
+        }
+
 #ifdef EWS_HAS_MAKE_UNIQUE
         auto doc = std::make_unique<rapidxml::xml_document<char>>();
 #else
@@ -6444,12 +6450,13 @@ namespace internal
     // message's <Items> array. A const rapidxml::xml_node& is passed to
     // that callable.
     template <typename Func>
-    inline void for_each_item(const rapidxml::xml_node<>& items_elem, Func func)
+    inline void for_each_child_node(const rapidxml::xml_node<>& parent_node,
+                                    Func func)
     {
-        for (auto elem = items_elem.first_node(); elem;
-             elem = elem->next_sibling())
+        for (auto child = parent_node.first_node(); child;
+             child = child->next_sibling())
         {
-            func(*elem);
+            func(*child);
         }
     }
 
@@ -6587,6 +6594,63 @@ namespace internal
             : response_message_with_items<ItemType>(cls, code, std::move(items))
         {
         }
+    };
+
+    template <typename ItemType> class get_item_response_messages final
+    {
+    public:
+        typedef ItemType item_type;
+        typedef std::tuple<response_class, response_code,
+                           std::vector<item_type>>
+            response_message;
+
+        std::vector<item_type> items() const
+        {
+            std::vector<item_type> items;
+            items.reserve(messages_.size()); // Seems like there is always one
+                                             // item per message
+            for (const auto& msg : messages_)
+            {
+                const auto& msg_items = std::get<2>(msg);
+                std::copy(begin(msg_items), end(msg_items),
+                          std::back_inserter(items));
+            }
+            return items;
+        }
+
+        bool success() const
+        {
+            // Consequently, this means we're aborting here because of a
+            // warning. Is this desired? Don't think so. At least it is
+            // consistent with response_message_base::success().
+
+            return std::all_of(
+                begin(messages_), end(messages_), [](const response_message& msg) {
+                    return std::get<0>(msg) == response_class::success;
+                });
+        }
+
+        response_code first_error_or_warning() const
+        {
+            auto it = std::find_if_not(
+                begin(messages_), end(messages_), [](const response_message& msg) {
+                    return std::get<0>(msg) == response_class::success;
+                });
+            return it == end(messages_) ? response_code::no_error
+                                        : std::get<1>(*it);
+        }
+
+        // implemented below
+        static get_item_response_messages parse(http_response&&);
+
+    private:
+        explicit get_item_response_messages(
+            std::vector<response_message>&& messages)
+            : messages_(std::move(messages))
+        {
+        }
+
+        std::vector<response_message> messages_;
     };
 
     class create_attachment_response_message final
@@ -13979,13 +14043,13 @@ public:
         return internal::str_to_server_version(server_version_);
     }
 
-    //! Gets a task from the Exchange store
+    //! Gets a task from the Exchange store.
     task get_task(const item_id& id)
     {
         return get_item_impl<task>(id, base_shape::all_properties);
     }
 
-    //! \brief Gets a task from the Exchange store
+    //! \brief Gets a task from the Exchange store.
     //!
     //! The returned task includes specified additional properties.
     task get_task(const item_id& id,
@@ -13995,13 +14059,13 @@ public:
                                    additional_properties);
     }
 
-    //! Gets a contact from the Exchange store
+    //! Gets a contact from the Exchange store.
     contact get_contact(const item_id& id)
     {
         return get_item_impl<contact>(id, base_shape::all_properties);
     }
 
-    //! \brief Gets a contact from the Exchange store
+    //! \brief Gets a contact from the Exchange store.
     //!
     //! The returned contact includes specified additional properties.
     contact get_contact(const item_id& id,
@@ -14011,13 +14075,13 @@ public:
                                       additional_properties);
     }
 
-    //! Gets a calendar item from the Exchange store
+    //! Gets a calendar item from the Exchange store.
     calendar_item get_calendar_item(const item_id& id)
     {
         return get_item_impl<calendar_item>(id, base_shape::all_properties);
     }
 
-    //! \brief Gets a calendar item from the Exchange store
+    //! \brief Gets a calendar item from the Exchange store.
     //!
     //! The returned calendar item includes specified additional
     //! properties.
@@ -14029,13 +14093,31 @@ public:
                                             additional_properties);
     }
 
-    //! Gets a message item from the Exchange store
+    //! Gets a bunch of calendar items from the Exchange store at once.
+    std::vector<calendar_item>
+    get_calendar_items(const std::vector<item_id>& ids, base_shape shape)
+    {
+        return get_item_impl<calendar_item>(ids, shape);
+    }
+
+    //! \brief Gets a bunch of calendar items from the Exchange store at once.
+    //!
+    //! Each of the returned calendar items include the specified additional
+    //! properties.
+    std::vector<calendar_item>
+    get_calendar_items(const std::vector<item_id>& ids, base_shape shape,
+                       const std::vector<property_path>& additional_properties)
+    {
+        return get_item_impl<calendar_item>(ids, shape, additional_properties);
+    }
+
+    //! Gets a message item from the Exchange store.
     message get_message(const item_id& id)
     {
         return get_item_impl<message>(id, base_shape::all_properties);
     }
 
-    //! \brief Gets a message from the Exchange store
+    //! \brief Gets a message from the Exchange store.
     //!
     //! The returned message includes specified additional properties.
     message get_message(const item_id& id,
@@ -14044,6 +14126,7 @@ public:
         return get_item_impl<message>(id, base_shape::all_properties,
                                       additional_properties);
     }
+
     message get_message(const item_id& id,
                         const std::vector<extended_field_uri>& ext_field_uri)
     {
@@ -14264,19 +14347,21 @@ public:
         return response_message.items();
     }
 
-    //! \brief Returns all calendar items in given calendar view
+    //! \brief Returns all calendar items in given calendar view.
     //!
     //! Sends a \<FindItem/> operation to the server containing a
     //! \<CalendarView/> element. It returns single calendar items and all
     //! occurrences of recurring meetings.
     std::vector<calendar_item> find_item(const calendar_view& view,
-                                         const folder_id& parent_folder_id)
+                                         const folder_id& parent_folder_id,
+                                         base_shape shape = base_shape::id_only)
     {
         const std::string request_string =
             "<m:FindItem Traversal=\"Shallow\">"
             "<m:ItemShape>"
-            "<t:BaseShape>Default</t:BaseShape>"
-            "</m:ItemShape>" +
+            "<t:BaseShape>" +
+            internal::enum_to_str(shape) + "</t:BaseShape>"
+                                           "</m:ItemShape>" +
             view.to_xml() + "<m:ParentFolderIds>" + parent_folder_id.to_xml() +
             "</m:ParentFolderIds>"
             "</m:FindItem>";
@@ -14620,7 +14705,7 @@ private:
                                                 "<t:AdditionalProperties>";
         for (const auto& prop : additional_properties)
         {
-            sstr << prop.to_xml() << "\"/>";
+            sstr << prop.to_xml();
         }
         sstr << "</t:AdditionalProperties>"
                 "</m:ItemShape>"
@@ -14639,6 +14724,79 @@ private:
         EWS_ASSERT(!response_message.items().empty() &&
                    "Expected at least one item");
         return response_message.items().front();
+    }
+
+    // Gets a bunch of items from the server all at once
+    template <typename ItemType>
+    std::vector<ItemType> get_item_impl(const std::vector<item_id>& ids,
+                                        base_shape shape)
+    {
+        EWS_ASSERT(!ids.empty());
+
+        std::stringstream sstr;
+        sstr << "<m:GetItem>"
+                "<m:ItemShape>"
+                "<t:BaseShape>"
+             << internal::enum_to_str(shape) << "</t:BaseShape>"
+                                                "</m:ItemShape>"
+                                                "<m:ItemIds>";
+        for (const auto& id : ids)
+        {
+            sstr << id.to_xml();
+        }
+        sstr << "</m:ItemIds>"
+                "</m:GetItem>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::get_item_response_messages<ItemType>::parse(
+                std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        return response_messages.items();
+    }
+
+    // Gets a bunch of items from the server all at once including given
+    // additional properties
+    template <typename ItemType>
+    std::vector<ItemType>
+    get_item_impl(const std::vector<item_id>& ids, base_shape shape,
+                  const std::vector<property_path>& additional_properties)
+    {
+        EWS_ASSERT(!ids.empty());
+        EWS_ASSERT(!additional_properties.empty());
+
+        std::stringstream sstr;
+        sstr << "<m:GetItem>"
+                "<m:ItemShape>"
+                "<t:BaseShape>"
+             << internal::enum_to_str(shape) << "</t:BaseShape>"
+                                                "<t:AdditionalProperties>";
+        for (const auto& prop : additional_properties)
+        {
+            sstr << prop.to_xml();
+        }
+        sstr << "</t:AdditionalProperties>"
+                "</m:ItemShape>"
+                "<m:ItemIds>";
+        for (const auto& id : ids)
+        {
+            sstr << id.to_xml();
+        }
+        sstr << "</m:ItemIds>"
+                "</m:GetItem>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::get_item_response_messages<ItemType>::parse(
+                std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        return response_messages.items();
     }
 
     template <typename ItemType>
@@ -14743,7 +14901,7 @@ namespace internal
             elem->first_node_ns(uri<>::microsoft::messages(), "Items");
         EWS_ASSERT(items_elem && "Expected <Items> element");
 
-        for_each_item(
+        for_each_child_node(
             *items_elem, [&item_ids](const rapidxml::xml_node<>& item_elem) {
                 auto item_id_elem = item_elem.first_node();
                 EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
@@ -14801,7 +14959,7 @@ namespace internal
         EWS_ASSERT(items_elem && "Expected <t:Items> element");
 
         auto items = std::vector<calendar_item>();
-        for_each_item(
+        for_each_child_node(
             *items_elem, [&items](const rapidxml::xml_node<>& item_elem) {
                 items.emplace_back(calendar_item::from_xml_element(item_elem));
             });
@@ -14849,12 +15007,45 @@ namespace internal
             elem->first_node_ns(uri<>::microsoft::messages(), "Items");
         EWS_ASSERT(items_elem && "Expected <Items> element");
         auto items = std::vector<ItemType>();
-        for_each_item(
+        for_each_child_node(
             *items_elem, [&items](const rapidxml::xml_node<>& item_elem) {
                 items.emplace_back(ItemType::from_xml_element(item_elem));
             });
         return get_item_response_message(result.first, result.second,
                                          std::move(items));
+    }
+
+    template <typename ItemType>
+    inline get_item_response_messages<ItemType>
+    get_item_response_messages<ItemType>::parse(http_response&& response)
+    {
+        const auto doc = parse_response(std::move(response));
+
+        auto response_messages = get_element_by_qname(
+            *doc, "ResponseMessages", uri<>::microsoft::messages());
+        EWS_ASSERT(response_messages &&
+                   "Expected <ResponseMessages> node, got nullptr");
+
+        std::vector<get_item_response_messages::response_message> messages;
+        for_each_child_node(*response_messages, [&](const rapidxml::xml_node<>&
+                                                        response_message) {
+            auto result = parse_response_class_and_code(response_message);
+
+            auto items_elem = response_message.first_node_ns(
+                uri<>::microsoft::messages(), "Items");
+            EWS_ASSERT(items_elem && "Expected <Items> element");
+
+            auto items = std::vector<ItemType>();
+            for_each_child_node(
+                *items_elem, [&items](const rapidxml::xml_node<>& item_elem) {
+                    items.emplace_back(ItemType::from_xml_element(item_elem));
+                });
+
+            messages.emplace_back(
+                std::make_tuple(result.first, result.second, std::move(items)));
+        });
+
+        return get_item_response_messages(std::move(messages));
     }
 }
 
