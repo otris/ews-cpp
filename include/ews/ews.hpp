@@ -8567,6 +8567,88 @@ static_assert(std::is_move_constructible<item>::value, "");
 static_assert(std::is_move_assignable<item>::value, "");
 #endif
 
+//! Specifies the permission level for the delegator
+enum class delegator_permission_level
+{
+    none,
+    owner,
+    publishing_editor,
+    editor,
+    publishing_author,
+    author,
+    non_editing_author,
+    reviewer,
+    contributor
+};
+
+//! Class for adding delegates and managing the permissions
+class delegate_user final
+{
+public:
+    typedef std::tuple<standard_folder, delegator_permission_level>
+        folder_permissions;
+
+    // C'tor for the delegator
+    delegate_user(std::string primary_smtp_address,
+                  ews::mailbox delegated_account)
+        : primary_smtp_address_(std::move(primary_smtp_address)),
+          delegated_account_(std::move(delegated_account))
+    {
+    }
+
+    void set_permission(standard_folder folder,
+                        delegator_permission_level permission_level)
+    {
+        permissions_.push_back(std::make_tuple(folder, permission_level));
+    }
+    void set_receive_copies_of_meeting_messages(bool receive)
+    {
+        receive_ = receive;
+    }
+    void set_view_private_items(bool view) { view_ = view; }
+    void set_sid(std::string SID) { SID_ = SID; }
+
+    const std::string get_sid() const
+    {
+        return SID_;
+    }
+    const std::vector<folder_permissions>& get_permissions() const
+    {
+        return permissions_;
+    }
+    const std::string& get_delegator_address() const EWS_NOEXCEPT
+    {
+        return primary_smtp_address_;
+    }
+    const std::string& get_delegated_account() const EWS_NOEXCEPT
+    {
+        return delegated_account_.value();
+    }
+    const std::string get_view_private_items() const
+    {
+        return view_ ? "True" : "False";
+    }
+    const std::string get_receive_copies_of_meeting_messages() const
+    {
+        return receive_ ? "True" : "False";
+    }
+    // defined below
+    static delegate_user from_xml_element(const rapidxml::xml_node<char>& node);
+    std::string to_xml() const;
+    std::string folders_to_permissions(std::vector<folder_permissions>&) const;
+
+    // TODO: DeliverMeetingRequests what options are there?
+
+private:
+    std::string primary_smtp_address_;
+    delegator_permission_level permission_level_;
+    std::vector<folder_permissions> permissions_;
+    ews::mailbox delegated_account_;
+    std::string SID_;
+    bool view_;
+    bool receive_;
+};
+
 //! \brief Describes the state of a delegated task.
 //!
 //! Values indicate whether the delegated task was accepted or not.
