@@ -37,7 +37,15 @@ namespace test
         std::string autodiscover_password;
 
         environment()
-            : domain(getenv_or_throw("EWS_TEST_DOMAIN")),
+            : domain(
+#if _WIN32
+                // Windows does not support empty environment variables
+                // domain may be legitimately empty
+                getenv_or_empty_string("EWS_TEST_DOMAIN")
+#else
+                getenv_or_throw("EWS_TEST_DOMAIN")
+#endif
+              ),
               username(getenv_or_throw("EWS_TEST_USERNAME")),
               password(getenv_or_throw("EWS_TEST_PASSWORD")),
               server_uri(getenv_or_throw("EWS_TEST_URI")),

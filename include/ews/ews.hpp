@@ -4360,6 +4360,7 @@ namespace internal
             {
                 throw curl_error("Could not start libcurl session");
             }
+			curl_easy_setopt(handle_, CURLOPT_SSL_VERIFYPEER, FALSE);
         }
 
         ~curl_ptr() { curl_easy_cleanup(handle_); }

@@ -42,6 +42,7 @@
 // The FindItem operation with a CalendarView is a pretty quick query. Note
 // however that it cannot return all properties, e.g. an calendar item's body.
 // We use a subsequent GetItem operation to get all properties.
+
 int main()
 {
     int res = EXIT_SUCCESS;
