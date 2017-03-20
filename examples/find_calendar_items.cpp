@@ -94,11 +94,14 @@ int main()
             {
                 std::cout << "\n";
 
-                std::cout << "Subject:" << cal_item.get_subject() << "\n"
+                const auto location = cal_item.get_location();
+
+                std::cout << "Subject: " << cal_item.get_subject() << "\n"
                           << "Start: " << cal_item.get_start().to_string()
                           << "\n"
                           << "End: " << cal_item.get_end().to_string() << "\n"
-                          << "Where: " << cal_item.get_location() << "\n";
+                          << "Where: " << (location.empty() ? "-" : location)
+                          << "\n";
 
                 const auto body = cal_item.get_body();
                 if (body.type() == ews::body_type::html)

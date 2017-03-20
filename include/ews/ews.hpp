@@ -32,6 +32,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -6449,7 +6450,8 @@ namespace internal
     // message's <Items> array. A const rapidxml::xml_node& is passed to
     // that callable.
     template <typename Func>
-    inline void for_each_child_node(const rapidxml::xml_node<>& parent_node, Func func)
+    inline void for_each_child_node(const rapidxml::xml_node<>& parent_node,
+                                    Func func)
     {
         for (auto child = parent_node.first_node(); child;
              child = child->next_sibling())
@@ -6592,6 +6594,63 @@ namespace internal
             : response_message_with_items<ItemType>(cls, code, std::move(items))
         {
         }
+    };
+
+    template <typename ItemType> class get_item_response_messages final
+    {
+    public:
+        typedef ItemType item_type;
+        typedef std::tuple<response_class, response_code,
+                           std::vector<item_type>>
+            response_message;
+
+        std::vector<item_type> items() const
+        {
+            std::vector<item_type> items;
+            items.reserve(messages_.size()); // Seems like there is always one
+                                             // item per message
+            for (const auto& msg : messages_)
+            {
+                const auto& msg_items = std::get<2>(msg);
+                std::copy(begin(msg_items), end(msg_items),
+                          std::back_inserter(items));
+            }
+            return items;
+        }
+
+        bool success() const
+        {
+            // Consequently, this means we're aborting here because of a
+            // warning. Is this desired? Don't think so. At least it is
+            // consistent with response_message_base::success().
+
+            return std::all_of(
+                begin(messages_), end(messages_), [](const auto& msg) {
+                    return std::get<0>(msg) == response_class::success;
+                });
+        }
+
+        response_code first_error_or_warning() const
+        {
+            auto it = std::find_if_not(
+                begin(messages_), end(messages_), [](const auto& msg) {
+                    return std::get<0>(msg) == response_class::success;
+                });
+            return it == end(messages_) ? response_code::no_error
+                                        : std::get<1>(*it);
+        }
+
+        // implemented below
+        static get_item_response_messages parse(http_response&&);
+
+    private:
+        explicit get_item_response_messages(
+            std::vector<response_message>&& messages)
+            : messages_(std::move(messages))
+        {
+        }
+
+        std::vector<response_message> messages_;
     };
 
     class create_attachment_response_message final
@@ -14689,14 +14748,14 @@ private:
                 "</m:GetItem>";
 
         auto response = request(sstr.str());
-        const auto response_message =
-            internal::get_item_response_message<ItemType>::parse(
+        const auto response_messages =
+            internal::get_item_response_messages<ItemType>::parse(
                 std::move(response));
-        if (!response_message.success())
+        if (!response_messages.success())
         {
-            throw exchange_error(response_message.get_response_code());
+            throw exchange_error(response_messages.first_error_or_warning());
         }
-        return response_message.items();
+        return response_messages.items();
     }
 
     // Gets a bunch of items from the server all at once including given
@@ -14730,16 +14789,14 @@ private:
                 "</m:GetItem>";
 
         auto response = request(sstr.str());
-        const auto response_message =
-            internal::get_item_response_message<ItemType>::parse(
+        const auto response_messages =
+            internal::get_item_response_messages<ItemType>::parse(
                 std::move(response));
-        if (!response_message.success())
+        if (!response_messages.success())
         {
-            throw exchange_error(response_message.get_response_code());
+            throw exchange_error(response_messages.first_error_or_warning());
         }
-        EWS_ASSERT(!response_message.items().empty() &&
-                   "Expected at least one item");
-        return response_message.items();
+        return response_messages.items();
     }
 
     template <typename ItemType>
@@ -14956,6 +15013,39 @@ namespace internal
             });
         return get_item_response_message(result.first, result.second,
                                          std::move(items));
+    }
+
+    template <typename ItemType>
+    inline get_item_response_messages<ItemType>
+    get_item_response_messages<ItemType>::parse(http_response&& response)
+    {
+        const auto doc = parse_response(std::move(response));
+
+        auto response_messages = get_element_by_qname(
+            *doc, "ResponseMessages", uri<>::microsoft::messages());
+        EWS_ASSERT(response_messages &&
+                   "Expected <ResponseMessages> node, got nullptr");
+
+        std::vector<get_item_response_messages::response_message> messages;
+        for_each_child_node(*response_messages, [&](const rapidxml::xml_node<>&
+                                                        response_message) {
+            auto result = parse_response_class_and_code(response_message);
+
+            auto items_elem = response_message.first_node_ns(
+                uri<>::microsoft::messages(), "Items");
+            EWS_ASSERT(items_elem && "Expected <Items> element");
+
+            auto items = std::vector<ItemType>();
+            for_each_child_node(
+                *items_elem, [&items](const rapidxml::xml_node<>& item_elem) {
+                    items.emplace_back(ItemType::from_xml_element(item_elem));
+                });
+
+            messages.emplace_back(
+                std::make_tuple(result.first, result.second, std::move(items)));
+        });
+
+        return get_item_response_messages(std::move(messages));
     }
 }
 
