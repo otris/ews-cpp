@@ -6625,7 +6625,7 @@ namespace internal
             // consistent with response_message_base::success().
 
             return std::all_of(
-                begin(messages_), end(messages_), [](const auto& msg) {
+                begin(messages_), end(messages_), [](const response_message& msg) {
                     return std::get<0>(msg) == response_class::success;
                 });
         }
@@ -6633,7 +6633,7 @@ namespace internal
         response_code first_error_or_warning() const
         {
             auto it = std::find_if_not(
-                begin(messages_), end(messages_), [](const auto& msg) {
+                begin(messages_), end(messages_), [](const response_message& msg) {
                     return std::get<0>(msg) == response_class::success;
                 });
             return it == end(messages_) ? response_code::no_error
