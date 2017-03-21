@@ -8749,6 +8749,56 @@ namespace internal
     }
 }
 
+//! Returns the well-known name for given standard_folder as string.
+inline std::string delegate_user::folders_to_permissions(
+    std::vector<delegate_user::folder_permissions>& perms) const
+{
+    std::stringstream sstr;
+    for (auto perm : perms)
+    {
+        auto folder = std::get<0>(perm);
+        std::string level = internal::enum_to_str(std::get<1>(perm));
+        if (folder == ews::standard_folder::calendar)
+        {
+            sstr << "<t:CalendarFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:CalendarFolderPermissionLevel>";
+        }
+        if (folder == ews::standard_folder::contacts)
+        {
+            sstr << "<t:ContactsFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:ContactsFolderPermissionLevel>";
+        }
+        if (folder == ews::standard_folder::tasks)
+        {
+            sstr << "<t:TasksFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:TasksFolderPermissionLevel>";
+        }
+        if (folder == ews::standard_folder::inbox)
+        {
+            sstr << "<t:InboxFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:InboxFolderPermissionLevel>";
+        }
+        if (folder == ews::standard_folder::notes)
+        {
+            sstr << "<t:NotesFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:NotesFolderPermissionLevel>";
+        }
+        if (folder == ews::standard_folder::journal)
+        {
+            sstr << "<t:JournalFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:JournalFolderPermissionLevel>";
+        }
+    }
+
+    return sstr.str();
+}
+
 //! \brief Describes the state of a delegated task.
 //!
 //! Values indicate whether the delegated task was accepted or not.
