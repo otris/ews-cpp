@@ -14763,6 +14763,28 @@ public:
         return response_message.items().front();
     }
 
+    std::string add_delegate(const delegate_user& delegator)
+    {
+        auto response = request(delegator.to_xml());
+
+        const auto response_message =
+            internal::add_delegate_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.get_response_code());
+        }
+        EWS_ASSERT(!response_message.get_delegate_properties().empty() &&
+                   "Expected delegator properties");
+
+        auto resp_properties = response_message.get_delegate_properties();
+        std::stringstream sstr;
+        for (auto r : resp_properties)
+        {
+            sstr << r;
+        }
+        return sstr.str();
+    }
+
     //! \brief Lets you attach a file (or another item) to an existing item.
     //!
     //! \param parent_item An existing item in the Exchange store
