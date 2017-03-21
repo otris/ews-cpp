@@ -8796,11 +8796,11 @@ public:
     }
     const std::string get_view_private_items() const
     {
-        return view_ ? "True" : "False";
+        return view_ ? "true" : "false";
     }
     const std::string get_receive_copies_of_meeting_messages() const
     {
-        return receive_ ? "True" : "False";
+        return receive_ ? "true" : "false";
     }
     // defined below
     static delegate_user from_xml_element(const rapidxml::xml_node<char>& node);
