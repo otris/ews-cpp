@@ -38,16 +38,14 @@ int main()
                   << std::endl;
         std::cout << "Delegated Account: " << delegate.get_delegated_account()
                   << std::endl;
-        delegate.set_permission(
-            ews::standard_folder::calendar,
-            ews::delegator_permission_level::editor);
-		delegate.set_view_private_items(false);
-		delegate.set_receive_copies_of_meeting_messages(false);
-		auto del = service.add_delegate(delegate);
+        delegate.set_permission(ews::standard_folder::calendar,
+                                ews::delegator_permission_level::editor);
+        delegate.set_view_private_items(false);
+        delegate.set_receive_copies_of_meeting_messages(false);
+        auto del = service.add_delegate(delegate);
         std::cout << del.get_sid() << std::endl;
         std::cout << del.get_delegator_address() << std::endl;
         std::cout << del.get_delegated_account() << std::endl;
-
     }
     catch (std::exception& exc)
     {

@@ -34,9 +34,8 @@ int main()
                                     env.password);
         auto delegate = ews::delegate_user("test4@otris.de",
                                            ews::mailbox("test1@otris.de"));
-		delegate.set_sid("S-1-5-21-1586126869-3955014228-697940070-1208");
-		service.remove_delegate(delegate);
-
+        delegate.set_sid("S-1-5-21-1586126869-3955014228-697940070-1208");
+        service.remove_delegate(delegate);
     }
     catch (std::exception& exc)
     {

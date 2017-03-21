@@ -8744,13 +8744,15 @@ namespace internal
                             std::strlen("PrimarySmtpAddress"),
                             child->local_name(), child->local_name_size()))
                 {
-                    primary_smtp_address = std::string(child->value(), child->value_size());
+                    primary_smtp_address =
+                        std::string(child->value(), child->value_size());
                     delegate_properties.push_back(primary_smtp_address);
                 }
                 if (compare("DisplayName", std::strlen("DisplayName"),
                             child->local_name(), child->local_name_size()))
                 {
-                    display_name = std::string(child->value(), child->value_size());
+                    display_name =
+                        std::string(child->value(), child->value_size());
                     delegate_properties.push_back(display_name);
                 }
             }
@@ -8819,13 +8821,15 @@ namespace internal
                             std::strlen("PrimarySmtpAddress"),
                             child->local_name(), child->local_name_size()))
                 {
-                    primary_smtp_address = std::string(child->value(), child->value_size());
+                    primary_smtp_address =
+                        std::string(child->value(), child->value_size());
                     delegate_properties.push_back(primary_smtp_address);
                 }
                 if (compare("DisplayName", std::strlen("DisplayName"),
                             child->local_name(), child->local_name_size()))
                 {
-                    display_name = std::string(child->value(), child->value_size());
+                    display_name =
+                        std::string(child->value(), child->value_size());
                     delegate_properties.push_back(display_name);
                 }
             }
@@ -10828,10 +10832,7 @@ public:
     void set_view_private_items(bool view) { view_ = view; }
     void set_sid(std::string SID) { SID_ = SID; }
 
-    const std::string get_sid() const
-    {
-        return SID_;
-    }
+    const std::string get_sid() const { return SID_; }
     const std::vector<folder_permissions>& get_permissions() const
     {
         return permissions_;
@@ -10846,11 +10847,11 @@ public:
     }
     const std::string get_view_private_items() const
     {
-        return view_ ? "True" : "False";
+        return view_ ? "true" : "false";
     }
     const std::string get_receive_copies_of_meeting_messages() const
     {
-        return receive_ ? "True" : "False";
+        return receive_ ? "true" : "false";
     }
     // defined below
     static delegate_user from_xml_element(const rapidxml::xml_node<char>& node);
@@ -10965,14 +10966,11 @@ inline std::string delegate_user::to_xml() const
     sstr << "<t:PrimarySmtpAddress>" << get_delegator_address()
          << "</t:PrimarySmtpAddress>"
          << "</t:UserId>";
-    sstr << "<t:DelegatePermissions>"
-         << perms
-         << "</t:DelegatePermissions>";
+    sstr << "<t:DelegatePermissions>" << perms << "</t:DelegatePermissions>";
     sstr << "<t:ReceiveCopiesOfMeetingMessages>"
          << get_receive_copies_of_meeting_messages()
          << "</t:ReceiveCopiesOfMeetingMessages>";
-    sstr << "<t:ViewPrivateItems>"
-         << get_view_private_items()
+    sstr << "<t:ViewPrivateItems>" << get_view_private_items()
          << "</t:ViewPrivateItems>";
     sstr << "</t:DelegateUser>"
          << "</m:DelegateUsers>"
@@ -17045,34 +17043,30 @@ public:
 
         sstr << "<m:RemoveDelegate>"
              << "<m:Mailbox>"
-             << "<t:EmailAddress>"
-             << user_address
-             << "</t:EmailAddress>"
+             << "<t:EmailAddress>" << user_address << "</t:EmailAddress>"
              << "</m:Mailbox>"
              << "<m:UserIds>";
-        if(!delegate_address.empty())
+        if (!delegate_address.empty())
         {
             sstr << "<t:UserId>"
-                 << "<t:PrimarySmtpAddress>"
-                 << delegate_address
+                 << "<t:PrimarySmtpAddress>" << delegate_address
                  << "</t:PrimarySmtpAddress>"
                  << "</t:UserId>";
         }
-        else if(!sid.empty())
+        else if (!sid.empty())
         {
             sstr << "<t:UserId>"
-                 << "<t:SID>"
-                 << sid
-                 << "</t:SID>"
+                 << "<t:SID>" << sid << "</t:SID>"
                  << "</t:UserId>";
-         }
+        }
         sstr << "</m:UserIds>"
              << "</m:RemoveDelegate>";
 
         auto response = request(sstr.str());
 
         const auto response_message =
-            internal::remove_delegate_response_message::parse(std::move(response));
+            internal::remove_delegate_response_message::parse(
+                std::move(response));
         if (!response_message.success())
         {
             throw exchange_error(response_message.get_response_code());
