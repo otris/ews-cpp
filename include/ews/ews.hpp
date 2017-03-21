@@ -8646,14 +8646,9 @@ static_assert(std::is_move_assignable<item>::value, "");
 enum class delegator_permission_level
 {
     none,
-    owner,
-    publishing_editor,
     editor,
-    publishing_author,
     author,
-    non_editing_author,
-    reviewer,
-    contributor
+    reviewer
 };
 
 //! Class for adding delegates and managing the permissions
@@ -8723,6 +8718,36 @@ private:
     bool view_;
     bool receive_;
 };
+
+namespace internal
+{
+    inline std::string enum_to_str(delegator_permission_level level)
+    {
+        std::string lvl;
+        switch(level)
+        {
+        case delegator_permission_level::none:
+            lvl = "None";
+            break;
+
+        case delegator_permission_level::editor:
+            lvl = "Editor";
+            break;
+
+        case delegator_permission_level::author:
+            lvl = "Author";
+            break;
+
+        case delegator_permission_level::reviewer:
+            lvl = "Reviewer";
+            break;
+
+        default:
+            throw exception("Unknown permission level");
+        };
+        return lvl;
+    }
+}
 
 //! \brief Describes the state of a delegated task.
 //!
