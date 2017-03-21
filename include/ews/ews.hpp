@@ -8724,7 +8724,7 @@ namespace internal
     inline std::string enum_to_str(delegator_permission_level level)
     {
         std::string lvl;
-        switch(level)
+        switch (level)
         {
         case delegator_permission_level::none:
             lvl = "None";
@@ -8796,6 +8796,41 @@ inline std::string delegate_user::folders_to_permissions(
         }
     }
 
+    return sstr.str();
+}
+
+inline std::string delegate_user::to_xml() const
+{
+    std::stringstream sstr;
+    auto folders = get_permissions();
+    auto perms = folders_to_permissions(folders);
+    sstr << "<m:AddDelegate>"
+         << "<m:Mailbox>"
+         << "<t:EmailAddress>" << delegated_account_.value();
+    sstr << "</t:EmailAddress>"
+         << "</m:Mailbox>"
+         << "<m:DelegateUsers>";
+    sstr << "<t:DelegateUser>"
+         << "<t:UserId>";
+    sstr << "<t:PrimarySmtpAddress>" << get_delegator_address()
+         << "</t:PrimarySmtpAddress>"
+         << "</t:UserId>";
+    sstr << "<t:DelegatePermissions>"
+         << perms
+         << "</t:DelegatePermissions>";
+    sstr << "<t:ReceiveCopiesOfMeetingMessages>"
+         << get_receive_copies_of_meeting_messages()
+         << "</t:ReceiveCopiesOfMeetingMessages>";
+    sstr << "<t:ViewPrivateItems>"
+         << get_view_private_items()
+         << "</t:ViewPrivateItems>";
+    sstr << "</t:DelegateUser>"
+         << "</m:DelegateUsers>"
+         << "<m:DeliverMeetingRequests>"
+         // check if this makes sense
+         << "DelegatesAndMe"
+         << "</m:DeliverMeetingRequests>"
+         << "</m:AddDelegate>";
     return sstr.str();
 }
 
