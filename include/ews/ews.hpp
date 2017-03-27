@@ -6728,6 +6728,106 @@ namespace internal
         std::vector<std::string> delegate_properties_;
     };
 
+    class get_delegate_response_message final : public response_message_base
+    {
+    public:
+        static get_delegate_response_message parse(http_response&& response)
+        {
+            using rapidxml::internal::compare;
+
+            const auto doc = parse_response(std::move(response));
+            auto elem = get_element_by_qname(*doc, "GetDelegateResponse",
+                                             uri<>::microsoft::messages());
+            EWS_ASSERT(elem && "Expected <GetDelegateResponse>, got nullptr");
+
+            const auto cls_and_code = parse_response_class_and_code(*elem);
+
+            auto delegate_element = get_element_by_qname(
+                *elem, "DelegateUser", uri<>::microsoft::messages());
+            EWS_ASSERT(elem && "Expected <DelegateUser>, got nullptr");
+
+            auto delegate_properties_element = delegate_element->first_node_ns(
+                uri<>::microsoft::types(), "UserId");
+            EWS_ASSERT(delegate_properties_element &&
+                       "Expected <UserId> in response");
+
+            std::string sid;
+            std::string primary_smtp_address;
+            std::string display_name;
+
+            std::vector<std::string> delegate_properties;
+            for (auto child = delegate_properties_element->first_node();
+                 child != nullptr; child = child->next_sibling())
+            {
+                if (compare("SID", std::strlen("SID"), child->local_name(),
+                            child->local_name_size()))
+                {
+                    sid = std::string(child->value(), child->value_size());
+                    delegate_properties.push_back(sid);
+                }
+                if (compare("PrimarySmtpAddress",
+                            std::strlen("PrimarySmtpAddress"),
+                            child->local_name(), child->local_name_size()))
+                {
+                    primary_smtp_address = std::string(child->value(), child->value_size());
+                    delegate_properties.push_back(primary_smtp_address);
+                }
+                if (compare("DisplayName", std::strlen("DisplayName"),
+                            child->local_name(), child->local_name_size()))
+                {
+                    display_name = std::string(child->value(), child->value_size());
+                    delegate_properties.push_back(display_name);
+                }
+            }
+            return get_delegate_response_message(
+                cls_and_code.first, cls_and_code.second,
+                std::move(delegate_properties));
+        }
+
+        const std::vector<std::string>&
+        get_delegate_properties() const EWS_NOEXCEPT
+        {
+            return delegate_properties_;
+        }
+
+    private:
+        get_delegate_response_message(
+            response_class cls, response_code code,
+            std::vector<std::string> delegate_properties)
+            : response_message_base(cls, code),
+              delegate_properties_(std::move(delegate_properties))
+        {
+        }
+
+        std::vector<std::string> delegate_properties_;
+    };
+
+    class remove_delegate_response_message final : public response_message_base
+    {
+    public:
+        static remove_delegate_response_message parse(http_response&& response)
+        {
+            using rapidxml::internal::compare;
+
+            const auto doc = parse_response(std::move(response));
+            auto elem = get_element_by_qname(*doc, "RemoveDelegateResponse",
+                                             uri<>::microsoft::messages());
+            EWS_ASSERT(elem &&
+                       "Expected <RemoveDelegateResponse>, got nullptr");
+
+            const auto cls_and_code = parse_response_class_and_code(*elem);
+
+            return remove_delegate_response_message(cls_and_code.first,
+                                                    cls_and_code.second);
+        }
+
+    private:
+        remove_delegate_response_message(response_class cls, response_code code)
+            : response_message_base(cls, code)
+        {
+        }
+    };
+
     class create_attachment_response_message final
         : public response_message_base
     {
