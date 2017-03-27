@@ -8778,10 +8778,7 @@ public:
     void set_view_private_items(bool view) { view_ = view; }
     void set_sid(std::string SID) { SID_ = SID; }
 
-    const std::string get_sid() const
-    {
-        return SID_;
-    }
+    const std::string get_sid() const { return SID_; }
     const std::vector<folder_permissions>& get_permissions() const
     {
         return permissions_;
@@ -8915,14 +8912,11 @@ inline std::string delegate_user::to_xml() const
     sstr << "<t:PrimarySmtpAddress>" << get_delegator_address()
          << "</t:PrimarySmtpAddress>"
          << "</t:UserId>";
-    sstr << "<t:DelegatePermissions>"
-         << perms
-         << "</t:DelegatePermissions>";
+    sstr << "<t:DelegatePermissions>" << perms << "</t:DelegatePermissions>";
     sstr << "<t:ReceiveCopiesOfMeetingMessages>"
          << get_receive_copies_of_meeting_messages()
          << "</t:ReceiveCopiesOfMeetingMessages>";
-    sstr << "<t:ViewPrivateItems>"
-         << get_view_private_items()
+    sstr << "<t:ViewPrivateItems>" << get_view_private_items()
          << "</t:ViewPrivateItems>";
     sstr << "</t:DelegateUser>"
          << "</m:DelegateUsers>"
@@ -14918,34 +14912,30 @@ public:
 
         sstr << "<m:RemoveDelegate>"
              << "<m:Mailbox>"
-             << "<t:EmailAddress>"
-             << user_address
-             << "</t:EmailAddress>"
+             << "<t:EmailAddress>" << user_address << "</t:EmailAddress>"
              << "</m:Mailbox>"
              << "<m:UserIds>";
-        if(!delegate_address.empty())
+        if (!delegate_address.empty())
         {
             sstr << "<t:UserId>"
-                 << "<t:PrimarySmtpAddress>"
-                 << delegate_address
+                 << "<t:PrimarySmtpAddress>" << delegate_address
                  << "</t:PrimarySmtpAddress>"
                  << "</t:UserId>";
         }
-        else if(!sid.empty())
+        else if (!sid.empty())
         {
             sstr << "<t:UserId>"
-                 << "<t:SID>"
-                 << sid
-                 << "</t:SID>"
+                 << "<t:SID>" << sid << "</t:SID>"
                  << "</t:UserId>";
-         }
+        }
         sstr << "</m:UserIds>"
              << "</m:RemoveDelegate>";
 
         auto response = request(sstr.str());
 
         const auto response_message =
-            internal::remove_delegate_response_message::parse(std::move(response));
+            internal::remove_delegate_response_message::parse(
+                std::move(response));
         if (!response_message.success())
         {
             throw exchange_error(response_message.get_response_code());
