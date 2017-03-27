@@ -43,8 +43,10 @@ int main()
             ews::delegator_permission_level::editor);
 		delegate.set_view_private_items(false);
 		delegate.set_receive_copies_of_meeting_messages(false);
-		auto resp = service.add_delegate(delegate);
-		std::cout << resp << std::endl;
+		auto del = service.add_delegate(delegate);
+        std::cout << del.get_sid() << std::endl;
+        std::cout << del.get_delegator_address() << std::endl;
+        std::cout << del.get_delegated_account() << std::endl;
 
     }
     catch (std::exception& exc)
