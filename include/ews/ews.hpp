@@ -14863,7 +14863,7 @@ public:
         return response_message.items().front();
     }
 
-    std::string add_delegate(const delegate_user& delegator)
+    delegate_user add_delegate(delegate_user& delegator)
     {
         auto response = request(delegator.to_xml());
 
@@ -14877,24 +14877,18 @@ public:
                    "Expected delegator properties");
 
         auto resp_properties = response_message.get_delegate_properties();
-        std::stringstream sstr;
-        for (auto r : resp_properties)
-        {
-            sstr << r;
-        }
-        return sstr.str();
+        delegator.set_sid(resp_properties[0]);
+        return delegator;
     }
 
-    void get_delegate(const delegate_user& delegator)
+    delegate_user get_delegate(delegate_user& delegator)
     {
         auto user_address = delegator.get_delegated_account();
         std::stringstream sstr;
 
         sstr << "<m:GetDelegate>"
              << "<m:Mailbox>"
-             << "<t:EmailAddress>"
-             << user_address
-             << "</t:EmailAddress>"
+             << "<t:EmailAddress>" << user_address << "</t:EmailAddress>"
              << "</m:Mailbox>"
              << "</m:GetDelegate>";
 
@@ -14908,6 +14902,10 @@ public:
         }
         EWS_ASSERT(!response_message.get_delegate_properties().empty() &&
                    "Expected delegator properties");
+
+        auto resp_properties = response_message.get_delegate_properties();
+        delegator.set_sid(resp_properties[0]);
+        return delegator;
     }
 
     void remove_delegate(const delegate_user& delegator)
