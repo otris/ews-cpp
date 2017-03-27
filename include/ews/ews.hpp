@@ -14785,6 +14785,31 @@ public:
         return sstr.str();
     }
 
+    void get_delegate(const delegate_user& delegator)
+    {
+        auto user_address = delegator.get_delegated_account();
+        std::stringstream sstr;
+
+        sstr << "<m:GetDelegate>"
+             << "<m:Mailbox>"
+             << "<t:EmailAddress>"
+             << user_address
+             << "</t:EmailAddress>"
+             << "</m:Mailbox>"
+             << "</m:GetDelegate>";
+
+        auto response = request(sstr.str());
+
+        const auto response_message =
+            internal::get_delegate_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.get_response_code());
+        }
+        EWS_ASSERT(!response_message.get_delegate_properties().empty() &&
+                   "Expected delegator properties");
+    }
+
     //! \brief Lets you attach a file (or another item) to an existing item.
     //!
     //! \param parent_item An existing item in the Exchange store
