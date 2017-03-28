@@ -107,7 +107,7 @@ void init_from_args(int* argc, char** argv)
                          "invoke with --gtest_help to see Google Test flags"
                       << std::endl;
 
-            std::exit(EXIT_FAILURE);
+            std::exit(EXIT_SUCCESS);
         }
         else if (is("--gtest_help", arg, args))
         {
