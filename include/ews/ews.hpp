@@ -14006,7 +14006,9 @@ public:
 #endif
 
     //! \brief Constructs a new service with given credentials to a server
-    //! specified by \p server_uri
+    //! specified by \p server_uri.
+    //!
+    //! This constructor will always use NTLM authentication.
     basic_service(const std::string& server_uri, const std::string& domain,
                   const std::string& username, const std::string& password)
         : request_handler_(server_uri), server_version_("Exchange2013_SP1")
