@@ -51,10 +51,6 @@
 
 #include "ews_fwd.hpp"
 
-// Macro used to fix Android compiiler error
-// (not sure this is the right value)
-#define FALSE 0
-
 // Macro for verifying expressions at run-time. Calls assert() with 'expr'.
 // Allows turning assertions off, even if -DNDEBUG wasn't given at
 // compile-time.  This macro does nothing unless EWS_ENABLE_ASSERTS was defined
@@ -4360,7 +4356,8 @@ namespace internal
             {
                 throw curl_error("Could not start libcurl session");
             }
-			curl_easy_setopt(handle_, CURLOPT_SSL_VERIFYPEER, FALSE);
+            // Needed because some EWS servers use self-signed certificates
+            curl_easy_setopt(handle_, CURLOPT_SSL_VERIFYPEER, false);
         }
 
         ~curl_ptr() { curl_easy_cleanup(handle_); }
