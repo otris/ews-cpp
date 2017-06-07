@@ -26,6 +26,7 @@
 #include <exception>
 #include <fstream>
 #include <functional>
+#include <iomanip>
 #include <ios>
 #include <iterator>
 #include <memory>
@@ -50,6 +51,10 @@
 
 #include "ews_fwd.hpp"
 
+// Macro used to fix Android compiiler error
+// (not sure this is the right value)
+#define FALSE 0
+
 // Macro for verifying expressions at run-time. Calls assert() with 'expr'.
 // Allows turning assertions off, even if -DNDEBUG wasn't given at
 // compile-time.  This macro does nothing unless EWS_ENABLE_ASSERTS was defined
@@ -62,6 +67,51 @@
 #define EWS_ASSERT(expr) assert(expr)
 #endif
 #endif // !NDEBUG
+
+// Workarounds for missing functions in Android NDK
+#ifdef __ANDROID__
+template <class T>
+inline T min(const T& a, const T& b)
+{
+    return (a < b) ? a : b;
+}
+
+template <class T>
+inline T max(const T& a, const T& b)
+{
+    return (a < b) ? b : a;
+}
+
+namespace std
+{
+    template <class T>
+    inline std::string to_string(const T& val)
+    {
+        std::ostringstream os;
+        os << val;
+        return os.str();
+    }
+
+    inline int stoi(const std::string& str)
+    {
+        return atoi(str.c_str());
+    }
+
+    // This is an incomplete implementation, supporting only bases 8, 10, and 16
+    inline unsigned long stoul(const std::string& str, std::size_t* pos = 0, int base = 10)
+    {
+        std::istringstream is(str);
+        unsigned long ul;
+        is >> std::setbase(base) >> std::skipws >> ul;
+        if (pos)
+        {
+            *pos = is.gcount();
+        }
+        return ul;
+    }
+}
+#endif // __ANDROID__
+
 
 //! Contains all classes, functions, and enumerations of this library
 namespace ews
@@ -4837,6 +4887,7 @@ namespace internal
             }
             };
         }
+#if 0 // KAM - curl_easy_setopt does not take 4 args
 
         template <typename T1, typename T2>
         void set_option(CURLoption option, T1 arg1, T2 arg2)
@@ -4860,6 +4911,7 @@ namespace internal
             }
             };
         }
+#endif
 #endif
 
         // Perform the HTTP request and returns the response. This function
