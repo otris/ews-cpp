@@ -64,20 +64,28 @@
 #endif
 #endif // !NDEBUG
 
+// To work on windows with or without NOMINMAX defined.
+// Allows bare min(a,b), max(a,b) to be used with no
+// qualifying namespace.
+#if !defined(_WIN32) || defined(NOMINMAX)
+namespace ews
+{
+template <class T>
+inline const T& min(const T& a, const T& b)
+{
+    return std::min(a, b);
+}
+
+template <class T>
+inline const T& max(const T& a, const T& b)
+{
+    return std::max(a, b);
+}
+} // namespace ews
+#endif // !_WIN32 || NOMINMAX
+
 // Workarounds for missing functions in Android NDK
 #ifdef __ANDROID__
-template <class T>
-inline T min(const T& a, const T& b)
-{
-    return (a < b) ? a : b;
-}
-
-template <class T>
-inline T max(const T& a, const T& b)
-{
-    return (a < b) ? b : a;
-}
-
 namespace std
 {
     template <class T>
@@ -465,15 +473,15 @@ private:
     static std::pair<std::string, std::size_t>
     shorten(const std::string& str, std::size_t at, std::size_t columns)
     {
-        at = std::min(at, str.length());
+        at = min(at, str.length());
         if (str.length() < columns)
         {
             return std::make_pair(str, at);
         }
 
         const auto start =
-            std::max(at - (columns / 2), static_cast<std::size_t>(0));
-        const auto end = std::min(at + (columns / 2), str.length());
+            max(at - (columns / 2), static_cast<std::size_t>(0));
+        const auto end = min(at + (columns / 2), str.length());
         EWS_ASSERT(start < end);
         std::string line;
         std::copy(&str[start], &str[end], std::back_inserter(line));
