@@ -1294,7 +1294,7 @@ namespace rapidxml
         //! Constructs an empty attribute with the specified type.
         //! Consider using memory_pool of appropriate xml_document if allocating
         //! attributes manually.
-        xml_attribute() {}
+		xml_attribute() : m_prev_attribute(nullptr), m_next_attribute(nullptr) {}
 
         ///////////////////////////////////////////////////////////////////////////
         // Related nodes access
@@ -1445,7 +1445,9 @@ namespace rapidxml
         //! manually.
         //! \param type Type of node to construct.
         explicit xml_node(node_type type)
-            : m_type(type), m_first_node(0), m_first_attribute(0)
+			: m_type(type), m_first_node(nullptr), m_last_node(nullptr)
+			, m_first_attribute(nullptr), m_last_attribute(nullptr)
+			, m_prev_sibling(nullptr), m_next_sibling(nullptr)
         {
         }
 

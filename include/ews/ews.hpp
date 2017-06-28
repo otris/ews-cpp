@@ -26,6 +26,7 @@
 #include <exception>
 #include <fstream>
 #include <functional>
+#include <iomanip>
 #include <ios>
 #include <iterator>
 #include <memory>
@@ -62,6 +63,59 @@
 #define EWS_ASSERT(expr) assert(expr)
 #endif
 #endif // !NDEBUG
+
+// To work on windows with or without NOMINMAX defined.
+// Allows bare min(a,b), max(a,b) to be used with no
+// qualifying namespace.
+#if !defined(_WIN32) || defined(NOMINMAX)
+namespace ews
+{
+template <class T>
+inline const T& min(const T& a, const T& b)
+{
+    return std::min(a, b);
+}
+
+template <class T>
+inline const T& max(const T& a, const T& b)
+{
+    return std::max(a, b);
+}
+} // namespace ews
+#endif // !_WIN32 || NOMINMAX
+
+// Workarounds for missing functions in Android NDK
+#ifdef __ANDROID__
+namespace std
+{
+    template <class T>
+    inline std::string to_string(const T& val)
+    {
+        std::ostringstream os;
+        os << val;
+        return os.str();
+    }
+
+    inline int stoi(const std::string& str)
+    {
+        return atoi(str.c_str());
+    }
+
+    // This is an incomplete implementation, supporting only bases 8, 10, and 16
+    inline unsigned long stoul(const std::string& str, std::size_t* pos = 0, int base = 10)
+    {
+        std::istringstream is(str);
+        unsigned long ul;
+        is >> std::setbase(base) >> std::skipws >> ul;
+        if (pos)
+        {
+            *pos = is.gcount();
+        }
+        return ul;
+    }
+}
+#endif // __ANDROID__
+
 
 //! Contains all classes, functions, and enumerations of this library
 namespace ews
@@ -419,15 +473,15 @@ private:
     static std::pair<std::string, std::size_t>
     shorten(const std::string& str, std::size_t at, std::size_t columns)
     {
-        at = std::min(at, str.length());
+        at = min(at, str.length());
         if (str.length() < columns)
         {
             return std::make_pair(str, at);
         }
 
         const auto start =
-            std::max(at - (columns / 2), static_cast<std::size_t>(0));
-        const auto end = std::min(at + (columns / 2), str.length());
+            max(at - (columns / 2), static_cast<std::size_t>(0));
+        const auto end = min(at + (columns / 2), str.length());
         EWS_ASSERT(start < end);
         std::string line;
         std::copy(&str[start], &str[end], std::back_inserter(line));
@@ -4310,6 +4364,8 @@ namespace internal
             {
                 throw curl_error("Could not start libcurl session");
             }
+            // Needed because some EWS servers use self-signed certificates
+            curl_easy_setopt(handle_, CURLOPT_SSL_VERIFYPEER, false);
         }
 
         ~curl_ptr() { curl_easy_cleanup(handle_); }
@@ -4837,6 +4893,7 @@ namespace internal
             }
             };
         }
+#if 0 // KAM - curl_easy_setopt does not take 4 args
 
         template <typename T1, typename T2>
         void set_option(CURLoption option, T1 arg1, T2 arg2)
@@ -4860,6 +4917,7 @@ namespace internal
             }
             };
         }
+#endif
 #endif
 
         // Perform the HTTP request and returns the response. This function
