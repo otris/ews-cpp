@@ -6653,6 +6653,181 @@ namespace internal
         std::vector<response_message> messages_;
     };
 
+    class add_delegate_response_message final : public response_message_base
+    {
+    public:
+        static add_delegate_response_message parse(http_response&& response)
+        {
+            using rapidxml::internal::compare;
+
+            const auto doc = parse_response(std::move(response));
+            auto elem = get_element_by_qname(*doc, "AddDelegateResponse",
+                                             uri<>::microsoft::messages());
+            EWS_ASSERT(elem && "Expected <AddDelegateResponse>, got nullptr");
+
+            const auto cls_and_code = parse_response_class_and_code(*elem);
+
+            auto delegate_element = get_element_by_qname(
+                *elem, "DelegateUser", uri<>::microsoft::messages());
+            EWS_ASSERT(elem && "Expected <DelegateUser>, got nullptr");
+
+            auto delegate_properties_element = delegate_element->first_node_ns(
+                uri<>::microsoft::types(), "UserId");
+            EWS_ASSERT(delegate_properties_element &&
+                       "Expected <UserId> in response");
+
+            std::string sid;
+            std::string primary_smtp_address;
+            std::string display_name;
+
+            std::vector<std::string> delegate_properties;
+            for (auto child = delegate_properties_element->first_node();
+                 child != nullptr; child = child->next_sibling())
+            {
+                if (compare("SID", std::strlen("SID"), child->local_name(),
+                            child->local_name_size()))
+                {
+                    sid = std::string(child->value(), child->value_size());
+                    delegate_properties.push_back(sid);
+                }
+                if (compare("PrimarySmtpAddress",
+                            std::strlen("PrimarySmtpAddress"),
+                            child->local_name(), child->local_name_size()))
+                {
+                    primary_smtp_address = std::string(child->value(), child->value_size());
+                    delegate_properties.push_back(primary_smtp_address);
+                }
+                if (compare("DisplayName", std::strlen("DisplayName"),
+                            child->local_name(), child->local_name_size()))
+                {
+                    display_name = std::string(child->value(), child->value_size());
+                    delegate_properties.push_back(display_name);
+                }
+            }
+
+            return add_delegate_response_message(
+                cls_and_code.first, cls_and_code.second,
+                std::move(delegate_properties));
+        }
+
+        const std::vector<std::string>&
+        get_delegate_properties() const EWS_NOEXCEPT
+        {
+            return delegate_properties_;
+        }
+
+    private:
+        add_delegate_response_message(
+            response_class cls, response_code code,
+            std::vector<std::string> delegate_properties)
+            : response_message_base(cls, code),
+              delegate_properties_(std::move(delegate_properties))
+        {
+        }
+
+        std::vector<std::string> delegate_properties_;
+    };
+
+    class get_delegate_response_message final : public response_message_base
+    {
+    public:
+        static get_delegate_response_message parse(http_response&& response)
+        {
+            using rapidxml::internal::compare;
+
+            const auto doc = parse_response(std::move(response));
+            auto elem = get_element_by_qname(*doc, "GetDelegateResponse",
+                                             uri<>::microsoft::messages());
+            EWS_ASSERT(elem && "Expected <GetDelegateResponse>, got nullptr");
+
+            const auto cls_and_code = parse_response_class_and_code(*elem);
+
+            auto delegate_element = get_element_by_qname(
+                *elem, "DelegateUser", uri<>::microsoft::messages());
+            EWS_ASSERT(elem && "Expected <DelegateUser>, got nullptr");
+
+            auto delegate_properties_element = delegate_element->first_node_ns(
+                uri<>::microsoft::types(), "UserId");
+            EWS_ASSERT(delegate_properties_element &&
+                       "Expected <UserId> in response");
+
+            std::string sid;
+            std::string primary_smtp_address;
+            std::string display_name;
+
+            std::vector<std::string> delegate_properties;
+            for (auto child = delegate_properties_element->first_node();
+                 child != nullptr; child = child->next_sibling())
+            {
+                if (compare("SID", std::strlen("SID"), child->local_name(),
+                            child->local_name_size()))
+                {
+                    sid = std::string(child->value(), child->value_size());
+                    delegate_properties.push_back(sid);
+                }
+                if (compare("PrimarySmtpAddress",
+                            std::strlen("PrimarySmtpAddress"),
+                            child->local_name(), child->local_name_size()))
+                {
+                    primary_smtp_address = std::string(child->value(), child->value_size());
+                    delegate_properties.push_back(primary_smtp_address);
+                }
+                if (compare("DisplayName", std::strlen("DisplayName"),
+                            child->local_name(), child->local_name_size()))
+                {
+                    display_name = std::string(child->value(), child->value_size());
+                    delegate_properties.push_back(display_name);
+                }
+            }
+            return get_delegate_response_message(
+                cls_and_code.first, cls_and_code.second,
+                std::move(delegate_properties));
+        }
+
+        const std::vector<std::string>&
+        get_delegate_properties() const EWS_NOEXCEPT
+        {
+            return delegate_properties_;
+        }
+
+    private:
+        get_delegate_response_message(
+            response_class cls, response_code code,
+            std::vector<std::string> delegate_properties)
+            : response_message_base(cls, code),
+              delegate_properties_(std::move(delegate_properties))
+        {
+        }
+
+        std::vector<std::string> delegate_properties_;
+    };
+
+    class remove_delegate_response_message final : public response_message_base
+    {
+    public:
+        static remove_delegate_response_message parse(http_response&& response)
+        {
+            using rapidxml::internal::compare;
+
+            const auto doc = parse_response(std::move(response));
+            auto elem = get_element_by_qname(*doc, "RemoveDelegateResponse",
+                                             uri<>::microsoft::messages());
+            EWS_ASSERT(elem &&
+                       "Expected <RemoveDelegateResponse>, got nullptr");
+
+            const auto cls_and_code = parse_response_class_and_code(*elem);
+
+            return remove_delegate_response_message(cls_and_code.first,
+                                                    cls_and_code.second);
+        }
+
+    private:
+        remove_delegate_response_message(response_class cls, response_code code)
+            : response_message_base(cls, code)
+        {
+        }
+    };
+
     class create_attachment_response_message final
         : public response_message_base
     {
@@ -8566,6 +8741,192 @@ static_assert(std::is_copy_assignable<item>::value, "");
 static_assert(std::is_move_constructible<item>::value, "");
 static_assert(std::is_move_assignable<item>::value, "");
 #endif
+
+//! Specifies the permission level for the delegator
+enum class delegator_permission_level
+{
+    none,
+    editor,
+    author,
+    reviewer
+};
+
+//! Class for adding delegates and managing the permissions
+class delegate_user final
+{
+public:
+    typedef std::tuple<standard_folder, delegator_permission_level>
+        folder_permissions;
+
+    // C'tor for the delegator
+    delegate_user(std::string primary_smtp_address,
+                  ews::mailbox delegated_account)
+        : primary_smtp_address_(std::move(primary_smtp_address)),
+          delegated_account_(std::move(delegated_account))
+    {
+    }
+
+    void set_permission(standard_folder folder,
+                        delegator_permission_level permission_level)
+    {
+        permissions_.push_back(std::make_tuple(folder, permission_level));
+    }
+    void set_receive_copies_of_meeting_messages(bool receive)
+    {
+        receive_ = receive;
+    }
+    void set_view_private_items(bool view) { view_ = view; }
+    void set_sid(std::string SID) { SID_ = SID; }
+
+    const std::string get_sid() const { return SID_; }
+    const std::vector<folder_permissions>& get_permissions() const
+    {
+        return permissions_;
+    }
+    const std::string& get_delegator_address() const EWS_NOEXCEPT
+    {
+        return primary_smtp_address_;
+    }
+    const std::string& get_delegated_account() const EWS_NOEXCEPT
+    {
+        return delegated_account_.value();
+    }
+    const std::string get_view_private_items() const
+    {
+        return view_ ? "true" : "false";
+    }
+    const std::string get_receive_copies_of_meeting_messages() const
+    {
+        return receive_ ? "true" : "false";
+    }
+    // defined below
+    static delegate_user from_xml_element(const rapidxml::xml_node<char>& node);
+    std::string to_xml() const;
+    std::string folders_to_permissions(std::vector<folder_permissions>&) const;
+
+    // TODO: DeliverMeetingRequests what options are there?
+
+private:
+    std::string primary_smtp_address_;
+    delegator_permission_level permission_level_;
+    std::vector<folder_permissions> permissions_;
+    ews::mailbox delegated_account_;
+    std::string SID_;
+    bool view_;
+    bool receive_;
+};
+
+namespace internal
+{
+    inline std::string enum_to_str(delegator_permission_level level)
+    {
+        std::string lvl;
+        switch (level)
+        {
+        case delegator_permission_level::none:
+            lvl = "None";
+            break;
+
+        case delegator_permission_level::editor:
+            lvl = "Editor";
+            break;
+
+        case delegator_permission_level::author:
+            lvl = "Author";
+            break;
+
+        case delegator_permission_level::reviewer:
+            lvl = "Reviewer";
+            break;
+
+        default:
+            throw exception("Unknown permission level");
+        };
+        return lvl;
+    }
+}
+
+//! Returns the well-known name for given standard_folder as string.
+inline std::string delegate_user::folders_to_permissions(
+    std::vector<delegate_user::folder_permissions>& perms) const
+{
+    std::stringstream sstr;
+    for (auto perm : perms)
+    {
+        auto folder = std::get<0>(perm);
+        std::string level = internal::enum_to_str(std::get<1>(perm));
+        if (folder == ews::standard_folder::calendar)
+        {
+            sstr << "<t:CalendarFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:CalendarFolderPermissionLevel>";
+        }
+        if (folder == ews::standard_folder::contacts)
+        {
+            sstr << "<t:ContactsFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:ContactsFolderPermissionLevel>";
+        }
+        if (folder == ews::standard_folder::tasks)
+        {
+            sstr << "<t:TasksFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:TasksFolderPermissionLevel>";
+        }
+        if (folder == ews::standard_folder::inbox)
+        {
+            sstr << "<t:InboxFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:InboxFolderPermissionLevel>";
+        }
+        if (folder == ews::standard_folder::notes)
+        {
+            sstr << "<t:NotesFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:NotesFolderPermissionLevel>";
+        }
+        if (folder == ews::standard_folder::journal)
+        {
+            sstr << "<t:JournalFolderPermissionLevel>";
+            sstr << internal::enum_to_str(std::get<1>(perm));
+            sstr << "</t:JournalFolderPermissionLevel>";
+        }
+    }
+
+    return sstr.str();
+}
+
+inline std::string delegate_user::to_xml() const
+{
+    std::stringstream sstr;
+    auto folders = get_permissions();
+    auto perms = folders_to_permissions(folders);
+    sstr << "<m:AddDelegate>"
+         << "<m:Mailbox>"
+         << "<t:EmailAddress>" << delegated_account_.value();
+    sstr << "</t:EmailAddress>"
+         << "</m:Mailbox>"
+         << "<m:DelegateUsers>";
+    sstr << "<t:DelegateUser>"
+         << "<t:UserId>";
+    sstr << "<t:PrimarySmtpAddress>" << get_delegator_address()
+         << "</t:PrimarySmtpAddress>"
+         << "</t:UserId>";
+    sstr << "<t:DelegatePermissions>" << perms << "</t:DelegatePermissions>";
+    sstr << "<t:ReceiveCopiesOfMeetingMessages>"
+         << get_receive_copies_of_meeting_messages()
+         << "</t:ReceiveCopiesOfMeetingMessages>";
+    sstr << "<t:ViewPrivateItems>" << get_view_private_items()
+         << "</t:ViewPrivateItems>";
+    sstr << "</t:DelegateUser>"
+         << "</m:DelegateUsers>"
+         << "<m:DeliverMeetingRequests>"
+         // check if this makes sense
+         << "DelegatesAndMe"
+         << "</m:DeliverMeetingRequests>"
+         << "</m:AddDelegate>";
+    return sstr.str();
+}
 
 //! \brief Describes the state of a delegated task.
 //!
@@ -14494,6 +14855,91 @@ public:
         EWS_ASSERT(!response_message.items().empty() &&
                    "Expected at least one item");
         return response_message.items().front();
+    }
+
+    delegate_user add_delegate(delegate_user& delegator)
+    {
+        auto response = request(delegator.to_xml());
+
+        const auto response_message =
+            internal::add_delegate_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.get_response_code());
+        }
+        EWS_ASSERT(!response_message.get_delegate_properties().empty() &&
+                   "Expected delegator properties");
+
+        auto resp_properties = response_message.get_delegate_properties();
+        delegator.set_sid(resp_properties[0]);
+        return delegator;
+    }
+
+    delegate_user get_delegate(delegate_user& delegator)
+    {
+        auto user_address = delegator.get_delegated_account();
+        std::stringstream sstr;
+
+        sstr << "<m:GetDelegate>"
+             << "<m:Mailbox>"
+             << "<t:EmailAddress>" << user_address << "</t:EmailAddress>"
+             << "</m:Mailbox>"
+             << "</m:GetDelegate>";
+
+        auto response = request(sstr.str());
+
+        const auto response_message =
+            internal::get_delegate_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.get_response_code());
+        }
+        EWS_ASSERT(!response_message.get_delegate_properties().empty() &&
+                   "Expected delegator properties");
+
+        auto resp_properties = response_message.get_delegate_properties();
+        delegator.set_sid(resp_properties[0]);
+        return delegator;
+    }
+
+    void remove_delegate(const delegate_user& delegator)
+    {
+        auto user_address = delegator.get_delegated_account();
+        auto delegate_address = delegator.get_delegator_address();
+        auto sid = delegator.get_sid();
+
+        std::stringstream sstr;
+
+        sstr << "<m:RemoveDelegate>"
+             << "<m:Mailbox>"
+             << "<t:EmailAddress>" << user_address << "</t:EmailAddress>"
+             << "</m:Mailbox>"
+             << "<m:UserIds>";
+        if (!delegate_address.empty())
+        {
+            sstr << "<t:UserId>"
+                 << "<t:PrimarySmtpAddress>" << delegate_address
+                 << "</t:PrimarySmtpAddress>"
+                 << "</t:UserId>";
+        }
+        else if (!sid.empty())
+        {
+            sstr << "<t:UserId>"
+                 << "<t:SID>" << sid << "</t:SID>"
+                 << "</t:UserId>";
+        }
+        sstr << "</m:UserIds>"
+             << "</m:RemoveDelegate>";
+
+        auto response = request(sstr.str());
+
+        const auto response_message =
+            internal::remove_delegate_response_message::parse(
+                std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.get_response_code());
+        }
     }
 
     //! \brief Lets you attach a file (or another item) to an existing item.
