@@ -8,6 +8,10 @@
 #pragma GCC diagnostic ignored "-Wused-but-marked-unused"
 #endif
 
+#if defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+#endif
+
 #include <gtest/gtest.h>
 
 #if defined(__clang__)
