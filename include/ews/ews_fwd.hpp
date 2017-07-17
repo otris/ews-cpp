@@ -33,6 +33,7 @@ class attendee;
 class basic_credentials;
 class body;
 class calendar_item;
+class connecting_sid;
 class contact;
 class contains;
 class date_time;

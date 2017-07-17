@@ -13981,6 +13981,68 @@ static_assert(std::is_move_constructible<update>::value, "");
 static_assert(std::is_move_assignable<update>::value, "");
 #endif
 
+//! Represents a ConnectingSID element
+class connecting_sid final
+{
+public:
+    enum class type
+    {
+        principal_name,
+        sid,
+        primary_smtp_address,
+        smtp_address
+    };
+
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    connecting_sid() = delete;
+#endif
+
+    //! Constructs a new ConnectingSID element
+    inline connecting_sid(type, const std::string&); // implemented below
+
+    //! Serializes this ConnectingSID instance to an XML string
+    const std::string& to_xml() const EWS_NOEXCEPT { return xml_; }
+
+private:
+    std::string xml_;
+};
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+static_assert(!std::is_default_constructible<connecting_sid>::value, "");
+static_assert(std::is_copy_constructible<connecting_sid>::value, "");
+static_assert(std::is_copy_assignable<connecting_sid>::value, "");
+static_assert(std::is_move_constructible<connecting_sid>::value, "");
+static_assert(std::is_move_assignable<connecting_sid>::value, "");
+#endif
+
+namespace internal
+{
+    inline std::string enum_to_str(connecting_sid::type type)
+    {
+        switch (type)
+        {
+        case connecting_sid::type::principal_name:
+            return "PrincipalName";
+        case connecting_sid::type::sid:
+            return "SID";
+        case connecting_sid::type::primary_smtp_address:
+            return "PrimarySmtpAddress";
+        case connecting_sid::type::smtp_address:
+            return "SmtpAddress";
+        default:
+            throw exception("Unrecognized ConnectingSID");
+        }
+    }
+}
+
+connecting_sid::connecting_sid(connecting_sid::type t, const std::string& id)
+    : xml_()
+{
+    const auto sid = internal::enum_to_str(t);
+    xml_ = "<t:ConnectingSID><t:" + sid + ">" + id + "</t:" + sid +
+           "></t:ConnectingSID>";
+}
+
 //! \brief Contains the methods to perform operations on an Exchange server
 //!
 //! The service class contains all methods that can be performed on an
@@ -14011,7 +14073,8 @@ public:
     //! This constructor will always use NTLM authentication.
     basic_service(const std::string& server_uri, const std::string& domain,
                   const std::string& username, const std::string& password)
-        : request_handler_(server_uri), server_version_("Exchange2013_SP1")
+        : request_handler_(server_uri), server_version_("Exchange2013_SP1"),
+          impersonation_()
     {
         request_handler_.set_method(RequestHandler::method::POST);
         request_handler_.set_content_type("text/xml; charset=utf-8");
@@ -14021,8 +14084,10 @@ public:
 
     //! \brief Constructs a new service with given credentials to a server
     //! specified by \p server_uri
-    basic_service(const std::string& server_uri, const internal::credentials& creds)
-        : request_handler_(server_uri), server_version_("Exchange2013_SP1")
+    basic_service(const std::string& server_uri,
+                  const internal::credentials& creds)
+        : request_handler_(server_uri), server_version_("Exchange2013_SP1"),
+          impersonation_()
     {
         request_handler_.set_method(RequestHandler::method::POST);
         request_handler_.set_content_type("text/xml; charset=utf-8");
@@ -14053,6 +14118,18 @@ public:
     server_version get_request_server_version() const
     {
         return internal::str_to_server_version(server_version_);
+    }
+
+    basic_service& impersonate()
+    {
+        impersonation_.clear();
+        return *this;
+    }
+
+    basic_service& impersonate(const connecting_sid& sid)
+    {
+        impersonation_ = sid.to_xml();
+        return *this;
     }
 
     //! Gets a task from the Exchange store.
@@ -14595,6 +14672,7 @@ public:
 private:
     RequestHandler request_handler_;
     std::string server_version_;
+    std::string impersonation_;
 
     // Helper for doing requests.  Adds the right headers, credentials, and
     // checks the response for faults.
@@ -14606,6 +14684,12 @@ private:
         auto soap_headers = std::vector<std::string>();
         soap_headers.emplace_back("<t:RequestServerVersion Version=\"" +
                                   server_version_ + "\"/>");
+        if (!impersonation_.empty())
+        {
+            soap_headers.emplace_back("<t:ExchangeImpersonation>" +
+                                      impersonation_ +
+                                      "</t:ExchangeImpersonation>");
+        }
 
         auto response = internal::make_raw_soap_request(
             request_handler_, request_string, soap_headers);
