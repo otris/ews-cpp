@@ -5383,8 +5383,8 @@ namespace internal
 
                     if (!error_code.empty() && !message.empty())
                     {
-                        throw exception(message + " (error code: " +
-                                        error_code + ")");
+                        throw exception(message +
+                                        " (error code: " + error_code + ")");
                     }
                 }
             }
@@ -6624,18 +6624,20 @@ namespace internal
             // warning. Is this desired? Don't think so. At least it is
             // consistent with response_message_base::success().
 
-            return std::all_of(
-                begin(messages_), end(messages_), [](const response_message& msg) {
-                    return std::get<0>(msg) == response_class::success;
-                });
+            return std::all_of(begin(messages_), end(messages_),
+                               [](const response_message& msg) {
+                                   return std::get<0>(msg) ==
+                                          response_class::success;
+                               });
         }
 
         response_code first_error_or_warning() const
         {
-            auto it = std::find_if_not(
-                begin(messages_), end(messages_), [](const response_message& msg) {
-                    return std::get<0>(msg) == response_class::success;
-                });
+            auto it = std::find_if_not(begin(messages_), end(messages_),
+                                       [](const response_message& msg) {
+                                           return std::get<0>(msg) ==
+                                                  response_class::success;
+                                       });
             return it == end(messages_) ? response_code::no_error
                                         : std::get<1>(*it);
         }
@@ -14674,7 +14676,7 @@ private:
     std::string server_version_;
     std::string impersonation_;
 
-    // Helper for doing requests.  Adds the right headers, credentials, and
+    // Helper for doing requests. Adds the right headers, credentials, and
     // checks the response for faults.
     internal::http_response request(const std::string& request_string)
     {

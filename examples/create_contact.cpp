@@ -16,11 +16,11 @@
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
 
-#include <string>
+#include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <ostream>
-#include <exception>
-#include <cstdlib>
+#include <string>
 
 int main()
 {
@@ -30,17 +30,15 @@ int main()
     try
     {
         const auto env = ews::test::environment();
-        auto service = ews::service(env.server_uri,
-                                    env.domain,
-                                    env.username,
+        auto service = ews::service(env.server_uri, env.domain, env.username,
                                     env.password);
 
         auto contact = ews::contact();
         contact.set_given_name("Darkwing");
         contact.set_surname("Duck");
         contact.set_email_address(
-                ews::email_address(ews::email_address::key::email_address_1,
-                    "superhero@ducktales.com"));
+            ews::email_address(ews::email_address::key::email_address_1,
+                               "superhero@ducktales.com"));
         contact.set_job_title("Average Citizen");
 
         auto item_id = service.create_item(contact);

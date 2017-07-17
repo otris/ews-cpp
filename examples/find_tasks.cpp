@@ -16,11 +16,11 @@
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
 
-#include <string>
+#include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <ostream>
-#include <exception>
-#include <cstdlib>
+#include <string>
 
 int main()
 {
@@ -30,14 +30,13 @@ int main()
     try
     {
         const auto env = ews::test::environment();
-        auto service = ews::service(env.server_uri,
-                                    env.domain,
-                                    env.username,
+        auto service = ews::service(env.server_uri, env.domain, env.username,
                                     env.password);
 
         ews::distinguished_folder_id tasks_folder = ews::standard_folder::tasks;
-        auto item_ids = service.find_item(tasks_folder,
-                ews::is_equal_to(ews::task_property_path::is_complete, false));
+        auto item_ids = service.find_item(
+            tasks_folder,
+            ews::is_equal_to(ews::task_property_path::is_complete, false));
 
         if (item_ids.empty())
         {

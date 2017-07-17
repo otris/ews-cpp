@@ -16,11 +16,11 @@
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
 
-#include <string>
+#include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <ostream>
-#include <exception>
-#include <cstdlib>
+#include <string>
 
 int main()
 {
@@ -30,9 +30,7 @@ int main()
     try
     {
         const auto env = ews::test::environment();
-        auto service = ews::service(env.server_uri,
-                                    env.domain,
-                                    env.username,
+        auto service = ews::service(env.server_uri, env.domain, env.username,
                                     env.password);
 
         // First create a draft message
@@ -42,13 +40,12 @@ int main()
         std::vector<ews::mailbox> recipients;
         recipients.push_back(ews::mailbox("donald.duck@duckburg.com"));
         message.set_to_recipients(recipients);
-        auto item_id = service.create_item(message,
-                                           ews::message_disposition::save_only);
+        auto item_id =
+            service.create_item(message, ews::message_disposition::save_only);
 
         // Then search for it
         auto search_expression =
-            ews::contains(ews::item_property_path::subject,
-                          "ess",
+            ews::contains(ews::item_property_path::subject, "ess",
                           ews::containment_mode::substring,
                           ews::containment_comparison::ignore_case);
 

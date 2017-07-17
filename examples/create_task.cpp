@@ -16,11 +16,11 @@
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
 
-#include <string>
+#include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <ostream>
-#include <exception>
-#include <cstdlib>
+#include <string>
 
 int main()
 {
@@ -30,13 +30,11 @@ int main()
     try
     {
         const auto env = ews::test::environment();
-        auto service = ews::service(env.server_uri,
-                                    env.domain,
-                                    env.username,
+        auto service = ews::service(env.server_uri, env.domain, env.username,
                                     env.password);
 
         auto start_time = ews::date_time("2015-01-16T12:00:00Z");
-        auto end_time   = ews::date_time("2015-01-16T12:30:00Z");
+        auto end_time = ews::date_time("2015-01-16T12:30:00Z");
 
         auto task = ews::task();
         task.set_subject("Something important to do");

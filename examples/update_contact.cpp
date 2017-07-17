@@ -16,11 +16,11 @@
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
 
-#include <string>
+#include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <ostream>
-#include <exception>
-#include <cstdlib>
+#include <string>
 
 int main()
 {
@@ -30,9 +30,7 @@ int main()
     try
     {
         const auto env = ews::test::environment();
-        auto service = ews::service(env.server_uri,
-                                    env.domain,
-                                    env.username,
+        auto service = ews::service(env.server_uri, env.domain, env.username,
                                     env.password);
 
         ews::distinguished_folder_id contacts_folder =
@@ -47,13 +45,12 @@ int main()
         for (const auto& id : item_ids)
         {
             auto contact = service.get_contact(id);
-            auto job_title_property =
-                ews::property(ews::contact_property_path::job_title,
-                              "Superhero");
+            auto job_title_property = ews::property(
+                ews::contact_property_path::job_title, "Superhero");
             auto new_id = service.update_item(id, job_title_property);
             (void)new_id;
 
-            // TODO: check this!
+// TODO: check this!
 #if 0
             std::cout << "Subject: " << contact.get_subject() << std::endl;
             std::cout << "GivenName: " << contact.get_given_name() << std::endl;

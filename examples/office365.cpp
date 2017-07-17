@@ -33,7 +33,8 @@ int main()
 
     try
     {
-        const ews::basic_credentials credentials("dduck@duckburg.onmicrosoft.com", "secret");
+        const ews::basic_credentials credentials(
+            "dduck@duckburg.onmicrosoft.com", "secret");
 
         // First, we use Autodiscover to get the EWS end-point URL that we use
         // to access Office 365. This should always be something like
