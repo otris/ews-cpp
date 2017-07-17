@@ -79,14 +79,14 @@ TEST_F(GetItemRequestTest, WithAdditionalProperties)
     (void)cal_item;
 
     EXPECT_NE(get_last_request().request_string().find(
-        "<t:AdditionalProperties>"
-        "<t:FieldURI FieldURI=\"item:Body\"/>"
-        "</t:AdditionalProperties>"), std::string::npos);
-
+                  "<t:AdditionalProperties>"
+                  "<t:FieldURI FieldURI=\"item:Body\"/>"
+                  "</t:AdditionalProperties>"),
+              std::string::npos);
 }
 #endif // EWS_USE_BOOST_LIBRARY
 
-class RequestServerVersionTest : public FakeServiceFixture
+class SoapHeader : public FakeServiceFixture
 {
 private:
     void SetUp()
@@ -135,7 +135,7 @@ private:
     }
 };
 
-TEST_F(RequestServerVersionTest, SupportsExchange2007)
+TEST_F(SoapHeader, SupportsExchange2007)
 {
     auto& serv = service();
     serv.set_request_server_version(ews::server_version::exchange_2007);
@@ -147,7 +147,7 @@ TEST_F(RequestServerVersionTest, SupportsExchange2007)
         "<t:RequestServerVersion Version=\"Exchange2007\"/>"));
 }
 
-TEST_F(RequestServerVersionTest, SupportsExchange2007_SP1)
+TEST_F(SoapHeader, SupportsExchange2007_SP1)
 {
     auto& serv = service();
     serv.set_request_server_version(ews::server_version::exchange_2007_sp1);
@@ -159,7 +159,7 @@ TEST_F(RequestServerVersionTest, SupportsExchange2007_SP1)
         "<t:RequestServerVersion Version=\"Exchange2007_SP1\"/>"));
 }
 
-TEST_F(RequestServerVersionTest, SupportsExchange2010)
+TEST_F(SoapHeader, SupportsExchange2010)
 {
     auto& serv = service();
     serv.set_request_server_version(ews::server_version::exchange_2010);
@@ -171,7 +171,7 @@ TEST_F(RequestServerVersionTest, SupportsExchange2010)
         "<t:RequestServerVersion Version=\"Exchange2010\"/>"));
 }
 
-TEST_F(RequestServerVersionTest, SupportsExchange2010_SP1)
+TEST_F(SoapHeader, SupportsExchange2010_SP1)
 {
     auto& serv = service();
     serv.set_request_server_version(ews::server_version::exchange_2010_sp1);
@@ -183,7 +183,7 @@ TEST_F(RequestServerVersionTest, SupportsExchange2010_SP1)
         "<t:RequestServerVersion Version=\"Exchange2010_SP1\"/>"));
 }
 
-TEST_F(RequestServerVersionTest, SupportsExchange2010_SP2)
+TEST_F(SoapHeader, SupportsExchange2010_SP2)
 {
     auto& serv = service();
     serv.set_request_server_version(ews::server_version::exchange_2010_sp2);
@@ -195,7 +195,7 @@ TEST_F(RequestServerVersionTest, SupportsExchange2010_SP2)
         "<t:RequestServerVersion Version=\"Exchange2010_SP2\"/>"));
 }
 
-TEST_F(RequestServerVersionTest, SupportsExchange2013)
+TEST_F(SoapHeader, SupportsExchange2013)
 {
     auto& serv = service();
     serv.set_request_server_version(ews::server_version::exchange_2013);
@@ -207,7 +207,7 @@ TEST_F(RequestServerVersionTest, SupportsExchange2013)
         "<t:RequestServerVersion Version=\"Exchange2013\"/>"));
 }
 
-TEST_F(RequestServerVersionTest, SupportsExchange2013_SP1)
+TEST_F(SoapHeader, SupportsExchange2013_SP1)
 {
     auto& serv = service();
     serv.set_request_server_version(ews::server_version::exchange_2013_sp1);
@@ -219,11 +219,36 @@ TEST_F(RequestServerVersionTest, SupportsExchange2013_SP1)
         "<t:RequestServerVersion Version=\"Exchange2013_SP1\"/>"));
 }
 
-TEST_F(RequestServerVersionTest, DefaultServerVersionIs2013_SP1)
+TEST_F(SoapHeader, DefaultServerVersionIs2013_SP1)
 {
     auto serv = service();
     EXPECT_EQ(serv.get_request_server_version(),
               ews::server_version::exchange_2013_sp1);
+}
+
+TEST_F(SoapHeader, ImpersonateAsAnotherUser)
+{
+    const auto someone = ews::connecting_sid(
+        ews::connecting_sid::type::smtp_address, "batman@gothamcity.com");
+    auto& serv = service();
+
+    auto task = ews::task();
+    task.set_subject("Random To-Do item");
+
+    serv.impersonate(someone).create_item(task);
+    auto request = get_last_request();
+    EXPECT_TRUE(request.header_contains(
+        "<t:ExchangeImpersonation><t:ConnectingSID><t:SmtpAddress>batman@"
+        "gothamcity.com</t:SmtpAddress></t:ConnectingSID></"
+        "t:ExchangeImpersonation>"));
+
+    serv.impersonate();
+    serv.create_item(task);
+    request = get_last_request();
+    EXPECT_FALSE(request.header_contains(
+        "<t:ExchangeImpersonation><t:ConnectingSID><t:SmtpAddress>batman@"
+        "gothamcity.com</t:SmtpAddress></t:ConnectingSID></"
+        "t:ExchangeImpersonation>"));
 }
 
 class ServiceTest : public ContactTest
