@@ -17639,7 +17639,8 @@ inline void ntlm_credentials::certify(internal::http_request* request) const
     EWS_ASSERT(request != nullptr);
 
     // CURLOPT_USERPWD: domain\username:password
-    std::string login = domain_ + "\\" + username_ + ":" + password_;
+    std::string login =
+        (domain_.empty() ? "" : domain_ + "\\") + username_ + ":" + password_;
     request->set_option(CURLOPT_USERPWD, login.c_str());
     request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
 }
