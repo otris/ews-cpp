@@ -8783,77 +8783,22 @@ namespace internal
     class get_delegate_response_message final : public response_message_base
     {
     public:
-        static get_delegate_response_message parse(http_response&& response)
+        // defined below
+        static get_delegate_response_message parse(http_response&&);
+
+        const std::vector<delegate_user>& get_delegates() const EWS_NOEXCEPT
         {
-            using rapidxml::internal::compare;
-
-            const auto doc = parse_response(std::move(response));
-            auto elem = get_element_by_qname(*doc, "GetDelegateResponse",
-                                             uri<>::microsoft::messages());
-            EWS_ASSERT(elem && "Expected <GetDelegateResponse>, got nullptr");
-
-            const auto cls_and_code = parse_response_class_and_code(*elem);
-
-            auto delegate_element = get_element_by_qname(
-                *elem, "DelegateUser", uri<>::microsoft::messages());
-            EWS_ASSERT(elem && "Expected <DelegateUser>, got nullptr");
-
-            auto delegate_properties_element = delegate_element->first_node_ns(
-                uri<>::microsoft::types(), "UserId");
-            EWS_ASSERT(delegate_properties_element &&
-                       "Expected <UserId> in response");
-
-            std::string sid;
-            std::string primary_smtp_address;
-            std::string display_name;
-
-            std::vector<std::string> delegate_properties;
-            for (auto child = delegate_properties_element->first_node();
-                 child != nullptr; child = child->next_sibling())
-            {
-                if (compare("SID", std::strlen("SID"), child->local_name(),
-                            child->local_name_size()))
-                {
-                    sid = std::string(child->value(), child->value_size());
-                    delegate_properties.push_back(sid);
-                }
-                if (compare("PrimarySmtpAddress",
-                            std::strlen("PrimarySmtpAddress"),
-                            child->local_name(), child->local_name_size()))
-                {
-                    primary_smtp_address =
-                        std::string(child->value(), child->value_size());
-                    delegate_properties.push_back(primary_smtp_address);
-                }
-                if (compare("DisplayName", std::strlen("DisplayName"),
-                            child->local_name(), child->local_name_size()))
-                {
-                    display_name =
-                        std::string(child->value(), child->value_size());
-                    delegate_properties.push_back(display_name);
-                }
-            }
-            return get_delegate_response_message(
-                cls_and_code.first, cls_and_code.second,
-                std::move(delegate_properties));
-        }
-
-        const std::vector<std::string>&
-        get_delegate_properties() const EWS_NOEXCEPT
-        {
-            return delegate_properties_;
+            return delegates_;
         }
 
     private:
-        get_delegate_response_message(
-            response_class cls, response_code code,
-            std::vector<std::string> delegate_properties)
-            : response_message_base(cls, code),
-              delegate_properties_(std::move(delegate_properties))
+        get_delegate_response_message(response_class cls, response_code code,
+                                      std::vector<delegate_user> delegates)
+            : response_message_base(cls, code), delegates_(std::move(delegates))
         {
         }
 
-        std::vector<std::string> delegate_properties_;
+        std::vector<delegate_user> delegates_;
     };
 
     class remove_delegate_response_message final : public response_message_base
@@ -8861,8 +8806,6 @@ namespace internal
     public:
         static remove_delegate_response_message parse(http_response&& response)
         {
-            using rapidxml::internal::compare;
-
             const auto doc = parse_response(std::move(response));
             auto elem = get_element_by_qname(*doc, "RemoveDelegateResponse",
                                              uri<>::microsoft::messages());
@@ -9413,11 +9356,19 @@ public:
         return mailbox_type_;
     }
 
-    //! Returns the XML serialized string version of this mailbox instance
-    std::string to_xml() const
+    //! \brief Returns the XML serialized string of this mailbox.
+    //!
+    //! Note: <Mailbox> is a part of
+    //! http://schemas.microsoft.com/exchange/services/2006/types namespace.
+    //! At least that is what the documentation says. However, in the
+    //! <GetDelegate> request the <Mailbox> element is expected
+    //! to be part of
+    //! http://schemas.microsoft.com/exchange/services/2006/messages. This is
+    //! the reason for the extra argument.
+    std::string to_xml(const char* xmlns = "t") const
     {
         std::stringstream sstr;
-        sstr << "<t:Mailbox>";
+        sstr << "<" << xmlns << ":Mailbox>";
         if (id().valid())
         {
             sstr << id().to_xml();
@@ -9443,7 +9394,7 @@ public:
                      << "</t:MailboxType>";
             }
         }
-        sstr << "</t:Mailbox>";
+        sstr << "</" << xmlns << ":Mailbox>";
         return sstr.str();
     }
 
@@ -10955,10 +10906,19 @@ public:
     //! Specifies the delegate permission-level settings for a user
     enum class permission_level
     {
+        //! Access to items is prohibited
         none,
+
+        //! Can read items
         reviewer,
+
+        //! Can read and create items
         author,
+
+        //! Can read, create, and modify items
         editor,
+
+        //! No idea
         custom
     };
 
@@ -17176,29 +17136,29 @@ public:
         // return delegator;
     }
 
-    delegate_user get_delegate(const ews::mailbox& mailbox,
-                               bool include_permissions = false)
+    //! \brief Retrieves the delegate settings and users for the specified
+    //! mailbox.
+    std::vector<delegate_user> get_delegate(const ews::mailbox& mailbox,
+                                            bool include_permissions = false)
     {
-        const auto response =
-            request("<m:GetDelegate>" + mailbox.to_xml() + "</m:GetDelegate>");
+        std::stringstream sstr;
+        sstr << "<m:GetDelegate IncludePermissions=\""
+             << (include_permissions ? "true" : "false") << "\">";
+        sstr << mailbox.to_xml("m");
+        sstr << "</m:GetDelegate>";
+        auto response = request(sstr.str());
 
-        // const auto response_message =
-        //     internal::get_delegate_response_message::parse(std::move(response));
-        // if (!response_message.success())
-        // {
-        //     throw exchange_error(response_message.get_response_code());
-        // }
-        // EWS_ASSERT(!response_message.get_delegate_properties().empty() &&
-        //            "Expected delegator properties");
-
-        // auto resp_properties = response_message.get_delegate_properties();
-        // delegator.set_sid(resp_properties[0]);
-
-        // return delegate_user();
+        const auto response_message =
+            internal::get_delegate_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.get_response_code());
+        }
+        return response_message.get_delegates();
     }
 
     void remove_delegate(const delegate_user& delegator)
-    { //
+    {
         // auto user_address = delegator.get_delegated_account();
         // auto delegate_address = delegator.get_delegator_address();
         // auto sid = delegator.get_sid();
@@ -17807,6 +17767,52 @@ namespace internal
         });
 
         return get_item_response_messages(std::move(messages));
+    }
+
+    inline get_delegate_response_message
+    get_delegate_response_message::parse(http_response&& response)
+    {
+        using rapidxml::internal::compare;
+
+        const auto doc = parse_response(std::move(response));
+        auto response_elem = get_element_by_qname(*doc, "GetDelegateResponse",
+                                                  uri<>::microsoft::messages());
+        EWS_ASSERT(response_elem &&
+                   "Expected <GetDelegateResponse>, got nullptr");
+        const auto cls_and_code = parse_response_class_and_code(*response_elem);
+
+        std::vector<delegate_user> delegates;
+
+        if (cls_and_code.second == response_code::no_error)
+        {
+            for_each_child_node(*response_elem, [&](const rapidxml::xml_node<>&
+                                                        node) {
+                if (compare(node.local_name(), node.local_name_size(),
+                            "ResponseMessages",
+                            std::strlen("ResponseMessages")))
+                {
+                    for_each_child_node(
+                        node, [&](const rapidxml::xml_node<>& msg) {
+                            for_each_child_node(
+                                msg,
+                                [&](const rapidxml::xml_node<>& msg_content) {
+                                    if (compare(msg_content.local_name(),
+                                                msg_content.local_name_size(),
+                                                "DelegateUser",
+                                                std::strlen("DelegateUser")))
+                                    {
+                                        delegates.emplace_back(
+                                            delegate_user::from_xml_element(
+                                                msg_content));
+                                    }
+                                });
+                        });
+                }
+            });
+        }
+
+        return get_delegate_response_message(
+            cls_and_code.first, cls_and_code.second, std::move(delegates));
     }
 }
 
