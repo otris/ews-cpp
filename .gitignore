@@ -51,3 +51,6 @@ tags
 # cscope
 cscope.files
 cscope.out
+
+# VS Code
+.vscode/
