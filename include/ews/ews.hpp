@@ -10796,6 +10796,158 @@ static_assert(std::is_move_constructible<item>::value, "");
 static_assert(std::is_move_assignable<item>::value, "");
 #endif
 
+class user_id final
+{
+public:
+    // Default or Anonymous
+    enum class distinguished_user
+    {
+        default_user_account,
+        anonymous
+    };
+
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    user_id() = default;
+#else
+    user_id() {}
+#endif
+
+    user_id(std::string sid, std::string primary_smtp_address,
+            std::string display_name, distinguished_user user_account,
+            bool external_user_identity = false)
+        : sid_(std::move(sid)),
+          primary_smtp_address_(std::move(primary_smtp_address)),
+          display_name_(std::move(display_name)),
+          distinguished_user_(user_account),
+          external_user_identity_(external_user_identity)
+    {
+    }
+
+    const std::string& get_sid() const EWS_NOEXCEPT { return sid_; }
+
+    const std::string& get_primary_smtp_address() const EWS_NOEXCEPT
+    {
+        return primary_smtp_address_;
+    }
+
+    const std::string& get_display_name() const EWS_NOEXCEPT
+    {
+        return display_name_;
+    }
+
+    distinguished_user get_distinguished_user() const EWS_NOEXCEPT
+    {
+        return distinguished_user_;
+    }
+
+    bool is_external_user_identity() const EWS_NOEXCEPT
+    {
+        return external_user_identity_;
+    }
+
+    static user_id from_xml_element(const rapidxml::xml_node<char>& elem)
+    {
+        using rapidxml::internal::compare;
+
+        // <UserId>
+        //    <SID/>
+        //    <PrimarySmtpAddress/>
+        //    <DisplayName/>
+        //    <DistinguishedUser/>
+        //    <ExternalUserIdentity/>
+        // </UserId>
+
+        std::string sid;
+        std::string primary_smtp_address;
+        std::string display_name;
+        distinguished_user user_account =
+            distinguished_user::default_user_account;
+        bool external_user_identity = false;
+
+        for (auto node = elem.first_node(); node; node = node->next_sibling())
+        {
+            if (compare(node->local_name(), node->local_name_size(), "SID",
+                        std::strlen("SID")))
+            {
+                sid = std::string(node->value(), node->value_size());
+            }
+            else if (compare(node->local_name(), node->local_name_size(),
+                             "PrimarySmtpAddress",
+                             std::strlen("PrimarySmtpAddress")))
+            {
+                primary_smtp_address =
+                    std::string(node->value(), node->value_size());
+            }
+            else if (compare(node->local_name(), node->local_name_size(),
+                             "DisplayName", std::strlen("DisplayName")))
+            {
+                display_name = std::string(node->value(), node->value_size());
+            }
+            else if (compare(node->local_name(), node->local_name_size(),
+                             "DistinguishedUser",
+                             std::strlen("DistinguishedUser")))
+            {
+                const auto val = std::string(node->value(), node->value_size());
+                if (val != "Anonymous")
+                {
+                    user_account = distinguished_user::anonymous;
+                }
+            }
+            else if (compare(node->local_name(), node->local_name_size(),
+                             "ExternalUserIdentity",
+                             std::strlen("ExternalUserIdentity")))
+            {
+                external_user_identity = true;
+            }
+            else
+            {
+                throw exception("Unexpected child element in <UserId>");
+            }
+        }
+
+        return user_id(sid, primary_smtp_address, display_name, user_account,
+                       external_user_identity);
+    }
+
+    std::string to_xml() const
+    {
+        std::stringstream sstr;
+        sstr << "<t:UserId>";
+        sstr << "<t:SID>" << sid_ << "</t:SID>";
+        sstr << "<t:PrimarySmtpAddress>" << primary_smtp_address_
+             << "</t:PrimarySmtpAddress>";
+        sstr << "<t:DisplayName>" << display_name_ << "</t:DisplayName>";
+        // DistinguishedUser shouldn't be rendered if not given
+        sstr << "<t:DistinguishedUser>"
+             << (distinguished_user_ == distinguished_user::anonymous
+                     ? "Anonymous"
+                     : "Default")
+             << "<t:DistinguishedUser>";
+        if (external_user_identity_)
+        {
+            sstr << "<t:ExternalUserIdentity/>";
+        }
+        sstr << "</t:UserId>";
+        return sstr.str();
+    }
+
+private:
+    std::string sid_;
+    std::string primary_smtp_address_;
+    std::string display_name_;
+    distinguished_user distinguished_user_; // TODO C++17: std::optional
+    bool external_user_identity_; // Renders to an element without text value,
+                                  // if set
+};
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+static_assert(std::is_default_constructible<user_id>::value, "");
+static_assert(std::is_copy_constructible<user_id>::value, "");
+static_assert(std::is_copy_assignable<user_id>::value, "");
+static_assert(std::is_move_constructible<user_id>::value, "");
+static_assert(std::is_move_assignable<user_id>::value, "");
+#endif
+
 //! Specifies the permission level for the delegator
 enum class delegator_permission_level
 {
