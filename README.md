@@ -14,19 +14,32 @@ C++ application.
 
 ## Supported Operations and Elements
 
-* Autodiscover
-* `<CreateItem/>`, `<SendItem/>`, `<FindItem/>`, `<GetItem/>`, `<UpdateItem/>`,
-  and `<DeleteItem/>` operations
-* `<CreateAttachment/>`, `<GetAttachment/>`, `<DeleteAttachment/>` for file
-  attachments. Item attachments are not supported yet
-* `<CalendarItem/>`, `<Message/>`, `<Contact/>`, `<Task/>` items. Note that we
-  still don't support all properties of these items. But we're working on it
+* Most items are supported: `<CalendarItem>`, `<Message>`, `<Contact>`,
+  `<Task>`. Note that we still don't support all properties of all of these
+  items. But we're working on it.
+* We support `<CreateItem>`, `<SendItem>`, `<FindItem>`, `<GetItem>`,
+  `<UpdateItem>`, and `<DeleteItem>` operations.
+* Basic support for attachments: `<CreateAttachment>`, `<GetAttachment>`,
+  `<DeleteAttachment>` for file attachments. Note: Item attachments are not
+  supported yet.
+* Allow someone else to manage your mail and calendar:
+    - [Impersonation](https://msdn.microsoft.com/en-us/library/office/dn722377(v=exchg.150).aspx)
+      when you have a service process that needs to do regular tasks for a
+      group of mailboxes or every mailbox in a database.
+    - [Delegate
+      access](https://msdn.microsoft.com/en-us/library/office/dn641957(v=exchg.150).aspx)
+      for granting access to individual  users. You can add permissions
+      individually to each mailbox and directly modify folder permissions.
+* Discovering Exchange servers in your network with
+  [Autodiscover](https://msdn.microsoft.com/en-us/library/office/dd899340(v=exchg.150).aspx)
+  is supported.
 
 ## Supported Authentication Schemes
 
 * HTTP basic auth
 * NTLM
-* Kerberos is currently not supported but its on the TODO list
+
+Note: Kerberos is currently not supported but its on the TODO list.
 
 ## Supported Compilers
 
