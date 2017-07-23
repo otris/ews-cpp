@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <string>
+
 #ifdef EWS_HAS_NOEXCEPT_SPECIFIER
 #define EWS_NOEXCEPT noexcept
 #else
@@ -76,6 +78,7 @@ bool operator==(const date_time&, const date_time&);
 bool operator==(const property_path&, const property_path&);
 void set_up() EWS_NOEXCEPT;
 void tear_down() EWS_NOEXCEPT;
+std::string version();
 template <typename T>
 autodiscover_result get_exchange_web_services_url(const std::string&,
                                                   const basic_credentials&);
