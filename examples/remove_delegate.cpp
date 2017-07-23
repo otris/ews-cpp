@@ -1,5 +1,5 @@
 
-//   Copyright 2016 otris software AG
+//   Copyright 2017 otris software AG
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -29,13 +29,21 @@ int main()
 
     try
     {
+        // Following code shows how to remove two existing delegates from
+        // userA's mailbox. In this example, one delegate is removed by using
+        // the delegate's primary SMTP address, and the other one is removed by
+        // using the delegate's security identifier (SID).
+
         const auto env = ews::test::environment();
         auto service = ews::service(env.server_uri, env.domain, env.username,
                                     env.password);
-        auto delegate = ews::delegate_user("test4@otris.de",
-                                           ews::mailbox("test1@otris.de"));
-        delegate.set_sid("S-1-5-21-1586126869-3955014228-697940070-1208");
-        service.remove_delegate(delegate);
+
+        std::vector<ews::user_id> delegates;
+        delegates.push_back(
+            ews::user_id::from_primary_smtp_address("userB@example.com"));
+        delegates.push_back(ews::user_id::from_sid(
+            "S-1-5-21-1333220396-2200287332-232816053-1118"));
+        service.remove_delegate(ews::mailbox("userA@example.com"), delegates);
     }
     catch (std::exception& exc)
     {

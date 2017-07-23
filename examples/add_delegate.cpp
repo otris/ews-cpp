@@ -1,5 +1,5 @@
 
-//   Copyright 2016 otris software AG
+//   Copyright 2017 otris software AG
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -29,23 +29,24 @@ int main()
 
     try
     {
+        // This is an example of an <AddDelegate> request showing an attempt to
+        // give userA delegate permissions on folders that are owned by userB.
+
+        using permission_level = ews::delegate_user::permission_level;
+
         const auto env = ews::test::environment();
         auto service = ews::service(env.server_uri, env.domain, env.username,
                                     env.password);
-        auto delegate = ews::delegate_user("test4@otris.de",
-                                           ews::mailbox("test1@otris.de"));
-        std::cout << "Delegator: " << delegate.get_delegator_address()
-                  << std::endl;
-        std::cout << "Delegated Account: " << delegate.get_delegated_account()
-                  << std::endl;
-        delegate.set_permission(ews::standard_folder::calendar,
-                                ews::delegator_permission_level::editor);
-        delegate.set_view_private_items(false);
-        delegate.set_receive_copies_of_meeting_messages(false);
-        auto del = service.add_delegate(delegate);
-        std::cout << del.get_sid() << std::endl;
-        std::cout << del.get_delegator_address() << std::endl;
-        std::cout << del.get_delegated_account() << std::endl;
+
+        ews::delegate_user::delegate_permissions permissions;
+        permissions.calendar_folder = permission_level::author;
+        permissions.contacts_folder = permission_level::reviewer;
+        auto userA = ews::delegate_user(
+            ews::user_id::from_primary_smtp_address("userA@example.com"),
+            permissions, false, false);
+        std::vector<ews::delegate_user> delegates;
+        delegates.push_back(userA);
+        service.add_delegate(ews::mailbox("userB@example.com"), delegates);
     }
     catch (std::exception& exc)
     {

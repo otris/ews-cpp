@@ -8703,102 +8703,54 @@ namespace internal
         std::vector<response_message> messages_;
     };
 
-    class add_delegate_response_message final : public response_message_base
+    class delegate_response_message : public response_message_base
     {
     public:
-        static add_delegate_response_message parse(http_response&& response)
-        {
-            using rapidxml::internal::compare;
-
-            const auto doc = parse_response(std::move(response));
-            auto elem = get_element_by_qname(*doc, "AddDelegateResponse",
-                                             uri<>::microsoft::messages());
-            EWS_ASSERT(elem && "Expected <AddDelegateResponse>, got nullptr");
-
-            const auto cls_and_code = parse_response_class_and_code(*elem);
-
-            auto delegate_element = get_element_by_qname(
-                *elem, "DelegateUser", uri<>::microsoft::messages());
-            EWS_ASSERT(elem && "Expected <DelegateUser>, got nullptr");
-
-            auto delegate_properties_element = delegate_element->first_node_ns(
-                uri<>::microsoft::types(), "UserId");
-            EWS_ASSERT(delegate_properties_element &&
-                       "Expected <UserId> in response");
-
-            std::string sid;
-            std::string primary_smtp_address;
-            std::string display_name;
-
-            std::vector<std::string> delegate_properties;
-            for (auto child = delegate_properties_element->first_node();
-                 child != nullptr; child = child->next_sibling())
-            {
-                if (compare("SID", std::strlen("SID"), child->local_name(),
-                            child->local_name_size()))
-                {
-                    sid = std::string(child->value(), child->value_size());
-                    delegate_properties.push_back(sid);
-                }
-                if (compare("PrimarySmtpAddress",
-                            std::strlen("PrimarySmtpAddress"),
-                            child->local_name(), child->local_name_size()))
-                {
-                    primary_smtp_address =
-                        std::string(child->value(), child->value_size());
-                    delegate_properties.push_back(primary_smtp_address);
-                }
-                if (compare("DisplayName", std::strlen("DisplayName"),
-                            child->local_name(), child->local_name_size()))
-                {
-                    display_name =
-                        std::string(child->value(), child->value_size());
-                    delegate_properties.push_back(display_name);
-                }
-            }
-
-            return add_delegate_response_message(
-                cls_and_code.first, cls_and_code.second,
-                std::move(delegate_properties));
-        }
-
-        const std::vector<std::string>&
-        get_delegate_properties() const EWS_NOEXCEPT
-        {
-            return delegate_properties_;
-        }
-
-    private:
-        add_delegate_response_message(
-            response_class cls, response_code code,
-            std::vector<std::string> delegate_properties)
-            : response_message_base(cls, code),
-              delegate_properties_(std::move(delegate_properties))
-        {
-        }
-
-        std::vector<std::string> delegate_properties_;
-    };
-
-    class get_delegate_response_message final : public response_message_base
-    {
-    public:
-        // defined below
-        static get_delegate_response_message parse(http_response&&);
-
         const std::vector<delegate_user>& get_delegates() const EWS_NOEXCEPT
         {
             return delegates_;
         }
 
-    private:
-        get_delegate_response_message(response_class cls, response_code code,
-                                      std::vector<delegate_user> delegates)
+    protected:
+        delegate_response_message(response_class cls, response_code code,
+                                  std::vector<delegate_user> delegates)
             : response_message_base(cls, code), delegates_(std::move(delegates))
         {
         }
 
+        // defined below
+        static std::vector<delegate_user>
+        parse_users(const rapidxml::xml_node<>& response_element);
+
         std::vector<delegate_user> delegates_;
+    };
+
+    class add_delegate_response_message final : public delegate_response_message
+    {
+    public:
+        // defined below
+        static add_delegate_response_message parse(http_response&&);
+
+    private:
+        add_delegate_response_message(response_class cls, response_code code,
+                                      std::vector<delegate_user> delegates)
+            : delegate_response_message(cls, code, std::move(delegates))
+        {
+        }
+    };
+
+    class get_delegate_response_message final : public delegate_response_message
+    {
+    public:
+        // defined below
+        static get_delegate_response_message parse(http_response&&);
+
+    private:
+        get_delegate_response_message(response_class cls, response_code code,
+                                      std::vector<delegate_user> delegates)
+            : delegate_response_message(cls, code, std::move(delegates))
+        {
+        }
     };
 
     class remove_delegate_response_message final : public response_message_base
@@ -8813,7 +8765,6 @@ namespace internal
                        "Expected <RemoveDelegateResponse>, got nullptr");
 
             const auto cls_and_code = parse_response_class_and_code(*elem);
-
             return remove_delegate_response_message(cls_and_code.first,
                                                     cls_and_code.second);
         }
@@ -10796,6 +10747,20 @@ public:
         return external_user_identity_;
     }
 
+    //! Creates a user_id from a given SMTP address.
+    static user_id from_primary_smtp_address(std::string primary_smtp_address)
+    {
+        return user_id(std::string(), std::move(primary_smtp_address),
+                       std::string(), distinguished_user::default_user_account);
+    }
+
+    //! Creates a user_id from a given SID.
+    static user_id from_sid(std::string sid)
+    {
+        return user_id(std::move(sid), std::string(), std::string(),
+                       distinguished_user::default_user_account);
+    }
+
     static user_id from_xml_element(const rapidxml::xml_node<char>& elem)
     {
         using rapidxml::internal::compare;
@@ -10864,20 +10829,36 @@ public:
     {
         std::stringstream sstr;
         sstr << "<t:UserId>";
-        sstr << "<t:SID>" << sid_ << "</t:SID>";
-        sstr << "<t:PrimarySmtpAddress>" << primary_smtp_address_
-             << "</t:PrimarySmtpAddress>";
-        sstr << "<t:DisplayName>" << display_name_ << "</t:DisplayName>";
-        // DistinguishedUser shouldn't be rendered if not given
+
+        if (!sid_.empty())
+        {
+            sstr << "<t:SID>" << sid_ << "</t:SID>";
+        }
+
+        if (!primary_smtp_address_.empty())
+        {
+            sstr << "<t:PrimarySmtpAddress>" << primary_smtp_address_
+                 << "</t:PrimarySmtpAddress>";
+        }
+
+        if (!display_name_.empty())
+        {
+            sstr << "<t:DisplayName>" << display_name_ << "</t:DisplayName>";
+        }
+
+        // TODO: DistinguishedUser shouldn't be rendered if not given; use
+        // something like C++17's std::optional
         sstr << "<t:DistinguishedUser>"
              << (distinguished_user_ == distinguished_user::anonymous
                      ? "Anonymous"
                      : "Default")
-             << "<t:DistinguishedUser>";
+             << "</t:DistinguishedUser>";
+
         if (external_user_identity_)
         {
             sstr << "<t:ExternalUserIdentity/>";
         }
+
         sstr << "</t:UserId>";
         return sstr.str();
     }
@@ -10886,7 +10867,7 @@ private:
     std::string sid_;
     std::string primary_smtp_address_;
     std::string display_name_;
-    distinguished_user distinguished_user_; // TODO C++17: std::optional
+    distinguished_user distinguished_user_;
     bool external_user_identity_; // Renders to an element without text value,
                                   // if set
 };
@@ -10930,6 +10911,16 @@ public:
         permission_level contacts_folder;
         permission_level notes_folder;
         permission_level journal_folder;
+
+        delegate_permissions()
+            : calendar_folder(permission_level::none),
+              tasks_folder(permission_level::none),
+              inbox_folder(permission_level::none),
+              contacts_folder(permission_level::none),
+              notes_folder(permission_level::none),
+              journal_folder(permission_level::none)
+        {
+        }
 
         // defined below
         std::string to_xml() const;
@@ -17118,25 +17109,33 @@ public:
         return response_message.items().front();
     }
 
-    delegate_user add_delegate(delegate_user& delegator)
+    //! \brief Add new delegates to given mailbox
+    std::vector<delegate_user>
+    add_delegate(const ews::mailbox& mailbox,
+                 const std::vector<delegate_user>& delegates)
     {
-        // auto response = request(delegator.to_xml());
+        std::stringstream sstr;
+        sstr << "<m:AddDelegate>";
+        sstr << mailbox.to_xml("m");
+        sstr << "<m:DelegateUsers>";
+        for (const auto& delegate : delegates)
+        {
+            sstr << delegate.to_xml();
+        }
+        sstr << "</m:DelegateUsers>";
+        sstr << "</m:AddDelegate>";
+        auto response = request(sstr.str());
 
-        // const auto response_message =
-        //     internal::add_delegate_response_message::parse(std::move(response));
-        // if (!response_message.success())
-        // {
-        //     throw exchange_error(response_message.get_response_code());
-        // }
-        // EWS_ASSERT(!response_message.get_delegate_properties().empty() &&
-        //            "Expected delegator properties");
-
-        // auto resp_properties = response_message.get_delegate_properties();
-        // delegator.set_sid(resp_properties[0]);
-        // return delegator;
+        const auto response_message =
+            internal::add_delegate_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.get_response_code());
+        }
+        return response_message.get_delegates();
     }
 
-    //! \brief Retrieves the delegate settings and users for the specified
+    //! \brief Retrieves the delegate users and settings for the specified
     //! mailbox.
     std::vector<delegate_user> get_delegate(const ews::mailbox& mailbox,
                                             bool include_permissions = false)
@@ -17157,44 +17156,28 @@ public:
         return response_message.get_delegates();
     }
 
-    void remove_delegate(const delegate_user& delegator)
+    void remove_delegate(const ews::mailbox& mailbox,
+                         const std::vector<user_id>& delegates)
     {
-        // auto user_address = delegator.get_delegated_account();
-        // auto delegate_address = delegator.get_delegator_address();
-        // auto sid = delegator.get_sid();
+        std::stringstream sstr;
+        sstr << "<m:RemoveDelegate>";
+        sstr << mailbox.to_xml("m");
+        sstr << "<m:UserIds>";
+        for (const auto& user : delegates)
+        {
+            sstr << user.to_xml();
+        }
+        sstr << "</m:UserIds>";
+        sstr << "</m:RemoveDelegate>";
+        auto response = request(sstr.str());
 
-        // std::stringstream sstr;
-
-        // sstr << "<m:RemoveDelegate>"
-        //      << "<m:Mailbox>"
-        //      << "<t:EmailAddress>" << user_address << "</t:EmailAddress>"
-        //      << "</m:Mailbox>"
-        //      << "<m:UserIds>";
-        // if (!delegate_address.empty())
-        // {
-        //     sstr << "<t:UserId>"
-        //          << "<t:PrimarySmtpAddress>" << delegate_address
-        //          << "</t:PrimarySmtpAddress>"
-        //          << "</t:UserId>";
-        // }
-        // else if (!sid.empty())
-        // {
-        //     sstr << "<t:UserId>"
-        //          << "<t:SID>" << sid << "</t:SID>"
-        //          << "</t:UserId>";
-        // }
-        // sstr << "</m:UserIds>"
-        //      << "</m:RemoveDelegate>";
-
-        // auto response = request(sstr.str());
-
-        // const auto response_message =
-        //     internal::remove_delegate_response_message::parse(
-        //         std::move(response));
-        // if (!response_message.success())
-        // {
-        //     throw exchange_error(response_message.get_response_code());
-        // }
+        const auto response_message =
+            internal::remove_delegate_response_message::parse(
+                std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.get_response_code());
+        }
     }
 
     //! \brief Lets you attach a file (or another item) to an existing item.
@@ -17769,24 +17752,14 @@ namespace internal
         return get_item_response_messages(std::move(messages));
     }
 
-    inline get_delegate_response_message
-    get_delegate_response_message::parse(http_response&& response)
+    inline std::vector<delegate_user> delegate_response_message::parse_users(
+        const rapidxml::xml_node<>& response_element)
     {
         using rapidxml::internal::compare;
 
-        const auto doc = parse_response(std::move(response));
-        auto response_elem = get_element_by_qname(*doc, "GetDelegateResponse",
-                                                  uri<>::microsoft::messages());
-        EWS_ASSERT(response_elem &&
-                   "Expected <GetDelegateResponse>, got nullptr");
-        const auto cls_and_code = parse_response_class_and_code(*response_elem);
-
-        std::vector<delegate_user> delegates;
-
-        if (cls_and_code.second == response_code::no_error)
-        {
-            for_each_child_node(*response_elem, [&](const rapidxml::xml_node<>&
-                                                        node) {
+        std::vector<delegate_user> delegate_users;
+        for_each_child_node(
+            response_element, [&](const rapidxml::xml_node<>& node) {
                 if (compare(node.local_name(), node.local_name_size(),
                             "ResponseMessages",
                             std::strlen("ResponseMessages")))
@@ -17801,7 +17774,7 @@ namespace internal
                                                 "DelegateUser",
                                                 std::strlen("DelegateUser")))
                                     {
-                                        delegates.emplace_back(
+                                        delegate_users.emplace_back(
                                             delegate_user::from_xml_element(
                                                 msg_content));
                                     }
@@ -17809,8 +17782,43 @@ namespace internal
                         });
                 }
             });
-        }
+        return delegate_users;
+    }
 
+    inline add_delegate_response_message
+    add_delegate_response_message::parse(http_response&& response)
+    {
+        const auto doc = parse_response(std::move(response));
+        auto response_elem = get_element_by_qname(*doc, "m:AddDelegateResponse",
+                                                  uri<>::microsoft::messages());
+        EWS_ASSERT(response_elem &&
+                   "Expected <m:AddDelegateResponse>, got nullptr");
+        const auto cls_and_code = parse_response_class_and_code(*response_elem);
+
+        std::vector<delegate_user> delegates;
+        if (cls_and_code.second == response_code::no_error)
+        {
+            delegates = delegate_response_message::parse_users(*response_elem);
+        }
+        return add_delegate_response_message(
+            cls_and_code.first, cls_and_code.second, std::move(delegates));
+    }
+
+    inline get_delegate_response_message
+    get_delegate_response_message::parse(http_response&& response)
+    {
+        const auto doc = parse_response(std::move(response));
+        auto response_elem = get_element_by_qname(*doc, "GetDelegateResponse",
+                                                  uri<>::microsoft::messages());
+        EWS_ASSERT(response_elem &&
+                   "Expected <GetDelegateResponse>, got nullptr");
+        const auto cls_and_code = parse_response_class_and_code(*response_elem);
+
+        std::vector<delegate_user> delegates;
+        if (cls_and_code.second == response_code::no_error)
+        {
+            delegates = delegate_response_message::parse_users(*response_elem);
+        }
         return get_delegate_response_message(
             cls_and_code.first, cls_and_code.second, std::move(delegates));
     }
@@ -17947,7 +17955,7 @@ inline std::string delegate_user::delegate_permissions::to_xml() const
     sstr << "<t:JournalFolderPermissionLevel>"
          << internal::enum_to_str(journal_folder)
          << "</t:JournalFolderPermissionLevel>";
-    sstr << "</t:DelegatePermissions";
+    sstr << "</t:DelegatePermissions>";
     return sstr.str();
 }
 
