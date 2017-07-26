@@ -2266,7 +2266,7 @@ enum class response_code
 
     //! This error code must be returned when a request is made for a
     //! subscription that has been unsubscribed.
-    error_subscription_unsubsribed,
+    error_subscription_unsubscribed,
 
     //! This error is returned by the SyncFolderItems operation if the
     //! parent folder that is specified cannot be found.
@@ -4142,9 +4142,9 @@ namespace internal
         {
             return response_code::error_subscription_not_found;
         }
-        if (str == "ErrorSubscriptionUnsubsribed")
+        if (str == "ErrorSubscriptionUnsubscribed")
         {
-            return response_code::error_subscription_unsubsribed;
+            return response_code::error_subscription_unsubscribed;
         }
         if (str == "ErrorSyncFolderNotFound")
         {
@@ -5266,8 +5266,8 @@ namespace internal
             return "ErrorSubscriptionDelegateAccessNotSupported";
         case response_code::error_subscription_not_found:
             return "ErrorSubscriptionNotFound";
-        case response_code::error_subscription_unsubsribed:
-            return "ErrorSubscriptionUnsubsribed";
+        case response_code::error_subscription_unsubscribed:
+            return "ErrorSubscriptionUnsubscribed";
         case response_code::error_sync_folder_not_found:
             return "ErrorSyncFolderNotFound";
         case response_code::error_team_mailbox_not_found:
@@ -10049,9 +10049,9 @@ private:
 
 public:
 #endif
+
     //! \brief Constructor to initialize an <tt>\<ExtendedProperty\></tt>
-    //! with the
-    //! neccessary values
+    //! with the necessary values.
     extended_property(extended_field_uri ext_field_uri,
                       std::vector<std::string> values)
         : extended_field_uri_(std::move(ext_field_uri)),
@@ -10077,6 +10077,7 @@ private:
     extended_field_uri extended_field_uri_;
     std::vector<std::string> values_;
 };
+
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
 static_assert(!std::is_default_constructible<extended_property>::value, "");
 static_assert(std::is_copy_constructible<extended_property>::value, "");
@@ -13460,7 +13461,7 @@ private:
         auto addresses = xml().get_node("EmailAddresses");
         if (addresses)
         {
-            // Check if there is alread any entry for given key
+            // Check if there is already any entry for given key
 
             bool exists = false;
             auto entry = addresses->first_node();
@@ -13680,7 +13681,7 @@ static_assert(!std::is_move_constructible<recurrence_pattern>::value, "");
 static_assert(!std::is_move_assignable<recurrence_pattern>::value, "");
 #endif
 
-//! \brief An event that occurrs annually relative to a month, week, and
+//! \brief An event that occurs annually relative to a month, week, and
 //! day.
 //!
 //! Describes an annual relative recurrence, e.g., every third Monday in
@@ -13807,7 +13808,7 @@ static_assert(!std::is_move_constructible<absolute_yearly_recurrence>::value,
 static_assert(!std::is_move_assignable<absolute_yearly_recurrence>::value, "");
 #endif
 
-//! \brief An event that occurrs on the same day each month or monthly
+//! \brief An event that occurs on the same day each month or monthly
 //! interval.
 //!
 //! A good example is payment of a rent that is due on the second of each
@@ -13879,7 +13880,7 @@ static_assert(!std::is_move_constructible<absolute_monthly_recurrence>::value,
 static_assert(!std::is_move_assignable<absolute_monthly_recurrence>::value, "");
 #endif
 
-//! \brief An event that occurrs annually relative to a month, week, and
+//! \brief An event that occurs annually relative to a month, week, and
 //! day.
 //!
 //! For example, if you are a member of a C++ user group that decides to
@@ -15552,7 +15553,7 @@ namespace contact_property_path
             postal_code("contacts:PhysicalAddress", "PostalCode");
     }
 
-    static const property_path postal_adress_index =
+    static const property_path postal_address_index =
         "contacts:PostalAddressIndex";
     static const property_path profession = "contacts:Profession";
     static const property_path spouse_name = "contacts:SpouseName";
