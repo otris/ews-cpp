@@ -29,6 +29,7 @@
 #include <ios>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -10767,13 +10768,22 @@ public:
 #endif
 
     user_id(std::string sid, std::string primary_smtp_address,
+            std::string display_name)
+        : sid_(std::move(sid)),
+          primary_smtp_address_(std::move(primary_smtp_address)),
+          display_name_(std::move(display_name)), distinguished_user_(),
+          external_user_identity_(false)
+    {
+    }
+
+    user_id(std::string sid, std::string primary_smtp_address,
             std::string display_name, distinguished_user user_account,
-            bool external_user_identity = false)
+            bool external_user_identity)
         : sid_(std::move(sid)),
           primary_smtp_address_(std::move(primary_smtp_address)),
           display_name_(std::move(display_name)),
-          distinguished_user_(user_account),
-          external_user_identity_(external_user_identity)
+          distinguished_user_(std::move(user_account)),
+          external_user_identity_(std::move(external_user_identity))
     {
     }
 
@@ -10789,7 +10799,8 @@ public:
         return display_name_;
     }
 
-    distinguished_user get_distinguished_user() const EWS_NOEXCEPT
+    std::optional<distinguished_user>
+    get_distinguished_user() const EWS_NOEXCEPT
     {
         return distinguished_user_;
     }
@@ -10803,14 +10814,13 @@ public:
     static user_id from_primary_smtp_address(std::string primary_smtp_address)
     {
         return user_id(std::string(), std::move(primary_smtp_address),
-                       std::string(), distinguished_user::default_user_account);
+                       std::string());
     }
 
     //! Creates a user_id from a given SID.
     static user_id from_sid(std::string sid)
     {
-        return user_id(std::move(sid), std::string(), std::string(),
-                       distinguished_user::default_user_account);
+        return user_id(std::move(sid), std::string(), std::string());
     }
 
     static user_id from_xml_element(const rapidxml::xml_node<char>& elem)
@@ -10898,13 +10908,14 @@ public:
             sstr << "<t:DisplayName>" << display_name_ << "</t:DisplayName>";
         }
 
-        // TODO: DistinguishedUser shouldn't be rendered if not given; use
-        // something like C++17's std::optional
-        sstr << "<t:DistinguishedUser>"
-             << (distinguished_user_ == distinguished_user::anonymous
-                     ? "Anonymous"
-                     : "Default")
-             << "</t:DistinguishedUser>";
+        if (distinguished_user_.has_value())
+        {
+            sstr << "<t:DistinguishedUser>"
+                 << (distinguished_user_ == distinguished_user::anonymous
+                         ? "Anonymous"
+                         : "Default")
+                 << "</t:DistinguishedUser>";
+        }
 
         if (external_user_identity_)
         {
@@ -10919,7 +10930,7 @@ private:
     std::string sid_;
     std::string primary_smtp_address_;
     std::string display_name_;
-    distinguished_user distinguished_user_;
+    std::optional<distinguished_user> distinguished_user_;
     bool external_user_identity_; // Renders to an element without text value,
                                   // if set
 };

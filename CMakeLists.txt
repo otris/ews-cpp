@@ -47,7 +47,7 @@ endif()
 
 set(GNUCXX_MINIMUM_VERSION "4.8")
 set(CLANGCXX_MINIMUM_VERSION "3.5")
-set(CXX_STANDARD_TAG "c++14")
+set(CXX_STANDARD_TAG "c++17")
 
 # Helper macro. Add -O0 in Debug configuration to prevent any optimization.
 # Makes gdb users much happier.
