@@ -174,6 +174,14 @@ endif()
 # Feature test macros
 include(CheckCXXSourceCompiles)
 
+CHECK_CXX_SOURCE_COMPILES("
+#include <optional>
+int main() { std::optional<int> a; }
+" HAS_OPTIONAL)
+if(HAS_OPTIONAL)
+    add_definitions(-DEWS_HAS_OPTIONAL)
+endif()
+
 # Test support for noexcept specifier - negative: VS 2013
 CHECK_CXX_SOURCE_COMPILES("
 void func() noexcept { }

@@ -29,7 +29,9 @@
 #include <ios>
 #include <iterator>
 #include <memory>
+#ifdef EWS_HAS_OPTIONAL
 #include <optional>
+#endif
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -123,6 +125,57 @@ namespace internal
     static_assert(!std::is_move_constructible<on_scope_exit>::value, "");
     static_assert(!std::is_move_assignable<on_scope_exit>::value, "");
     static_assert(!std::is_default_constructible<on_scope_exit>::value, "");
+#endif
+
+#ifndef EWS_HAS_OPTIONAL
+    // Poor man's std::optional replacement
+    template <typename T> class optional final
+    {
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+        static_assert(std::is_copy_constructible<T>::value,
+                      "T needs to be default constructible");
+#endif
+
+    public:
+        typedef T value_type;
+
+        optional() : value_set_(false), val_() {}
+
+        template <typename U>
+        optional(U&& val) : value_set_(true), val_(std::forward<U>(val))
+        {
+        }
+
+        optional& operator=(T&& value)
+        {
+            val_ = std::move(value);
+            value_set_ = true;
+            return *this;
+        }
+
+        bool has_value() const EWS_NOEXCEPT { return value_set_; }
+
+        // Note we throw std::runtime_exception instead of
+        // std::bad_optional_access
+        const T& value() const
+        {
+            if (!has_value())
+            {
+                throw std::runtime_error("Bad ews::internal::optional access");
+            }
+            return val_;
+        }
+
+    private:
+        bool value_set_;
+        value_type val_;
+    };
+
+    template <typename T, typename U>
+    inline bool operator==(const optional<T>& opt, const U& value)
+    {
+        return opt.has_value() ? opt.value() == value : false;
+    }
 #endif
 
     namespace base64
@@ -10799,7 +10852,11 @@ public:
         return display_name_;
     }
 
+#ifdef EWS_HAS_OPTIONAL
     std::optional<distinguished_user>
+#else
+    internal::optional<distinguished_user>
+#endif
     get_distinguished_user() const EWS_NOEXCEPT
     {
         return distinguished_user_;
@@ -10930,7 +10987,11 @@ private:
     std::string sid_;
     std::string primary_smtp_address_;
     std::string display_name_;
+#ifdef EWS_HAS_OPTIONAL
     std::optional<distinguished_user> distinguished_user_;
+#else
+    internal::optional<distinguished_user> distinguished_user_;
+#endif
     bool external_user_identity_; // Renders to an element without text value,
                                   // if set
 };
