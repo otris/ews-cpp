@@ -276,7 +276,7 @@ TEST_F(ServiceTest, UpdateItemOfReadOnlyPropertyThrowsWhatMessage)
     }
     catch (ews::exchange_error& exc)
     {
-        EXPECT_STREQ("ErrorInvalidPropertySet", exc.what());
+        EXPECT_EQ(ews::response_code::error_invalid_property_set, exc.code());
     }
 }
 

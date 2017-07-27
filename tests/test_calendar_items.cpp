@@ -484,7 +484,6 @@ TEST_F(CalendarItemTest, GetCalendarItemWithInvalidIdExceptionResponse)
     catch (ews::exchange_error& exc)
     {
         EXPECT_EQ(ews::response_code::error_invalid_id_empty, exc.code());
-        EXPECT_STREQ("ErrorInvalidIdEmpty", exc.what());
     }
 }
 
