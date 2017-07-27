@@ -8563,7 +8563,7 @@ static_assert(std::is_move_assignable<attachment>::value, "");
 
 namespace internal
 {
-    // Parse response class and response code from given element.
+    // Parse response class, code, and message text from given response element.
     inline response_result
     parse_response_class_and_code(const rapidxml::xml_node<>& elem)
     {
@@ -11142,7 +11142,7 @@ public:
     std::string to_xml() const
     {
         std::stringstream sstr;
-        sstr << "<m:DelegateUser>";
+        sstr << "<t:DelegateUser>";
         sstr << user_id_.to_xml();
         sstr << permissions_.to_xml();
         sstr << "<t:ReceiveCopiesOfMeetingMessages>"
@@ -11151,7 +11151,7 @@ public:
         sstr << "<t:ViewPrivateItems>"
              << (view_private_items_ ? "true" : "false")
              << "</t:ViewPrivateItems>";
-        sstr << "</m:DelegateUser>";
+        sstr << "</t:DelegateUser>";
         return sstr.str();
     }
 
@@ -17915,10 +17915,10 @@ namespace internal
     add_delegate_response_message::parse(http_response&& response)
     {
         const auto doc = parse_response(std::move(response));
-        auto response_elem = get_element_by_qname(*doc, "m:AddDelegateResponse",
+        auto response_elem = get_element_by_qname(*doc, "AddDelegateResponse",
                                                   uri<>::microsoft::messages());
         EWS_ASSERT(response_elem &&
-                   "Expected <m:AddDelegateResponse>, got nullptr");
+                   "Expected <AddDelegateResponse>, got nullptr");
         auto result = parse_response_class_and_code(*response_elem);
 
         std::vector<delegate_user> delegates;
