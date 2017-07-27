@@ -32,7 +32,7 @@ int main()
         // This is an example of an <AddDelegate> request showing an attempt to
         // give userA delegate permissions on folders that are owned by userB.
 
-        using permission_level = ews::delegate_user::permission_level;
+        typedef ews::delegate_user::permission_level permission_level;
 
         const auto env = ews::test::environment();
         auto service = ews::service(env.server_uri, env.domain, env.username,
