@@ -82,6 +82,18 @@ TEST(FolderTest, DistinguishedFolderIdToXMLWithChangeKey)
     EXPECT_STREQ(expected, folder.to_xml().c_str());
 }
 
+TEST(FolderTest, DistinguishedFolderIdAndMailboxOwnerToXML)
+{
+    const char* expected =
+    "<t:DistinguishedFolderId Id=\"inbox\">"
+    "<t:Mailbox><t:EmailAddress>test@example.com</t:EmailAddress></t:Mailbox>"
+    "</t:DistinguishedFolderId>";
+    const auto owner = ews::mailbox("test@example.com");
+    const auto folder =
+        ews::distinguished_folder_id(ews::standard_folder::inbox, owner);
+    EXPECT_STREQ(expected, folder.to_xml().c_str());
+}
+
 TEST(FolderTest, DistinguishedFolderIsAlwaysValid)
 {
     auto folder = ews::distinguished_folder_id(ews::standard_folder::inbox);

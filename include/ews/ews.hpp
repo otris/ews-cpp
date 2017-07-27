@@ -7861,6 +7861,248 @@ static_assert(std::is_move_constructible<attachment_id>::value, "");
 static_assert(std::is_move_assignable<attachment_id>::value, "");
 #endif
 
+//! \brief Represents a SMTP mailbox.
+//!
+//! Identifies a fully resolved email address. Usually represents a
+//! contact's email address, a message recipient, or the organizer of a
+//! meeting.
+class mailbox final
+{
+public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    //! \brief Creates a new undefined mailbox.
+    //!
+    //! Only useful as return value to indicate that no mailbox is set or
+    //! available. (Good candidate for {boost,std}::optional)
+    mailbox() = default;
+#else
+    mailbox() {}
+#endif
+
+    explicit mailbox(item_id id)
+        : id_(std::move(id)), value_(), name_(), routing_type_(),
+          mailbox_type_()
+    {
+    }
+
+    explicit mailbox(std::string value, std::string name = std::string(),
+                     std::string routing_type = std::string(),
+                     std::string mailbox_type = std::string())
+        : id_(), value_(std::move(value)), name_(std::move(name)),
+          routing_type_(std::move(routing_type)),
+          mailbox_type_(std::move(mailbox_type))
+    {
+    }
+
+    //! True if this mailbox is undefined
+    bool none() const EWS_NOEXCEPT { return value_.empty() && !id_.valid(); }
+
+    // TODO: rename
+    const item_id& id() const EWS_NOEXCEPT { return id_; }
+
+    //! Returns the email address
+    const std::string& value() const EWS_NOEXCEPT { return value_; }
+
+    //! \brief Returns the name of the mailbox user.
+    //!
+    //! This attribute is optional.
+    const std::string& name() const EWS_NOEXCEPT { return name_; }
+
+    //! \brief Returns the routing type.
+    //
+    //! This attribute is optional. Default is SMTP
+    const std::string& routing_type() const EWS_NOEXCEPT
+    {
+        return routing_type_;
+    }
+
+    //! \brief Returns the mailbox type.
+    //!
+    //! This attribute is optional.
+    const std::string& mailbox_type() const EWS_NOEXCEPT
+    {
+        return mailbox_type_;
+    }
+
+    //! \brief Returns the XML serialized string of this mailbox.
+    //!
+    //! Note: <Mailbox> is a part of
+    //! http://schemas.microsoft.com/exchange/services/2006/types namespace.
+    //! At least that is what the documentation says. However, in the
+    //! <GetDelegate> request the <Mailbox> element is expected
+    //! to be part of
+    //! http://schemas.microsoft.com/exchange/services/2006/messages. This is
+    //! the reason for the extra argument.
+    std::string to_xml(const char* xmlns = "t") const
+    {
+        std::stringstream sstr;
+        sstr << "<" << xmlns << ":Mailbox>";
+        if (id().valid())
+        {
+            sstr << id().to_xml();
+        }
+        else
+        {
+            sstr << "<t:EmailAddress>" << value() << "</t:EmailAddress>";
+
+            if (!name().empty())
+            {
+                sstr << "<t:Name>" << name() << "</t:Name>";
+            }
+
+            if (!routing_type().empty())
+            {
+                sstr << "<t:RoutingType>" << routing_type()
+                     << "</t:RoutingType>";
+            }
+
+            if (!mailbox_type().empty())
+            {
+                sstr << "<t:MailboxType>" << mailbox_type()
+                     << "</t:MailboxType>";
+            }
+        }
+        sstr << "</" << xmlns << ":Mailbox>";
+        return sstr.str();
+    }
+
+    //! \brief Creates a new \<Mailbox> XML element and appends it to given
+    //! parent node.
+    //!
+    //! Returns a reference to the newly created element.
+    rapidxml::xml_node<>& to_xml_element(rapidxml::xml_node<>& parent) const
+    {
+        auto doc = parent.document();
+
+        EWS_ASSERT(doc && "parent node needs to be somewhere in a document");
+
+        using namespace internal;
+        auto& mailbox_node = create_node(parent, "t:Mailbox");
+
+        if (!id_.valid())
+        {
+            EWS_ASSERT(!value_.empty() &&
+                       "Neither item_id nor value set in mailbox instance");
+
+            create_node(mailbox_node, "t:EmailAddress", value_);
+
+            if (!name_.empty())
+            {
+                create_node(mailbox_node, "t:Name", name_);
+            }
+
+            if (!routing_type_.empty())
+            {
+                create_node(mailbox_node, "t:RoutingType", routing_type_);
+            }
+
+            if (!mailbox_type_.empty())
+            {
+                create_node(mailbox_node, "t:MailboxType", mailbox_type_);
+            }
+        }
+        else
+        {
+            auto item_id_node = &create_node(mailbox_node, "t:ItemId");
+
+            auto ptr_to_key = doc->allocate_string("Id");
+            auto ptr_to_value = doc->allocate_string(id_.id().c_str());
+            item_id_node->append_attribute(
+                doc->allocate_attribute(ptr_to_key, ptr_to_value));
+
+            ptr_to_key = doc->allocate_string("ChangeKey");
+            ptr_to_value = doc->allocate_string(id_.change_key().c_str());
+            item_id_node->append_attribute(
+                doc->allocate_attribute(ptr_to_key, ptr_to_value));
+        }
+        return mailbox_node;
+    }
+
+    //! Makes a mailbox instance from a \<Mailbox> XML element
+    static mailbox from_xml_element(const rapidxml::xml_node<>& elem)
+    {
+        using rapidxml::internal::compare;
+
+        //  <Mailbox>
+        //      <Name/>
+        //      <EmailAddress/>
+        //      <RoutingType/>
+        //      <MailboxType/>
+        //      <ItemId/>
+        //  </Mailbox>
+        //
+        // <EmailAddress> child element is required except when dealing
+        // with a private distribution list or a contact from a user's
+        // contacts folder, in which case the <ItemId> child element is
+        // used instead
+
+        std::string name;
+        std::string address;
+        std::string routing_type;
+        std::string mailbox_type;
+        item_id id;
+
+        for (auto node = elem.first_node(); node; node = node->next_sibling())
+        {
+            if (compare(node->local_name(), node->local_name_size(), "Name",
+                        std::strlen("Name")))
+            {
+                name = std::string(node->value(), node->value_size());
+            }
+            else if (compare(node->local_name(), node->local_name_size(),
+                             "EmailAddress", std::strlen("EmailAddress")))
+            {
+                address = std::string(node->value(), node->value_size());
+            }
+            else if (compare(node->local_name(), node->local_name_size(),
+                             "RoutingType", std::strlen("RoutingType")))
+            {
+                routing_type = std::string(node->value(), node->value_size());
+            }
+            else if (compare(node->local_name(), node->local_name_size(),
+                             "MailboxType", std::strlen("MailboxType")))
+            {
+                mailbox_type = std::string(node->value(), node->value_size());
+            }
+            else if (compare(node->local_name(), node->local_name_size(),
+                             "ItemId", std::strlen("ItemId")))
+            {
+                id = item_id::from_xml_element(*node);
+            }
+            else
+            {
+                throw exception("Unexpected child element in <Mailbox>");
+            }
+        }
+
+        if (!id.valid())
+        {
+            EWS_ASSERT(!address.empty() &&
+                       "<EmailAddress> element value can't be empty");
+
+            return mailbox(std::move(address), std::move(name),
+                           std::move(routing_type), std::move(mailbox_type));
+        }
+
+        return mailbox(std::move(id));
+    }
+
+private:
+    item_id id_;
+    std::string value_;
+    std::string name_;
+    std::string routing_type_;
+    std::string mailbox_type_;
+};
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+static_assert(std::is_default_constructible<mailbox>::value, "");
+static_assert(std::is_copy_constructible<mailbox>::value, "");
+static_assert(std::is_copy_assignable<mailbox>::value, "");
+static_assert(std::is_move_constructible<mailbox>::value, "");
+static_assert(std::is_move_assignable<mailbox>::value, "");
+#endif
+
 //! \brief Identifies a folder.
 //!
 //! Renders a <tt>\<FolderId></tt> element. Contains the identifier and
@@ -7951,19 +8193,37 @@ public:
     distinguished_folder_id() = delete;
 #endif
 
-    // Intentionally not explicit
-    distinguished_folder_id(standard_folder folder)
-        : folder_id(well_known_name(folder))
+    //! \brief Creates a <tt>\<DistinguishedFolderId></tt> element for a given
+    //! well-known folder.
+    distinguished_folder_id(standard_folder folder) // Intentionally not
+        : folder_id(well_known_name(folder))        // explicit
     {
     }
 
+    //! \brief Creates a <tt>\<DistinguishedFolderId></tt> element for a given
+    //! well-known folder and change key.
     distinguished_folder_id(standard_folder folder, std::string change_key)
         : folder_id(well_known_name(folder), std::move(change_key))
     {
     }
 
-    // TODO: Constructor for EWS delegate access
-    // distinguished_folder_id(standard_folder, mailbox) {}
+    //! \brief Constructor for EWS delegate access.
+    //!
+    //! Creates a <tt>\<DistinguishedFolderId></tt> element for a well-known
+    //! folder of a different user. The user is the folder's owner.
+    //!
+    //! By specifying a well-known folder name and a SMTP mailbox address, a
+    //! delegate can get access to the mailbox owner's folder and the items
+    //! therein. If the resulting distinguished_folder_id is used in a
+    //! subsequent find_item, get_{task,message,calendar_item,contact} call, the
+    //! returned item_ids allow implicit access to the mailbox owner's items.
+    //!
+    //! This access pattern is described as explicit/implicit access in
+    //! Microsoft's documentation.
+    distinguished_folder_id(standard_folder folder, mailbox owner)
+        : folder_id(well_known_name(folder)), owner_(std::move(owner))
+    {
+    }
 
     //! Returns the standard_folder enum for given string
     static standard_folder str_to_standard_folder(const std::string& name)
@@ -8313,17 +8573,32 @@ public:
     }
 
 private:
+#ifdef EWS_HAS_OPTIONAL
+    std::optional<mailbox> owner_;
+#else
+    internal::optional<mailbox> owner_;
+#endif
+
     std::string to_xml_impl() const override
     {
         std::stringstream sstr;
-        sstr << "<t:"
-             << "DistinguishedFolderId Id=\"";
+        sstr << "<t:DistinguishedFolderId Id=\"";
         sstr << id();
-        if (!change_key().empty())
+
+        if (owner_.has_value())
         {
-            sstr << "\" ChangeKey=\"" << change_key();
+            sstr << "\">";
+            sstr << owner_.value().to_xml();
+            sstr << "</t:DistinguishedFolderId>";
         }
-        sstr << "\"/>";
+        else
+        {
+            if (!change_key().empty())
+            {
+                sstr << "\" ChangeKey=\"" << change_key();
+            }
+            sstr << "\"/>";
+        }
         return sstr.str();
     }
 };
@@ -9347,248 +9622,6 @@ static_assert(std::is_copy_constructible<mime_content>::value, "");
 static_assert(std::is_copy_assignable<mime_content>::value, "");
 static_assert(std::is_move_constructible<mime_content>::value, "");
 static_assert(std::is_move_assignable<mime_content>::value, "");
-#endif
-
-//! \brief Represents a SMTP mailbox.
-//!
-//! Identifies a fully resolved email address. Usually represents a
-//! contact's email address, a message recipient, or the organizer of a
-//! meeting.
-class mailbox final
-{
-public:
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
-    //! \brief Creates a new undefined mailbox.
-    //!
-    //! Only useful as return value to indicate that no mailbox is set or
-    //! available. (Good candidate for {boost,std}::optional)
-    mailbox() = default;
-#else
-    mailbox() {}
-#endif
-
-    explicit mailbox(item_id id)
-        : id_(std::move(id)), value_(), name_(), routing_type_(),
-          mailbox_type_()
-    {
-    }
-
-    explicit mailbox(std::string value, std::string name = std::string(),
-                     std::string routing_type = std::string(),
-                     std::string mailbox_type = std::string())
-        : id_(), value_(std::move(value)), name_(std::move(name)),
-          routing_type_(std::move(routing_type)),
-          mailbox_type_(std::move(mailbox_type))
-    {
-    }
-
-    //! True if this mailbox is undefined
-    bool none() const EWS_NOEXCEPT { return value_.empty() && !id_.valid(); }
-
-    // TODO: rename
-    const item_id& id() const EWS_NOEXCEPT { return id_; }
-
-    //! Returns the email address
-    const std::string& value() const EWS_NOEXCEPT { return value_; }
-
-    //! \brief Returns the name of the mailbox user.
-    //!
-    //! This attribute is optional.
-    const std::string& name() const EWS_NOEXCEPT { return name_; }
-
-    //! \brief Returns the routing type.
-    //
-    //! This attribute is optional. Default is SMTP
-    const std::string& routing_type() const EWS_NOEXCEPT
-    {
-        return routing_type_;
-    }
-
-    //! \brief Returns the mailbox type.
-    //!
-    //! This attribute is optional.
-    const std::string& mailbox_type() const EWS_NOEXCEPT
-    {
-        return mailbox_type_;
-    }
-
-    //! \brief Returns the XML serialized string of this mailbox.
-    //!
-    //! Note: <Mailbox> is a part of
-    //! http://schemas.microsoft.com/exchange/services/2006/types namespace.
-    //! At least that is what the documentation says. However, in the
-    //! <GetDelegate> request the <Mailbox> element is expected
-    //! to be part of
-    //! http://schemas.microsoft.com/exchange/services/2006/messages. This is
-    //! the reason for the extra argument.
-    std::string to_xml(const char* xmlns = "t") const
-    {
-        std::stringstream sstr;
-        sstr << "<" << xmlns << ":Mailbox>";
-        if (id().valid())
-        {
-            sstr << id().to_xml();
-        }
-        else
-        {
-            sstr << "<t:EmailAddress>" << value() << "</t:EmailAddress>";
-
-            if (!name().empty())
-            {
-                sstr << "<t:Name>" << name() << "</t:Name>";
-            }
-
-            if (!routing_type().empty())
-            {
-                sstr << "<t:RoutingType>" << routing_type()
-                     << "</t:RoutingType>";
-            }
-
-            if (!mailbox_type().empty())
-            {
-                sstr << "<t:MailboxType>" << mailbox_type()
-                     << "</t:MailboxType>";
-            }
-        }
-        sstr << "</" << xmlns << ":Mailbox>";
-        return sstr.str();
-    }
-
-    //! \brief Creates a new \<Mailbox> XML element and appends it to given
-    //! parent node.
-    //!
-    //! Returns a reference to the newly created element.
-    rapidxml::xml_node<>& to_xml_element(rapidxml::xml_node<>& parent) const
-    {
-        auto doc = parent.document();
-
-        EWS_ASSERT(doc && "parent node needs to be somewhere in a document");
-
-        using namespace internal;
-        auto& mailbox_node = create_node(parent, "t:Mailbox");
-
-        if (!id_.valid())
-        {
-            EWS_ASSERT(!value_.empty() &&
-                       "Neither item_id nor value set in mailbox instance");
-
-            create_node(mailbox_node, "t:EmailAddress", value_);
-
-            if (!name_.empty())
-            {
-                create_node(mailbox_node, "t:Name", name_);
-            }
-
-            if (!routing_type_.empty())
-            {
-                create_node(mailbox_node, "t:RoutingType", routing_type_);
-            }
-
-            if (!mailbox_type_.empty())
-            {
-                create_node(mailbox_node, "t:MailboxType", mailbox_type_);
-            }
-        }
-        else
-        {
-            auto item_id_node = &create_node(mailbox_node, "t:ItemId");
-
-            auto ptr_to_key = doc->allocate_string("Id");
-            auto ptr_to_value = doc->allocate_string(id_.id().c_str());
-            item_id_node->append_attribute(
-                doc->allocate_attribute(ptr_to_key, ptr_to_value));
-
-            ptr_to_key = doc->allocate_string("ChangeKey");
-            ptr_to_value = doc->allocate_string(id_.change_key().c_str());
-            item_id_node->append_attribute(
-                doc->allocate_attribute(ptr_to_key, ptr_to_value));
-        }
-        return mailbox_node;
-    }
-
-    //! Makes a mailbox instance from a \<Mailbox> XML element
-    static mailbox from_xml_element(const rapidxml::xml_node<>& elem)
-    {
-        using rapidxml::internal::compare;
-
-        //  <Mailbox>
-        //      <Name/>
-        //      <EmailAddress/>
-        //      <RoutingType/>
-        //      <MailboxType/>
-        //      <ItemId/>
-        //  </Mailbox>
-        //
-        // <EmailAddress> child element is required except when dealing
-        // with a private distribution list or a contact from a user's
-        // contacts folder, in which case the <ItemId> child element is
-        // used instead
-
-        std::string name;
-        std::string address;
-        std::string routing_type;
-        std::string mailbox_type;
-        item_id id;
-
-        for (auto node = elem.first_node(); node; node = node->next_sibling())
-        {
-            if (compare(node->local_name(), node->local_name_size(), "Name",
-                        std::strlen("Name")))
-            {
-                name = std::string(node->value(), node->value_size());
-            }
-            else if (compare(node->local_name(), node->local_name_size(),
-                             "EmailAddress", std::strlen("EmailAddress")))
-            {
-                address = std::string(node->value(), node->value_size());
-            }
-            else if (compare(node->local_name(), node->local_name_size(),
-                             "RoutingType", std::strlen("RoutingType")))
-            {
-                routing_type = std::string(node->value(), node->value_size());
-            }
-            else if (compare(node->local_name(), node->local_name_size(),
-                             "MailboxType", std::strlen("MailboxType")))
-            {
-                mailbox_type = std::string(node->value(), node->value_size());
-            }
-            else if (compare(node->local_name(), node->local_name_size(),
-                             "ItemId", std::strlen("ItemId")))
-            {
-                id = item_id::from_xml_element(*node);
-            }
-            else
-            {
-                throw exception("Unexpected child element in <Mailbox>");
-            }
-        }
-
-        if (!id.valid())
-        {
-            EWS_ASSERT(!address.empty() &&
-                       "<EmailAddress> element value can't be empty");
-
-            return mailbox(std::move(address), std::move(name),
-                           std::move(routing_type), std::move(mailbox_type));
-        }
-
-        return mailbox(std::move(id));
-    }
-
-private:
-    item_id id_;
-    std::string value_;
-    std::string name_;
-    std::string routing_type_;
-    std::string mailbox_type_;
-};
-
-#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<mailbox>::value, "");
-static_assert(std::is_copy_constructible<mailbox>::value, "");
-static_assert(std::is_copy_assignable<mailbox>::value, "");
-static_assert(std::is_move_constructible<mailbox>::value, "");
-static_assert(std::is_move_assignable<mailbox>::value, "");
 #endif
 
 //! \brief An attendee of a meeting or a meeting room.
