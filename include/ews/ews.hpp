@@ -16961,55 +16961,68 @@ public:
     // Only purpose of this overload-set is to prevent exploding template
     // code in errors messages in caller's code
 
-    //! \brief Creates a new task item from the given object in the
-    //! Exchange store.
+    //! \brief Creates a new task from the given object in the Exchange store.
     //!
-    //! Returns it's item_id if successful.
+    //! \return The new task's item_id if successful.
     item_id create_item(const task& the_task)
     {
-        return create_item_impl(the_task);
+        return create_item_impl(the_task, folder_id());
     }
 
-    //! \brief Creates a new contact item from the given object in the
-    //! Exchange store
+    //! \brief Creates a new task from the given object in the the specified
+    //! folder.
     //!
-    //! Returns it's item_id if successful.
+    //! \param folder The target folder where the task is saved.
+    //!
+    //! \return The new task's item_id if successful.
+    item_id create_item(const task& the_task, const folder_id& folder)
+    {
+        return create_item_impl(the_task, folder);
+    }
+
+    //! \brief Creates a new contact from the given object in the Exchange
+    //! store.
+    //!
+    //! \return The new contact's item_id if successful.
     item_id create_item(const contact& the_contact)
     {
-        return create_item_impl(the_contact);
+        return create_item_impl(the_contact, folder_id());
     }
 
-    //! \brief Creates a new calendar item from the given object in the
-    //! Exchange store
+    //! \brief Creates a new contact from the given object in the specified
+    //! folder.
     //!
-    //! Returns it's item_id if successful.
+    //! \param folder The target folder where the contact is saved.
+    //!
+    //! \return The new contact's item_id if successful.
+    item_id create_item(const contact& the_contact, const folder_id& folder)
+    {
+        return create_item_impl(the_contact, folder);
+    }
+
+    //! \brief Creates a new calendar item from the given object in the Exchange
+    //! store.
+    //!
+    //! \return The new calendar items's item_id if successful.
     item_id create_item(const calendar_item& the_calendar_item,
                         send_meeting_invitations send_invitations =
                             send_meeting_invitations::send_to_none)
     {
-        using internal::create_item_response_message;
+        return create_item_impl(the_calendar_item, send_invitations,
+                                folder_id());
+    }
 
-        std::stringstream sstr;
-        sstr << "<m:CreateItem SendMeetingInvitations=\""
-             << internal::enum_to_str(send_invitations) << "\">";
-        sstr << "<m:Items>"
-                "<t:CalendarItem>";
-        sstr << the_calendar_item.xml().to_string();
-        sstr << "</t:CalendarItem>"
-                "</m:Items>"
-                "</m:CreateItem>";
-
-        auto response = request(sstr.str());
-
-        const auto response_message =
-            create_item_response_message::parse(std::move(response));
-        if (!response_message.success())
-        {
-            throw exchange_error(response_message.result());
-        }
-        EWS_ASSERT(!response_message.items().empty() &&
-                   "Expected a message item");
-        return response_message.items().front();
+    //! \brief Creates a new calendar item from the given object in the
+    //! specified folder.
+    //!
+    //! \param folder The target folder where the calendar item is saved.
+    //!
+    //! \return The new calendar items's item_id if successful.
+    item_id create_item(const calendar_item& the_calendar_item,
+                        send_meeting_invitations send_invitations,
+                        const folder_id& folder)
+    {
+        return create_item_impl(the_calendar_item, send_invitations, folder);
     }
 
     //! \brief Creates a new message in the Exchange store.
@@ -17030,35 +17043,21 @@ public:
     item_id create_item(const message& the_message,
                         ews::message_disposition disposition)
     {
-        using internal::create_item_response_message;
+        return create_item_impl(the_message, disposition, folder_id());
+    }
 
-        std::stringstream sstr;
-        sstr << "<m:CreateItem MessageDisposition=\""
-             << internal::enum_to_str(disposition) << "\">";
-        sstr << "<m:Items>"
-             << "<t:Message>";
-        sstr << the_message.xml().to_string();
-        sstr << "</t:Message>"
-                "</m:Items>"
-                "</m:CreateItem>";
-
-        auto response = request(sstr.str());
-
-        const auto response_message =
-            create_item_response_message::parse(std::move(response));
-        if (!response_message.success())
-        {
-            throw exchange_error(response_message.result());
-        }
-
-        if (disposition == message_disposition::save_only)
-        {
-            EWS_ASSERT(!response_message.items().empty() &&
-                       "Expected a message item");
-            return response_message.items().front();
-        }
-
-        return item_id();
+    //! \brief Creates a new message in the specified folder.
+    //!
+    //! \param folder The target folder where the message is saved.
+    //!
+    //! \return The item id of the saved message when
+    //! message_disposition::save_only was given; otherwise an invalid item
+    //! id.
+    item_id create_item(const message& the_message,
+                        ews::message_disposition disposition,
+                        const folder_id& folder)
+    {
+        return create_item_impl(the_message, disposition, folder);
     }
 
     //! Sends a message that is already in the Exchange store.
@@ -17683,13 +17682,18 @@ private:
 
     // Creates an item on the server and returns it's item_id.
     template <typename ItemType>
-    item_id create_item_impl(const ItemType& the_item)
+    item_id create_item_impl(const ItemType& the_item, const folder_id& folder)
     {
-        using internal::create_item_response_message;
-
         std::stringstream sstr;
-        sstr << "<m:CreateItem>"
-                "<m:Items>";
+        sstr << "<m:CreateItem>";
+
+        if (folder.valid())
+        {
+            sstr << "<m:SavedItemFolderId>" << folder.to_xml()
+                 << "</m:SavedItemFolderId>";
+        }
+
+        sstr << "<m:Items>";
         sstr << "<t:" << the_item.item_tag_name() << ">";
         sstr << the_item.xml().to_string();
         sstr << "</t:" << the_item.item_tag_name() << ">";
@@ -17698,7 +17702,7 @@ private:
 
         auto response = request(sstr.str());
         const auto response_message =
-            create_item_response_message::parse(std::move(response));
+            internal::create_item_response_message::parse(std::move(response));
         if (!response_message.success())
         {
             throw exchange_error(response_message.result());
@@ -17706,6 +17710,82 @@ private:
         EWS_ASSERT(!response_message.items().empty() &&
                    "Expected at least one item");
         return response_message.items().front();
+    }
+
+    item_id create_item_impl(const calendar_item& the_calendar_item,
+                             send_meeting_invitations send_invitations,
+                             const folder_id& folder)
+    {
+        using internal::create_item_response_message;
+
+        std::stringstream sstr;
+        sstr << "<m:CreateItem SendMeetingInvitations=\""
+             << internal::enum_to_str(send_invitations) << "\">";
+
+        if (folder.valid())
+        {
+            sstr << "<m:SavedItemFolderId>" << folder.to_xml()
+                 << "</m:SavedItemFolderId>";
+        }
+
+        sstr << "<m:Items>"
+                "<t:CalendarItem>";
+        sstr << the_calendar_item.xml().to_string();
+        sstr << "</t:CalendarItem>"
+                "</m:Items>"
+                "</m:CreateItem>";
+
+        auto response = request(sstr.str());
+
+        const auto response_message =
+            create_item_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+        EWS_ASSERT(!response_message.items().empty() &&
+                   "Expected a message item");
+        return response_message.items().front();
+    }
+
+    item_id create_item_impl(const message& the_message,
+                             ews::message_disposition disposition,
+                             const folder_id& folder)
+    {
+        std::stringstream sstr;
+        sstr << "<m:CreateItem MessageDisposition=\""
+             << internal::enum_to_str(disposition) << "\">";
+
+        if (folder.valid())
+        {
+            sstr << "<m:SavedItemFolderId>" << folder.to_xml()
+                 << "</m:SavedItemFolderId>";
+        }
+
+        sstr << "<m:Items>"
+             << "<t:Message>";
+        sstr << the_message.xml().to_string();
+        sstr << "</t:Message>"
+                "</m:Items>"
+                "</m:CreateItem>";
+
+        auto response = request(sstr.str());
+
+        const auto response_message =
+            internal::create_item_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+
+        if (disposition == message_disposition::save_only)
+        {
+            EWS_ASSERT(!response_message.items().empty() &&
+                       "Expected a message item");
+            return response_message.items().front();
+        }
+
+        return item_id();
     }
 };
 
