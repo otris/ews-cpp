@@ -12027,16 +12027,10 @@ public:
 private:
     template <typename U> friend class basic_service;
 
-    std::string create_item_request_string() const
+    const std::string& item_tag_name() const EWS_NOEXCEPT
     {
-        std::stringstream sstr;
-        sstr << "<m:CreateItem>"
-                "<m:Items>"
-                "<t:Task>"
-             << xml().to_string() << "</t:Task>"
-                                     "</m:Items>"
-                                     "</m:CreateItem>";
-        return sstr.str();
+        static const std::string name("Task");
+        return name;
     }
 };
 
@@ -13565,17 +13559,11 @@ public:
 
 private:
     template <typename U> friend class basic_service;
-    std::string create_item_request_string() const
+
+    const std::string& item_tag_name() const EWS_NOEXCEPT
     {
-        std::stringstream sstr;
-        sstr << "<m:CreateItem>"
-                "<m:Items>"
-                "<t:Contact>";
-        sstr << xml().to_string();
-        sstr << "</t:Contact>"
-                "</m:Items>"
-                "</m:CreateItem>";
-        return sstr.str();
+        static const std::string name("Contact");
+        return name;
     }
 
     // Helper function for get_email_address_{1,2,3}
@@ -15065,21 +15053,10 @@ private:
 
     template <typename U> friend class basic_service;
 
-    std::string
-    create_item_request_string(send_meeting_invitations meeting_invitations =
-                                   send_meeting_invitations::send_to_none) const
+    const std::string& item_tag_name() const EWS_NOEXCEPT
     {
-        std::stringstream sstr;
-        sstr << "<m:CreateItem SendMeetingInvitations=\"" +
-                    internal::enum_to_str(meeting_invitations) +
-                    "\">"
-                    "<m:Items>"
-                    "<t:CalendarItem>";
-        sstr << xml().to_string();
-        sstr << "</t:CalendarItem>"
-                "</m:Items>"
-                "</m:CreateItem>";
-        return sstr.str();
+        static const std::string name("CalendarItem");
+        return name;
     }
 };
 
@@ -15187,19 +15164,10 @@ public:
 private:
     template <typename U> friend class basic_service;
 
-    std::string
-    create_item_request_string(ews::message_disposition disposition) const
+    const std::string& item_tag_name() const EWS_NOEXCEPT
     {
-        std::stringstream sstr;
-        sstr << "<m:CreateItem MessageDisposition=\""
-             << internal::enum_to_str(disposition) << "\">"
-                                                      "<m:Items>"
-                                                      "<t:Message>";
-        sstr << xml().to_string();
-        sstr << "</t:Message>"
-                "</m:Items>"
-                "</m:CreateItem>";
-        return sstr.str();
+        static const std::string name("Message");
+        return name;
     }
 };
 
@@ -17016,13 +16984,22 @@ public:
     //!
     //! Returns it's item_id if successful.
     item_id create_item(const calendar_item& the_calendar_item,
-                        send_meeting_invitations invitations =
+                        send_meeting_invitations send_invitations =
                             send_meeting_invitations::send_to_none)
     {
         using internal::create_item_response_message;
 
-        auto response =
-            request(the_calendar_item.create_item_request_string(invitations));
+        std::stringstream sstr;
+        sstr << "<m:CreateItem SendMeetingInvitations=\""
+             << internal::enum_to_str(send_invitations) << "\">";
+        sstr << "<m:Items>"
+                "<t:CalendarItem>";
+        sstr << the_calendar_item.xml().to_string();
+        sstr << "</t:CalendarItem>"
+                "</m:Items>"
+                "</m:CreateItem>";
+
+        auto response = request(sstr.str());
 
         const auto response_message =
             create_item_response_message::parse(std::move(response));
@@ -17055,8 +17032,17 @@ public:
     {
         using internal::create_item_response_message;
 
-        auto response =
-            request(the_message.create_item_request_string(disposition));
+        std::stringstream sstr;
+        sstr << "<m:CreateItem MessageDisposition=\""
+             << internal::enum_to_str(disposition) << "\">";
+        sstr << "<m:Items>"
+             << "<t:Message>";
+        sstr << the_message.xml().to_string();
+        sstr << "</t:Message>"
+                "</m:Items>"
+                "</m:CreateItem>";
+
+        auto response = request(sstr.str());
 
         const auto response_message =
             create_item_response_message::parse(std::move(response));
@@ -17701,7 +17687,16 @@ private:
     {
         using internal::create_item_response_message;
 
-        auto response = request(the_item.create_item_request_string());
+        std::stringstream sstr;
+        sstr << "<m:CreateItem>"
+                "<m:Items>";
+        sstr << "<t:" << the_item.item_tag_name() << ">";
+        sstr << the_item.xml().to_string();
+        sstr << "</t:" << the_item.item_tag_name() << ">";
+        sstr << "</m:Items>"
+                "</m:CreateItem>";
+
+        auto response = request(sstr.str());
         const auto response_message =
             create_item_response_message::parse(std::move(response));
         if (!response_message.success())
