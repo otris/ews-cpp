@@ -48,6 +48,10 @@ int main()
 
     try
     {
+
+        // This example shows how to retrieve the delegates of a mailbox along
+        // with the delegate's permissions using EWS <GetDelegate> operation.
+
         const auto env = ews::test::environment();
         auto service = ews::service(env.server_uri, env.domain, env.username,
                                     env.password);
