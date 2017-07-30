@@ -17179,77 +17179,42 @@ public:
         return response_message.items();
     }
 
-    item_id
-    update_item(item_id id, update change,
-                conflict_resolution res = conflict_resolution::auto_resolve,
-                send_meeting_cancellations cancellations =
-                    send_meeting_cancellations::send_to_none)
+    item_id update_item(
+        item_id id, update change,
+        conflict_resolution resolution = conflict_resolution::auto_resolve,
+        send_meeting_cancellations cancellations =
+            send_meeting_cancellations::send_to_none)
     {
-        const std::string request_string =
-            "<m:UpdateItem "
-            "MessageDisposition=\"SaveOnly\" "
-            "ConflictResolution=\"" +
-            internal::enum_to_str(res) +
-            "\" "
-            "SendMeetingInvitationsOrCancellations=\"" +
-            internal::enum_to_str(cancellations) + "\">"
-                                                   "<m:ItemChanges>"
-                                                   "<t:ItemChange>" +
-            id.to_xml() + "<t:Updates>" + change.to_xml() + "</t:Updates>"
-                                                            "</t:ItemChange>"
-                                                            "</m:ItemChanges>"
-                                                            "</m:UpdateItem>";
-
-        auto response = request(request_string);
-        const auto response_message =
-            internal::update_item_response_message::parse(std::move(response));
-        if (!response_message.success())
-        {
-            throw exchange_error(response_message.result());
-        }
-        EWS_ASSERT(!response_message.items().empty() &&
-                   "Expected at least one item");
-        return response_message.items().front();
+        return update_item_impl(std::move(id), std::move(change), resolution,
+                                cancellations, folder_id());
     }
 
-    item_id
-    update_item(item_id id, const std::vector<update>& changes,
-                conflict_resolution res = conflict_resolution::auto_resolve,
-                send_meeting_cancellations cancellations =
-                    send_meeting_cancellations::send_to_none)
+    item_id update_item(item_id id, update change,
+                        conflict_resolution resolution,
+                        send_meeting_cancellations cancellations,
+                        const folder_id& folder)
     {
-        std::string request_string =
-            "<m:UpdateItem "
-            "MessageDisposition=\"SaveOnly\" "
-            "ConflictResolution=\"" +
-            internal::enum_to_str(res) +
-            "\" "
-            "SendMeetingInvitationsOrCancellations=\"" +
-            internal::enum_to_str(cancellations) + "\">"
-                                                   "<m:ItemChanges>"
-                                                   "<t:ItemChange>" +
-            id.to_xml() + "<t:Updates>";
+        return update_item_impl(std::move(id), std::move(change), resolution,
+                                cancellations, folder);
+    }
 
-        for (const auto& change : changes)
-        {
-            request_string += change.to_xml();
-        }
+    item_id update_item(
+        item_id id, const std::vector<update>& changes,
+        conflict_resolution resolution = conflict_resolution::auto_resolve,
+        send_meeting_cancellations cancellations =
+            send_meeting_cancellations::send_to_none)
+    {
+        return update_item_impl(std::move(id), changes, resolution,
+                                cancellations, folder_id());
+    }
 
-        request_string += "</t:Updates>"
-                          "</t:ItemChange>"
-                          "</m:ItemChanges>"
-                          "</m:UpdateItem>";
-
-        auto response = request(request_string);
-        const auto response_message =
-            internal::update_item_response_message::parse(std::move(response));
-        if (!response_message.success())
-        {
-            throw exchange_error(response_message.result());
-        }
-        EWS_ASSERT(!response_message.items().empty() &&
-                   "Expected at least one item");
-        return response_message.items().front();
+    item_id update_item(item_id id, const std::vector<update>& changes,
+                        conflict_resolution resolution,
+                        send_meeting_cancellations cancellations,
+                        const folder_id& folder)
+    {
+        return update_item_impl(std::move(id), changes, resolution,
+                                cancellations, folder);
     }
 
     //! \brief Add new delegates to given mailbox
@@ -17786,6 +17751,89 @@ private:
         }
 
         return item_id();
+    }
+
+    item_id update_item_impl(item_id id, update change,
+                             conflict_resolution resolution,
+                             send_meeting_cancellations cancellations,
+                             const folder_id& folder)
+    {
+        std::stringstream sstr;
+        sstr << "<m:UpdateItem "
+                "MessageDisposition=\"SaveOnly\" "
+                "ConflictResolution=\""
+             << internal::enum_to_str(resolution)
+             << "\" SendMeetingInvitationsOrCancellations=\""
+             << internal::enum_to_str(cancellations) + "\">";
+
+        if (folder.valid())
+        {
+            sstr << "<m:SavedItemFolderId>" << folder.to_xml()
+                 << "</m:SavedItemFolderId>";
+        }
+
+        sstr << "<m:ItemChanges>"
+                "<t:ItemChange>"
+             << id.to_xml() << "<t:Updates>" << change.to_xml()
+             << "</t:Updates>"
+                "</t:ItemChange>"
+                "</m:ItemChanges>"
+                "</m:UpdateItem>";
+
+        auto response = request(sstr.str());
+        const auto response_message =
+            internal::update_item_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+        EWS_ASSERT(!response_message.items().empty() &&
+                   "Expected at least one item");
+        return response_message.items().front();
+    }
+
+    item_id update_item_impl(item_id id, const std::vector<update>& changes,
+                             conflict_resolution resolution,
+                             send_meeting_cancellations cancellations,
+                             const folder_id& folder)
+    {
+        std::stringstream sstr;
+        sstr << "<m:UpdateItem "
+                "MessageDisposition=\"SaveOnly\" "
+                "ConflictResolution=\""
+             << internal::enum_to_str(resolution)
+             << "\" SendMeetingInvitationsOrCancellations=\""
+             << internal::enum_to_str(cancellations) + "\">";
+
+        if (folder.valid())
+        {
+            sstr << "<m:SavedItemFolderId>" << folder.to_xml()
+                 << "</m:SavedItemFolderId>";
+        }
+
+        sstr << "<m:ItemChanges>";
+        sstr << "<t:ItemChange>" << id.to_xml() << "<t:Updates>";
+
+        for (const auto& change : changes)
+        {
+            sstr << change.to_xml();
+        }
+
+        sstr << "</t:Updates>"
+                "</t:ItemChange>"
+                "</m:ItemChanges>"
+                "</m:UpdateItem>";
+
+        auto response = request(sstr.str());
+        const auto response_message =
+            internal::update_item_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+        EWS_ASSERT(!response_message.items().empty() &&
+                   "Expected at least one item");
+        return response_message.items().front();
     }
 };
 
