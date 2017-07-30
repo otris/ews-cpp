@@ -596,7 +596,7 @@ enum class response_code
     //! This error occurs when an attempt is made to update a calendar item
     //! that is located in the Deleted Items folder and when meeting updates
     //! or cancellations are to be sent according to the value of the
-    //! **SendMeetingInvitationsOrCancellations** attribute. The following
+    //! SendMeetingInvitationsOrCancellations attribute. The following
     //! are the possible values for this attribute:
     //!
     //! \li SendToAllAndSaveCopy
@@ -889,12 +889,12 @@ enum class response_code
 
     //! This error can occur in the following scenarios:
     //!
-    //!  1. An attempt is made to access or write a property on an item and
+    //! \li An attempt is made to access or write a property on an item and
     //! the property value is too large.
-    //!  2. The base64 encoded MIME content length within the request XML
+    //! \li The base64 encoded MIME content length within the request XML
     //! exceeds the limit.
-    //!  3. The size of the body of an existing item body exceeds the limit.
-    //!  4. The consumer tries to set an HTML or text body whose length (or
+    //! \li The size of the body of an existing item body exceeds the limit.
+    //! \li The consumer tries to set an HTML or text body whose length (or
     //! combined length in the case of append) exceeds the limit.
     error_data_size_limit_exceeded,
 
@@ -935,7 +935,7 @@ enum class response_code
     error_delete_unified_messaging_prompt_failed,
 
     //! This error indicates that a distinguished user ID is not valid for
-    //! the operation. **DistinguishedUserType** should not be present in
+    //! the operation. DistinguishedUserType should not be present in
     //! the request.
     error_distinguished_user_not_supported,
 
@@ -1074,7 +1074,7 @@ enum class response_code
 
     //! This error occurs when the request contains too many attendees to
     //! resolve. By default, the maximum number of attendees to resolve is
-    //! 100.
+    //! one hundred.
     error_individual_mailbox_limit_reached,
 
     //! This error occurs when the mailbox server is overloaded. Try your
@@ -6232,14 +6232,14 @@ namespace internal
 class exchange_error final : public exception
 {
 public:
-    //! Constructs an exchange_error from a <ResponseCode>.
+    //! Constructs an exchange_error from a \<ResponseCode>.
     explicit exchange_error(response_code code)
         : exception(internal::enum_to_str(code)), code_(code)
     {
     }
 
-    //! \brief Constructs an exchange_error from a <ResponseCode> and
-    //! additional error message, e.g., from an <MessageText> element.
+    //! \brief Constructs an exchange_error from a \<ResponseCode> and
+    //! additional error message, e.g., from an \<MessageText> element.
     exchange_error(response_code code, const std::string& message_text)
         : exception(message_text.empty()
                         ? internal::enum_to_str(code)
@@ -7926,10 +7926,10 @@ public:
 
     //! \brief Returns the XML serialized string of this mailbox.
     //!
-    //! Note: <Mailbox> is a part of
+    //! Note: \<Mailbox> is a part of
     //! http://schemas.microsoft.com/exchange/services/2006/types namespace.
     //! At least that is what the documentation says. However, in the
-    //! <GetDelegate> request the <Mailbox> element is expected
+    //! \<GetDelegate> request the \<Mailbox> element is expected
     //! to be part of
     //! http://schemas.microsoft.com/exchange/services/2006/messages. This is
     //! the reason for the extra argument.
@@ -10169,8 +10169,8 @@ static_assert(std::is_move_constructible<extended_field_uri>::value, "");
 static_assert(std::is_move_assignable<extended_field_uri>::value, "");
 #endif
 
-//! \brief Represents an <tt>\<ExtendedProperty\><tt>
-//
+//! \brief Represents an <tt>\<ExtendedProperty></tt>.
+//!
 //! The ExtendedProperty element identifies extended MAPI properties on
 //! folders and items. Extended properties enable Microsoft Exchange Server
 //! clients to add customized properties to items and folders that are
@@ -16972,6 +16972,7 @@ public:
     //! \brief Creates a new task from the given object in the the specified
     //! folder.
     //!
+    //! \param the_task The task that is about to be created.
     //! \param folder The target folder where the task is saved.
     //!
     //! \return The new task's item_id if successful.
@@ -16992,6 +16993,7 @@ public:
     //! \brief Creates a new contact from the given object in the specified
     //! folder.
     //!
+    //! \param the_contact The contact that is about to be created.
     //! \param folder The target folder where the contact is saved.
     //!
     //! \return The new contact's item_id if successful.
@@ -17002,6 +17004,9 @@ public:
 
     //! \brief Creates a new calendar item from the given object in the Exchange
     //! store.
+    //!
+    //! \param the_calendar_item The calendar item that is about to be created.
+    //! \param send_invitations Whether to send invitations to any participants.
     //!
     //! \return The new calendar items's item_id if successful.
     item_id create_item(const calendar_item& the_calendar_item,
@@ -17015,6 +17020,8 @@ public:
     //! \brief Creates a new calendar item from the given object in the
     //! specified folder.
     //!
+    //! \param the_calendar_item The calendar item that is about to be created.
+    //! \param send_invitations Whether to send invitations to any participants.
     //! \param folder The target folder where the calendar item is saved.
     //!
     //! \return The new calendar items's item_id if successful.
@@ -17048,6 +17055,9 @@ public:
 
     //! \brief Creates a new message in the specified folder.
     //!
+    //! \param the_message The message item that is about to be created.
+    //! \param disposition Whether the message is only saved, only send, or
+    //! saved and send.
     //! \param folder The target folder where the message is saved.
     //!
     //! \return The item id of the saved message when
@@ -17179,6 +17189,20 @@ public:
         return response_message.items();
     }
 
+    //! \brief Update an existing item's property.
+    //!
+    //! Sends an \<UpdateItem> request to the server. Allows you to change
+    //! properties of existing items in the Exchange store.
+    //!
+    //! \param id The id of the item you want to change.
+    //! \param change The update to the item.
+    //! \param resolution The conflict resolution mode during the update;
+    //! normally AutoResolve.
+    //! \param cancellations Specifies how meeting updates are communicated to
+    //! other participants. Only meaningful (and mandatory) if the item is a
+    //! calendar item.
+    //!
+    //! \return The updated item's new id and change_key upon success.
     item_id update_item(
         item_id id, update change,
         conflict_resolution resolution = conflict_resolution::auto_resolve,
@@ -17189,6 +17213,24 @@ public:
                                 cancellations, folder_id());
     }
 
+    //! \brief Update an existing item's property in the specified folder.
+    //!
+    //! Sends an \<UpdateItem> request to the server. Allows you to change
+    //! properties of an existing item that is located in
+    //! the specified folder.
+    //!
+    //! \param id The id of the item you want to change.
+    //! \param change The update to the item.
+    //! \param resolution The conflict resolution mode during the update;
+    //! normally AutoResolve.
+    //! \param cancellations Specifies how meeting updates are communicated to
+    //! other participants. Only meaningful (and mandatory) if the item is a
+    //! calendar item.
+    //! \param folder Specified the target folder for this operation. This is
+    //! useful if you want to gain implicit delegate access to another user's
+    //! items.
+    //!
+    //! \return The updated item's new id and change_key upon success.
     item_id update_item(item_id id, update change,
                         conflict_resolution resolution,
                         send_meeting_cancellations cancellations,
@@ -17198,6 +17240,19 @@ public:
                                 cancellations, folder);
     }
 
+    //! \brief Update multiple properties of an existing item.
+    //!
+    //! Sends an \<UpdateItem> request to the server. Allows you to change
+    //! multiple properties at once.
+    //!
+    //! \param id The id of the item you want to change.
+    //! \param changes A list of updates to the item.
+    //! \param resolution The conflict resolution mode during the update;
+    //! normally AutoResolve.
+    //! \param cancellations Specifies how meeting updates are communicated to
+    //! other participants. Only meaningful if the item is a calendar item.
+    //!
+    //! \return The updated item's new id and change_key upon success.
     item_id update_item(
         item_id id, const std::vector<update>& changes,
         conflict_resolution resolution = conflict_resolution::auto_resolve,
@@ -17208,6 +17263,23 @@ public:
                                 cancellations, folder_id());
     }
 
+    //! \brief Update multiple properties of an existing item in the specified
+    //! folder.
+    //!
+    //! Sends an \<UpdateItem> request to the server. Allows you to change
+    //! multiple properties at once.
+    //!
+    //! \param id The id of the item you want to change.
+    //! \param changes A list of updates to the item.
+    //! \param resolution The conflict resolution mode during the update;
+    //! normally AutoResolve.
+    //! \param cancellations Specifies how meeting updates are communicated to
+    //! other participants. Only meaningful if the item is a calendar item.
+    //! \param folder Specified the target folder for this operation. This is
+    //! useful if you want to gain implicit delegate access to another user's
+    //! items.
+    //!
+    //! \return The updated item's new id and change_key upon success.
     item_id update_item(item_id id, const std::vector<update>& changes,
                         conflict_resolution resolution,
                         send_meeting_cancellations cancellations,
