@@ -78,11 +78,13 @@ However, our goal is to support all Exchange Server versions since 2007.
 
 
 ## Run-time Dependencies
+The only thing you need for ews-cpp to run is
 
 * libcurl, at least version 7.22
 
 
 ## Dev Dependencies
+If you want to hack on ews-cpp itself you additionally need
 
 * Git
 * CMake
