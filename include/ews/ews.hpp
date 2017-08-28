@@ -7662,7 +7662,7 @@ inline autodiscover_result
 get_exchange_web_services_url(const std::string& user_smtp_address,
                               const basic_credentials& credentials)
 {
-    ews::autodiscover_hints hints;
+    autodiscover_hints hints;
     return internal::get_exchange_web_services_url<RequestHandler>(
         user_smtp_address, credentials, 0U, hints);
 }
@@ -9643,7 +9643,7 @@ public:
 
     explicit attendee(mailbox address)
         : mailbox_(std::move(address)),
-          response_type_(ews::response_type::unknown), last_response_time_()
+          response_type_(response_type::unknown), last_response_time_()
     {
     }
 
@@ -9739,7 +9739,7 @@ public:
                              "LastResponseTime",
                              std::strlen("LastResponseTime")))
             {
-                last_resp_time = ews::date_time(
+                last_resp_time = date_time(
                     std::string(node->value(), node->value_size()));
             }
             else
@@ -15842,12 +15842,12 @@ public:
     {
     }
 #else
-    property(property_path path, ews::free_busy_status enum_value)
+    property(property_path path, free_busy_status enum_value)
         : value_(path.to_xml(internal::enum_to_str(enum_value)))
     {
     }
 
-    property(property_path path, ews::sensitivity enum_value)
+    property(property_path path, sensitivity enum_value)
         : value_(path.to_xml(internal::enum_to_str(enum_value)))
     {
     }
@@ -16924,14 +16924,14 @@ public:
                          affected_task_occurrences::all_occurrences)
     {
         delete_item(the_task.get_item_id(), del_type, affected);
-        the_task = ews::task();
+        the_task = task();
     }
 
     //! Delete a contact from the Exchange store
     void delete_contact(contact&& the_contact)
     {
         delete_item(the_contact.get_item_id());
-        the_contact = ews::contact();
+        the_contact = contact();
     }
 
     //! Delete a calendar item from the Exchange store
@@ -16942,14 +16942,14 @@ public:
     {
         delete_item(the_calendar_item.get_item_id(), del_type,
                     affected_task_occurrences::all_occurrences, cancellations);
-        the_calendar_item = ews::calendar_item();
+        the_calendar_item = calendar_item();
     }
 
     //! Delete a message item from the Exchange store
     void delete_message(message&& the_message)
     {
         delete_item(the_message.get_item_id());
-        the_message = ews::message();
+        the_message = message();
     }
 
     // Following items can be created in Exchange:
@@ -17050,7 +17050,7 @@ public:
     //! message_disposition::save_only was given; otherwise an invalid item
     //! id.
     item_id create_item(const message& the_message,
-                        ews::message_disposition disposition)
+                        message_disposition disposition)
     {
         return create_item_impl(the_message, disposition, folder_id());
     }
@@ -17066,7 +17066,7 @@ public:
     //! message_disposition::save_only was given; otherwise an invalid item
     //! id.
     item_id create_item(const message& the_message,
-                        ews::message_disposition disposition,
+                        message_disposition disposition,
                         const folder_id& folder)
     {
         return create_item_impl(the_message, disposition, folder);
@@ -17293,7 +17293,7 @@ public:
 
     //! \brief Add new delegates to given mailbox
     std::vector<delegate_user>
-    add_delegate(const ews::mailbox& mailbox,
+    add_delegate(const mailbox& mailbox,
                  const std::vector<delegate_user>& delegates)
     {
         std::stringstream sstr;
@@ -17319,7 +17319,7 @@ public:
 
     //! \brief Retrieves the delegate users and settings for the specified
     //! mailbox.
-    std::vector<delegate_user> get_delegate(const ews::mailbox& mailbox,
+    std::vector<delegate_user> get_delegate(const mailbox& mailbox,
                                             bool include_permissions = false)
     {
         std::stringstream sstr;
@@ -17338,7 +17338,7 @@ public:
         return response_message.get_delegates();
     }
 
-    void remove_delegate(const ews::mailbox& mailbox,
+    void remove_delegate(const mailbox& mailbox,
                          const std::vector<user_id>& delegates)
     {
         std::stringstream sstr;
@@ -17788,7 +17788,7 @@ private:
     }
 
     item_id create_item_impl(const message& the_message,
-                             ews::message_disposition disposition,
+                             message_disposition disposition,
                              const folder_id& folder)
     {
         std::stringstream sstr;
@@ -18458,7 +18458,7 @@ recurrence_pattern::from_xml_element(const rapidxml::xml_node<>& elem)
                                    "AbsoluteYearlyRecurrence");
     if (node)
     {
-        auto mon = ews::month::jan;
+        auto mon = month::jan;
         std::uint32_t day_of_month = 0U;
 
         for (auto child = node->first_node(); child;
@@ -18492,7 +18492,7 @@ recurrence_pattern::from_xml_element(const rapidxml::xml_node<>& elem)
                               "RelativeYearlyRecurrence");
     if (node)
     {
-        auto mon = ews::month::jan;
+        auto mon = month::jan;
         auto index = day_of_week_index::first;
         auto days_of_week = day_of_week::sun;
 
