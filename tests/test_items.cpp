@@ -959,6 +959,11 @@ TEST_F(ItemTest, CreateItemsWithVector)
         contacts.push_back(ews::contact());
     }
 
+    for (auto& contact : contacts)
+    {
+        ews::internal::on_scope_exit remove_contact(
+            [&] { service().delete_contact(std::move(contact)); });
+    }
     auto contact_ids = service().create_item(contacts);
     EXPECT_EQ(10u, contact_ids.size());
 }
@@ -970,6 +975,11 @@ TEST_F(ItemTest, CreateItemsWithEmptyVector)
     try
     {
         auto contact_ids = service().create_item(contacts);
+        for (auto& contact : contacts)
+        {
+            ews::internal::on_scope_exit remove_contact(
+                [&] { service().delete_contact(std::move(contact)); });
+        }
     }
     catch (ews::exception& exc)
     {

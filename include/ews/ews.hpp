@@ -17159,10 +17159,10 @@ public:
     //! the item identifier, and then use the send_item to send the message.
     //!
     //! \return A vector of the item ids of the saved messages when
-    //! message_disposition::save_only was given; otherwise an invalid item
-    //! id.
+    //! message_disposition::save_only was given; otherwise a vector of invalid item
+    //! ids.
     std::vector<item_id> create_item(const std::vector<message>& messages,
-                                     ews::message_disposition disposition)
+                                     message_disposition disposition)
     {
         return create_item_impl(messages, disposition, folder_id());
     }
@@ -17175,10 +17175,10 @@ public:
     //! \param folder The target folder where the message is saved.
     //!
     //! \return A vector of the item ids of the saved messages when
-    //! message_disposition::save_only was given; otherwise an invalid item
-    //! id.
+    //! message_disposition::save_only was given; otherwise a vector of invalid item
+    //! ids.
     std::vector<item_id> create_item(const std::vector<message>& messages,
-                                     ews::message_disposition disposition,
+                                     message_disposition disposition,
                                      const folder_id& folder)
     {
         return create_item_impl(messages, disposition, folder);
@@ -17866,7 +17866,7 @@ private:
     // Creates multiple items on the server and returns the item_ids.
     template <typename ItemType>
     std::vector<item_id>
-    create_item_impl(const std::vector<ItemType>& the_items,
+    create_item_impl(const std::vector<ItemType>& items,
                      const folder_id& folder)
     {
         std::stringstream sstr;
@@ -17879,7 +17879,7 @@ private:
         }
 
         sstr << "<m:Items>";
-        for (const auto& item : the_items)
+        for (const auto& item : items)
         {
             sstr << "<t:" << item.item_tag_name() << ">";
             sstr << item.xml().to_string();
@@ -17899,10 +17899,10 @@ private:
         EWS_ASSERT(!response_messages.items().empty() &&
                    "Expected at least one item");
 
-        const std::vector<ItemType> items = response_messages.items();
+        const std::vector<ItemType> res_items = response_messages.items();
         std::vector<item_id> res;
-        res.reserve(items.size());
-        std::transform(begin(items), end(items), std::back_inserter(res),
+        res.reserve(res_items.size());
+        std::transform(begin(res_items), end(res_items), std::back_inserter(res),
                        [](const ItemType& elem) { return elem.get_item_id(); });
 
         return res;
@@ -17946,7 +17946,7 @@ private:
 
     template <typename ItemType>
     std::vector<item_id>
-    create_item_impl(const std::vector<calendar_item>& the_calendar_items,
+    create_item_impl(const std::vector<calendar_item>& items,
                      send_meeting_invitations send_invitations,
                      const folder_id& folder)
     {
@@ -17961,7 +17961,7 @@ private:
         }
 
         sstr << "<m:Items>";
-        for (const auto& item : the_calendar_items)
+        for (const auto& item : items)
         {
             sstr << "<t:CalendarItem>";
             sstr << item.xml().to_string();
@@ -17981,10 +17981,10 @@ private:
         EWS_ASSERT(!response_messages.items().empty() &&
                    "Expected at least one item");
 
-        const std::vector<ItemType> items = response_messages.items();
+        const std::vector<ItemType> res_items = response_messages.items();
         std::vector<item_id> res;
-        res.reserve(items.size());
-        std::transform(begin(items), end(items), std::back_inserter(res),
+        res.reserve(res_items.size());
+        std::transform(begin(res_items), end(res_items), std::back_inserter(res),
                        [](const ItemType& elem) { return elem.get_item_id(); });
 
         return res;
@@ -18032,7 +18032,7 @@ private:
 
     template <typename ItemType>
     std::vector<item_id>
-    create_item_impl(const std::vector<message>& the_messages,
+    create_item_impl(const std::vector<message>& messages,
                      ews::message_disposition disposition,
                      const folder_id& folder)
     {
@@ -18047,7 +18047,7 @@ private:
         }
 
         sstr << "<m:Items>";
-        for (const auto& item : the_messages)
+        for (const auto& item : messages)
         {
             sstr << "<t:Message>";
             sstr << item.xml().to_string();
@@ -18194,8 +18194,6 @@ inline void ntlm_credentials::certify(internal::http_request* request) const
 
 namespace internal
 {
-
-    // FIXME: a CreateItemResponse can contain multiple ResponseMessages
     inline create_item_response_message
     create_item_response_message::parse(http_response&& response)
     {
