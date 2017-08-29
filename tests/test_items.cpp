@@ -950,6 +950,39 @@ TEST_F(ItemTest, CultureProperty)
     task = service().get_task(item_id);
     EXPECT_EQ("yo-NG", task.get_culture());
 }
+
+TEST_F(ItemTest, CreateItemsWithVector)
+{
+    std::vector<ews::contact> contacts;
+    for (int i = 0; i < 10; i++)
+    {
+        contacts.push_back(ews::contact());
+    }
+
+    auto contact_ids = service().create_item(contacts);
+    ews::internal::on_scope_exit remove_contacts([&] {
+        for (auto& id : contact_ids)
+        {
+            service().delete_item(id);
+        }
+    });
+    EXPECT_EQ(10u, contact_ids.size());
+}
+
+TEST_F(ItemTest, CreateItemsWithEmptyVector)
+{
+    std::vector<ews::contact> contacts;
+
+    try
+    {
+        auto contact_ids = service().create_item(contacts);
+    }
+    catch (ews::exception&)
+    {
+        return;
+    }
+    FAIL();
+}
 }
 
 // vim:et ts=4 sw=4
