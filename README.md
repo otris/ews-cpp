@@ -1,3 +1,29 @@
+<!-- TOC -->
+
+- [Overview](#overview)
+    - [Supported Operations and Elements](#supported-operations-and-elements)
+    - [Supported Authentication Schemes](#supported-authentication-schemes)
+    - [Supported Compilers](#supported-compilers)
+    - [Supported Operating Systems](#supported-operating-systems)
+    - [Supported Microsoft Exchange Server Versions](#supported-microsoft-exchange-server-versions)
+    - [Run-time Dependencies](#run-time-dependencies)
+    - [Dev Dependencies](#dev-dependencies)
+    - [Note Windows Users](#note-windows-users)
+    - [Source Code](#source-code)
+    - [Building](#building)
+        - [Linux](#linux)
+        - [Windows](#windows)
+        - [API Docs](#api-docs)
+        - [Test Suite](#test-suite)
+    - [Design Notes](#design-notes)
+    - [API](#api)
+- [Documentation](#documentation)
+- [Examples](#examples)
+- [More EWS Resources](#more-ews-resources)
+- [Legal Notice](#legal-notice)
+
+<!-- /TOC -->
+
 # Overview
 
 EWS is an API that third-party programmers can use to communicate with
@@ -243,7 +269,18 @@ Cons:
   cannot spawn thousands of threads in your process. You may need additional
   effort here
 
-## Legal Notice
+# Documentation
+
+We host automatically generated API documentation here: []().
+
+# Examples
+
+# More EWS Resources
+
+* [EWS Editor](http://ewseditor.codeplex.com/) is an excellent Open Source tool to test EWS Managed API and do raw SOAP POSTs. Sources are available here: [github.com/dseph/EwsEditor](https://github.com/dseph/EwsEditor).
+* [This article](https://blogs.msdn.microsoft.com/webdav_101/2015/05/11/best-practices-ews-authentication-and-access-issues/) on blogs.msdn.microsoft.com describing best practices in EWS Authentication and solving access issues.
+
+# Legal Notice
 ews-cpp is developed by otris software AG and was initially released to the
 public in July 2016. It is licensed under the Apache License, Version 2.0 (see
 [LICENSE file](LICENSE)).
