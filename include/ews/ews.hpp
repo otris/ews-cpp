@@ -9038,7 +9038,7 @@ namespace internal
         }
     };
 
-    template <typename ItemType> class get_item_response_messages final
+    template <typename ItemType> class item_response_messages final
     {
     public:
         typedef ItemType item_type;
@@ -9085,10 +9085,10 @@ namespace internal
         }
 
         // implemented below
-        static get_item_response_messages parse(http_response&&);
+        static item_response_messages parse(http_response&&);
 
     private:
-        explicit get_item_response_messages(
+        explicit item_response_messages(
             std::vector<response_message>&& messages)
             : messages_(std::move(messages))
         {
@@ -16983,6 +16983,27 @@ public:
         return create_item_impl(the_task, folder);
     }
 
+    //! \brief Creates a new task from the given vector in the Exchange store.
+    //!
+    //! \return A vector of the new task's item_ids if successful.
+    std::vector<item_id> create_item(const std::vector<task>& tasks)
+    {
+        return create_item_impl(tasks, folder_id());
+    }
+
+    //! \brief Creates a new task from the given vector in the the specified
+    //! folder.
+    //!
+    //! \param tasks The tasks that are about to be created.
+    //! \param folder The target folder where the tasks are saved.
+    //!
+    //! \return A vector of the new task's item_ids if successful.
+    std::vector<item_id> create_item(const std::vector<task>& tasks,
+                                     const folder_id& folder)
+    {
+        return create_item_impl(tasks, folder);
+    }
+
     //! \brief Creates a new contact from the given object in the Exchange
     //! store.
     //!
@@ -17002,6 +17023,28 @@ public:
     item_id create_item(const contact& the_contact, const folder_id& folder)
     {
         return create_item_impl(the_contact, folder);
+    }
+
+    //! \brief Creates new contacts from the given vector in the Exchange
+    //! store.
+    //!
+    //! \return A vector of the new contact's item_ids if successful.
+    std::vector<item_id> create_item(const std::vector<contact>& contacts)
+    {
+        return create_item_impl(contacts, folder_id());
+    }
+
+    //! \brief Creates new contacts from the given vector in the specified
+    //! folder.
+    //!
+    //! \param contacts The contacts that are about to be created.
+    //! \param folder The target folder where the contact is saved.
+    //!
+    //! \return A vector of the new contact's item_ids if successful.
+    std::vector<item_id> create_item(const std::vector<contact>& contacts,
+                                     const folder_id& folder)
+    {
+        return create_item_impl(contacts, folder);
     }
 
     //! \brief Creates a new calendar item from the given object in the Exchange
@@ -17032,6 +17075,37 @@ public:
                         const folder_id& folder)
     {
         return create_item_impl(the_calendar_item, send_invitations, folder);
+    }
+
+    //! \brief Creates new calendar items from the given vector in the Exchange
+    //! store.
+    //!
+    //! \param calendar_items The calendar items that are about to be created.
+    //! \param send_invitations Whether to send invitations to any participants.
+    //!
+    //! \return A vector of the new calendar items's item_ids if successful.
+    std::vector<item_id>
+    create_item(const std::vector<calendar_item>& calendar_items,
+                send_meeting_invitations send_invitations =
+                    send_meeting_invitations::send_to_none)
+    {
+        return create_item_impl(calendar_items, send_invitations, folder_id());
+    }
+
+    //! \brief Creates new calendar items from the given vector in the
+    //! specified folder.
+    //!
+    //! \param calendar_items The calendar items that are about to be created.
+    //! \param send_invitations Whether to send invitations to any participants.
+    //! \param folder The target folder where the calendar item is saved.
+    //!
+    //! \return A vector of the new calendar items's item_ids if successful.
+    std::vector<item_id>
+    create_item(const std::vector<calendar_item>& calendar_items,
+                send_meeting_invitations send_invitations,
+                const folder_id& folder)
+    {
+        return create_item_impl(calendar_items, send_invitations, folder);
     }
 
     //! \brief Creates a new message in the Exchange store.
@@ -17070,6 +17144,44 @@ public:
                         const folder_id& folder)
     {
         return create_item_impl(the_message, disposition, folder);
+    }
+
+    //! \brief Creates new messages in the Exchange store.
+    //!
+    //! Creates new messages and, depending of the chosen message
+    //! disposition, sends them to the recipients.
+    //!
+    //! Note that if you pass message_disposition::send_only or
+    //! message_disposition::send_and_save_copy this function always
+    //! returns an invalid item id because Exchange does not include
+    //! the item identifier in the response. A common workaround for this
+    //! would be to create the item with message_disposition::save_only, get
+    //! the item identifier, and then use the send_item to send the message.
+    //!
+    //! \return A vector of the item ids of the saved messages when
+    //! message_disposition::save_only was given; otherwise an invalid item
+    //! id.
+    std::vector<item_id> create_item(const std::vector<message>& messages,
+                                     ews::message_disposition disposition)
+    {
+        return create_item_impl(messages, disposition, folder_id());
+    }
+
+    //! \brief Creates new messages in the specified folder.
+    //!
+    //! \param messages The message items that are about to be created.
+    //! \param disposition Whether the message is only saved, only send, or
+    //! saved and send.
+    //! \param folder The target folder where the message is saved.
+    //!
+    //! \return A vector of the item ids of the saved messages when
+    //! message_disposition::save_only was given; otherwise an invalid item
+    //! id.
+    std::vector<item_id> create_item(const std::vector<message>& messages,
+                                     ews::message_disposition disposition,
+                                     const folder_id& folder)
+    {
+        return create_item_impl(messages, disposition, folder);
     }
 
     //! Sends a message that is already in the Exchange store.
@@ -17634,7 +17746,7 @@ private:
 
         auto response = request(sstr.str());
         const auto response_messages =
-            internal::get_item_response_messages<ItemType>::parse(
+            internal::item_response_messages<ItemType>::parse(
                 std::move(response));
         if (!response_messages.success())
         {
@@ -17675,7 +17787,7 @@ private:
 
         auto response = request(sstr.str());
         const auto response_messages =
-            internal::get_item_response_messages<ItemType>::parse(
+            internal::item_response_messages<ItemType>::parse(
                 std::move(response));
         if (!response_messages.success())
         {
@@ -17751,6 +17863,51 @@ private:
         return response_message.items().front();
     }
 
+    // Creates multiple items on the server and returns the item_ids.
+    template <typename ItemType>
+    std::vector<item_id>
+    create_item_impl(const std::vector<ItemType>& the_items,
+                     const folder_id& folder)
+    {
+        std::stringstream sstr;
+        sstr << "<m:CreateItem>";
+
+        if (folder.valid())
+        {
+            sstr << "<m:SavedItemFolderId>" << folder.to_xml()
+                 << "</m:SavedItemFolderId>";
+        }
+
+        sstr << "<m:Items>";
+        for (const auto& item : the_items)
+        {
+            sstr << "<t:" << item.item_tag_name() << ">";
+            sstr << item.xml().to_string();
+            sstr << "</t:" << item.item_tag_name() << ">";
+        }
+        sstr << "</m:Items>"
+                "</m:CreateItem>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::item_response_messages<ItemType>::parse(
+                std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        EWS_ASSERT(!response_messages.items().empty() &&
+                   "Expected at least one item");
+
+        const std::vector<ItemType> items = response_messages.items();
+        std::vector<item_id> res;
+        res.reserve(items.size());
+        std::transform(begin(items), end(items), std::back_inserter(res),
+                       [](const ItemType& elem) { return elem.get_item_id(); });
+
+        return res;
+    }
+
     item_id create_item_impl(const calendar_item& the_calendar_item,
                              send_meeting_invitations send_invitations,
                              const folder_id& folder)
@@ -17785,6 +17942,52 @@ private:
         EWS_ASSERT(!response_message.items().empty() &&
                    "Expected a message item");
         return response_message.items().front();
+    }
+
+    template <typename ItemType>
+    std::vector<item_id>
+    create_item_impl(const std::vector<calendar_item>& the_calendar_items,
+                     send_meeting_invitations send_invitations,
+                     const folder_id& folder)
+    {
+        std::stringstream sstr;
+        sstr << "<m:CreateItem SendMeetingInvitations=\""
+             << internal::enum_to_str(send_invitations) << "\">";
+
+        if (folder.valid())
+        {
+            sstr << "<m:SavedItemFolderId>" << folder.to_xml()
+                 << "</m:SavedItemFolderId>";
+        }
+
+        sstr << "<m:Items>";
+        for (const auto& item : the_calendar_items)
+        {
+            sstr << "<t:CalendarItem>";
+            sstr << item.xml().to_string();
+            sstr << "</t:CalendarItem>";
+        }
+        sstr << "</m:Items>"
+                "</m:CreateItem>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::item_response_messages<ItemType>::parse(
+                std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        EWS_ASSERT(!response_messages.items().empty() &&
+                   "Expected at least one item");
+
+        const std::vector<ItemType> items = response_messages.items();
+        std::vector<item_id> res;
+        res.reserve(items.size());
+        std::transform(begin(items), end(items), std::back_inserter(res),
+                       [](const ItemType& elem) { return elem.get_item_id(); });
+
+        return res;
     }
 
     item_id create_item_impl(const message& the_message,
@@ -17825,6 +18028,52 @@ private:
         }
 
         return item_id();
+    }
+
+    template <typename ItemType>
+    std::vector<item_id>
+    create_item_impl(const std::vector<message>& the_messages,
+                     ews::message_disposition disposition,
+                     const folder_id& folder)
+    {
+        std::stringstream sstr;
+        sstr << "<m:CreateItem MessageDisposition=\""
+             << internal::enum_to_str(disposition) << "\">";
+
+        if (folder.valid())
+        {
+            sstr << "<m:SavedItemFolderId>" << folder.to_xml()
+                 << "</m:SavedItemFolderId>";
+        }
+
+        sstr << "<m:Items>";
+        for (const auto& item : the_messages)
+        {
+            sstr << "<t:Message>";
+            sstr << item.xml().to_string();
+            sstr << "</t:Message>";
+        }
+        sstr << "</m:Items>"
+                "</m:CreateItem>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::item_response_messages<ItemType>::parse(
+                std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        EWS_ASSERT(!response_messages.items().empty() &&
+                   "Expected at least one item");
+
+        const std::vector<ItemType> items = response_messages.items();
+        std::vector<item_id> res;
+        res.reserve(items.size());
+        std::transform(begin(items), end(items), std::back_inserter(res),
+                       [](const ItemType& elem) { return elem.get_item_id(); });
+
+        return res;
     }
 
     item_id update_item_impl(item_id id, update change,
@@ -17945,6 +18194,7 @@ inline void ntlm_credentials::certify(internal::http_request* request) const
 
 namespace internal
 {
+
     // FIXME: a CreateItemResponse can contain multiple ResponseMessages
     inline create_item_response_message
     create_item_response_message::parse(http_response&& response)
@@ -18073,8 +18323,8 @@ namespace internal
     }
 
     template <typename ItemType>
-    inline get_item_response_messages<ItemType>
-    get_item_response_messages<ItemType>::parse(http_response&& response)
+    inline item_response_messages<ItemType>
+    item_response_messages<ItemType>::parse(http_response&& response)
     {
         const auto doc = parse_response(std::move(response));
 
@@ -18083,7 +18333,7 @@ namespace internal
         EWS_ASSERT(response_messages &&
                    "Expected <ResponseMessages> node, got nullptr");
 
-        std::vector<get_item_response_messages::response_message> messages;
+        std::vector<item_response_messages::response_message> messages;
         for_each_child_node(
             *response_messages,
             [&](const rapidxml::xml_node<>& response_message) {
@@ -18105,7 +18355,7 @@ namespace internal
                     std::make_tuple(result.cls, result.code, std::move(items)));
             });
 
-        return get_item_response_messages(std::move(messages));
+        return item_response_messages(std::move(messages));
     }
 
     inline std::vector<delegate_user> delegate_response_message::parse_users(
