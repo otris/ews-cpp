@@ -1,5 +1,10 @@
+# ews-cpp
+A C++11 header-only library for Microsoft Exchange Web Services.
+
 <!-- TOC -->
 
+- [Example](#example)
+- [Documentation](#documentation)
 - [Overview](#overview)
     - [Supported Operations and Elements](#supported-operations-and-elements)
     - [Supported Authentication Schemes](#supported-authentication-schemes)
@@ -17,12 +22,52 @@
         - [Test Suite](#test-suite)
     - [Design Notes](#design-notes)
     - [API](#api)
-- [Documentation](#documentation)
-- [Examples](#examples)
 - [More EWS Resources](#more-ews-resources)
 - [Legal Notice](#legal-notice)
 
 <!-- /TOC -->
+
+# Example
+You can find a couple of small executable examples in the
+[examples/](https://github.com/otris/ews-cpp/tree/master/examples) folder.
+
+As an appetizer, this is how it looks when you create and send an email message
+with ews-cpp:
+
+```cpp
+#include <ews/ews.hpp>
+
+#include <exception>
+#include <iostream>
+#include <ostream>
+#include <string>
+#include <vector>
+
+ews::set_up();
+
+try {
+    auto service = ews::service("https://example.com/ews/Exchange.asmx",
+                                "ACME",
+                                "myuser",
+                                "mysecret");
+    auto message = ews::message();
+    message.set_subject("Test mail from outer space");
+    std::vector<ews::mailbox> recipients{ ews::mailbox("president@example.com") };
+    message.set_to_recipients(recipients);
+    auto text = ews::body("ようこそ (Welcome!)\n\nThis is a test.\n");
+    message.set_body(text);
+    service.create_item(message, ews::message_disposition::send_and_save_copy);
+} catch (std::exception& exc) {
+    std::cout << exc.what() << std::endl;
+}
+
+ews::tear_down();
+```
+
+# Documentation
+
+We host automatically generated API documentation here:
+[otris.github.io/ews-cpp](https://otris.github.io/ews-cpp/).
 
 # Overview
 
@@ -268,12 +313,6 @@ Cons:
 * You cannot issue thousands of EWS requests asynchronously simply because you
   cannot spawn thousands of threads in your process. You may need additional
   effort here
-
-# Documentation
-
-We host automatically generated API documentation here: []().
-
-# Examples
 
 # More EWS Resources
 
