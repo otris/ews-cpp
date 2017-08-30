@@ -43,25 +43,28 @@ with ews-cpp:
 #include <string>
 #include <vector>
 
-ews::set_up();
+int main() {
+    ews::set_up();
 
-try {
-    auto service = ews::service("https://example.com/ews/Exchange.asmx",
-                                "ACME",
-                                "myuser",
-                                "mysecret");
-    auto message = ews::message();
-    message.set_subject("Test mail from outer space");
-    std::vector<ews::mailbox> recipients{ ews::mailbox("president@example.com") };
-    message.set_to_recipients(recipients);
-    auto text = ews::body("ようこそ (Welcome!)\n\nThis is a test.\n");
-    message.set_body(text);
-    service.create_item(message, ews::message_disposition::send_and_save_copy);
-} catch (std::exception& exc) {
-    std::cout << exc.what() << std::endl;
+    try {
+        auto service = ews::service("https://example.com/ews/Exchange.asmx",
+                                    "ACME",
+                                    "myuser",
+                                    "mysecret");
+        auto message = ews::message();
+        message.set_subject("Test mail from outer space");
+        std::vector<ews::mailbox> recipients{ ews::mailbox("president@example.com") };
+        message.set_to_recipients(recipients);
+        auto text = ews::body("ようこそ (Welcome!)\n\nThis is a test.\n");
+        message.set_body(text);
+        service.create_item(message, ews::message_disposition::send_and_save_copy);
+    } catch (std::exception& exc) {
+        std::cout << exc.what() << std::endl;
+    }
+
+    ews::tear_down();
+    return 0;
 }
-
-ews::tear_down();
 ```
 
 # Documentation
