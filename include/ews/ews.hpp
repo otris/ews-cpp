@@ -16961,7 +16961,7 @@ public:
     // - Contacts
     //
     // Only purpose of this overload-set is to prevent exploding template
-    // code in errors messages in caller's code
+    // code in errors messages in caller's code.
 
     //! \brief Creates a new task from the given object in the Exchange store.
     //!
@@ -16983,21 +16983,21 @@ public:
         return create_item_impl(the_task, folder);
     }
 
-    //! \brief Creates a new task from the given vector in the Exchange store.
+    //! \brief Creates new tasks from the given vector in the Exchange store.
     //!
-    //! \return A vector of the new task's item_ids if successful.
+    //! \return A vector of item_ids if successful.
     std::vector<item_id> create_item(const std::vector<task>& tasks)
     {
         return create_item_impl(tasks, folder_id());
     }
 
-    //! \brief Creates a new task from the given vector in the the specified
+    //! \brief Creates new tasks from the given vector in the the specified
     //! folder.
     //!
     //! \param tasks The tasks that are about to be created.
     //! \param folder The target folder where the tasks are saved.
     //!
-    //! \return A vector of the new task's item_ids if successful.
+    //! \return A vector of item_ids if successful.
     std::vector<item_id> create_item(const std::vector<task>& tasks,
                                      const folder_id& folder)
     {
@@ -17028,7 +17028,7 @@ public:
     //! \brief Creates new contacts from the given vector in the Exchange
     //! store.
     //!
-    //! \return A vector of the new contact's item_ids if successful.
+    //! \return A vector of item_ids if successful.
     std::vector<item_id> create_item(const std::vector<contact>& contacts)
     {
         return create_item_impl(contacts, folder_id());
@@ -17040,7 +17040,7 @@ public:
     //! \param contacts The contacts that are about to be created.
     //! \param folder The target folder where the contact is saved.
     //!
-    //! \return A vector of the new contact's item_ids if successful.
+    //! \return A vector of item_ids if successful.
     std::vector<item_id> create_item(const std::vector<contact>& contacts,
                                      const folder_id& folder)
     {
@@ -17083,7 +17083,7 @@ public:
     //! \param calendar_items The calendar items that are about to be created.
     //! \param send_invitations Whether to send invitations to any participants.
     //!
-    //! \return A vector of the new calendar items's item_ids if successful.
+    //! \return A vector of item_ids if successful.
     std::vector<item_id>
     create_item(const std::vector<calendar_item>& calendar_items,
                 send_meeting_invitations send_invitations =
@@ -17099,7 +17099,7 @@ public:
     //! \param send_invitations Whether to send invitations to any participants.
     //! \param folder The target folder where the calendar item is saved.
     //!
-    //! \return A vector of the new calendar items's item_ids if successful.
+    //! \return A vector of item_ids if successful.
     std::vector<item_id>
     create_item(const std::vector<calendar_item>& calendar_items,
                 send_meeting_invitations send_invitations,
@@ -17159,8 +17159,8 @@ public:
     //! the item identifier, and then use the send_item to send the message.
     //!
     //! \return A vector of the item ids of the saved messages when
-    //! message_disposition::save_only was given; otherwise a vector of invalid item
-    //! ids.
+    //! message_disposition::save_only was given; otherwise a vector of invalid
+    //! item ids.
     std::vector<item_id> create_item(const std::vector<message>& messages,
                                      message_disposition disposition)
     {
@@ -17175,8 +17175,8 @@ public:
     //! \param folder The target folder where the message is saved.
     //!
     //! \return A vector of the item ids of the saved messages when
-    //! message_disposition::save_only was given; otherwise a vector of invalid item
-    //! ids.
+    //! message_disposition::save_only was given; otherwise a vector of invalid
+    //! item ids.
     std::vector<item_id> create_item(const std::vector<message>& messages,
                                      message_disposition disposition,
                                      const folder_id& folder)
