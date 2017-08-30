@@ -277,7 +277,7 @@ ews-cpp is written in a "modern C++" way:
 
 Just add:
 
-```c++
+```cpp
 #include <ews/ews.hpp>
 ```
 
@@ -325,7 +325,7 @@ Cons:
 # Legal Notice
 ews-cpp is developed by otris software AG and was initially released to the
 public in July 2016. It is licensed under the Apache License, Version 2.0 (see
-[LICENSE file](LICENSE)).
+[LICENSE file](https://github.com/otris/ews-cpp/blob/master/LICENSE)).
 
 For more information about otris software AG visit our website
 [otris.de](https://www.otris.de/) or our Open Source repositories at
