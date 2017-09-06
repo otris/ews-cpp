@@ -17944,7 +17944,6 @@ private:
         return response_message.items().front();
     }
 
-    template <typename ItemType>
     std::vector<item_id>
     create_item_impl(const std::vector<calendar_item>& items,
                      send_meeting_invitations send_invitations,
@@ -17972,7 +17971,7 @@ private:
 
         auto response = request(sstr.str());
         const auto response_messages =
-            internal::item_response_messages<ItemType>::parse(
+            internal::item_response_messages<calendar_item>::parse(
                 std::move(response));
         if (!response_messages.success())
         {
@@ -17981,11 +17980,11 @@ private:
         EWS_ASSERT(!response_messages.items().empty() &&
                    "Expected at least one item");
 
-        const std::vector<ItemType> res_items = response_messages.items();
+        const std::vector<calendar_item> res_items = response_messages.items();
         std::vector<item_id> res;
         res.reserve(res_items.size());
         std::transform(begin(res_items), end(res_items), std::back_inserter(res),
-                       [](const ItemType& elem) { return elem.get_item_id(); });
+                       [](const calendar_item& elem) { return elem.get_item_id(); });
 
         return res;
     }
@@ -18030,7 +18029,6 @@ private:
         return item_id();
     }
 
-    template <typename ItemType>
     std::vector<item_id>
     create_item_impl(const std::vector<message>& messages,
                      ews::message_disposition disposition,
@@ -18058,7 +18056,7 @@ private:
 
         auto response = request(sstr.str());
         const auto response_messages =
-            internal::item_response_messages<ItemType>::parse(
+            internal::item_response_messages<message>::parse(
                 std::move(response));
         if (!response_messages.success())
         {
@@ -18067,11 +18065,11 @@ private:
         EWS_ASSERT(!response_messages.items().empty() &&
                    "Expected at least one item");
 
-        const std::vector<ItemType> items = response_messages.items();
+        const std::vector<message> items = response_messages.items();
         std::vector<item_id> res;
         res.reserve(items.size());
         std::transform(begin(items), end(items), std::back_inserter(res),
-                       [](const ItemType& elem) { return elem.get_item_id(); });
+                       [](const message& elem) { return elem.get_item_id(); });
 
         return res;
     }
