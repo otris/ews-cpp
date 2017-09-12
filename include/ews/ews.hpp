@@ -16811,6 +16811,22 @@ public:
                                    additional_properties);
     }
 
+    //! Gets a task from the Exchange store.
+    std::vector<task> get_tasks(const std::vector<item_id>& ids)
+    {
+        return get_item_impl<task>(ids, base_shape::all_properties);
+    }
+
+    //! \brief Gets a task from the Exchange store.
+    //!
+    //! The returned task includes specified additional properties.
+    std::vector<task> get_tasks(const std::vector<item_id>& ids,
+                  const std::vector<property_path>& additional_properties)
+    {
+        return get_item_impl<task>(ids, base_shape::all_properties,
+                                   additional_properties);
+    }
+
     //! Gets a contact from the Exchange store.
     contact get_contact(const item_id& id)
     {
@@ -16824,6 +16840,22 @@ public:
                         const std::vector<property_path>& additional_properties)
     {
         return get_item_impl<contact>(id, base_shape::all_properties,
+                                      additional_properties);
+    }
+
+    //! Gets a contact from the Exchange store.
+    std::vector<contact> get_contacts(const std::vector<item_id>& ids)
+    {
+        return get_item_impl<contact>(ids, base_shape::all_properties);
+    }
+
+    //! \brief Gets a contact from the Exchange store.
+    //!
+    //! The returned contact includes specified additional properties.
+    std::vector<contact> get_contacts(const std::vector<item_id>& ids,
+                        const std::vector<property_path>& additional_properties)
+    {
+        return get_item_impl<contact>(ids, base_shape::all_properties,
                                       additional_properties);
     }
 
@@ -16883,6 +16915,24 @@ public:
                         const std::vector<extended_field_uri>& ext_field_uri)
     {
         return get_item_impl<message>(id, ext_field_uri);
+    }
+
+    std::vector<message> get_messages(const std::vector<item_id>& ids)
+    {
+        return get_item_impl<message>(ids, base_shape::all_properties);
+    }
+
+    std::vector<message> get_messages(const std::vector<item_id>& ids,
+                        const std::vector<property_path>& additional_properties)
+    {
+        return get_item_impl<message>(ids, base_shape::all_properties,
+                                      additional_properties);
+    }
+
+    std::vector<message> get_messages(const std::vector<item_id>& ids,
+                        const std::vector<extended_field_uri>& ext_field_uri)
+    {
+        return get_item_impl<message>(ids, ext_field_uri);
     }
 
     //! Delete an arbitrary item from the Exchange store
