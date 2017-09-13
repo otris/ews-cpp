@@ -34,7 +34,7 @@
 #include <unistd.h>
 #endif
 
-#include "gtest-wrapper.hpp"
+#include <gtest/gtest.h>
 
 typedef std::unordered_map<std::string, std::string> argument_map;
 

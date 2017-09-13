@@ -47,7 +47,9 @@ TEST(ItemIdTest, DefaultConstruction)
     EXPECT_STREQ("", a.change_key().c_str());
 }
 
+#ifdef _MSC_VER
 #pragma warning(suppress : 6262)
+#endif
 TEST(ItemIdTest, FromXMLNode)
 {
     char buf[] = "<ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>";
@@ -66,7 +68,9 @@ TEST(ItemIdTest, ToXMLWithNamespace)
     EXPECT_STREQ(expected, a.to_xml().c_str());
 }
 
+#ifdef _MSC_VER
 #pragma warning(suppress : 6262)
+#endif
 TEST(ItemIdTest, FromAndToXMLRoundTrip)
 {
     const char* xml = "<t:ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>";

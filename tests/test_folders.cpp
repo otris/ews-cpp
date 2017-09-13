@@ -39,7 +39,9 @@ TEST(FolderTest, ConstructWithIdAndChangeKey)
     EXPECT_STREQ("edcba", a.change_key().c_str());
 }
 
+#ifdef _MSC_VER
 #pragma warning(suppress : 6262)
+#endif
 TEST(FolderTest, FromParentFolderIdXMLNode)
 {
     char buf[] = "<ParentFolderId Id=\"abcde\" ChangeKey=\"edcba\" />";

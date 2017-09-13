@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-#include "gtest-wrapper.hpp"
+#include <gtest/gtest.h>
 
 namespace
 {

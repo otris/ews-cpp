@@ -29,13 +29,13 @@
 #include <ews/rapidxml/rapidxml.hpp>
 
 #ifdef EWS_USE_BOOST_LIBRARY
-#include "boost-filesystem-wrapper.hpp"
+#include <boost/filesystem.hpp>
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #endif
 
-#include "gtest-wrapper.hpp"
+#include <gtest/gtest.h>
 
 namespace tests
 {
