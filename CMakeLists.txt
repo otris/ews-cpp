@@ -37,9 +37,9 @@ if(ENABLE_ASAN)
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
        "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         list(APPEND SANITIZE_CXXFLAGS
-            "-fsanitize=address -fno-omit-frame-pointer")
+            "-fsanitize=address,undefined -fno-omit-frame-pointer")
         list(APPEND SANITIZE_LDFLAGS
-            "-fsanitize=address")
+            "-fsanitize=address,undefined")
     else()
         message(WARNING "Option ENABLE_ASAN only supported with clang and gcc.")
     endif()
