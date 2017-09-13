@@ -1011,28 +1011,8 @@ TEST_F(ItemTest, SendItemsWithVector)
 
 TEST_F(ItemTest, SendItemsWithEmptyVector)
 {
-    std::vector<ews::message> messages;
-    auto message = ews::message();
-    std::vector<ews::mailbox> recipients;
-    for (int i = 0; i < 10; i++)
-    {
-        message.set_subject("?");
-        recipients.push_back(ews::mailbox("whoishere@home.com"));
-        message.set_to_recipients(recipients);
-        messages.push_back(message);
-    }
-
-    auto message_ids =
-        service().create_item(messages, ews::message_disposition::save_only);
-    ews::internal::on_scope_exit remove_messages([&] {
-        for (auto& id : message_ids)
-        {
-            service().delete_item(id);
-        }
-    });
-    message_ids.clear();
-
-    EXPECT_THROW(service().send_item(message_ids), ews::exception);
+    std::vector<ews::item_id> ids;
+    EXPECT_THROW(service().send_item(ids), ews::exception);
 }
 }
 
