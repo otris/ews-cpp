@@ -354,7 +354,7 @@ namespace rapidxml
                         node->value(), node->value() + node->value_size(),
                         Ch(0), out);
                 }
-                else if (child->next_sibling() == 0 &&
+                else if (child->next_sibling() == nullptr &&
                          child->type() == node_data)
                 {
                     // If node has a sole data child, only print its value
