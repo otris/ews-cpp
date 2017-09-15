@@ -90,8 +90,7 @@ elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
     # https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wcast-qual -Wcast-align -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs -Wshadow -Wredundant-decls")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wcast-qual -Wcast-align -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs -Wshadow")
 
     # Use colorized output on terminal if supported (GCC 4.9 onwards)
     CHECK_CXX_COMPILER_FLAG("-fdiagnostics-color=auto" GCC_HAS_COLOR)
