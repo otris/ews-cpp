@@ -983,6 +983,65 @@ TEST_F(ItemTest, CreateItemsWithEmptyVector)
     }
     FAIL();
 }
+
+TEST_F(ItemTest, SendItemsWithVector)
+{
+    std::vector<ews::message> messages;
+    auto message = ews::message();
+    std::vector<ews::mailbox> recipients;
+    for (int i = 0; i < 3; i++)
+    {
+        message.set_subject("?");
+        recipients.push_back(ews::mailbox("whoishere@home.com"));
+        message.set_to_recipients(recipients);
+        messages.push_back(message);
+    }
+
+    auto message_ids =
+        service().create_item(messages, ews::message_disposition::save_only);
+    ews::internal::on_scope_exit remove_messages([&] {
+        for (auto& id : message_ids)
+        {
+            service().delete_item(id);
+        }
+    });
+
+    EXPECT_NO_THROW(service().send_item(message_ids));
+}
+
+TEST_F(ItemTest, SendItemsWithVectorAndFolder)
+{
+    std::vector<ews::message> messages;
+    auto message = ews::message();
+    std::vector<ews::mailbox> recipients;
+    const ews::distinguished_folder_id drafts = ews::standard_folder::drafts;
+    const auto initial_count = service().find_item(drafts).size();
+    for (int i = 0; i < 3; i++)
+    {
+        message.set_subject("?");
+        recipients.push_back(ews::mailbox("whoishere@home.com"));
+        message.set_to_recipients(recipients);
+        messages.push_back(message);
+    }
+
+    auto message_ids =
+        service().create_item(messages, ews::message_disposition::save_only);
+    ews::internal::on_scope_exit remove_messages([&] {
+        for (auto& id : message_ids)
+        {
+            service().delete_item(id);
+        }
+    });
+
+    EXPECT_NO_THROW(service().send_item(message_ids, drafts));
+    EXPECT_EQ(initial_count + 3, service().find_item(drafts).size());
+}
+
+TEST_F(ItemTest, SendItemsWithEmptyVector)
+{
+    std::vector<ews::item_id> ids;
+    EXPECT_THROW(service().send_item(ids), ews::exception);
+}
 }
 
 // vim:et ts=4 sw=4

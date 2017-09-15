@@ -17239,6 +17239,14 @@ public:
     //! \param id The item id of the message you want to send
     void send_item(const item_id& id) { send_item(id, folder_id()); }
 
+    //! Sends messages that are already in the Exchange store.
+    //!
+    //! \param id The item ids of the messages you want to send
+    void send_item(const std::vector<item_id>& ids)
+    {
+        send_item(ids, folder_id());
+    }
+
     //! \brief Sends a message that is already in the Exchange store.
     //!
     //! \param id The item id of the message you want to send
@@ -17250,6 +17258,37 @@ public:
         sstr << "<m:SendItem SaveItemToFolder=\"" << std::boolalpha
              << folder.valid() << "\">"
              << "<m:ItemIds>" << id.to_xml() << "</m:ItemIds>";
+        if (folder.valid())
+        {
+            sstr << "<m:SavedItemFolderId>" << folder.to_xml()
+                 << "</m:SavedItemFolderId>";
+        }
+        sstr << "</m:SendItem>";
+
+        auto response = request(sstr.str());
+
+        const auto response_message =
+            internal::send_item_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+    }
+
+    //! \brief Sends messages that are already in the Exchange store.
+    //!
+    //! \param ids The item ids of the messages you want to send
+    //! \param folder The folder in the mailbox in which the send messages are
+    //! saved. If you pass an invalid id here, the messages won't be saved.
+    void send_item(const std::vector<item_id>& ids, const folder_id& folder)
+    {
+        std::stringstream sstr;
+        sstr << "<m:SendItem SaveItemToFolder=\"" << std::boolalpha
+             << folder.valid() << "\">";
+        for (const auto& id : ids)
+        {
+            sstr << "<m:ItemIds>" << id.to_xml() << "</m:ItemIds>";
+        }
         if (folder.valid())
         {
             sstr << "<m:SavedItemFolderId>" << folder.to_xml()
