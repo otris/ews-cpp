@@ -1,10 +1,9 @@
----
 branches:
   only:
     - master
 before_script:
-  - "sudo apt-get install doxygen graphviz libcurl4-gnutls-dev"
-  - "mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .."
+  - sudo apt-get install doxygen graphviz libcurl4-gnutls-dev
+  - mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
 cache: apt
 compiler:
   - gcc
@@ -13,13 +12,13 @@ language: cpp
 os:
   - linux
 script:
-  - "make && make doc"
+  - make && make doc
 sudo: required
 deploy:
   provider: pages
   skip_cleanup: true
-  local_dir: $TRAVIS_BUILD_DIR/build/html
-  github_token: $GH_REPO_TOKEN
+  local_dir: "$TRAVIS_BUILD_DIR/build/html"
+  github_token: "$GH_REPO_TOKEN"
   on:
     branch: master
 env:
