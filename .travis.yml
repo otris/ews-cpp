@@ -1,10 +1,10 @@
 ---
-addons:
-  apt:
-    packages:
-      - libcurl4-gnutls-dev
+branches:
+  only:
+    - master
 before_script:
-  - "cmake -H. -Bbuild_gcc -DCMAKE_BUILD_TYPE=Release -G\"Unix Makefiles\""
+  - "sudo apt-get install doxygen graphviz libcurl4-gnutls-dev"
+  - "mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .."
 cache: apt
 compiler:
   - gcc
@@ -13,6 +13,12 @@ language: cpp
 os:
   - linux
 script:
-  - "if [ \"$CXX\" = \"g++\" ]; then cmake --build build_gcc; fi"
+  - "make && make doc"
 sudo: required
-
+deploy:
+  provider: pages
+  skip_cleanup: true
+  local_dir: $TRAVIS_BUILD_DIR/build/html
+  github_token: $GH_REPO_TOKEN
+  on:
+    branch: master
