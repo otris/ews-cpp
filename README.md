@@ -141,7 +141,6 @@ Note: Kerberos is currently not supported but its on the TODO list.
 * macOS starting with 10.12
 * RHEL 7
 * Ubuntu starting with 16.04 LTS
-* SLES 12.1
 
 
 ## Supported Microsoft Exchange Server Versions
