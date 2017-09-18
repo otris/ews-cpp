@@ -1,10 +1,7 @@
 ---
-addons:
-  apt:
-    packages:
-      - libcurl4-gnutls-dev
 before_script:
-  - "cmake -H. -Bbuild_gcc -DCMAKE_BUILD_TYPE=Release -G\"Unix Makefiles\""
+  - "sudo apt-get install libcurl4-gnutls-dev"
+  - "mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .."
 cache: apt
 compiler:
   - gcc
