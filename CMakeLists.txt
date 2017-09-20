@@ -316,6 +316,15 @@ if(HAS_VARIANT)
     add_definitions(-DEWS_HAS_VARIANT)
 endif()
 
+# Test support for C++17 <filesystem> header
+CHECK_CXX_SOURCE_COMPILES("
+#include <filesystem>
+int main() { }
+" HAS_FILESYSTEM_HEADER)
+if(HAS_FILESYSTEM_HEADER)
+    add_definitions(-DEWS_HAS_FILESYSTEM_HEADER)
+endif()
+
 # Helper function for all those example executables
 function(add_example EXAMPLE_NAME)
     add_executable(${EXAMPLE_NAME}
