@@ -35,10 +35,10 @@ set(SANITIZE_CXXFLAGS)
 set(SANITIZE_LDFLAGS)
 if(ENABLE_ASAN)
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND
-       "${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER_EQUAL "5.0")
+       "${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER "4.0")
         set(_enable_ubsan TRUE)
     elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND
-           "${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER_EQUAL "7.2")
+           "${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER "7.1")
         set(_enable_ubsan TRUE)
     else()
         set(_enable_ubsan FALSE)
