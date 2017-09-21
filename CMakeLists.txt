@@ -34,12 +34,30 @@ endif()
 set(SANITIZE_CXXFLAGS)
 set(SANITIZE_LDFLAGS)
 if(ENABLE_ASAN)
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND
+       "${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER_EQUAL "5.0")
+        set(_enable_ubsan TRUE)
+    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND
+           "${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER_EQUAL "7.2")
+        set(_enable_ubsan TRUE)
+    else()
+        set(_enable_ubsan FALSE)
+    endif()
+
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
        "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        list(APPEND SANITIZE_CXXFLAGS
-            "-fsanitize=address,undefined -fno-omit-frame-pointer")
-        list(APPEND SANITIZE_LDFLAGS
-            "-fsanitize=address,undefined")
+        if(_enable_ubsan)
+            list(APPEND SANITIZE_CXXFLAGS
+                "-fsanitize=address,undefined -fno-omit-frame-pointer")
+            list(APPEND SANITIZE_LDFLAGS
+                "-fsanitize=address,undefined")
+        else()
+            list(APPEND SANITIZE_CXXFLAGS
+                "-fsanitize=address -fno-omit-frame-pointer")
+            list(APPEND SANITIZE_LDFLAGS
+                "-fsanitize=address")
+        endif()
+
     else()
         message(WARNING "Option ENABLE_ASAN only supported with clang and gcc.")
     endif()
