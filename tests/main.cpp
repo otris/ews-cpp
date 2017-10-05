@@ -116,9 +116,9 @@ void init_from_args(int* argc, char** argv)
     }
 
 #ifdef _WIN32
-    auto assets_dir = std::string(pwd() + "\\tests\\assets");
+    auto assets_dir = pwd() + "\\tests\\assets";
 #else
-    auto assets_dir = std::string(pwd() + "/tests/assets");
+    auto assets_dir = pwd() + "/tests/assets";
 #endif
     auto it = args.find("--assets=");
     if (it != args.end())
