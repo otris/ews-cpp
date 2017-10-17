@@ -86,6 +86,40 @@ TEST_F(MessageTest, UpdateIsReadProperty)
     EXPECT_TRUE(msg.is_read());
 }
 
+// <From>
+TEST(OfflineMessageTest, FromPropertyInitialValue)
+{
+    auto msg = ews::message();
+    EXPECT_TRUE(msg.get_from().none());
+}
+
+TEST_F(MessageTest, SetFromWithInvalidMailbox)
+{
+    auto msg = ews::message();
+    msg.set_from(ews::mailbox());
+    auto id = service().create_item(msg, ews::message_disposition::save_only);
+    ews::internal::on_scope_exit remove_message(
+        [&]() { service().delete_item(id); });
+}
+
+TEST(OfflineMessageTest, SetFromProperty)
+{
+    auto msg = ews::message();
+    msg.set_from(ews::mailbox("chuck@example.com"));
+    ASSERT_FALSE(msg.get_from().none());
+    EXPECT_STREQ("chuck@example.com", msg.get_from().value().c_str());
+}
+
+TEST_F(MessageTest, UpdateFromProperty)
+{
+    auto& msg = test_message();
+    auto prop = ews::property(ews::message_property_path::from,
+                              ews::mailbox("chuck@example.com"));
+    auto new_id = service().update_item(msg.get_item_id(), prop);
+    msg = service().get_message(new_id);
+    EXPECT_STREQ("chuck@example.com", msg.get_from().value().c_str());
+}
+
 // <InternetMessageId>
 TEST(OfflineMessageTest, InternetMessageIdPropertyInitialValue)
 {
@@ -105,6 +139,8 @@ TEST_F(MessageTest, CreateMessageWithInternetMessageId)
     auto msg = ews::message();
     msg.set_internet_message_id("xxxxxxxx-xxxx-mxxx-nxxx-xxxxxxxxxxxx");
     auto id = service().create_item(msg, ews::message_disposition::save_only);
+    ews::internal::on_scope_exit remove_message(
+        [&]() { service().delete_item(id); });
     msg = service().get_message(id);
     EXPECT_STREQ("xxxxxxxx-xxxx-mxxx-nxxx-xxxxxxxxxxxx",
                  msg.get_internet_message_id().c_str());

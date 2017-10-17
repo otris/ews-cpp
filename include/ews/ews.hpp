@@ -14813,7 +14813,7 @@ public:
     //! \brief Returns the recurrence pattern for calendar items and
     //! meeting requests.
     //!
-    //! The returned pointers are NULL if this calendar item is not a
+    //! The returned pointers are null if this calendar item is not a
     //! recurring master.
     std::pair<std::unique_ptr<recurrence_pattern>,
               std::unique_ptr<recurrence_range>>
@@ -15131,7 +15131,30 @@ public:
     // <IsDeliveryReceiptRequested/>
     // <ConversationIndex/>
     // <ConversationTopic/>
-    // <From/>
+
+    //! Returns the From header field of this message.
+    mailbox get_from() const
+    {
+        const auto from_node = xml().get_node("From");
+        if (!from_node)
+        {
+            return mailbox(); // None set
+        }
+        return mailbox::from_xml_element(*(from_node->first_node()));
+    }
+
+    //! Sets the From header field of this message.
+    void set_from(const ews::mailbox& m)
+    {
+        auto doc = xml().document();
+        auto from_node = xml().get_node("From");
+        if (from_node)
+        {
+            doc->remove_node(from_node);
+        }
+        from_node = &internal::create_node(*doc, "t:From");
+        m.to_xml_element(*from_node);
+    }
 
     //! \brief Returns the Message-ID header field of this email message.
     //!
@@ -15883,6 +15906,11 @@ public:
 
     property(property_path path, const date_time& value)
         : value_(path.to_xml(value.to_string()))
+    {
+    }
+
+    property(property_path path, const mailbox& value)
+        : value_(path.to_xml(value.to_xml()))
     {
     }
 
