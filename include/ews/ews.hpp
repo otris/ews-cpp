@@ -15091,7 +15091,29 @@ public:
     }
 #endif
 
-    // <Sender/>
+    //! Returns the Sender: header field of this message.
+    mailbox get_sender() const
+    {
+        const auto sender_node = xml().get_node("Sender");
+        if (!sender_node)
+        {
+            return mailbox(); // None
+        }
+        return mailbox::from_xml_element(*(sender_node->first_node()));
+    }
+
+    //! Sets the Sender: header field of this message.
+    void set_sender(const ews::mailbox& m)
+    {
+        auto doc = xml().document();
+        auto sender_node = xml().get_node("Sender");
+        if (sender_node)
+        {
+            doc->remove_node(sender_node);
+        }
+        sender_node = &internal::create_node(*doc, "t:Sender");
+        m.to_xml_element(*sender_node);
+    }
 
     //! Returns the recipients of this message.
     std::vector<mailbox> get_to_recipients() const
@@ -15108,7 +15130,7 @@ public:
         set_recipients_impl("ToRecipients", recipients);
     }
 
-    //! Returns the "Cc:" recipients of this message.
+    //! Returns the Cc: recipients of this message.
     std::vector<mailbox> get_cc_recipients() const
     {
         return get_recipients_impl("CcRecipients");
@@ -15124,7 +15146,7 @@ public:
         set_recipients_impl("CcRecipients", recipients);
     }
 
-    //! Returns the "Bcc:" recipients of this message.
+    //! Returns the Bcc: recipients of this message.
     std::vector<mailbox> get_bcc_recipients() const
     {
         return get_recipients_impl("BccRecipients");
@@ -15145,7 +15167,7 @@ public:
     // <ConversationIndex/>
     // <ConversationTopic/>
 
-    //! Returns the From header field of this message.
+    //! Returns the From: header field of this message.
     mailbox get_from() const
     {
         const auto from_node = xml().get_node("From");
@@ -15156,7 +15178,7 @@ public:
         return mailbox::from_xml_element(*(from_node->first_node()));
     }
 
-    //! Sets the From header field of this message.
+    //! Sets the From: header field of this message.
     void set_from(const ews::mailbox& m)
     {
         auto doc = xml().document();
@@ -15169,7 +15191,7 @@ public:
         m.to_xml_element(*from_node);
     }
 
-    //! \brief Returns the Message-ID header field of this email message.
+    //! \brief Returns the Message-ID: header field of this email message.
     //!
     //! This function can be used to retrieve the \<InternetMessageId>
     //! property of this message. The property provides the unique message
@@ -15179,7 +15201,7 @@ public:
         return xml().get_value_as_string("InternetMessageId");
     }
 
-    //! \brief Sets the Message-ID header field of this email message.
+    //! \brief Sets the Message-ID: header field of this email message.
     //!
     //! Note that it is not possible to change a message's Message-ID value.
     //! This means that updating this property via the
@@ -15210,7 +15232,22 @@ public:
 
     // <IsResponseRequested/>
     // <References/>
-    // <ReplyTo/>
+
+    //! Returns the Reply-To: address list of this message.
+    std::vector<mailbox> get_reply_to() const
+    {
+        return get_recipients_impl("ReplyTo");
+    }
+
+    //! \brief Sets the addresses to which replies to this message should be
+    //! sent.
+    //!
+    //! Setting this property sets the Reply-To: header field as described in
+    //! RFC 5322.
+    void set_reply_to(const std::vector<mailbox>& recipients)
+    {
+        set_recipients_impl("ReplyTo", recipients);
+    }
 
     //! Makes a message instance from a \<Message> XML element
     static message from_xml_element(const rapidxml::xml_node<>& elem)
