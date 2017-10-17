@@ -475,6 +475,34 @@ TEST(InternalTest, HTTPErrorContainsStatusCodeString)
     EXPECT_EQ(404, error.code());
     EXPECT_STREQ("HTTP status code: 404 (Not Found)", error.what());
 }
+
+// References calculated with: https://www.base64encode.org/
+TEST(Base64, FillByteNone)
+{
+    std::vector<unsigned char> text{'a', 'b', 'c'};
+    EXPECT_STREQ(ews::internal::base64::encode(text).c_str(), "YWJj");
+
+    const auto decoded = ews::internal::base64::decode("YWJj");
+    EXPECT_EQ(decoded, text);
+}
+
+TEST(Base64, FillByteOne)
+{
+    std::vector<unsigned char> text{'a', 'b', 'c', 'd', 'e'};
+    EXPECT_STREQ(ews::internal::base64::encode(text).c_str(), "YWJjZGU=");
+
+    const auto decoded = ews::internal::base64::decode("YWJjZGU=");
+    EXPECT_EQ(decoded, text);
+}
+
+TEST(Base64, FillByteTwo)
+{
+    std::vector<unsigned char> text{'a', 'b', 'c', 'd'};
+    EXPECT_STREQ(ews::internal::base64::encode(text).c_str(), "YWJjZA==");
+
+    const auto decoded = ews::internal::base64::decode("YWJjZA==");
+    EXPECT_EQ(decoded, text);
+}
 }
 
 // vim:et ts=4 sw=4

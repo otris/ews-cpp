@@ -184,26 +184,27 @@ namespace internal
         // modified version of the original implementation from
         // René Nyffenegger available at
         //
-        //     http://www.adp-gmbh.ch/cpp/common/base64.html
+        //     https://github.com/ReneNyffenegger/cpp-base64
         //
-        // Copyright (C) 2004-2008 René Nyffenegger
+        // under the zlib License.
         //
-        // This source code is provided 'as-is', without any express or
-        // implied warranty. In no event will the author be held liable for
-        // any damages arising from the use of this software.
+        // Copyright © 2004-2017 by René Nyffenegger
         //
-        // Permission is granted to anyone to use this software for any
-        // purpose, including commercial applications, and to alter it and
-        // redistribute it freely, subject to the following restrictions:
+        // This source code is provided 'as-is', without any express or implied
+        // warranty. In no event will the author be held liable for any damages
+        // arising from the use of this software.
         //
-        // 1. The origin of this source code must not be misrepresented;
-        //    you must not claim that you wrote the original source code.
-        //    If you use this source code in a product, an acknowledgment
-        //    in the product documentation would be appreciated but is not
-        //    required.
+        // Permission is granted to anyone to use this software for any purpose,
+        // including commercial applications, and to alter it and redistribute
+        // it freely, subject to the following restrictions:
         //
-        // 2. Altered source versions must be plainly marked as such, and
-        //    must not be misrepresented as being the original source code.
+        // 1. The origin of this source code must not be misrepresented; you
+        //    must not claim that you wrote the original source code. If you use
+        //    this source code in a product, an acknowledgment in the product
+        //    documentation would be appreciated but is not required.
+        //
+        // 2. Altered source versions must be plainly marked as such, and must
+        //    not be misrepresented as being the original source code.
         //
         // 3. This notice may not be removed or altered from any source
         //    distribution.
@@ -266,7 +267,6 @@ namespace internal
                                   ((char_array_3[1] & 0xf0) >> 4);
                 char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) +
                                   ((char_array_3[2] & 0xc0) >> 6);
-                char_array_4[3] = char_array_3[2] & 0x3f;
 
                 for (j = 0; (j < i + 1); j++)
                 {
@@ -325,12 +325,7 @@ namespace internal
 
             if (i)
             {
-                for (j = i; j < 4; j++)
-                {
-                    char_array_4[j] = 0;
-                }
-
-                for (j = 0; j < 4; j++)
+                for (j = 0; j < i; j++)
                 {
                     char_array_4[j] = static_cast<unsigned char>(
                         base64_chars.find(char_array_4[j]));
@@ -340,8 +335,6 @@ namespace internal
                     (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
                 char_array_3[1] = ((char_array_4[1] & 0xf) << 4) +
                                   ((char_array_4[2] & 0x3c) >> 2);
-                char_array_3[2] =
-                    ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
 
                 for (j = 0; (j < i - 1); j++)
                 {
