@@ -476,6 +476,7 @@ TEST(InternalTest, HTTPErrorContainsStatusCodeString)
     EXPECT_STREQ("HTTP status code: 404 (Not Found)", error.what());
 }
 
+#ifdef EWS_HAS_INITIALIZER_LISTS
 // References calculated with: https://www.base64encode.org/
 TEST(Base64, FillByteNone)
 {
@@ -503,6 +504,7 @@ TEST(Base64, FillByteTwo)
     const auto decoded = ews::internal::base64::decode("YWJjZA==");
     EXPECT_EQ(decoded, text);
 }
+#endif
 }
 
 // vim:et ts=4 sw=4
