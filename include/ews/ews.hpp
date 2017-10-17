@@ -15091,6 +15091,22 @@ public:
 
     // <Sender/>
 
+    std::vector<mailbox> get_to_recipients() const
+    {
+        const auto recipients = xml().get_node("ToRecipients");
+        if (!recipients)
+        {
+            return std::vector<mailbox>();
+        }
+        std::vector<mailbox> result;
+        for (auto mailbox_node = recipients->first_node(); mailbox_node;
+             mailbox_node = mailbox_node->next_sibling())
+        {
+            result.emplace_back(mailbox::from_xml_element(*mailbox_node));
+        }
+        return result;
+    }
+
     void set_to_recipients(const std::vector<mailbox>& recipients)
     {
         auto doc = xml().document();
@@ -15109,22 +15125,6 @@ public:
         }
     }
 
-    std::vector<mailbox> get_to_recipients() const
-    {
-        const auto recipients = xml().get_node("ToRecipients");
-        if (!recipients)
-        {
-            return std::vector<mailbox>();
-        }
-        std::vector<mailbox> result;
-        for (auto mailbox_node = recipients->first_node(); mailbox_node;
-             mailbox_node = mailbox_node->next_sibling())
-        {
-            result.emplace_back(mailbox::from_xml_element(*mailbox_node));
-        }
-        return result;
-    }
-
     // <CcRecipients/>
     // <BccRecipients/>
     // <IsReadReceiptRequested/>
@@ -15132,7 +15132,30 @@ public:
     // <ConversationIndex/>
     // <ConversationTopic/>
     // <From/>
-    // <InternetMessageId/>
+
+    //! \brief Returns the Message-ID header field of this email message.
+    //!
+    //! This function can be used to retrieve the \<InternetMessageId>
+    //! property of this message. The property provides the unique message
+    //! identifier according to the RFCs for email, RFC 822 and RFC 2822.
+    std::string get_internet_message_id() const
+    {
+        return xml().get_value_as_string("InternetMessageId");
+    }
+
+    //! \brief Sets the Message-ID header field of this email message.
+    //!
+    //! Note that it is not possible to change a message's Message-ID value.
+    //! This means that updating this property via the
+    //! <tt>ews::message_property_path::internet_message_id</tt> property path
+    //! will most certainly be rejected by the Exchange server. However,
+    //! setting this property when creating a new message is absolutely fine.
+    //!
+    //! \sa get_internet_message_id()
+    void set_internet_message_id(const std::string& value)
+    {
+        xml().set_or_update("InternetMessageId", value);
+    }
 
     //! Returns whether this message has been read
     bool is_read() const
@@ -17241,7 +17264,7 @@ public:
 
     //! Sends messages that are already in the Exchange store.
     //!
-    //! \param id The item ids of the messages you want to send
+    //! \param ids The item ids of the messages you want to send.
     void send_item(const std::vector<item_id>& ids)
     {
         send_item(ids, folder_id());

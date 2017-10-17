@@ -63,7 +63,7 @@ TEST_F(MessageTest, CreateAndDeleteMessage)
     EXPECT_EQ(initial_count, messages.size());
 }
 
-// <IsRead/>
+// <IsRead>
 TEST(OfflineMessageTest, IsReadPropertyInitialValue)
 {
     auto msg = ews::message();
@@ -84,6 +84,30 @@ TEST_F(MessageTest, UpdateIsReadProperty)
     auto new_id = service().update_item(msg.get_item_id(), prop);
     msg = service().get_message(new_id);
     EXPECT_TRUE(msg.is_read());
+}
+
+// <InternetMessageId>
+TEST(OfflineMessageTest, InternetMessageIdPropertyInitialValue)
+{
+    auto msg = ews::message();
+    EXPECT_TRUE(msg.get_internet_message_id().empty());
+}
+
+TEST(OfflineMessageTest, SetInternetMessageIdProperty)
+{
+    auto msg = ews::message();
+    msg.set_internet_message_id("xyz");
+    EXPECT_STREQ("xyz", msg.get_internet_message_id().c_str());
+}
+
+TEST_F(MessageTest, CreateMessageWithInternetMessageId)
+{
+    auto msg = ews::message();
+    msg.set_internet_message_id("xxxxxxxx-xxxx-mxxx-nxxx-xxxxxxxxxxxx");
+    auto id = service().create_item(msg, ews::message_disposition::save_only);
+    msg = service().get_message(id);
+    EXPECT_STREQ("xxxxxxxx-xxxx-mxxx-nxxx-xxxxxxxxxxxx",
+                 msg.get_internet_message_id().c_str());
 }
 }
 
