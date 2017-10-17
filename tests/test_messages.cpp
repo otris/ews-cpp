@@ -67,6 +67,76 @@ TEST_F(MessageTest, CreateAndDeleteMessage)
     EXPECT_EQ(initial_count, messages.size());
 }
 
+// <CcRecipients>
+TEST(OfflineMessageTest, CcRecipientsPropertyInitialValue)
+{
+    auto msg = ews::message();
+    EXPECT_TRUE(msg.get_cc_recipients().empty());
+}
+
+TEST(OfflineMessageTest, SetCcRecipientsProperty)
+{
+    auto msg = ews::message();
+    auto recipients = std::vector<ews::mailbox>();
+    recipients.push_back(ews::mailbox("a@example.com"));
+    recipients.push_back(ews::mailbox("b@example.com"));
+    msg.set_cc_recipients(recipients);
+    auto result = msg.get_cc_recipients();
+    EXPECT_EQ(2U, result.size());
+}
+
+TEST_F(MessageTest, UpdateCcRecipientsProperty)
+{
+    auto recipients = std::vector<ews::mailbox>();
+    recipients.push_back(ews::mailbox("a@example.com"));
+    recipients.push_back(ews::mailbox("b@example.com"));
+
+    auto& msg = test_message();
+    auto prop =
+        ews::property(ews::message_property_path::cc_recipients, recipients);
+    auto new_id = service().update_item(msg.get_item_id(), prop);
+    msg = service().get_message(new_id);
+
+    auto result = msg.get_cc_recipients();
+    ASSERT_EQ(2U, result.size());
+    EXPECT_STREQ("a@example.com", result[0].value().c_str());
+    EXPECT_STREQ("b@example.com", result[1].value().c_str());
+}
+
+// <BccRecipients>
+TEST(OfflineMessageTest, BccRecipientsPropertyInitialValue)
+{
+    auto msg = ews::message();
+    EXPECT_TRUE(msg.get_bcc_recipients().empty());
+}
+
+TEST(OfflineMessageTest, SetBccRecipientsProperty)
+{
+    auto msg = ews::message();
+    auto recipients = std::vector<ews::mailbox>();
+    recipients.push_back(ews::mailbox("a@example.com"));
+    recipients.push_back(ews::mailbox("b@example.com"));
+    msg.set_bcc_recipients(recipients);
+    auto result = msg.get_bcc_recipients();
+    EXPECT_EQ(2U, result.size());
+}
+
+TEST_F(MessageTest, UpdateBccRecipientsProperty)
+{
+    auto recipients = std::vector<ews::mailbox>();
+    recipients.push_back(ews::mailbox("peter@example.com"));
+
+    auto& msg = test_message();
+    auto prop =
+        ews::property(ews::message_property_path::bcc_recipients, recipients);
+    auto new_id = service().update_item(msg.get_item_id(), prop);
+    msg = service().get_message(new_id);
+
+    auto result = msg.get_bcc_recipients();
+    ASSERT_EQ(1U, result.size());
+    EXPECT_STREQ("peter@example.com", result[0].value().c_str());
+}
+
 // <IsRead>
 TEST(OfflineMessageTest, IsReadPropertyInitialValue)
 {

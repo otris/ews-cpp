@@ -15096,41 +15096,50 @@ public:
     //! Returns the recipients of this message.
     std::vector<mailbox> get_to_recipients() const
     {
-        const auto recipients = xml().get_node("ToRecipients");
-        if (!recipients)
-        {
-            return std::vector<mailbox>();
-        }
-        std::vector<mailbox> result;
-        for (auto mailbox_node = recipients->first_node(); mailbox_node;
-             mailbox_node = mailbox_node->next_sibling())
-        {
-            result.emplace_back(mailbox::from_xml_element(*mailbox_node));
-        }
-        return result;
+        return get_recipients_impl("ToRecipients");
     }
 
-    //! Sets the recipients of this message to \p recipients.
+    //! \brief Sets the recipients of this message to \p recipients.
+    //!
+    //! Setting this property sets the To: header field as described in RFC
+    //! 5322.
     void set_to_recipients(const std::vector<mailbox>& recipients)
     {
-        auto doc = xml().document();
-
-        auto to_recipients_node = xml().get_node("ToRecipients");
-        if (to_recipients_node)
-        {
-            doc->remove_node(to_recipients_node);
-        }
-
-        to_recipients_node = &internal::create_node(*doc, "t:ToRecipients");
-
-        for (const auto& recipient : recipients)
-        {
-            recipient.to_xml_element(*to_recipients_node);
-        }
+        set_recipients_impl("ToRecipients", recipients);
     }
 
-    // <CcRecipients/>
-    // <BccRecipients/>
+    //! Returns the "Cc:" recipients of this message.
+    std::vector<mailbox> get_cc_recipients() const
+    {
+        return get_recipients_impl("CcRecipients");
+    }
+
+    //! \brief Sets the recipients that will receive a carbon copy of the
+    //! message to \p recipients.
+    //!
+    //! Setting this property sets the Cc: header field as described in RFC
+    //! 5322.
+    void set_cc_recipients(const std::vector<mailbox>& recipients)
+    {
+        set_recipients_impl("CcRecipients", recipients);
+    }
+
+    //! Returns the "Bcc:" recipients of this message.
+    std::vector<mailbox> get_bcc_recipients() const
+    {
+        return get_recipients_impl("BccRecipients");
+    }
+
+    //! \brief Sets the recipients that will receive a blind carbon copy of the
+    //! message to \p recipients.
+    //!
+    //! Setting this property sets the Bcc: header field as described in RFC
+    //! 5322.
+    void set_bcc_recipients(const std::vector<mailbox>& recipients)
+    {
+        set_recipients_impl("BccRecipients", recipients);
+    }
+
     // <IsReadReceiptRequested/>
     // <IsDeliveryReceiptRequested/>
     // <ConversationIndex/>
@@ -15220,6 +15229,42 @@ private:
     {
         static const std::string name("Message");
         return name;
+    }
+
+    std::vector<mailbox> get_recipients_impl(const char* node_name) const
+    {
+        const auto recipients = xml().get_node(node_name);
+        if (!recipients)
+        {
+            return std::vector<mailbox>();
+        }
+        std::vector<mailbox> result;
+        for (auto mailbox_node = recipients->first_node(); mailbox_node;
+             mailbox_node = mailbox_node->next_sibling())
+        {
+            result.emplace_back(mailbox::from_xml_element(*mailbox_node));
+        }
+        return result;
+    }
+
+    void set_recipients_impl(const char* node_name,
+                             const std::vector<mailbox>& recipients)
+    {
+        auto doc = xml().document();
+
+        auto recipients_node = xml().get_node(node_name);
+        if (recipients_node)
+        {
+            doc->remove_node(recipients_node);
+        }
+
+        recipients_node =
+            &internal::create_node(*doc, std::string("t:") + node_name);
+
+        for (const auto& recipient : recipients)
+        {
+            recipient.to_xml_element(*recipients_node);
+        }
     }
 };
 
