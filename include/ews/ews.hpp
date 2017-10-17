@@ -15074,12 +15074,14 @@ static_assert(std::is_move_assignable<calendar_item>::value, "");
 class message final : public item
 {
 public:
+//! Constructs a new message object
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
     message() = default;
 #else
     message() {}
 #endif
 
+    //! Constructs a new message object with the given id
     explicit message(item_id id) : item(id) {}
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
@@ -15091,6 +15093,7 @@ public:
 
     // <Sender/>
 
+    //! Returns the recipients of this message.
     std::vector<mailbox> get_to_recipients() const
     {
         const auto recipients = xml().get_node("ToRecipients");
@@ -15107,6 +15110,7 @@ public:
         return result;
     }
 
+    //! Sets the recipients of this message to \p recipients.
     void set_to_recipients(const std::vector<mailbox>& recipients)
     {
         auto doc = xml().document();
