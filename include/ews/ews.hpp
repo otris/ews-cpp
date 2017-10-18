@@ -7066,19 +7066,15 @@ namespace internal
             set_option(CURLOPT_WRITEDATA, std::addressof(response_data));
 
 #ifdef EWS_DISABLE_TLS_CERT_VERIFICATION
+// Warn in release builds
+#ifdef NDEBUG
+#pragma message(                                                               \
+    "warning: TLS verification of the server's authenticity is disabled")
+#endif
             // Turn-off verification of the server's authenticity
             set_option(CURLOPT_SSL_VERIFYPEER, 0L);
             set_option(CURLOPT_SSL_VERIFYHOST, 0L);
 
-// Warn in release builds
-#ifdef NDEBUG
-#ifdef _MSC_VER
-#pragma message(                                                               \
-    "warning: TLS verification of the server's authenticity is disabled")
-#else
-#warning "TLS verification of the server's authenticity is disabled"
-#endif
-#endif
 #endif
 
             auto retcode = curl_easy_perform(handle_.get());
