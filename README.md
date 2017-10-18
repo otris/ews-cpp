@@ -97,16 +97,12 @@ C++ application.
   `<DeleteAttachment>` for file attachments. Note: Item attachments are not
   supported yet.
 * Allow someone else to manage your mail and calendar:
-    - [Impersonation](https://msdn.microsoft.com/en-us/library/office/dn722377(v=exchg.150).aspx)
-      when you have a service process that needs to do regular tasks for a
-      group of mailboxes or every mailbox in a database.
-    - [Delegate
-      access](https://msdn.microsoft.com/en-us/library/office/dn641957(v=exchg.150).aspx)
-      for granting access to individual  users. You can add permissions
-      individually to each mailbox and directly modify folder permissions.
-* Discovering Exchange servers in your network with
-  [Autodiscover](https://msdn.microsoft.com/en-us/library/office/dd899340(v=exchg.150).aspx)
-  is supported.
+  - Impersonation. When you have a service process that needs to do regular
+    tasks for a group of mailboxes or every mailbox in a database.
+  - Delegate access. For granting access to individual  users. You can add
+    permissions individually to each mailbox and directly modify folder
+    permissions.
+* Discovering Exchange servers in your network with Autodiscover is supported.
 
 ## Supported Authentication Schemes
 
