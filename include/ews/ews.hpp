@@ -12941,7 +12941,10 @@ public:
         xml().set_or_update("FileAs", fileas);
     }
 
-    std::string get_file_as() { return xml().get_value_as_string("FileAs"); }
+    std::string get_file_as() const
+    {
+        return xml().get_value_as_string("FileAs");
+    }
 
     //! How the various parts of a contact's information interact to form
     //! the FileAs property value
@@ -12952,7 +12955,7 @@ public:
         xml().set_or_update("FileAsMapping", mapping);
     }
 
-    internal::file_as_mapping get_file_as_mapping()
+    internal::file_as_mapping get_file_as_mapping() const
     {
         return internal::str_to_map(xml().get_value_as_string("FileAsMapping"));
     }
