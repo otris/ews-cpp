@@ -111,7 +111,7 @@ elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wcast-qual -Wcast-align -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs -Wshadow -Wredundant-decls -Wdouble-promotion -Wold-style-cast")
 
     if("${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER "6.0")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnull-dereference -Wduplicated-cond")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wduplicated-cond")
     endif()
 
     if("${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER "7.0")
