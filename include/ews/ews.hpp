@@ -6221,6 +6221,104 @@ namespace internal
     };
 }
 
+enum class searchscope
+{
+    active_directory,
+    active_directory_contacts,
+    contacts,
+    contacts_active_directory
+};
+
+namespace internal
+{
+    inline std::string enum_to_str(searchscope s)
+    {
+        switch (s)
+        {
+        case searchscope::active_directory:
+            return "ActiveDirectory";
+        case searchscope::active_directory_contacts:
+            return "ActiveDirectoryContacts";
+        case searchscope::contacts:
+            return "Contacts";
+        case searchscope::contacts_active_directory:
+            return "ContactsActiveDirectory";
+        default:
+            throw exception("Bad enum value");
+        }
+    }
+
+    inline searchscope str_to_searchscope(const std::string& str)
+    {
+        if (str == "ActiveDirectory")
+        {
+            return searchscope::active_directory;
+        }
+        else if (str == "ActiveDirectoryContacts")
+        {
+            return searchscope::active_directory_contacts;
+        }
+        else if (str == "Contacts")
+        {
+            return searchscope::contacts;
+        }
+        else if (str == "ContactsActiveDirectory")
+        {
+            return searchscope::contacts_active_directory;
+        }
+        else
+        {
+            throw exception("Bad enum value");
+        }
+    }
+
+}
+
+enum class contact_data_shape
+{
+    id_only,
+    default_shape,
+    all_properties
+};
+
+namespace internal
+{
+    inline std::string enum_to_str(contact_data_shape s)
+    {
+        switch (s)
+        {
+        case contact_data_shape::id_only:
+            return "IdOnly";
+        case contact_data_shape::default_shape:
+            return "Default";
+        case contact_data_shape::all_properties:
+            return "AllProperties";
+        default:
+            throw exception("Bad enum value");
+        }
+    }
+
+    inline contact_data_shape str_to_contact_data_shape(const std::string& str)
+    {
+        if (str == "IdOnly")
+        {
+            return contact_data_shape::id_only;
+        }
+        else if (str == "Default")
+        {
+            return contact_data_shape::default_shape;
+        }
+        else if (str == "AllProperties")
+        {
+            return contact_data_shape::all_properties;
+        }
+        else
+        {
+            throw exception("Bad enum value");
+        }
+    }
+}
+
 //! Exception thrown when a request was not successful
 class exchange_error final : public exception
 {
@@ -8092,6 +8190,27 @@ static_assert(std::is_move_constructible<mailbox>::value, "");
 static_assert(std::is_move_assignable<mailbox>::value, "");
 #endif
 
+struct directory_id
+{
+    std::string id;
+};
+
+struct resolution
+{
+    ews::mailbox mailbox;
+    ews::directory_id directory_id;
+};
+
+struct resolution_set
+{
+    int indexed_paging_offset;
+    int numerator_offset;
+    int absolute_denominator;
+    bool includes_last_item_in_range;
+    int total_items_in_view;
+    std::vector<resolution> resolutions;
+};
+
 //! \brief Identifies a folder.
 //!
 //! Renders a <tt>\<FolderId></tt> element. Contains the identifier and
@@ -9148,6 +9267,24 @@ namespace internal
             : response_message_base(std::move(res))
         {
         }
+    };
+
+    class resolve_names_response_message final : public response_message_base
+    {
+    public:
+        // defined below
+        static resolve_names_response_message parse(http_response&& response);
+        const resolution_set& resolutionset() const { return resolutions_; }
+
+    private:
+        explicit resolve_names_response_message(response_result&& res,
+                                                resolution_set&& rset)
+            : response_message_base(std::move(res)),
+              resolutions_(std::move(rset))
+        {
+        }
+
+        resolution_set resolutions_;
     };
 
     class create_attachment_response_message final
@@ -17788,6 +17925,19 @@ public:
         return response_message.get_root_item_id();
     }
 
+    //! \brief The ResolveNames operation resolves ambiguous email addresses and
+    //! display names.
+    //!
+    //! Returns a resolution_set which contains a vector<resolution>.
+    //! ContactDataShape and ReturnFullContactData are set by default. A
+    //! directory_id is returned in place of the contact.
+    resolution_set resolve_names(const std::string& name, searchscope scope,
+                                 std::vector<folder_id> parent_folder_ids = {})
+    {
+        return resolve_names_impl(name, parent_folder_ids, true, scope,
+                                  contact_data_shape::id_only);
+    }
+
 private:
     RequestHandler request_handler_;
     std::string server_version_;
@@ -18374,6 +18524,58 @@ private:
                    "Expected at least one item");
         return response_message.items().front();
     }
+
+    resolution_set resolve_names_impl(const std::string& name,
+                                      std::vector<folder_id> parent_folder_ids,
+                                      bool return_full_contact_data,
+                                      searchscope scope,
+                                      contact_data_shape shape)
+    {
+        auto version = get_request_server_version();
+        std::stringstream sstr;
+        sstr << "<m:ResolveNames "
+             << "ReturnFullContactData=\"";
+        if (return_full_contact_data)
+        {
+            sstr << "true";
+        }
+        else
+        {
+            sstr << "false";
+        }
+        sstr << "\" "
+             << "SearchScope=\"" << internal::enum_to_str(scope) << "\" ";
+
+        if (version == server_version::exchange_2010_sp2 ||
+            version == server_version::exchange_2013 ||
+            version == server_version::exchange_2013_sp1)
+        {
+            sstr << "ContactDataShape=\"" << internal::enum_to_str(shape)
+                 << "\"";
+        }
+        sstr << ">";
+        if (parent_folder_ids.size() > 0)
+        {
+            sstr << "<ParentFolderIds>";
+            for (const auto& id : parent_folder_ids)
+            {
+                sstr << id.to_xml();
+            }
+            sstr << "</ParentFolderIds>";
+        }
+        sstr << "<m:UnresolvedEntry>" << name << "</m:UnresolvedEntry>"
+             << "</m:ResolveNames>";
+        auto response = request(sstr.str());
+        const auto response_message =
+            internal::resolve_names_response_message::parse(std::move(response));
+        if (response_message.result().cls == response_class::error)
+        {
+            throw exchange_error(response_message.result());
+        }
+        EWS_ASSERT(!response_message.resolutionset().resolutions.empty() &&
+                   "Expected at least one resolution");
+        return response_message.resolutionset();
+    }
 };
 
 typedef basic_service<> service;
@@ -18711,6 +18913,113 @@ namespace internal
         }
 
         return remove_delegate_response_message(std::move(result));
+    }
+
+    inline resolve_names_response_message
+    resolve_names_response_message::parse(http_response&& response)
+    {
+        using rapidxml::internal::compare;
+        const auto doc = parse_response(std::move(response));
+        auto response_elem = get_element_by_qname(
+            *doc, "ResolveNamesResponseMessage", uri<>::microsoft::messages());
+        EWS_ASSERT(response_elem &&
+                   "Expected <ResolveNamesResponseMessage>, got nullptr");
+        auto result = parse_response_class_and_code(*response_elem);
+
+        resolution_set resolutions;
+        if (result.code == response_code::no_error ||
+            result.code ==
+                response_code::error_name_resolution_multiple_results)
+        {
+            auto resolution_set_element = response_elem->first_node_ns(
+                uri<>::microsoft::messages(), "ResolutionSet");
+            EWS_ASSERT(resolution_set_element &&
+                       "Expected <ResolutionSet> element");
+
+            for (auto attr = resolution_set_element->first_attribute();
+                 attr != nullptr; attr = attr->next_attribute())
+            {
+                if (compare("IndexedPagingOffset",
+                            std::strlen("IndexedPagingOffset"),
+                            attr->local_name(), attr->local_name_size()))
+                {
+                    resolutions.indexed_paging_offset =
+                        std::stoi(resolution_set_element
+                                      ->first_attribute("IndexedPagingOffset")
+                                      ->value());
+                }
+                if (compare("NumeratorOffset", std::strlen("NumeratorOffset"),
+                            attr->local_name(), attr->local_name_size()))
+                {
+                    resolutions.numerator_offset =
+                        std::stoi(resolution_set_element
+                                      ->first_attribute("NumeratorOffset")
+                                      ->value());
+                }
+                if (compare("AbsoluteDenominator",
+                            std::strlen("AbsoluteDenominator"),
+                            attr->local_name(), attr->local_name_size()))
+                {
+                    resolutions.absolute_denominator =
+                        std::stoi(resolution_set_element
+                                      ->first_attribute("AbsoluteDenominator")
+                                      ->value());
+                }
+                if (compare("IncludesLastItemInRange",
+                            std::strlen("IncludesLastItemInRange"),
+                            attr->local_name(), attr->local_name_size()))
+                {
+                    auto includes =
+                        resolution_set_element
+                            ->first_attribute("IncludesLastItemInRange")
+                            ->value();
+                    if (includes)
+                    {
+                        resolutions.includes_last_item_in_range = true;
+                    }
+                    else
+                    {
+                        resolutions.includes_last_item_in_range = false;
+                    }
+                }
+                if (compare("TotalItemsInView", std::strlen("TotalItemsInView"),
+                            attr->local_name(), attr->local_name_size()))
+                {
+                    resolutions.total_items_in_view =
+                        std::stoi(resolution_set_element
+                                      ->first_attribute("TotalItemsInView")
+                                      ->value());
+                }
+            }
+
+            for (auto res = resolution_set_element->first_node_ns(
+                     uri<>::microsoft::types(), "Resolution");
+                 res; res = res->next_sibling())
+            {
+                EWS_ASSERT(res && "Expected <Resolution> element");
+                resolution reso;
+
+                if (compare("Mailbox", std::strlen("Mailbox"),
+                            res->first_node()->local_name(),
+                            res->first_node()->local_name_size()))
+                {
+                    auto mailbox_elem = res->first_node("t:Mailbox");
+                    reso.mailbox = mailbox::from_xml_element(*mailbox_elem);
+                }
+                if (compare("Contact", std::strlen("Contact"),
+                            res->last_node()->local_name(),
+                            res->last_node()->local_name_size()))
+                {
+                    auto contact_elem = res->last_node("t:Contact");
+                    reso.directory_id.id =
+                        contact_elem->first_node("t:DirectoryId")->value();
+                }
+
+                resolutions.resolutions.emplace_back(reso);
+            }
+        }
+        return resolve_names_response_message(std::move(result),
+                                              std::move(resolutions));
     }
 }
 
