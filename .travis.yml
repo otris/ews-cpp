@@ -1,19 +1,53 @@
+language: cpp
 branches:
   only:
     - master
+
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - doxygen
+            - graphviz
+            - libcurl4-gnutls-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - EWS_TEST_DOMAIN=""
+        - EWS_TEST_PASSWORD=""
+        - EWS_TEST_URI=""
+        - EWS_TEST_USERNAME=""
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+            - doxygen
+            - graphviz
+            - libcurl4-gnutls-dev
+      env:
+        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+        - EWS_TEST_DOMAIN=""
+        - EWS_TEST_PASSWORD=""
+        - EWS_TEST_URI=""
+        - EWS_TEST_USERNAME=""
+
+before_install:
+  - eval "${MATRIX_EVAL}"
+
 before_script:
-  - sudo apt-get install doxygen graphviz libcurl4-gnutls-dev
-  - mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ..
-cache: apt
-compiler:
-  - gcc
-dist: xenial
-language: cpp
-os:
-  - linux
+  - mkdir build && cd build
+
 script:
-  - make && make doc
-sudo: required
+  - cmake -DCMAKE_BUILD_TYPE=Release .. && make && make doc && ./tests --assets=../tests/assets --gtest_filter=Offline*.*
+
 deploy:
   provider: pages
   skip_cleanup: true
@@ -21,6 +55,7 @@ deploy:
   github_token: "$GH_REPO_TOKEN"
   on:
     branch: master
+
 env:
   global:
     secure: e7HfdP21yuxdvi+LQkliXiaK8P7nAjOZBxK+dKUJ/v70maZfwN2Yew65OjmzoOUbNFHTGSmUrbChZYsmPpDvJ8ItddRZmOVeBGBVAiN+YIaQ3E8a8l6TPAOS5+/L8RHcdb86bXTIjlTQzcHC5SGf5A71A3BGVfFXhq86naKSK76oH5CQ/gZUQg7hkNwO7Eiyum+vOjm+OACuadUFy1KnP4XYtwkGrVCgliMB/df6WgDL3EuNsEmqshxzBK97VQ2PgCyOHBeHw7OiCxt3sY4dUgjPq9m7CuLcsx5vl6uodUfKVnrCiQeXDnnuIiNR3hRf/MwPu6d0VmjWz774usFcn0mwbPqZ/yGX/kfJtHifFJaJ/131cyExqe7xlogwFk9rDoA0ucpzhCGsxgEHV4Qi9z5u3UXoO0y5WVLZGLVzRiKmpOwZ2KY4qvI4jtZWTt3gPxNxfjgGraoucDlcTsjGTnOO0eg8oo7I6ohujOhuOhFghoC+9NfZmkqi5NG9Xn7j1oyGOamouWiEuUgmUX00sL9ks6bC4XiArxCxMWEBJLa8MMxHri/GoK6ctqUOeI+hVHdPbT+JKoK6gBjuh7rn3wwQEcB+AZXWqquk6g+7/+kFCaXNuZtTs7y0VrRGpgWurTQ5+a0DsS6SO3BhI9Eq8vV30wOmt0tC3a6JcLZl18w=

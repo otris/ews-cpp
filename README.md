@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/otris/ews-cpp.svg?branch=master)](https://travis-ci.org/otris/ews-cpp)
+
 # ews-cpp
 A C++11 header-only library for Microsoft Exchange Web Services.
 
@@ -113,23 +115,11 @@ Note: Kerberos is currently not supported but its on the TODO list.
 
 ## Supported Compilers
 
-* Visual Studio 2012
-* Visual Studio 2013
-* Visual Studio 2015
+* Microsoft Visual Studio since VS 2012
 * Clang since 3.5
     - with libc++ on Mac OS X
     - with libstdc++ on Linux (Note that libc++ on Linux is not supported)
 * GCC since 4.8 with libstdc++
-
-|Compiler|64-bit|32-bit|
-|--------|:----:|:----:|
-|Visual Studio 2012| * | * |
-|Visual Studio 2013|[![Build status](https://ci.appveyor.com/api/projects/status/6t0hsgh540vmml9c/branch/master?svg=true)](https://ci.appveyor.com/project/raldus/ews-cpp-ea5m3/branch/master)|[![Build status](https://ci.appveyor.com/api/projects/status/mv0vp5nujv3nj3kx/branch/master?svg=true)](https://ci.appveyor.com/project/raldus/ews-cpp-yxo80/branch/master)|
-|Visual Studio 2015|[![Build status](https://ci.appveyor.com/api/projects/status/h0pt39gcb97wrfys/branch/master?svg=true)](https://ci.appveyor.com/project/raldus/ews-cpp-do8dr/branch/master)|[![Build status](https://ci.appveyor.com/api/projects/status/dl2vrfa5c7wdprrf/branch/master?svg=true)](https://ci.appveyor.com/project/raldus/ews-cpp-pa626/branch/master)|
-|Clang 3.5 with libc++| * | * |
-|GCC 4.8 with libstdc++|[![Build Status](https://travis-ci.org/otris/ews-cpp.svg?branch=master)](https://travis-ci.org/otris/ews-cpp)| * |
-\* = will be added soon
-
 
 ## Supported Operating Systems
 
@@ -138,19 +128,16 @@ Note: Kerberos is currently not supported but its on the TODO list.
 * RHEL 7
 * Ubuntu starting with 16.04 LTS
 
-
 ## Supported Microsoft Exchange Server Versions
 
 * Microsoft Exchange Server 2013 SP1
 
 However, our goal is to support all Exchange Server versions since 2007.
 
-
 ## Run-time Dependencies
 The only thing you need for ews-cpp to run is
 
 * libcurl, at least version 7.22
-
 
 ## Dev Dependencies
 If you want to hack on ews-cpp itself you additionally need
@@ -160,7 +147,6 @@ If you want to hack on ews-cpp itself you additionally need
 * Doxygen (optional)
 * Boost (optional)
 * Python 2 or 3 (optional)
-
 
 ## Note Windows Users
 
@@ -175,7 +161,6 @@ You can also use the Windows batch script provided in
 ``scripts\build-curl.bat`` to download and compile libcurl for your particular
 version of Visual Studio.
 
-
 ## Source Code
 
 ews-cpp's source code is available as a Git repository. To obtain it, type:
@@ -183,7 +168,6 @@ ews-cpp's source code is available as a Git repository. To obtain it, type:
 ```bash
 git clone --recursive https://github.com/otris/ews-cpp.git
 ```
-
 
 ## Building
 
@@ -224,7 +208,6 @@ cmake --build .
 
 Make sure to choose the right generator for your environment.
 
-
 ### API Docs
 
 Use the `doc` target to create the API documentation with Doxygen.  Type:
@@ -233,7 +216,6 @@ Use the `doc` target to create the API documentation with Doxygen.  Type:
 make doc
 open html/index.html
 ```
-
 
 ### Test Suite
 
@@ -256,7 +238,6 @@ Once you've build the project, you can execute the tests with:
 ./tests --assets=/path/to/source/tests/assets
 ```
 
-
 ## Design Notes
 
 ews-cpp is written in a "modern C++" way:
@@ -267,9 +248,7 @@ ews-cpp is written in a "modern C++" way:
 * Handle errors using C++ exceptions
 * Coding conventions inspired by Boost
 
-
 ## API
-
 Just add:
 
 ```cpp
