@@ -9312,8 +9312,8 @@ namespace internal
         }
 
     private:
-        explicit resolve_names_response_message(response_result&& res,
-                                                resolution_set&& rset)
+        resolve_names_response_message(response_result&& res,
+                                       resolution_set&& rset)
             : response_message_base(std::move(res)),
               resolutions_(std::move(rset))
         {
