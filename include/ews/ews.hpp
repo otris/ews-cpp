@@ -8182,11 +8182,11 @@ static_assert(std::is_move_assignable<resolution>::value, "");
 
 struct resolution_set
 {
-    int indexed_paging_offset;
-    int numerator_offset;
-    int absolute_denominator;
-    bool includes_last_item_in_range;
-    int total_items_in_view;
+    int indexed_paging_offset = 0;
+    int numerator_offset = 0;
+    int absolute_denominator = 0;
+    bool includes_last_item_in_range = true;
+    int total_items_in_view = 0;
     std::vector<resolution> resolutions;
 };
 
