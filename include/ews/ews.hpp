@@ -17966,11 +17966,12 @@ public:
     //! Returns a resolution_set which contains a vector<resolution>.
     //! ContactDataShape and ReturnFullContactData are set by default. A
     //! directory_id is returned in place of the contact.
-    resolution_set resolve_names(const std::string& name, search_scope scope,
+    resolution_set resolve_names(const std::string& unresolved_entry,
+                                 search_scope scope,
                                  std::vector<folder_id> parent_folder_ids = {})
     {
-        return resolve_names_impl(name, parent_folder_ids, true, scope,
-                                  contact_data_shape::id_only);
+        return resolve_names_impl(unresolved_entry, parent_folder_ids, true,
+                                  scope, contact_data_shape::id_only);
     }
 
 private:
