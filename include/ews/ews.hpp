@@ -6282,51 +6282,6 @@ namespace internal
 
 }
 
-enum class contact_data_shape
-{
-    id_only,
-    default_shape,
-    all_properties
-};
-
-namespace internal
-{
-    inline std::string enum_to_str(contact_data_shape s)
-    {
-        switch (s)
-        {
-        case contact_data_shape::id_only:
-            return "IdOnly";
-        case contact_data_shape::default_shape:
-            return "Default";
-        case contact_data_shape::all_properties:
-            return "AllProperties";
-        default:
-            throw exception("Bad enum value");
-        }
-    }
-
-    inline contact_data_shape str_to_contact_data_shape(const std::string& str)
-    {
-        if (str == "IdOnly")
-        {
-            return contact_data_shape::id_only;
-        }
-        else if (str == "Default")
-        {
-            return contact_data_shape::default_shape;
-        }
-        else if (str == "AllProperties")
-        {
-            return contact_data_shape::all_properties;
-        }
-        else
-        {
-            throw exception("Bad enum value");
-        }
-    }
-}
-
 //! Exception thrown when a request was not successful
 class exchange_error final : public exception
 {
