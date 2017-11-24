@@ -6221,50 +6221,58 @@ namespace internal
     };
 }
 
-enum class searchscope
+//! Identifies the order and scope for a ResolveNames search.
+enum class search_scope
 {
+    //! Only the Active Directory directory service is searched.
     active_directory,
+    //! Active Directory is searched first, and then the contact folders that
+    //! are specified in the ParentFolderIds property are searched.
     active_directory_contacts,
+    //! Only the contact folders that are identified by the ParentFolderIds
+    //! property are searched.
     contacts,
+    //! Contact folders that are identified by the ParentFolderIds property are
+    //! searched first and then Active Directory is searched.
     contacts_active_directory
 };
 
 namespace internal
 {
-    inline std::string enum_to_str(searchscope s)
+    inline std::string enum_to_str(search_scope s)
     {
         switch (s)
         {
-        case searchscope::active_directory:
+        case search_scope::active_directory:
             return "ActiveDirectory";
-        case searchscope::active_directory_contacts:
+        case search_scope::active_directory_contacts:
             return "ActiveDirectoryContacts";
-        case searchscope::contacts:
+        case search_scope::contacts:
             return "Contacts";
-        case searchscope::contacts_active_directory:
+        case search_scope::contacts_active_directory:
             return "ContactsActiveDirectory";
         default:
             throw exception("Bad enum value");
         }
     }
 
-    inline searchscope str_to_searchscope(const std::string& str)
+    inline search_scope str_to_search_scope(const std::string& str)
     {
         if (str == "ActiveDirectory")
         {
-            return searchscope::active_directory;
+            return search_scope::active_directory;
         }
         else if (str == "ActiveDirectoryContacts")
         {
-            return searchscope::active_directory_contacts;
+            return search_scope::active_directory_contacts;
         }
         else if (str == "Contacts")
         {
-            return searchscope::contacts;
+            return search_scope::contacts;
         }
         else if (str == "ContactsActiveDirectory")
         {
-            return searchscope::contacts_active_directory;
+            return search_scope::contacts_active_directory;
         }
         else
         {
@@ -17931,7 +17939,7 @@ public:
     //! Returns a resolution_set which contains a vector<resolution>.
     //! ContactDataShape and ReturnFullContactData are set by default. A
     //! directory_id is returned in place of the contact.
-    resolution_set resolve_names(const std::string& name, searchscope scope,
+    resolution_set resolve_names(const std::string& name, search_scope scope,
                                  std::vector<folder_id> parent_folder_ids = {})
     {
         return resolve_names_impl(name, parent_folder_ids, true, scope,
@@ -18528,7 +18536,7 @@ private:
     resolution_set resolve_names_impl(const std::string& name,
                                       std::vector<folder_id> parent_folder_ids,
                                       bool return_full_contact_data,
-                                      searchscope scope,
+                                      search_scope scope,
                                       contact_data_shape shape)
     {
         auto version = get_request_server_version();

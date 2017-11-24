@@ -37,7 +37,7 @@ int main()
         ews::folder_id folder;
         id_vector.push_back(folder);
         auto response = service.resolve_names(
-            name, ews::searchscope::active_directory, id_vector);
+            name, ews::search_scope::active_directory, id_vector);
         std::cout << response.total_items_in_view << std::endl;
         for (auto reso : response.resolutions)
         {
