@@ -8203,11 +8203,27 @@ struct directory_id
     std::string id;
 };
 
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+static_assert(std::is_default_constructible<directory_id>::value, "");
+static_assert(std::is_copy_constructible<directory_id>::value, "");
+static_assert(std::is_copy_assignable<directory_id>::value, "");
+static_assert(std::is_move_constructible<directory_id>::value, "");
+static_assert(std::is_move_assignable<directory_id>::value, "");
+#endif
+
 struct resolution
 {
     ews::mailbox mailbox;
     ews::directory_id directory_id;
 };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+static_assert(std::is_default_constructible<resolution>::value, "");
+static_assert(std::is_copy_constructible<resolution>::value, "");
+static_assert(std::is_copy_assignable<resolution>::value, "");
+static_assert(std::is_move_constructible<resolution>::value, "");
+static_assert(std::is_move_assignable<resolution>::value, "");
+#endif
 
 struct resolution_set
 {
@@ -8218,6 +8234,14 @@ struct resolution_set
     int total_items_in_view;
     std::vector<resolution> resolutions;
 };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+static_assert(std::is_default_constructible<resolution_set>::value, "");
+static_assert(std::is_copy_constructible<resolution_set>::value, "");
+static_assert(std::is_copy_assignable<resolution_set>::value, "");
+static_assert(std::is_move_constructible<resolution_set>::value, "");
+static_assert(std::is_move_assignable<resolution_set>::value, "");
+#endif
 
 //! \brief Identifies a folder.
 //!
