@@ -370,6 +370,7 @@ add_executable(tests
     tests/test_internals.cpp
     tests/test_items.cpp
     tests/test_messages.cpp
+    tests/test_resolve_names.cpp
     tests/test_restrictions.cpp
     tests/test_service.cpp
     tests/test_tasks.cpp
