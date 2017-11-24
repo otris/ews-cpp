@@ -36,7 +36,7 @@ int main()
         auto response =
             service.resolve_names(name, ews::search_scope::active_directory);
         std::cout << response.total_items_in_view << std::endl;
-        for (auto reso : response.resolutions)
+        for (const auto& reso : response.resolutions)
         {
             std::cout << reso.mailbox.name() << std::endl;
             std::cout << reso.mailbox.value() << std::endl;
