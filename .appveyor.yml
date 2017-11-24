@@ -1,23 +1,30 @@
----
-build_script:
-  -
-    cmd: |-
-        cd C:\projects\ews-cpp-64-12\scripts
-        sed -e s/14/12/g build-curl.bat > build.bat
-        set ERRORLEVEL=0
-        build.bat
-        set ERRORLEVEL=""
-        cd ..
-        cmake -Bbuild -H. -G "Visual Studio 12 2013 Win64"
-           -DCURL_LIBRARY="C:\projects\ews-cpp-64-12\scripts\win64-debug\lib\libcurl_debug.lib"
-           -DCURL_INCLUDE_DIR="C:\projects\ews-cpp-64-12\scripts\win64-debug\include"
+version: "{build}"
+branches:
+  only:
+    - master
 
-        cd build
-        cmake --build .
-clone_folder: "c:/projects/ews-cpp-64-12"
-image: "Visual Studio 2013"
+image:
+  - Visual Studio 2017
+
+configuration:
+  - Release
+
+clone_folder: C:\projects\ews-cpp
 install:
-  -
-    cmd: "git submodule update --init --recursive"
-version: "{branch}#{build}"
+  - cmd: git submodule update --init --recursive
 
+before_build:
+  - cmd: |-
+      cmake --version
+      cd C:\projects\ews-cpp\scripts
+      build-curl.bat
+      cd C:\projects\ews-cpp
+      mkdir build
+      cd build
+      set BOOST_ROOT=C:\Libraries\boost_1_65_1
+      cmake -G "Visual Studio 15 2017 Win64" -DCURL_INCLUDE_DIR="C:\projects\ews-cpp\scripts\win64\include" -DCURL_LIBRARY="C:\projects\ews-cpp\scripts\win64\lib\libcurl.lib" ..
+
+build:
+  project: C:\projects\ews-cpp\build\ews.sln
+  verbosity: minimal
+  parallel: true

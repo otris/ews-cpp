@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/otris/ews-cpp.svg?branch=master)](https://travis-ci.org/otris/ews-cpp)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/otris/ews-cpp?svg=true)](https://ci.appveyor.com/project/BenjaminKircher/ews-cpp)
 
 # ews-cpp
 A C++11 header-only library for Microsoft Exchange Web Services.

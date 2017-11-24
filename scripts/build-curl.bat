@@ -1,16 +1,24 @@
-:: Downloads and builds cURL and libcurl on Windows
+:: Download and build curl.exe and libcurl on Windows.
 ::
-:: Builds DLLs for x64 and amd64 in Release- and Debug-config including .pdb-files
+:: Builds DLLs and curl.exe for x86 and amd64 in Release- and Debug
+:: configuration including .pdb files.
 ::
 :: Requirements:
-::   - Visual Studio 2015 installed
+::   - Visual Studio 2017 installed (Tested with Professional edition but
+::     Community should work fine, too.)
 ::   - 7z.exe in PATH
 
 @setlocal
-@set curl_version=7.49.1
-@set curl_download_url="http://curl.haxx.se/download/curl-%curl_version%.zip"
+@set curl_version=7.56.1
+@set curl_download_url="https://curl.haxx.se/download/curl-%curl_version%.zip"
 
-@if "%VS140COMNTOOLS%"=="" goto error_no_vscomntools
+@if exist "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat" (
+  @set vsdevcmd="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat"
+) else (
+  @set vsdevcmd="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\Tools\VsDevCmd.bat"
+)
+@call %vsdevcmd%
+@if "%VS150COMNTOOLS%"=="" goto error_no_vscomntools
 
 @where /q 7z.exe
 @if %errorlevel% equ 1 goto error_no_7zip
@@ -25,33 +33,32 @@
 @7z.exe x curl-%curl_version%.zip
 
 @pushd curl-%curl_version%\winbuild
-@call "%VS140COMNTOOLS%VCVarsQueryRegistry.bat" 32bit 64bit
-@cmd.exe /c ""%VSINSTALLDIR%VC\vcvarsall.bat" amd64 && nmake /f Makefile.vc mode=dll MACHINE=x64 VC=14 GEN_PDB=yes"
-@cmd.exe /c ""%VSINSTALLDIR%VC\vcvarsall.bat" amd64 && nmake /f Makefile.vc mode=dll MACHINE=x64 VC=14 GEN_PDB=yes DEBUG=yes"
-@cmd.exe /c ""%VSINSTALLDIR%VC\vcvarsall.bat" x86 && nmake /f Makefile.vc mode=dll MACHINE=x86 VC=14 GEN_PDB=yes"
-@cmd.exe /c ""%VSINSTALLDIR%VC\vcvarsall.bat" x86 && nmake /f Makefile.vc mode=dll MACHINE=x86 VC=14 GEN_PDB=yes DEBUG=yes"
+@cmd.exe /c "@call %vsdevcmd% -no_logo -arch=amd64 && nmake /f Makefile.vc mode=dll MACHINE=x64 VC=15 GEN_PDB=yes"
+@cmd.exe /c "@call %vsdevcmd% -no_logo -arch=amd64 && nmake /f Makefile.vc mode=dll MACHINE=x64 VC=15 GEN_PDB=yes DEBUG=yes"
+@cmd.exe /c "@call %vsdevcmd% -no_logo -arch=x86 && nmake /f Makefile.vc mode=dll MACHINE=x86 VC=15 GEN_PDB=yes"
+@cmd.exe /c "@call %vsdevcmd% -no_logo -arch=x86 && nmake /f Makefile.vc mode=dll MACHINE=x86 VC=15 GEN_PDB=yes DEBUG=yes"
 @popd
 
 @robocopy ^
-  curl-%curl_version%\builds\libcurl-vc14-x64-release-dll-ipv6-sspi-winssl ^
+  curl-%curl_version%\builds\libcurl-vc15-x64-release-dll-ipv6-sspi-winssl ^
   win64 /e /move
 
 @robocopy ^
-  curl-%curl_version%\builds\libcurl-vc14-x64-debug-dll-ipv6-sspi-winssl ^
+  curl-%curl_version%\builds\libcurl-vc15-x64-debug-dll-ipv6-sspi-winssl ^
   win64-debug /e /move
 
 @robocopy ^
-  curl-%curl_version%\builds\libcurl-vc14-x86-release-dll-ipv6-sspi-winssl ^
+  curl-%curl_version%\builds\libcurl-vc15-x86-release-dll-ipv6-sspi-winssl ^
   win32 /e /move
 
 @robocopy ^
-  curl-%curl_version%\builds\libcurl-vc14-x86-debug-dll-ipv6-sspi-winssl ^
+  curl-%curl_version%\builds\libcurl-vc15-x86-debug-dll-ipv6-sspi-winssl ^
   win32-debug /e /move
 
 @goto end
 
 :error_no_vscomntools
-@echo ERROR: Cannot determine location of Visual Studio Common Tools folder
+@echo ERROR: Cannot determine location of Visual Studio 2017 Common Tools folder
 @goto end
 
 :error_no_7zip
@@ -65,3 +72,4 @@
 :end
 @if exist curl-%curl_version% ( @rd /s /q curl-%curl_version% )
 @endlocal
+exit /b 0
