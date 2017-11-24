@@ -8155,6 +8155,8 @@ static_assert(std::is_move_assignable<mailbox>::value, "");
 
 struct directory_id
 {
+    directory_id() {}
+    directory_id(std::string idstring) { id = idstring; }
     std::string id;
 };
 
