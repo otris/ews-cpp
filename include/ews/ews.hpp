@@ -17927,8 +17927,7 @@ public:
     resolution_set resolve_names(const std::string& unresolved_entry,
                                  search_scope scope)
     {
-        return resolve_names_impl(unresolved_entry, {}, true, scope,
-                                  contact_data_shape::id_only);
+        return resolve_names_impl(unresolved_entry, {}, scope);
     }
 
     //! \brief The ResolveNames operation resolves ambiguous email addresses and
@@ -17945,8 +17944,7 @@ public:
     resolve_names(const std::string& unresolved_entry, search_scope scope,
                   const std::vector<folder_id>& parent_folder_ids)
     {
-        return resolve_names_impl(unresolved_entry, parent_folder_ids, true,
-                                  scope, contact_data_shape::id_only);
+        return resolve_names_impl(unresolved_entry, parent_folder_ids, scope);
     }
 
 private:
@@ -18538,31 +18536,21 @@ private:
 
     resolution_set resolve_names_impl(const std::string& name,
                                       std::vector<folder_id> parent_folder_ids,
-                                      bool return_full_contact_data,
-                                      search_scope scope,
-                                      contact_data_shape shape)
+                                      search_scope scope)
     {
         auto version = get_request_server_version();
         std::stringstream sstr;
         sstr << "<m:ResolveNames "
-             << "ReturnFullContactData=\"";
-        if (return_full_contact_data)
-        {
-            sstr << "true";
-        }
-        else
-        {
-            sstr << "false";
-        }
-        sstr << "\" "
+             << "ReturnFullContactData=\""
+             << "true"
+             << "\" "
              << "SearchScope=\"" << internal::enum_to_str(scope) << "\" ";
 
         if (version == server_version::exchange_2010_sp2 ||
             version == server_version::exchange_2013 ||
             version == server_version::exchange_2013_sp1)
         {
-            sstr << "ContactDataShape=\"" << internal::enum_to_str(shape)
-                 << "\"";
+            sstr << "ContactDataShape=\"IdOnly\"";
         }
         sstr << ">";
         if (parent_folder_ids.size() > 0)
