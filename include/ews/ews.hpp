@@ -9306,7 +9306,10 @@ namespace internal
     public:
         // defined below
         static resolve_names_response_message parse(http_response&& response);
-        const resolution_set& resolutionset() const { return resolutions_; }
+        const resolution_set& resolutions() const EWS_NOEXCEPT
+        {
+            return resolutions_;
+        }
 
     private:
         explicit resolve_names_response_message(response_result&& res,
@@ -18604,9 +18607,9 @@ private:
         {
             throw exchange_error(response_message.result());
         }
-        EWS_ASSERT(!response_message.resolutionset().resolutions.empty() &&
+        EWS_ASSERT(!response_message.resolutions().resolutions.empty() &&
                    "Expected at least one resolution");
-        return response_message.resolutionset();
+        return response_message.resolutions();
     }
 };
 
