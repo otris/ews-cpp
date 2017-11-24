@@ -17963,7 +17963,10 @@ public:
     //! \brief The ResolveNames operation resolves ambiguous email addresses and
     //! display names.
     //!
-    //! Returns a resolution_set which contains a vector<resolution>.
+    //! \param unresolved_entry Partial or full name of the user to look for
+    //! \param scope The scope in which to look for the user
+    //!
+    //! Returns a resolution_set which contains a vector of resolutions.
     //! ContactDataShape and ReturnFullContactData are set by default. A
     //! directory_id is returned in place of the contact.
     resolution_set resolve_names(const std::string& unresolved_entry,
@@ -17973,6 +17976,16 @@ public:
                                   contact_data_shape::id_only);
     }
 
+    //! \brief The ResolveNames operation resolves ambiguous email addresses and
+    //! display names.
+    //!
+    //! \param unresolved_entry Partial or full name of the user to look for
+    //! \param scope The scope in which to look for the user
+    //! \param parent_folder_ids Contains the folder_ids where to look
+    //!
+    //! Returns a resolution_set which contains a vector of resolutions.
+    //! ContactDataShape and ReturnFullContactData are set by default. A
+    //! directory_id is returned in place of the contact.
     resolution_set
     resolve_names(const std::string& unresolved_entry, search_scope scope,
                   const std::vector<folder_id>& parent_folder_ids)
