@@ -33,11 +33,8 @@ int main()
                                     env.password);
 
         std::string name = "person";
-        std::vector<ews::folder_id> id_vector;
-        ews::folder_id folder;
-        id_vector.push_back(folder);
-        auto response = service.resolve_names(
-            name, ews::search_scope::active_directory, id_vector);
+        auto response =
+            service.resolve_names(name, ews::search_scope::active_directory);
         std::cout << response.total_items_in_view << std::endl;
         for (auto reso : response.resolutions)
         {
