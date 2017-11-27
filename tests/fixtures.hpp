@@ -77,6 +77,7 @@ inline std::vector<char> read_file(const boost::filesystem::path& path)
                     std::istream_iterator<unsigned char>(ifstr),
                     std::istream_iterator<unsigned char>());
     ifstr.close();
+    contents.push_back('\0');
     return contents;
 }
 #endif // EWS_USE_BOOST_LIBRARY
