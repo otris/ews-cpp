@@ -2,6 +2,8 @@
 
 You'll find a complete list of changes at the project site on [GitHub](https://github.com/otris/ews-cpp).
 
+### 0.7 (YYYY-MM-DD)
+
 ### 0.6 (2011-11-27)
 
 New features:
