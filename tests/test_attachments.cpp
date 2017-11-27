@@ -204,7 +204,6 @@ TEST_F(FileAttachmentTest, ItemAttachmentFromXML)
 
     std::vector<char> buf =
         read_file(assets_dir() / "get_attachment_response_item.xml");
-    buf.push_back('\0');
     xml_document doc;
     doc.parse<0>(&buf[0]);
     auto node = get_element_by_qname(doc, "ItemAttachment",
@@ -256,7 +255,6 @@ TEST_F(FileAttachmentTest, WriteContentToFile)
     const auto target_path = cwd() / "output.png";
     std::vector<char> buf =
         read_file(assets_dir() / "get_attachment_response.xml");
-    buf.push_back('\0');
     xml_document doc;
     doc.parse<0>(&buf[0]);
     auto node =
@@ -345,7 +343,6 @@ TEST_F(FileAttachmentTest, FileAttachmentFromXML)
 
     std::vector<char> buf =
         read_file(assets_dir() / "get_attachment_response.xml");
-    buf.push_back('\0');
     xml_document doc;
     doc.parse<0>(&buf[0]);
     auto node = get_element_by_qname(doc, "FileAttachment",
