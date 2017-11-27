@@ -2,7 +2,7 @@
 
 You'll find a complete list of changes at the project site on [GitHub](https://github.com/otris/ews-cpp).
 
-### 0.6 (YYYY-MM-DD)
+### 0.6 (2011-11-27)
 
 New features:
 - Support for EWS Delegate Access ([#2](https://github.com/otris/ews-cpp/issues/2)) and Impersonation ([#62](https://github.com/otris/ews-cpp/issues/61)) has been added.
