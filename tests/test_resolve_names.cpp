@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#ifdef EWS_USE_BOOST_LIBRARY
 namespace tests
 {
 TEST_F(ResolveNamesTest, NoUserFound)
@@ -60,3 +61,5 @@ TEST_F(ResolveNamesTest, SendCorrectRequest)
               std::string::npos);
 }
 }
+
+#endif // EWS_USE_BOOST_LIBRARY

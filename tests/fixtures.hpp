@@ -412,6 +412,7 @@ private:
     ews::message message_;
 };
 
+#ifdef EWS_USE_BOOST_LIBRARY
 class ResolveNamesTest : public FakeServiceFixture
 {
 public:
@@ -421,7 +422,6 @@ public:
     }
 };
 
-#ifdef EWS_USE_BOOST_LIBRARY
 class TemporaryDirectoryFixture : public BaseFixture
 {
 public:
