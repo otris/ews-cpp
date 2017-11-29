@@ -8162,14 +8162,14 @@ public:
     directory_id() {}
 #endif
     explicit directory_id(const std::string& str)
-     : id(str)
+     : id_(str)
     {}
     const std::string& get_id() const EWS_NOEXCEPT
     {
-        return id;
+        return id_;
     }
 private:
-    std::string id;
+    std::string id_;
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
