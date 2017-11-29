@@ -17949,7 +17949,8 @@ public:
     resolution_set resolve_names(const std::string& unresolved_entry,
                                  search_scope scope)
     {
-        return resolve_names_impl(unresolved_entry, {}, scope);
+        std::vector<folder_id> v;
+        return resolve_names_impl(unresolved_entry, v, scope);
     }
 
     //! \brief The ResolveNames operation resolves ambiguous email addresses and
