@@ -19016,14 +19016,14 @@ namespace internal
                  res; res = res->next_sibling())
             {
                 EWS_ASSERT(res && "Expected <Resolution> element");
-                resolution reso;
+                resolution r;
 
                 if (compare("Mailbox", std::strlen("Mailbox"),
                             res->first_node()->local_name(),
                             res->first_node()->local_name_size()))
                 {
                     auto mailbox_elem = res->first_node("t:Mailbox");
-                    reso.mailbox = mailbox::from_xml_element(*mailbox_elem);
+                    r.mailbox = mailbox::from_xml_element(*mailbox_elem);
                 }
                 if (compare("Contact", std::strlen("Contact"),
                             res->last_node()->local_name(),
@@ -19031,10 +19031,10 @@ namespace internal
                 {
                     auto contact_elem = res->last_node("t:Contact");
                     directory_id id(contact_elem->first_node("t:DirectoryId")->value());
-                    reso.directory_id = id;
+                    r.directory_id = id;
                 }
 
-                resolutions.resolutions.emplace_back(reso);
+                resolutions.resolutions.emplace_back(r);
             }
         }
         return resolve_names_response_message(std::move(result),
