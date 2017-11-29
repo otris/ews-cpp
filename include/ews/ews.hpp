@@ -8202,6 +8202,7 @@ struct resolution_set final
     {
     }
 
+    bool empty() const EWS_NOEXCEPT { return resolutions.empty(); }
     bool includes_last_item_in_range;
     int indexed_paging_offset;
     int numerator_offset;

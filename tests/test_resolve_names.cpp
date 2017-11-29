@@ -27,12 +27,9 @@ TEST_F(ResolveNamesTest, NoUserFound)
 {
     set_next_fake_response(read_file(assets_dir() / "resolve_names_error.xml"));
 
-    EXPECT_THROW(
-        {
-            auto result = service().resolve_names(
-                "name", ews::search_scope::active_directory);
-        },
-        ews::exception);
+    auto result =
+        service().resolve_names("name", ews::search_scope::active_directory);
+    EXPECT_TRUE(result.empty());
 }
 TEST_F(ResolveNamesTest, UserFound)
 {
