@@ -17944,6 +17944,7 @@ public:
     //! Returns a resolution_set which contains a vector of resolutions.
     //! ContactDataShape and ReturnFullContactData are set by default. A
     //! directory_id is returned in place of the contact.
+    //! If no name can be resolved, an empty resolution_set is returned.
     resolution_set resolve_names(const std::string& unresolved_entry,
                                  search_scope scope)
     {
@@ -17960,6 +17961,7 @@ public:
     //! Returns a resolution_set which contains a vector of resolutions.
     //! ContactDataShape and ReturnFullContactData are set by default. A
     //! directory_id is returned in place of the contact.
+    //! If no name can be resolved, an empty resolution_set is returned.
     resolution_set
     resolve_names(const std::string& unresolved_entry, search_scope scope,
                   const std::vector<folder_id>& parent_folder_ids)
@@ -18589,7 +18591,7 @@ private:
             internal::resolve_names_response_message::parse(std::move(response));
         if (response_message.result().cls == response_class::error)
         {
-            throw exchange_error(response_message.result());
+            return resolution_set();
         }
         EWS_ASSERT(!response_message.resolutions().resolutions.empty() &&
                    "Expected at least one resolution");
