@@ -8180,7 +8180,7 @@ static_assert(std::is_move_constructible<directory_id>::value, "");
 static_assert(std::is_move_assignable<directory_id>::value, "");
 #endif
 
-struct resolution
+struct resolution final
 {
     ews::mailbox mailbox;
     ews::directory_id directory_id;
