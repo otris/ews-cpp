@@ -40,7 +40,7 @@ int main()
         {
             std::cout << reso.mailbox.name() << std::endl;
             std::cout << reso.mailbox.value() << std::endl;
-            std::cout << reso.directory_id.id << std::endl;
+            std::cout << reso.directory_id.get_id() << std::endl;
         }
 
     }

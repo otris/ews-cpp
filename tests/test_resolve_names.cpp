@@ -45,7 +45,7 @@ TEST_F(ResolveNamesTest, UserFound)
     auto resolution_id = response.resolutions[0].directory_id;
     EXPECT_EQ(resolution_mailbox.name(), "User2");
     EXPECT_EQ(resolution_mailbox.value(), "User2@example.com");
-    EXPECT_EQ(resolution_id.id, "<GUID=abc-123-foo-bar>");
+    EXPECT_EQ(resolution_id.get_id(), "<GUID=abc-123-foo-bar>");
 }
 
 TEST_F(ResolveNamesTest, SendCorrectRequest)

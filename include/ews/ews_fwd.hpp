@@ -41,6 +41,7 @@ class contains;
 class date_time;
 class delegate_user;
 class distinguished_folder_id;
+class directory_id;
 class duration;
 class exception;
 class exchange_error;

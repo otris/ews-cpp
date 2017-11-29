@@ -8153,10 +8153,22 @@ static_assert(std::is_move_constructible<mailbox>::value, "");
 static_assert(std::is_move_assignable<mailbox>::value, "");
 #endif
 
-struct directory_id
+class directory_id final
 {
+public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    directory_id() = default;
+#else
     directory_id() {}
-    directory_id(std::string idstring) { id = idstring; }
+#endif
+    explicit directory_id(const std::string& str)
+     : id(str)
+    {}
+    const std::string& get_id() const EWS_NOEXCEPT
+    {
+        return id;
+    }
+private:
     std::string id;
 };
 
@@ -19021,8 +19033,8 @@ namespace internal
                             res->last_node()->local_name_size()))
                 {
                     auto contact_elem = res->last_node("t:Contact");
-                    reso.directory_id.id =
-                        contact_elem->first_node("t:DirectoryId")->value();
+                    directory_id id(contact_elem->first_node("t:DirectoryId")->value());
+                    reso.directory_id = id;
                 }
 
                 resolutions.resolutions.emplace_back(reso);
