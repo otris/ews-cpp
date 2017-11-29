@@ -74,6 +74,8 @@ class update;
 class user_id;
 struct autodiscover_result;
 struct autodiscover_hints;
+struct resolution;
+struct resolution_set;
 template <typename T> class basic_service;
 bool operator==(const date_time&, const date_time&);
 bool operator==(const property_path&, const property_path&);
