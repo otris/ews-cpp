@@ -8194,9 +8194,9 @@ static_assert(std::is_move_constructible<resolution>::value, "");
 static_assert(std::is_move_assignable<resolution>::value, "");
 #endif
 
-struct resolution_set
+struct resolution_set final
 {
-    explicit resolution_set()
+    resolution_set()
         : includes_last_item_in_range(true), indexed_paging_offset(0),
           numerator_offset(0), absolute_denominator(0), total_items_in_view(0)
     {
