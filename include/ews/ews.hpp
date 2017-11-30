@@ -18599,6 +18599,10 @@ private:
         {
             return resolution_set();
         }
+        if (response_message.result().cls == response_class::error)
+        {
+            throw exchange_error(response_message.result());
+        }
         return response_message.resolutions();
     }
 };
