@@ -18592,7 +18592,10 @@ private:
         auto response = request(sstr.str());
         const auto response_message =
             internal::resolve_names_response_message::parse(std::move(response));
-        if (response_message.result().cls == response_class::error)
+        if (response_message.result().code ==
+                response_code::error_name_resolution_no_results ||
+            response_message.result().code ==
+                response_code::error_name_resolution_no_mailbox)
         {
             return resolution_set();
         }
