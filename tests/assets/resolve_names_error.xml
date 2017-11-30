@@ -1,0 +1,16 @@
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+        <s:Header>
+                <h:ServerVersionInfo MajorVersion="15" MinorVersion="0" MajorBuildNumber="847" MinorBuildNumber="31" Version="V2_8" xmlns:h="http://schemas.microsoft.com/exchange/services/2006/types" xmlns="http://schemas.microsoft.com/exchange/services/2006/types" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+        </s:Header>
+        <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+                <m:ResolveNamesResponse xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages" xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+                        <m:ResponseMessages>
+                                <m:ResolveNamesResponseMessage ResponseClass="Error">
+                                        <m:MessageText>Es wurden keine Ergebnisse gefunden.</m:MessageText>
+                                        <m:ResponseCode>ErrorNameResolutionNoResults</m:ResponseCode>
+                                        <m:DescriptiveLinkKey>0</m:DescriptiveLinkKey>
+                                </m:ResolveNamesResponseMessage>
+                        </m:ResponseMessages>
+                </m:ResolveNamesResponse>
+        </s:Body>
+</s:Envelope>

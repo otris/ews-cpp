@@ -336,6 +336,7 @@ add_example(get_meeting_room_calendar)
 add_example(office365)
 add_example(raw_soap_request)
 add_example(remove_delegate)
+add_example(resolve_names)
 add_example(send_message)
 add_example(update_contact)
 
@@ -369,6 +370,7 @@ add_executable(tests
     tests/test_internals.cpp
     tests/test_items.cpp
     tests/test_messages.cpp
+    tests/test_resolve_names.cpp
     tests/test_restrictions.cpp
     tests/test_service.cpp
     tests/test_tasks.cpp

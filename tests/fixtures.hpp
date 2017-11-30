@@ -413,6 +413,15 @@ private:
 };
 
 #ifdef EWS_USE_BOOST_LIBRARY
+class ResolveNamesTest : public FakeServiceFixture
+{
+public:
+    const boost::filesystem::path assets_dir() const
+    {
+        return boost::filesystem::path(assets());
+    }
+};
+
 class TemporaryDirectoryFixture : public BaseFixture
 {
 public:
