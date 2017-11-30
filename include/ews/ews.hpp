@@ -18595,8 +18595,6 @@ private:
         {
             return resolution_set();
         }
-        EWS_ASSERT(!response_message.resolutions().resolutions.empty() &&
-                   "Expected at least one resolution");
         return response_message.resolutions();
     }
 };
