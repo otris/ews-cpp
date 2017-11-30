@@ -18558,9 +18558,10 @@ private:
         return response_message.items().front();
     }
 
-    resolution_set resolve_names_impl(const std::string& name,
-                                      std::vector<folder_id> parent_folder_ids,
-                                      search_scope scope)
+    resolution_set
+    resolve_names_impl(const std::string& name,
+                       const std::vector<folder_id>& parent_folder_ids,
+                       search_scope scope)
     {
         auto version = get_request_server_version();
         std::stringstream sstr;
