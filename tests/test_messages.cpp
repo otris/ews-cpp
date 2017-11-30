@@ -52,8 +52,15 @@ TEST_F(MessageTest, CreateAndDeleteMessage)
 
     auto item_id =
         service().create_item(message, ews::message_disposition::save_only);
-    ews::internal::on_scope_exit remove_message(
-        [&]() { service().delete_item(item_id); });
+    ews::internal::on_scope_exit remove_message([&]() {
+        try
+        {
+            service().delete_item(item_id);
+        }
+        catch (std::exception&)
+        { /* ... */
+        }
+    });
 
     message = service().get_message(item_id);
     recipients = message.get_to_recipients();

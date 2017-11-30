@@ -1006,7 +1006,14 @@ TEST_F(ItemTest, SendItemsWithVector)
     ews::internal::on_scope_exit remove_messages([&] {
         for (auto& id : message_ids)
         {
-            service().delete_item(id);
+            try
+            {
+                service().delete_item(id);
+            }
+            catch (std::exception&)
+            {
+                // Swallow
+            }
         }
     });
 
@@ -1033,7 +1040,14 @@ TEST_F(ItemTest, SendItemsWithVectorAndFolder)
     ews::internal::on_scope_exit remove_messages([&] {
         for (auto& id : message_ids)
         {
-            service().delete_item(id);
+            try
+            {
+                service().delete_item(id);
+            }
+            catch (std::exception&)
+            {
+                // Swallow
+            }
         }
     });
 
