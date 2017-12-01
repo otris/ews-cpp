@@ -4,6 +4,9 @@ You'll find a complete list of changes at the project site on [GitHub](https://g
 
 ### 0.7 (YYYY-MM-DD)
 
+New features:
+- Support for the <ResolveNames> operation ([#73](https://github.com/otris/ews-cpp/issues/73)) has been added.
+
 ### 0.6 (2011-11-27)
 
 New features:
