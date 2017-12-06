@@ -307,6 +307,15 @@ if(HAS_INITIALIZER_LISTS)
     add_definitions(-DEWS_HAS_INITIALIZER_LISTS)
 endif()
 
+# Test support for std::variant
+CHECK_CXX_SOURCE_COMPILES("
+#include <variant>
+int main() { std::variant<int, float> v; }
+" HAS_VARIANT)
+if(HAS_VARIANT)
+    add_definitions(-DEWS_HAS_VARIANT)
+endif()
+
 # Helper function for all those example executables
 function(add_example EXAMPLE_NAME)
     add_executable(${EXAMPLE_NAME}
@@ -344,6 +353,9 @@ add_example(remove_delegate)
 add_example(resolve_names)
 add_example(send_message)
 add_example(sync_folder_items)
+if(HAS_VARIANT)
+    add_example(subscribe)
+endif()
 add_example(update_contact)
 
 # Python is optional as it is only used by TimeoutTest
@@ -380,6 +392,7 @@ add_executable(tests
     tests/test_resolve_names.cpp
     tests/test_restrictions.cpp
     tests/test_service.cpp
+    tests/test_subscribe.cpp
     tests/test_tasks.cpp
     tests/test_timeout.cpp)
 

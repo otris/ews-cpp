@@ -41,6 +41,9 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#ifdef EWS_HAS_VARIANT
+#include <variant>
+#endif
 #include <vector>
 
 #include <curl/curl.h>
@@ -6312,6 +6315,92 @@ namespace internal
     }
 }
 
+#ifdef EWS_HAS_VARIANT
+//! Identifies the type of event returned or to subscribe to.
+enum class event_type
+{
+    //! an event in which an item or folder is copied.
+    copied_event,
+    //! an event in which an item or folder is created.
+    created_event,
+    //! an event in which an item or folder is deleted.
+    deleted_event,
+    //! an event in which an item or folder is modified.
+    modified_event,
+    //! an event in which an item or folder is moved from one parent folder to
+    //! another parent folder.
+    moved_event,
+    //! an event that is triggered by a new mail item in a mailbox.
+    new_mail_event,
+    //! a notification that no new activity has occurred in the mailbox.
+    status_event,
+    //! an event in which an item’s free/busy time has changed.
+    free_busy_changed_event
+};
+
+namespace internal
+{
+    inline std::string enum_to_str(event_type e)
+    {
+        switch(e)
+        {
+        case event_type::copied_event:
+            return "CopiedEvent";
+        case event_type::created_event:
+            return "CreatedEvent";
+        case event_type::deleted_event:
+            return "DeletedEvent";
+        case event_type::modified_event:
+            return "ModifiedEvent";
+        case event_type::new_mail_event:
+            return "NewMailEvent";
+        case event_type::status_event:
+            return "StatusEvent";
+        case event_type::free_busy_changed_event:
+            return "FreeBusyChangedEvent";
+        default:
+            throw exception("Bad enum value");
+        }
+    }
+
+    inline event_type str_to_event_type(const std::string& str)
+    {
+        if (str == "CopiedEvent")
+        {
+            return event_type::copied_event;
+        }
+        else if (str == "CreatedEvent")
+        {
+            return event_type::created_event;
+        }
+        else if (str == "DeletedEvent")
+        {
+            return event_type::deleted_event;
+        }
+        else if (str == "ModifiedEvent")
+        {
+            return event_type::modified_event;
+        }
+        else if (str == "NewMailEvent")
+        {
+            return event_type::new_mail_event;
+        }
+        else if (str == "StatusEvent")
+        {
+            return event_type::status_event;
+        }
+        else if (str == "FreeBusyChangedEvent")
+        {
+            return event_type::free_busy_changed_event;
+        }
+        else
+        {
+            throw exception("Bad enum value");
+        }
+    }
+}
+#endif
+
 //! Exception thrown when a request was not successful
 class exchange_error final : public exception
 {
@@ -8257,6 +8346,44 @@ static_assert(std::is_move_constructible<resolution_set>::value, "");
 static_assert(std::is_move_assignable<resolution_set>::value, "");
 #endif
 
+#ifdef EWS_HAS_VARIANT
+//! Contains the information about the subscription
+class subscription_information final
+{
+public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    subscription_information() = default;
+#else
+    subscription_information() {}
+#endif
+    subscription_information(std::string id, std::string mark)
+        : subscription_id_(std::move(id)), watermark_(std::move(mark))
+    {
+    }
+
+    const std::string& get_subscription_id() const EWS_NOEXCEPT
+    {
+        return subscription_id_;
+    }
+    const std::string& get_watermark() const EWS_NOEXCEPT
+    {
+        return watermark_;
+    }
+
+private:
+    std::string subscription_id_;
+    std::string watermark_;
+};
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+static_assert(std::is_default_constructible<subscription_information>::value, "");
+static_assert(std::is_copy_constructible<subscription_information>::value, "");
+static_assert(std::is_copy_assignable<subscription_information>::value, "");
+static_assert(std::is_move_constructible<subscription_information>::value, "");
+static_assert(std::is_move_assignable<subscription_information>::value, "");
+#endif
+#endif
+
 //! \brief Identifies a folder.
 //!
 //! Renders a <tt>\<FolderId></tt> element. Contains the identifier and
@@ -8766,6 +8893,621 @@ static_assert(std::is_copy_constructible<distinguished_folder_id>::value, "");
 static_assert(std::is_copy_assignable<distinguished_folder_id>::value, "");
 static_assert(std::is_move_constructible<distinguished_folder_id>::value, "");
 static_assert(std::is_move_assignable<distinguished_folder_id>::value, "");
+#endif
+
+#ifdef EWS_HAS_VARIANT
+//! Represents a <CopiedEvent>
+class copied_event final
+{
+public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    copied_event() = default;
+#else
+    copied_event() {}
+#endif
+
+    static copied_event from_xml_element(rapidxml::xml_node<char>* elem)
+    {
+        using rapidxml::internal::compare;
+        copied_event e;
+        std::string watermark;
+        std::string timestamp;
+        item_id id;
+        item_id old_id;
+        folder_id f_id;
+        folder_id old_f_id;
+        folder_id parent_folder_id;
+        folder_id old_parent_folder_id;
+        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        {
+            if (compare(node->local_name(), node->local_name_size(),
+                        "Watermark", strlen("Watermark")))
+            {
+                watermark = std::string(node->value(), node->value_size());
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "TimeStamp", strlen("TimeStamp")))
+            {
+                timestamp = std::string(node->value(), node->value_size());
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "ParentFolderId", strlen("ParentFolderId")))
+            {
+                parent_folder_id = folder_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "OldParentFolderId", strlen("OldParentFolderId")))
+            {
+                old_parent_folder_id = folder_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(), "ItemId",
+                        strlen("ItemId")))
+            {
+                id = item_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "OldItemId", strlen("OldItemId")))
+            {
+                old_id = item_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(), "FolderId",
+                        strlen("FolderId")))
+            {
+                f_id = folder_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "OldFolderId", strlen("OldFolderId")))
+            {
+                old_f_id = folder_id::from_xml_element(*node);
+            }
+        }
+        e.type_ = event_type::copied_event;
+        e.watermark_ = watermark;
+        e.timestamp_ = timestamp;
+        e.id_ = id;
+        e.old_item_id_ = old_id;
+        e.folder_id_ = f_id;
+        e.old_folder_id_ = old_f_id;
+        e.parent_folder_id_ = parent_folder_id;
+        e.old_parent_folder_id_ = old_parent_folder_id;
+
+        return e;
+    };
+
+    event_type get_type() { return type_; }
+    std::string get_watermark() { return watermark_; }
+    std::string get_timestamp() { return timestamp_; }
+    item_id get_item_id() { return id_; }
+    item_id get_old_item_id() { return old_item_id_; }
+    folder_id get_folder_id() { return folder_id_; }
+    folder_id get_old_folder_id() { return old_folder_id_; }
+    folder_id get_parent_folder_id() { return parent_folder_id_; }
+    folder_id get_old_parent_folder_id() { return old_parent_folder_id_; }
+
+private:
+    event_type type_;
+    std::string watermark_;
+    std::string timestamp_;
+    item_id id_;
+    item_id old_item_id_;
+    folder_id folder_id_;
+    folder_id old_folder_id_;
+    folder_id parent_folder_id_;
+    folder_id old_parent_folder_id_;
+};
+
+//! Represents a <CreatedEvent>
+class created_event final
+{
+public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    created_event() = default;
+#else
+    created_event() {}
+#endif
+    static created_event from_xml_element(rapidxml::xml_node<char>* elem)
+    {
+        using rapidxml::internal::compare;
+        created_event e;
+        std::string watermark;
+        std::string timestamp;
+        item_id id;
+        folder_id f_id;
+        folder_id parent_folder_id;
+        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        {
+            if (compare(node->local_name(), node->local_name_size(),
+                        "Watermark", strlen("Watermark")))
+            {
+                watermark = std::string(node->value(), node->value_size());
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "TimeStamp", strlen("TimeStamp")))
+            {
+                timestamp = std::string(node->value(), node->value_size());
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "ParentFolderId", strlen("ParentFolderId")))
+            {
+                parent_folder_id = folder_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(), "ItemId",
+                        strlen("ItemId")))
+            {
+                id = item_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(), "FolderId",
+                        strlen("FolderId")))
+            {
+                f_id = folder_id::from_xml_element(*node);
+            }
+        }
+        e.type_ = event_type::created_event;
+        e.watermark_ = watermark;
+        e.timestamp_ = timestamp;
+        e.id_ = id;
+        e.folder_id_ = f_id;
+        e.parent_folder_id_ = parent_folder_id;
+        return e;
+    };
+
+    event_type get_type() { return type_; }
+    std::string get_watermark() { return watermark_; }
+    std::string get_timestamp() { return timestamp_; }
+    item_id get_item_id() { return id_; }
+    folder_id get_folder_id() { return folder_id_; }
+    folder_id get_parent_folder_id() { return parent_folder_id_; }
+
+private:
+    event_type type_;
+    std::string watermark_;
+    std::string timestamp_;
+    item_id id_;
+    folder_id folder_id_;
+    folder_id parent_folder_id_;
+};
+
+//! Represents a <DeletedEvent>
+class deleted_event final
+{
+public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    deleted_event() = default;
+#else
+    deleted_event() {}
+#endif
+
+    static deleted_event from_xml_element(rapidxml::xml_node<char>* elem)
+    {
+        using rapidxml::internal::compare;
+        deleted_event e;
+        std::string watermark;
+        std::string timestamp;
+        item_id id;
+        folder_id f_id;
+        folder_id parent_folder_id;
+        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        {
+            if (compare(node->local_name(), node->local_name_size(),
+                        "Watermark", strlen("Watermark")))
+            {
+                watermark = std::string(node->value(), node->value_size());
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "TimeStamp", strlen("TimeStamp")))
+            {
+                timestamp = std::string(node->value(), node->value_size());
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "ParentFolderId", strlen("ParentFolderId")))
+            {
+                parent_folder_id = folder_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(), "ItemId",
+                        strlen("ItemId")))
+            {
+                id = item_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(), "FolderId",
+                        strlen("FolderId")))
+            {
+                f_id = folder_id::from_xml_element(*node);
+            }
+        }
+        e.type_ = event_type::deleted_event;
+        e.watermark_ = watermark;
+        e.timestamp_ = timestamp;
+        e.id_ = id;
+        e.folder_id_ = f_id;
+        e.parent_folder_id_ = parent_folder_id;
+
+        return e;
+    };
+
+    event_type get_type() { return type_; }
+    std::string get_watermark() { return watermark_; }
+    std::string get_timestamp() { return timestamp_; }
+    item_id get_item_id() { return id_; }
+    folder_id get_folder_id() { return folder_id_; }
+    folder_id get_parent_folder_id() { return parent_folder_id_; }
+
+private:
+    event_type type_;
+    std::string watermark_;
+    std::string timestamp_;
+    item_id id_;
+    folder_id folder_id_;
+    folder_id parent_folder_id_;
+};
+
+//! Represents a <ModifiedEvent>
+class modified_event final
+{
+public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    modified_event() = default;
+#else
+    modified_event() {}
+#endif
+
+    static modified_event from_xml_element(rapidxml::xml_node<char>* elem)
+    {
+        using rapidxml::internal::compare;
+        modified_event e;
+        std::string watermark;
+        std::string timestamp;
+        item_id id;
+        folder_id f_id;
+        folder_id parent_folder_id;
+        int unread_count;
+        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        {
+            if (compare(node->local_name(), node->local_name_size(),
+                        "Watermark", strlen("Watermark")))
+            {
+                watermark = std::string(node->value(), node->value_size());
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "TimeStamp", strlen("TimeStamp")))
+            {
+                timestamp = std::string(node->value(), node->value_size());
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "ParentFolderId", strlen("ParentFolderId")))
+            {
+                parent_folder_id = folder_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "UnreadCount", strlen("UnreadCount")))
+            {
+                unread_count = int(*node->value());
+            }
+            if (compare(node->local_name(), node->local_name_size(), "ItemId",
+                        strlen("ItemId")))
+            {
+                id = item_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(), "FolderId",
+                        strlen("FolderId")))
+            {
+                f_id = folder_id::from_xml_element(*node);
+            }
+        }
+        e.type_ = event_type::modified_event;
+        e.watermark_ = watermark;
+        e.timestamp_ = timestamp;
+        e.id_ = id;
+        e.folder_id_ = f_id;
+        e.parent_folder_id_ = parent_folder_id;
+        e.unread_count_ = unread_count;
+
+        return e;
+    };
+
+    event_type get_type() { return type_; }
+    std::string get_watermark() { return watermark_; }
+    std::string get_timestamp() { return timestamp_; }
+    item_id get_item_id() { return id_; }
+    folder_id get_folder_id() { return folder_id_; }
+    folder_id get_parent_folder_id() { return parent_folder_id_; }
+    int get_unread_count() { return unread_count_; }
+
+private:
+    event_type type_;
+    std::string watermark_;
+    std::string timestamp_;
+    int unread_count_;
+    item_id id_;
+    folder_id folder_id_;
+    folder_id parent_folder_id_;
+};
+
+//! Represents a <MovedEvent>
+class moved_event final
+{
+public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    moved_event() = default;
+#else
+    moved_event() {}
+#endif
+
+    static moved_event from_xml_element(rapidxml::xml_node<char>* elem)
+    {
+        using rapidxml::internal::compare;
+        moved_event e;
+        std::string watermark;
+        std::string timestamp;
+        item_id id;
+        item_id old_id;
+        folder_id f_id;
+        folder_id old_f_id;
+        folder_id parent_folder_id;
+        folder_id old_parent_folder_id;
+        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        {
+            if (compare(node->local_name(), node->local_name_size(),
+                        "Watermark", strlen("Watermark")))
+            {
+                watermark = std::string(node->value(), node->value_size());
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "TimeStamp", strlen("TimeStamp")))
+            {
+                timestamp = std::string(node->value(), node->value_size());
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "ParentFolderId", strlen("ParentFolderId")))
+            {
+                parent_folder_id = folder_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(), "ItemId",
+                        strlen("ItemId")))
+            {
+                id = item_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "OldItemId", strlen("OldItemId")))
+            {
+                old_id = item_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(), "FolderId",
+                        strlen("FolderId")))
+            {
+                f_id = folder_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "OldFolderId", strlen("OldFolderId")))
+            {
+                old_f_id = folder_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "OldParentFolderId", strlen("OldParentFolderId")))
+            {
+                old_parent_folder_id = folder_id::from_xml_element(*node);
+            }
+        }
+        e.type_ = event_type::moved_event;
+        e.watermark_ = watermark;
+        e.timestamp_ = timestamp;
+        e.id_ = id;
+        e.old_item_id_ = old_id;
+        e.folder_id_ = f_id;
+        e.old_folder_id_ = old_f_id;
+        e.parent_folder_id_ = parent_folder_id;
+        e.old_parent_folder_id_ = old_parent_folder_id;
+
+        return e;
+    };
+
+    event_type get_type() { return type_; }
+    std::string get_watermark() { return watermark_; }
+    std::string get_timestamp() { return timestamp_; }
+    item_id get_item_id() { return id_; }
+    item_id get_old_item_id() { return old_item_id_; }
+    folder_id get_folder_id() { return folder_id_; }
+    folder_id get_old_folder_id() { return old_folder_id_; }
+    folder_id get_parent_folder_id() { return parent_folder_id_; }
+    folder_id get_old_parent_folder_id() { return old_parent_folder_id_; }
+
+private:
+    event_type type_;
+    std::string watermark_;
+    std::string timestamp_;
+    item_id id_;
+    item_id old_item_id_;
+    folder_id folder_id_;
+    folder_id old_folder_id_;
+    folder_id parent_folder_id_;
+    folder_id old_parent_folder_id_;
+};
+
+//! Represents a <NewMailEvent>
+class new_mail_event final
+{
+public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    new_mail_event() = default;
+#else
+    new_mail_event() {}
+#endif
+
+    static new_mail_event from_xml_element(rapidxml::xml_node<char>* elem)
+    {
+        using rapidxml::internal::compare;
+        new_mail_event e;
+        std::string watermark;
+        std::string timestamp;
+        item_id id;
+        folder_id parent_folder_id;
+        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        {
+            if (compare(node->local_name(), node->local_name_size(),
+                        "Watermark", strlen("Watermark")))
+            {
+                watermark = std::string(node->value(), node->value_size());
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "TimeStamp", strlen("TimeStamp")))
+            {
+                timestamp = std::string(node->value(), node->value_size());
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "ParentFolderId", strlen("ParentFolderId")))
+            {
+                parent_folder_id = folder_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(), "ItemId",
+                        strlen("ItemId")))
+            {
+                id = item_id::from_xml_element(*node);
+            }
+        }
+        e.type_ = event_type::new_mail_event;
+        e.watermark_ = watermark;
+        e.timestamp_ = timestamp;
+        e.id_ = id;
+        e.parent_folder_id_ = parent_folder_id;
+
+        return e;
+    };
+
+    event_type get_type() { return type_; }
+    std::string get_watermark() { return watermark_; }
+    std::string get_timestamp() { return timestamp_; }
+    item_id get_item_id() { return id_; }
+    folder_id get_parent_folder_id() { return parent_folder_id_; }
+
+private:
+    event_type type_;
+    std::string watermark_;
+    std::string timestamp_;
+    item_id id_;
+    folder_id parent_folder_id_;
+};
+
+//! Represents a <StatusEvent>
+class status_event final
+{
+public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    status_event() = default;
+#else
+    status_event() {}
+#endif
+    explicit status_event(event_type type, std::string watermark)
+        : type_(std::move(type)), watermark_(std::move(watermark))
+    {
+    }
+
+    static status_event from_xml_element(rapidxml::xml_node<char>* elem)
+    {
+        using rapidxml::internal::compare;
+        std::string watermark;
+        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        {
+            if (compare(node->local_name(), node->local_name_size(),
+                        "Watermark", strlen("Watermark")))
+            {
+                watermark = std::string(node->value(), node->value_size());
+            }
+        }
+        return status_event(event_type::status_event, watermark);
+    };
+
+    event_type get_type() { return type_; }
+    std::string get_watermark() { return watermark_; }
+
+private:
+    event_type type_;
+    std::string watermark_;
+};
+
+//! Represents a <FreeBusyChangedEvent>
+class free_busy_changed_event final
+{
+public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    free_busy_changed_event() = default;
+#else
+    free_busy_changed_event() {}
+#endif
+    explicit free_busy_changed_event(event_type type, std::string watermark,
+                                     std::string timestamp, item_id id)
+        : type_(std::move(type)), watermark_(std::move(watermark)),
+          timestamp_(std::move(timestamp)), id_(std::move(id))
+    {
+    }
+
+    static free_busy_changed_event
+    from_xml_element(rapidxml::xml_node<char>* elem)
+    {
+        using rapidxml::internal::compare;
+        free_busy_changed_event e;
+        std::string watermark;
+        std::string timestamp;
+        item_id id;
+        folder_id parent_folder_id;
+        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        {
+            if (compare(node->local_name(), node->local_name_size(),
+                        "Watermark", strlen("Watermark")))
+            {
+                watermark = std::string(node->value(), node->value_size());
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "TimeStamp", strlen("TimeStamp")))
+            {
+                timestamp = std::string(node->value(), node->value_size());
+            }
+            if (compare(node->local_name(), node->local_name_size(),
+                        "ParentFolderId", strlen("ParentFolderId")))
+            {
+                parent_folder_id = folder_id::from_xml_element(*node);
+            }
+            if (compare(node->local_name(), node->local_name_size(), "ItemId",
+                        strlen("ItemId")))
+            {
+                id = item_id::from_xml_element(*node);
+            }
+        }
+        e.type_ = event_type::free_busy_changed_event;
+        e.watermark_ = watermark;
+        e.timestamp_ = timestamp;
+        e.id_ = id;
+        e.parent_folder_id_ = parent_folder_id;
+
+        return e;
+    };
+
+    event_type get_type() { return type_; }
+    std::string get_watermark() { return watermark_; }
+    std::string get_timestamp() { return timestamp_; }
+    item_id get_item_id() { return id_; }
+    folder_id get_parent_folder_id() { return parent_folder_id_; }
+
+private:
+    event_type type_;
+    std::string watermark_;
+    std::string timestamp_;
+    item_id id_;
+    folder_id parent_folder_id_;
+};
+
+//! Contains all events that can be returned from get_events
+typedef std::variant<copied_event, created_event, deleted_event, modified_event,
+                     moved_event, new_mail_event, status_event,
+                     free_busy_changed_event>
+    event;
+
+//! Represents a <Notification>
+struct notification final
+{
+    std::string subscription_id;
+    std::string previous_watermark;
+    bool more_events;
+    std::vector<event> events;
+};
 #endif
 
 //! Represents a <tt>\<FileAttachment></tt> or an <tt>\<ItemAttachment></tt>
@@ -9440,6 +10182,61 @@ namespace internal
 
         resolution_set resolutions_;
     };
+
+#ifdef EWS_HAS_VARIANT
+    class subscribe_response_message final : public response_message_base
+    {
+    public:
+        // defined below
+        static subscribe_response_message parse(http_response&& response);
+        const subscription_information& information() const EWS_NOEXCEPT
+        {
+            return information_;
+        }
+
+    private:
+        subscribe_response_message(response_result&& res,
+                                       subscription_information&& info)
+            : response_message_base(std::move(res)),
+              information_(std::move(info))
+        {
+        }
+
+        subscription_information information_;
+    };
+
+    class unsubscribe_response_message final : public response_message_base
+    {
+    public:
+        // defined below
+        static unsubscribe_response_message parse(http_response&& response);
+
+    private:
+        unsubscribe_response_message(response_result&& res)
+            : response_message_base(std::move(res))
+        {
+        }
+    };
+
+    class get_events_response_message final : public response_message_base
+    {
+    public:
+        // defined below
+        static get_events_response_message parse(http_response&& response);
+        const notification& get_notification() const EWS_NOEXCEPT
+        {
+            return notification_;
+        }
+
+    private:
+        get_events_response_message(response_result&& res, notification&& n)
+            : response_message_base(std::move(res)), notification_(std::move(n))
+        {
+        }
+
+        notification notification_;
+    };
+#endif
 
     class create_attachment_response_message final
         : public response_message_base
@@ -18669,6 +19466,46 @@ public:
         return resolve_names_impl(unresolved_entry, parent_folder_ids, scope);
     }
 
+#ifdef EWS_HAS_VARIANT
+    //! \brief The Subscribe operation subscribes to the specified folders and
+    //! event types.
+    //!
+    //! \param ids Ids of the folders to subscribe to
+    //! \param types The types of events to subscribe to
+    //!
+    //! Returns a subscription_information which contains the SubscriptionId and
+    //! the Watermark
+    subscription_information
+    subscribe(const std::vector<distinguished_folder_id>& ids,
+              const std::vector<event_type>& types, int timeout)
+    {
+        return subscribe_impl(ids, types, timeout);
+    }
+
+    //! \brief The Unsubscribe operation removes a subscription
+    //!
+    //! \param subscription_id The id of the subscription to unsubscribe from
+    //!
+    //! Returns void
+    void
+    unsubscribe(const std::string& subscription_id)
+    {
+        return unsubscribe_impl(subscription_id);
+    }
+
+    //! \brief The GetEvents operation gets all new events since the last call
+    //!
+    //! \param subscription_id The SubscriptionId of your subscription
+    //! \param watermark
+    //!
+    //! Returns a notification which contains a vector of events. If no new
+    //! events were created the get_events function will return a status_event.
+    notification get_events(const std::string& subscription_id,
+                            const std::string& watermark)
+    {
+        return get_events_impl(subscription_id, watermark);
+    }
+#endif
 private:
     RequestHandler request_handler_;
     std::string server_version_;
@@ -19536,8 +20373,80 @@ private:
         }
         return response_message.resolutions();
     }
-};
 
+#ifdef EWS_HAS_VARIANT
+    subscription_information
+    subscribe_impl(const std::vector<distinguished_folder_id>& ids,
+                   const std::vector<event_type>& types, int timeout)
+    {
+        std::stringstream sstr;
+        sstr << "<m:Subscribe>"
+             << "<m:PullSubscriptionRequest>"
+             << "<t:FolderIds>";
+        for (const auto& id : ids)
+        {
+            sstr << "<t:DistinguishedFolderId Id=\"" << id.id() << "\"/>";
+        }
+        sstr << "</t:FolderIds>"
+             << "<t:EventTypes>";
+        for (const auto& type : types)
+        {
+            sstr << "<t:EventType>" << internal::enum_to_str(type)
+                 << "</t:EventType>";
+        }
+        sstr << "</t:EventTypes>"
+             << "<t:Timeout>" << timeout << "</t:Timeout>"
+             << "</m:PullSubscriptionRequest>"
+             << "</m:Subscribe>";
+        auto response = request(sstr.str());
+        const auto response_message =
+            internal::subscribe_response_message::parse(std::move(response));
+        if (response_message.result().cls == response_class::error)
+        {
+            throw exchange_error(response_message.result());
+        }
+        return response_message.information();
+    }
+
+    void unsubscribe_impl(const std::string& id)
+    {
+        std::stringstream sstr;
+        sstr << "<m:Unsubscribe>"
+             << "<m:SubscriptionId>"
+             << id
+             << "</m:SubscriptionId>"
+             << "</m:Unsubscribe>";
+        auto response = request(sstr.str());
+        const auto response_message =
+            internal::unsubscribe_response_message::parse(std::move(response));
+        if (response_message.result().cls != response_class::success)
+        {
+            throw exchange_error(response_message.result());
+        }
+    }
+
+    notification get_events_impl(const std::string& id, const std::string& mark)
+    {
+        std::stringstream sstr;
+        sstr << "<m:GetEvents>"
+             << "<m:SubscriptionId>"
+             << id
+             << "</m:SubscriptionId>"
+             << "<m:Watermark>"
+             << mark
+             << "</m:Watermark>"
+             << "</m:GetEvents>";
+        auto response = request(sstr.str());
+        const auto response_message =
+            internal::get_events_response_message::parse(std::move(response));
+        if (response_message.result().cls != response_class::success)
+        {
+            throw exchange_error(response_message.result());
+        }
+        return response_message.get_notification();
+    }
+#endif
+};
 typedef basic_service<> service;
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
@@ -20205,6 +21114,152 @@ namespace internal
         return resolve_names_response_message(std::move(result),
                                               std::move(resolutions));
     }
+
+#ifdef EWS_HAS_VARIANT
+    inline subscribe_response_message
+    subscribe_response_message::parse(http_response&& response)
+    {
+        using rapidxml::internal::compare;
+        const auto doc = parse_response(std::move(response));
+        auto response_elem = get_element_by_qname(
+            *doc, "SubscribeResponseMessage", uri<>::microsoft::messages());
+        EWS_ASSERT(response_elem &&
+                   "Expected <SubscribeResponseMessage>, got nullptr");
+        auto result = parse_response_class_and_code(*response_elem);
+
+        std::string id;
+        std::string mark;
+        if (result.code == response_code::no_error)
+        {
+
+            id = response_elem
+                     ->first_node_ns(uri<>::microsoft::messages(),
+                                     "SubscriptionId")
+                     ->value();
+
+            mark =
+                response_elem
+                    ->first_node_ns(uri<>::microsoft::messages(), "Watermark")
+                    ->value();
+        }
+        return subscribe_response_message(
+            std::move(result), std::move(subscription_information(id, mark)));
+    }
+
+    inline unsubscribe_response_message
+    unsubscribe_response_message::parse(http_response&& response)
+    {
+        using rapidxml::internal::compare;
+        const auto doc = parse_response(std::move(response));
+        auto response_elem = get_element_by_qname(
+            *doc, "UnsubscribeResponseMessage", uri<>::microsoft::messages());
+        EWS_ASSERT(response_elem &&
+                   "Expected <UnsubscribeResponseMessage>, got nullptr");
+        auto result = parse_response_class_and_code(*response_elem);
+
+        return unsubscribe_response_message(std::move(result));
+    }
+
+    inline get_events_response_message
+    get_events_response_message::parse(http_response&& response)
+    {
+        using rapidxml::internal::compare;
+        const auto doc = parse_response(std::move(response));
+        auto response_elem = get_element_by_qname(
+            *doc, "GetEventsResponseMessage", uri<>::microsoft::messages());
+        EWS_ASSERT(response_elem &&
+                   "Expected <GetEventsResponseMessage>, got nullptr");
+        auto result = parse_response_class_and_code(*response_elem);
+
+        notification n;
+        if (result.code == response_code::no_error)
+        {
+            auto notification_element = response_elem->first_node_ns(
+                uri<>::microsoft::messages(), "Notification");
+            EWS_ASSERT(notification_element &&
+                       "Expected <Notification> element");
+
+            n.subscription_id =
+                notification_element
+                    ->first_node_ns(uri<>::microsoft::types(), "SubscriptionId")
+                    ->value();
+
+            n.previous_watermark =
+                notification_element
+                    ->first_node_ns(uri<>::microsoft::types(),
+                                    "PreviousWatermark")
+                    ->value();
+
+            n.more_events =
+                notification_element
+                    ->first_node_ns(uri<>::microsoft::types(), "MoreEvents")
+                    ->value();
+
+            if (notification_element->first_node_ns(uri<>::microsoft::types(),
+                                                    "StatusEvent") != nullptr)
+            {
+                auto e = notification_element->first_node_ns(
+                    uri<>::microsoft::types(), "StatusEvent");
+                status_event s = status_event::from_xml_element(e);
+                n.events.emplace_back(s);
+            }
+            else
+            {
+                for (auto res = notification_element->first_node_ns(
+                         uri<>::microsoft::types(), "CopiedEvent");
+                     res; res = res->next_sibling())
+                {
+                    copied_event c = copied_event::from_xml_element(res);
+                    n.events.emplace_back(c);
+                }
+                for (auto res = notification_element->first_node_ns(
+                         uri<>::microsoft::types(), "CreatedEvent");
+                     res; res = res->next_sibling())
+                {
+                    created_event c = created_event::from_xml_element(res);
+                    n.events.emplace_back(c);
+                }
+                for (auto res = notification_element->first_node_ns(
+                         uri<>::microsoft::types(), "DeletedEvent");
+                     res; res = res->next_sibling())
+                {
+                    deleted_event d = deleted_event::from_xml_element(res);
+                    n.events.emplace_back(d);
+                }
+                for (auto res = notification_element->first_node_ns(
+                         uri<>::microsoft::types(), "ModifiedEvent");
+                     res; res = res->next_sibling())
+                {
+                    modified_event d = modified_event::from_xml_element(res);
+                    n.events.emplace_back(d);
+                }
+                for (auto res = notification_element->first_node_ns(
+                         uri<>::microsoft::types(), "MovedEvent");
+                     res; res = res->next_sibling())
+                {
+                    moved_event m = moved_event::from_xml_element(res);
+                    n.events.emplace_back(m);
+                }
+                for (auto res = notification_element->first_node_ns(
+                         uri<>::microsoft::types(), "NewMailEvent");
+                     res; res = res->next_sibling())
+                {
+                    new_mail_event m = new_mail_event::from_xml_element(res);
+                    n.events.emplace_back(m);
+                }
+                for (auto res = notification_element->first_node_ns(
+                         uri<>::microsoft::types(), "FreeBusyChangedEvent");
+                     res; res = res->next_sibling())
+                {
+                    free_busy_changed_event f =
+                        free_busy_changed_event::from_xml_element(res);
+                    n.events.emplace_back(f);
+                }
+            }
+        }
+        return get_events_response_message(std::move(result), std::move(n));
+    }
+#endif
 }
 
 //! \brief Creates a new <tt>\<ItemAttachment></tt> from a given item.

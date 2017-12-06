@@ -38,8 +38,11 @@ class calendar_item;
 class connecting_sid;
 class contact;
 class contains;
+class copied_event;
+class created_event;
 class date_time;
 class delegate_user;
+class deleted_event;
 class directory_id;
 class distinguished_folder_id;
 class duration;
@@ -47,6 +50,7 @@ class exception;
 class exchange_error;
 class folder;
 class folder_id;
+class free_busy_changed_event;
 class http_error;
 class indexed_property_path;
 class internet_message_header;
@@ -61,6 +65,9 @@ class item_id;
 class mailbox;
 class message;
 class mime_content;
+class modified_event;
+class moved_event;
+class new_mail_event;
 class not_;
 class ntlm_credentials;
 class or_;
@@ -70,6 +77,7 @@ class property_path;
 class schema_validation_error;
 class search_expression;
 class soap_fault;
+class status_event;
 class task;
 class update;
 class user_id;
@@ -92,5 +100,4 @@ autodiscover_result get_exchange_web_services_url(const std::string&,
                                                   const basic_credentials&,
                                                   const autodiscover_hints&);
 }
-
 // vim:et ts=4 sw=4
