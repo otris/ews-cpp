@@ -16877,7 +16877,7 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<paging_view>::value, "");
+static_assert(std::is_default_constructible<paging_view>::value, "");
 static_assert(std::is_copy_constructible<paging_view>::value, "");
 static_assert(std::is_copy_assignable<paging_view>::value, "");
 static_assert(std::is_move_constructible<paging_view>::value, "");
