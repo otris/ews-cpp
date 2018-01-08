@@ -5510,6 +5510,34 @@ namespace internal
     }
 }
 
+//! \brief Defines the base point for
+//! paged searches with <tt>\<FindItem\></tt>
+//! and <tt>\<FindFolder\></tt>.
+enum class paging_base_point
+{
+    //! The paged view starts at the beginning of the found conversation or item set.
+    beginning,
+
+    //! The paged view starts at the end of the found conversation or item set.
+    end
+};
+
+namespace internal
+{
+    inline std::string enum_to_str(paging_base_point base)
+    {
+        switch (base)
+        {
+        case paging_base_point::beginning:
+            return "Beginning";
+        case paging_base_point::end:
+            return "End";
+        default:
+            throw exception("Bad enum value");
+        }
+    }
+}
+
 //! \brief Defines the different values for the
 //! <tt>\<RequestServerVersion\></tt> element.
 enum class server_version
@@ -16785,6 +16813,77 @@ static_assert(std::is_move_constructible<contains>::value, "");
 static_assert(std::is_move_assignable<contains>::value, "");
 #endif
 
+//! \brief A paged view of items in a folder
+//!
+//! Represents a paged view of items in item search operations.
+class paging_view
+{
+public:
+	paging_view() : max_entries_returned_(1000), offset_(0),
+		base_point_(paging_base_point::beginning)
+	{
+	}
+
+    paging_view(std::uint32_t max_entries_returned)
+        : max_entries_returned_(max_entries_returned), offset_(0), 
+          base_point_(paging_base_point::beginning)
+    {
+    }
+
+    paging_view(std::uint32_t max_entries_returned, 
+        std::uint32_t offset)
+        : max_entries_returned_(max_entries_returned), offset_(offset),
+          base_point_(paging_base_point::beginning)
+    {
+    }
+
+    paging_view(std::uint32_t max_entries_returned,
+        std::uint32_t offset, 
+        paging_base_point base_point)
+        : max_entries_returned_(max_entries_returned), offset_(offset), 
+          base_point_(base_point)
+    {
+    }
+
+    std::uint32_t get_max_entries_returned() const EWS_NOEXCEPT
+    {
+        return max_entries_returned_;
+    }
+
+    std::uint32_t get_offset() const EWS_NOEXCEPT
+    {
+        return offset_;
+    }
+
+    std::string to_xml() const
+    {
+        return "<m:IndexedPageItemView MaxEntriesReturned=\"" +
+            std::to_string(max_entries_returned_) +
+            "\" Offset=\"" +
+            std::to_string(offset_) +
+            "\" BasePoint=\"" +
+            internal::enum_to_str(base_point_) + "\" />";
+    }
+
+    void advance()
+    {
+        offset_ += max_entries_returned_;
+    }
+
+private:
+    std::uint32_t max_entries_returned_;
+    std::uint32_t offset_;
+    paging_base_point base_point_;
+};
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+static_assert(std::is_default_constructible<paging_view>::value, "");
+static_assert(std::is_copy_constructible<paging_view>::value, "");
+static_assert(std::is_copy_assignable<paging_view>::value, "");
+static_assert(std::is_move_constructible<paging_view>::value, "");
+static_assert(std::is_move_assignable<paging_view>::value, "");
+#endif
+
 //! \brief A range view of appointments in a calendar.
 //!
 //! Represents a date range view of appointments in calendar folder search
@@ -17581,6 +17680,28 @@ public:
         {
             throw exchange_error(response_message.result());
         }
+    }
+
+    std::vector<item_id> find_item(const folder_id& parent_folder_id, const paging_view& view)
+    {
+        const std::string request_string =
+            "<m:FindItem Traversal=\"Shallow\">"
+            "<m:ItemShape>"
+            "<t:BaseShape>IdOnly</t:BaseShape>"
+            "</m:ItemShape>" +
+            view.to_xml() +
+            "<m:ParentFolderIds>" +
+            parent_folder_id.to_xml() +
+            "</m:ParentFolderIds>"
+            "</m:FindItem>";
+
+        auto response = request(request_string);
+        const auto response_message = internal::find_item_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+        return response_message.items();
     }
 
     std::vector<item_id> find_item(const folder_id& parent_folder_id)
