@@ -17,8 +17,10 @@
 
 #include "fixtures.hpp"
 
-#include <cstring>
 #include <ews/rapidxml/rapidxml_print.hpp>
+
+#include <string.h>
+
 #include <iterator>
 #include <stdexcept>
 #include <string>
@@ -59,7 +61,7 @@ TEST(AttachmentIdTest, ConstructFromIdAndRootItemId)
 TEST(AttachmentIdTest, FromXMLNodeWithIdAttributeOnly)
 {
     const char* xml = "<AttachmentId Id=\"abcde\"/>";
-    std::vector<char> buf(xml, xml + std::strlen(xml));
+    std::vector<char> buf(xml, xml + strlen(xml));
     buf.push_back('\0');
     xml_document doc;
     doc.parse<0>(&buf[0]);
@@ -74,7 +76,7 @@ TEST(AttachmentIdTest, FromXMLNodeWithIdAndRootIdAttributes)
 {
     const char* xml = "<AttachmentId Id=\"abcde\" RootItemId=\"qwertz\" "
                       "RootItemChangeKey=\"edcba\"/>";
-    std::vector<char> buf(xml, xml + std::strlen(xml));
+    std::vector<char> buf(xml, xml + strlen(xml));
     buf.push_back('\0');
     xml_document doc;
     doc.parse<0>(&buf[0]);
@@ -111,7 +113,7 @@ TEST(AttachmentIdTest, FromAndToXMLRoundTrip)
 {
     const char* xml = "<t:AttachmentId Id=\"abcde\" RootItemId=\"qwertz\" "
                       "RootItemChangeKey=\"edcba\"/>";
-    std::vector<char> buf(xml, xml + std::strlen(xml));
+    std::vector<char> buf(xml, xml + strlen(xml));
     buf.push_back('\0');
     xml_document doc;
     doc.parse<rapidxml::parse_no_namespace>(&buf[0]);
@@ -232,7 +234,7 @@ TEST_F(FileAttachmentTest, ToXML)
     const auto xml = attachment.to_xml();
     EXPECT_FALSE(xml.empty());
     const char* prefix = "<t:FileAttachment>";
-    EXPECT_TRUE(std::equal(prefix, prefix + std::strlen(prefix), begin(xml)));
+    EXPECT_TRUE(std::equal(prefix, prefix + strlen(prefix), begin(xml)));
 }
 
 TEST_F(FileAttachmentTest, WriteContentToFileDoesNothingIfItemAttachment)

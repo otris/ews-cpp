@@ -17,7 +17,8 @@
 #include <ews/ews_test_support.hpp>
 #include <ews/rapidxml/rapidxml_print.hpp>
 
-#include <cstdlib>
+#include <stdlib.h>
+
 #include <exception>
 #include <iostream>
 #include <ostream>

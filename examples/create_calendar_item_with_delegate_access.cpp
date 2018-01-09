@@ -16,7 +16,8 @@
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
 
-#include <cstdlib>
+#include <stdlib.h>
+
 #include <exception>
 #include <iostream>
 #include <ostream>
@@ -65,7 +66,6 @@ int main()
         // because the fact that this item is part of a different mailbox is
         // encoded in the 'id' itself. This is called implicit access
         // in EWS documentation.
-
     }
     catch (std::exception& exc)
     {

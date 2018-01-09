@@ -15,7 +15,8 @@
 
 #include <ews/ews.hpp>
 
-#include <cstdlib>
+#include <stdlib.h>
+
 #include <exception>
 #include <iostream>
 #include <ostream>

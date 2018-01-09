@@ -15,7 +15,8 @@
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
 
-#include <cstdlib>
+#include <stdlib.h>
+
 #include <exception>
 #include <iostream>
 #include <ostream>
@@ -42,7 +43,6 @@ int main()
             std::cout << reso.mailbox.value() << std::endl;
             std::cout << reso.directory_id.get_id() << std::endl;
         }
-
     }
     catch (std::exception& exc)
     {
@@ -53,5 +53,3 @@ int main()
     ews::tear_down();
     return res;
 }
-
-

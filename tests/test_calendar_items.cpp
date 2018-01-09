@@ -20,8 +20,9 @@
 #include <ews/rapidxml/rapidxml.hpp>
 #include <ews/rapidxml/rapidxml_print.hpp>
 
+#include <string.h>
+
 #include <algorithm>
-#include <cstring>
 #include <iterator>
 #include <memory>
 #include <sstream>
@@ -58,7 +59,7 @@ TEST(AttendeeTest, FromXML)
         "<LastResponseTime>2004-11-11T11:11:11Z</LastResponseTime>"
         "</Attendee>";
     std::vector<char> buf;
-    std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+    std::copy(xml, xml + strlen(xml), std::back_inserter(buf));
     buf.push_back('\0');
     rapidxml::xml_document<> doc;
     doc.parse<0>(&buf[0]);
@@ -109,7 +110,7 @@ TEST(OccurrenceInfoTest, ConstructFromXML)
                       "</Occurrence>";
 
     std::vector<char> buf;
-    std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+    std::copy(xml, xml + strlen(xml), std::back_inserter(buf));
     buf.push_back('\0');
     rapidxml::xml_document<> doc;
     doc.parse<0>(&buf[0]);
@@ -139,7 +140,7 @@ TEST(RecurrenceRangeTest, NoEnd)
                       "xmlns:t=\"http://schemas.microsoft.com/exchange/"
                       "services/2006/types\"></Recurrence>";
     std::vector<char> buf;
-    std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+    std::copy(xml, xml + strlen(xml), std::back_inserter(buf));
     buf.push_back('\0');
     rapidxml::xml_document<> doc;
     doc.parse<0>(&buf[0]);
@@ -174,7 +175,7 @@ TEST(RecurrenceRangeTest, EndDate)
                       "xmlns:t=\"http://schemas.microsoft.com/exchange/"
                       "services/2006/types\"></Recurrence>";
     std::vector<char> buf;
-    std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+    std::copy(xml, xml + strlen(xml), std::back_inserter(buf));
     buf.push_back('\0');
     rapidxml::xml_document<> doc;
     doc.parse<0>(&buf[0]);
@@ -210,7 +211,7 @@ TEST(RecurrenceRangeTest, Numbered)
                       "xmlns:t=\"http://schemas.microsoft.com/exchange/"
                       "services/2006/types\"></Recurrence>";
     std::vector<char> buf;
-    std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+    std::copy(xml, xml + strlen(xml), std::back_inserter(buf));
     buf.push_back('\0');
     rapidxml::xml_document<> doc;
     doc.parse<0>(&buf[0]);
@@ -245,7 +246,7 @@ TEST(RecurrencePatternTest, AbsoluteYearly)
                       "xmlns:t=\"http://schemas.microsoft.com/exchange/"
                       "services/2006/types\"></Recurrence>";
     std::vector<char> buf;
-    std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+    std::copy(xml, xml + strlen(xml), std::back_inserter(buf));
     buf.push_back('\0');
     rapidxml::xml_document<> doc;
     doc.parse<0>(&buf[0]);
@@ -280,7 +281,7 @@ TEST(RecurrencePatternTest, RelativeYearly)
                       "xmlns:t=\"http://schemas.microsoft.com/exchange/"
                       "services/2006/types\"></Recurrence>";
     std::vector<char> buf;
-    std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+    std::copy(xml, xml + strlen(xml), std::back_inserter(buf));
     buf.push_back('\0');
     rapidxml::xml_document<> doc;
     doc.parse<0>(&buf[0]);
@@ -314,7 +315,7 @@ TEST(RecurrencePatternTest, AbsoluteMonthly)
                       "xmlns:t=\"http://schemas.microsoft.com/exchange/"
                       "services/2006/types\"></Recurrence>";
     std::vector<char> buf;
-    std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+    std::copy(xml, xml + strlen(xml), std::back_inserter(buf));
     buf.push_back('\0');
     rapidxml::xml_document<> doc;
     doc.parse<0>(&buf[0]);
@@ -350,7 +351,7 @@ TEST(RecurrencePatternTest, RelativeMonthly)
                       "xmlns:t=\"http://schemas.microsoft.com/exchange/"
                       "services/2006/types\"></Recurrence>";
     std::vector<char> buf;
-    std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+    std::copy(xml, xml + strlen(xml), std::back_inserter(buf));
     buf.push_back('\0');
     rapidxml::xml_document<> doc;
     doc.parse<0>(&buf[0]);
@@ -387,7 +388,7 @@ TEST(RecurrencePatternTest, Weekly)
                        "xmlns:t=\"http://schemas.microsoft.com/exchange/"
                        "services/2006/types\"></Recurrence>";
     std::vector<char> buf;
-    std::copy(xml1, xml1 + std::strlen(xml1), std::back_inserter(buf));
+    std::copy(xml1, xml1 + strlen(xml1), std::back_inserter(buf));
     buf.push_back('\0');
     rapidxml::xml_document<> doc1;
     doc1.parse<0>(&buf[0]);
@@ -419,7 +420,7 @@ TEST(RecurrencePatternTest, Weekly)
                        "xmlns:t=\"http://schemas.microsoft.com/exchange/"
                        "services/2006/types\"></Recurrence>";
     buf.clear();
-    std::copy(xml2, xml2 + std::strlen(xml2), std::back_inserter(buf));
+    std::copy(xml2, xml2 + strlen(xml2), std::back_inserter(buf));
     buf.push_back('\0');
     rapidxml::xml_document<> doc2;
     doc2.parse<0>(&buf[0]);
@@ -451,7 +452,7 @@ TEST(RecurrencePatternTest, Daily)
                       "xmlns:t=\"http://schemas.microsoft.com/exchange/"
                       "services/2006/types\"></Recurrence>";
     std::vector<char> buf;
-    std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+    std::copy(xml, xml + strlen(xml), std::back_inserter(buf));
     buf.push_back('\0');
     rapidxml::xml_document<> doc;
     doc.parse<0>(&buf[0]);

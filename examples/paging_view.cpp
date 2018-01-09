@@ -1,5 +1,5 @@
 
-//   Copyright 2016 otris software AG
+//   Copyright 2018 otris software AG
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
 
-#include <cstdlib>
+#include <stdlib.h>
+
 #include <exception>
 #include <iostream>
 #include <ostream>
@@ -38,12 +39,13 @@ int main()
         for (int i = 0; i < 20; i++)
         {
             auto message = ews::message();
-            message.set_subject("This is an e-mail message for our paging view");
+            message.set_subject(
+                "This is an e-mail message for our paging view");
             std::vector<ews::mailbox> recipients;
             recipients.push_back(ews::mailbox("donald.duck@duckburg.com"));
             message.set_to_recipients(recipients);
-            auto item_id =
-                service.create_item(message, ews::message_disposition::save_only);
+            auto item_id = service.create_item(
+                message, ews::message_disposition::save_only);
         }
 
         // Now iterate over all items in the folder
@@ -59,13 +61,13 @@ int main()
                 std::cout << "No more messages found!\n";
                 break;
             }
-            
+
             for (const auto& id : item_ids)
             {
                 auto msg = service.get_message(id);
                 std::cout << msg.get_subject() << std::endl;
             }
-            
+
             view.advance();
         }
     }

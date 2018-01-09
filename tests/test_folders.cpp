@@ -86,10 +86,10 @@ TEST(FolderTest, DistinguishedFolderIdToXMLWithChangeKey)
 
 TEST(FolderTest, DistinguishedFolderIdAndMailboxOwnerToXML)
 {
-    const char* expected =
-    "<t:DistinguishedFolderId Id=\"inbox\">"
-    "<t:Mailbox><t:EmailAddress>test@example.com</t:EmailAddress></t:Mailbox>"
-    "</t:DistinguishedFolderId>";
+    const char* expected = "<t:DistinguishedFolderId Id=\"inbox\">"
+                           "<t:Mailbox><t:EmailAddress>test@example.com</"
+                           "t:EmailAddress></t:Mailbox>"
+                           "</t:DistinguishedFolderId>";
     const auto owner = ews::mailbox("test@example.com");
     const auto folder =
         ews::distinguished_folder_id(ews::standard_folder::inbox, owner);

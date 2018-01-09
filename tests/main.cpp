@@ -17,8 +17,9 @@
 
 #include <ews/ews_test_support.hpp>
 
-#include <cstdlib>
-#include <cstring>
+#include <stdlib.h>
+#include <string.h>
+
 #include <iostream>
 #include <ostream>
 #include <stdexcept>
@@ -42,14 +43,14 @@ namespace
 {
 bool starts_with(const char* prefix, const std::string& str)
 {
-    return !str.compare(0, std::strlen(prefix), prefix);
+    return !str.compare(0, strlen(prefix), prefix);
 }
 
 bool is(const char* prefix, const std::string& arg, argument_map& map)
 {
     if (starts_with(prefix, arg))
     {
-        const auto value = arg.substr(std::strlen(prefix));
+        const auto value = arg.substr(strlen(prefix));
         map[prefix] = value;
         return true;
     }
@@ -63,7 +64,7 @@ std::string pwd()
         size = 4096U
     };
     char buf[size];
-    auto ret = ::getcwd(buf, size);
+    auto ret = getcwd(buf, size);
     return ret != nullptr ? std::string(buf)
                           : throw std::runtime_error("getcwd failed");
 }

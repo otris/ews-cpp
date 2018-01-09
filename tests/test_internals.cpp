@@ -15,16 +15,18 @@
 //
 //   This project is hosted at https://github.com/otris
 
+#include <string.h>
+
 #include <algorithm>
-#include <cstring>
-#include <ews/ews.hpp>
-#include <ews/rapidxml/rapidxml_print.hpp>
 #include <iterator>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
+
+#include <ews/ews.hpp>
+#include <ews/rapidxml/rapidxml_print.hpp>
 
 namespace
 {
@@ -113,14 +115,12 @@ namespace tests
 TEST(InternalTest, NamespaceURIs)
 {
     typedef ews::internal::uri<> uri;
-    EXPECT_EQ(uri::microsoft::errors_size,
-              std::strlen(uri::microsoft::errors()));
-    EXPECT_EQ(uri::microsoft::types_size, std::strlen(uri::microsoft::types()));
+    EXPECT_EQ(uri::microsoft::errors_size, strlen(uri::microsoft::errors()));
+    EXPECT_EQ(uri::microsoft::types_size, strlen(uri::microsoft::types()));
     EXPECT_EQ(uri::microsoft::messages_size,
-              std::strlen(uri::microsoft::messages()));
+              strlen(uri::microsoft::messages()));
 
-    EXPECT_EQ(uri::soapxml::envelope_size,
-              std::strlen(uri::soapxml::envelope()));
+    EXPECT_EQ(uri::soapxml::envelope_size, strlen(uri::soapxml::envelope()));
 }
 
 TEST(InternalTest, MimeContentDefaultConstruction)
@@ -155,9 +155,9 @@ TEST(InternalTest, MimeContentConstructionWithData)
 
 #if EWS_HAS_ROBUST_NONMODIFYING_SEQ_OPS
     EXPECT_TRUE(std::equal(m.bytes(), m.bytes() + m.len_bytes(), content,
-                           content + std::strlen(content)));
+                           content + strlen(content)));
 #else
-    EXPECT_TRUE(m.len_bytes() == std::strlen(content) &&
+    EXPECT_TRUE(m.len_bytes() == strlen(content) &&
                 std::equal(m.bytes(), m.bytes() + m.len_bytes(), content));
 #endif
 }

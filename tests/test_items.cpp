@@ -15,10 +15,13 @@
 //
 //   This project is hosted at https://github.com/otris
 
-#include "fixtures.hpp"
-#include <cstring>
-#include <ews/ews.hpp>
+#include <string.h>
+
 #include <vector>
+
+#include <ews/ews.hpp>
+
+#include "fixtures.hpp"
 
 using ews::item_id;
 typedef rapidxml::xml_document<> xml_document;
@@ -74,7 +77,7 @@ TEST(ItemIdTest, ToXMLWithNamespace)
 TEST(ItemIdTest, FromAndToXMLRoundTrip)
 {
     const char* xml = "<t:ItemId Id=\"abcde\" ChangeKey=\"edcba\"/>";
-    std::vector<char> buf(xml, xml + std::strlen(xml));
+    std::vector<char> buf(xml, xml + strlen(xml));
     buf.push_back('\0');
     xml_document doc;
     doc.parse<rapidxml::parse_no_namespace>(&buf[0]);
@@ -691,7 +694,7 @@ TEST(OfflineExtendedFieldUriTest, DistPropertySetIdNameRoundTrip)
                       "DistinguishedPropertySetId=\"PublicStrings\" "
                       "PropertyName=\"ShoeSize\" "
                       "PropertyType=\"Float\"/>";
-    std::vector<char> buf(xml, xml + std::strlen(xml));
+    std::vector<char> buf(xml, xml + strlen(xml));
     buf.push_back('\0');
 
     xml_document doc;
@@ -714,7 +717,7 @@ TEST(OfflineExtendedFieldUriTest, DistPropertySetIdIdRoundTrip)
                       "DistinguishedPropertySetId=\"PublicStrings\" "
                       "PropertyId=\"42\" "
                       "PropertyType=\"Boolean\"/>";
-    std::vector<char> buf(xml, xml + std::strlen(xml));
+    std::vector<char> buf(xml, xml + strlen(xml));
     buf.push_back('\0');
 
     xml_document doc;
@@ -737,7 +740,7 @@ TEST(OfflineExtendedFieldUriTest, PropertySetIdIdRoundTrip)
                       "PropertySetId=\"24040483-cda4-4521-bb5f-a83fac4d19a4\" "
                       "PropertyId=\"2\" "
                       "PropertyType=\"IntegerArray\"/>";
-    std::vector<char> buf(xml, xml + std::strlen(xml));
+    std::vector<char> buf(xml, xml + strlen(xml));
     buf.push_back('\0');
 
     xml_document doc;
@@ -760,7 +763,7 @@ TEST(OfflineExtendedFieldUriTest, PropertySetIdNameRoundTrip)
                       "PropertySetId=\"24040483-cda4-4521-bb5f-a83fac4d19a4\" "
                       "PropertyName=\"Rumpelstiltskin\" "
                       "PropertyType=\"Integer\"/>";
-    std::vector<char> buf(xml, xml + std::strlen(xml));
+    std::vector<char> buf(xml, xml + strlen(xml));
     buf.push_back('\0');
 
     xml_document doc;
@@ -782,7 +785,7 @@ TEST(OfflineExtendedFieldUriTest, PropertyTagRoundTrip)
     const char* xml = "<t:ExtendedFieldURI "
                       "PropertyTag=\"0x0036\" "
                       "PropertyType=\"Binary\"/>";
-    std::vector<char> buf(xml, xml + std::strlen(xml));
+    std::vector<char> buf(xml, xml + strlen(xml));
     buf.push_back('\0');
 
     xml_document doc;

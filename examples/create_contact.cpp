@@ -16,7 +16,8 @@
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
 
-#include <cstdlib>
+#include <stdlib.h>
+
 #include <exception>
 #include <iostream>
 #include <ostream>

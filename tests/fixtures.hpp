@@ -139,7 +139,7 @@ struct http_request_mock final
 
     void set_content_type(const std::string&) {}
 
-    void set_content_length(std::size_t) {}
+    void set_content_length(size_t) {}
 
     void set_credentials(const ews::internal::credentials&) {}
 
@@ -196,7 +196,7 @@ public:
     void set_next_fake_response(const char* str)
     {
         auto& storage = http_request_mock::storage::instance();
-        storage.fake_response = std::vector<char>(str, str + std::strlen(str));
+        storage.fake_response = std::vector<char>(str, str + strlen(str));
         storage.fake_response.push_back('\0');
     }
 
@@ -522,7 +522,7 @@ inline ews::task make_fake_task(const char* xml = nullptr)
     }
 
     std::vector<char> buf;
-    std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+    std::copy(xml, xml + strlen(xml), std::back_inserter(buf));
     buf.push_back('\0');
     xml_document doc;
     doc.parse<0>(&buf[0]);
@@ -541,7 +541,7 @@ inline ews::message make_fake_message(const char* xml = nullptr)
     {
         // Load from given C-string
 
-        std::copy(xml, xml + std::strlen(xml), std::back_inserter(buf));
+        std::copy(xml, xml + strlen(xml), std::back_inserter(buf));
         buf.push_back('\0');
     }
     else

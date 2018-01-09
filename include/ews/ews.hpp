@@ -17,12 +17,15 @@
 
 #pragma once
 
+#include <ctype.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+
 #include <algorithm>
-#include <cctype>
 #include <chrono>
-#include <cstddef>
-#include <cstdint>
-#include <cstring>
 #include <exception>
 #include <fstream>
 #include <functional>
@@ -60,7 +63,7 @@
 #define EWS_ASSERT(expr) ((void)0)
 #ifndef NDEBUG
 #ifdef EWS_ENABLE_ASSERTS
-#include <cassert>
+#include <assert.h>
 #undef EWS_ASSERT
 #define EWS_ASSERT(expr) assert(expr)
 #endif
@@ -221,7 +224,7 @@ namespace internal
 
         inline bool is_base64(unsigned char c) EWS_NOEXCEPT
         {
-            return std::isalnum(c) || (c == '+') || (c == '/');
+            return isalnum(c) || (c == '+') || (c == '/');
         }
 
         inline std::string encode(const std::vector<unsigned char>& buf)
@@ -408,7 +411,7 @@ public:
             {
                 enum {column_width = 79};
                 const auto idx =
-                    static_cast<std::size_t>(std::distance(start, where));
+                    static_cast<size_t>(std::distance(start, where));
 
                 auto doc = std::string(start, xml.size());
                 auto lineno = 1U;
@@ -463,8 +466,8 @@ private:
         return str.substr(0, end + 1);
     }
 
-    static std::pair<std::string, std::size_t>
-    shorten(const std::string& str, std::size_t at, std::size_t columns)
+    static std::pair<std::string, size_t> shorten(const std::string& str,
+                                                  size_t at, size_t columns)
     {
         at = std::min(at, str.length());
         if (str.length() < columns)
@@ -472,8 +475,7 @@ private:
             return std::make_pair(str, at);
         }
 
-        const auto start =
-            std::max(at - (columns / 2), static_cast<std::size_t>(0));
+        const auto start = std::max(at - (columns / 2), static_cast<size_t>(0));
         const auto end = std::min(at + (columns / 2), str.length());
         EWS_ASSERT(start < end);
         std::string line;
@@ -6893,8 +6895,8 @@ namespace internal
         EWS_ASSERT(local_name && namespace_uri);
 
         rapidxml::xml_node<>* element = nullptr;
-        const auto local_name_len = std::strlen(local_name);
-        const auto namespace_uri_len = std::strlen(namespace_uri);
+        const auto local_name_len = strlen(local_name);
+        const auto namespace_uri_len = strlen(namespace_uri);
         traverse_elements(node, [&](rapidxml::xml_node<>& elem) -> bool {
             using rapidxml::internal::compare;
 
@@ -7009,7 +7011,7 @@ namespace internal
         }
 
         // Set this HTTP request's content length.
-        void set_content_length(std::size_t content_length)
+        void set_content_length(size_t content_length)
         {
             const std::string str =
                 "Content-Length: " + std::to_string(content_length);
@@ -7108,8 +7110,8 @@ namespace internal
         // the data is encoded the way you want the server to receive it.
         http_response send(const std::string& request)
         {
-            auto callback = [](char* ptr, std::size_t size, std::size_t nmemb,
-                               void* userdata) -> std::size_t {
+            auto callback = [](char* ptr, size_t size, size_t nmemb,
+                               void* userdata) -> size_t {
                 std::vector<char>* buf =
                     reinterpret_cast<std::vector<char>*>(userdata);
                 const auto realsize = size * nmemb;
@@ -7150,8 +7152,8 @@ namespace internal
 
             std::vector<char> response_data;
             set_option(CURLOPT_WRITEFUNCTION,
-                       static_cast<std::size_t (*)(
-                           char*, std::size_t, std::size_t, void*)>(callback));
+                       static_cast<size_t (*)(char*, size_t, size_t, void*)>(
+                           callback));
             set_option(CURLOPT_WRITEDATA, std::addressof(response_data));
 
 #ifdef EWS_DISABLE_TLS_CERT_VERIFICATION
@@ -7287,7 +7289,7 @@ namespace internal
         xml_subtree() : rawdata_(), doc_(new rapidxml::xml_document<char>) {}
 
         explicit xml_subtree(const rapidxml::xml_node<char>& origin,
-                             std::size_t size_hint = 0U)
+                             size_t size_hint = 0U)
             : rawdata_(), doc_(new rapidxml::xml_document<char>)
         {
             reparse(origin, size_hint);
@@ -7443,8 +7445,7 @@ namespace internal
             };
         };
 
-        void reparse(const rapidxml::xml_node<char>& source,
-                     std::size_t size_hint)
+        void reparse(const rapidxml::xml_node<char>& source, size_t size_hint)
         {
             rawdata_.reserve(size_hint);
             rapidxml::print(std::back_inserter(rawdata_), source,
@@ -7602,14 +7603,14 @@ namespace internal
                      node = node->next_sibling())
                 {
                     if (compare(node->local_name(), node->local_name_size(),
-                                "ErrorCode", std::strlen("ErrorCode")))
+                                "ErrorCode", strlen("ErrorCode")))
                     {
                         error_code =
                             std::string(node->value(), node->value_size());
                     }
                     else if (compare(node->local_name(),
                                      node->local_name_size(), "Message",
-                                     std::strlen("Message")))
+                                     strlen("Message")))
                     {
                         message =
                             std::string(node->value(), node->value_size());
@@ -7646,17 +7647,16 @@ namespace internal
                 }
                 if (compare(protocol_node->local_name(),
                             protocol_node->local_name_size(), "Protocol",
-                            std::strlen("Protocol")))
+                            strlen("Protocol")))
                 {
                     for (auto type_node = protocol_node->first_node();
                          type_node; type_node = type_node->next_sibling())
                     {
                         if (compare(type_node->local_name(),
                                     type_node->local_name_size(), "Type",
-                                    std::strlen("Type")) &&
+                                    strlen("Type")) &&
                             compare(type_node->value(), type_node->value_size(),
-                                    protocol.c_str(),
-                                    std::strlen(protocol.c_str())))
+                                    protocol.c_str(), strlen(protocol.c_str())))
                         {
                             for (auto asurl_node = protocol_node->first_node();
                                  asurl_node;
@@ -7664,7 +7664,7 @@ namespace internal
                             {
                                 if (compare(asurl_node->local_name(),
                                             asurl_node->local_name_size(),
-                                            "ASUrl", std::strlen("ASUrl")))
+                                            "ASUrl", strlen("ASUrl")))
                                 {
                                     if (i >= 1)
                                     {
@@ -7696,7 +7696,7 @@ namespace internal
         {
             if (compare(redirect_node->local_name(),
                         redirect_node->local_name_size(), "RedirectAddr",
-                        std::strlen("RedirectAddr")))
+                        strlen("RedirectAddr")))
             {
                 // Retry
                 redirections++;
@@ -7713,7 +7713,7 @@ namespace internal
     inline std::string escape(const char* str)
     {
         std::string res;
-        rapidxml::internal::copy_and_expand_chars(str, &str[strlen(str)], '\0',
+        rapidxml::internal::copy_and_expand_chars(str, str + strlen(str), '\0',
                                                   std::back_inserter(res));
         return res;
     }
@@ -8137,27 +8137,27 @@ public:
         for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
             if (compare(node->local_name(), node->local_name_size(), "Name",
-                        std::strlen("Name")))
+                        strlen("Name")))
             {
                 name = std::string(node->value(), node->value_size());
             }
             else if (compare(node->local_name(), node->local_name_size(),
-                             "EmailAddress", std::strlen("EmailAddress")))
+                             "EmailAddress", strlen("EmailAddress")))
             {
                 address = std::string(node->value(), node->value_size());
             }
             else if (compare(node->local_name(), node->local_name_size(),
-                             "RoutingType", std::strlen("RoutingType")))
+                             "RoutingType", strlen("RoutingType")))
             {
                 routing_type = std::string(node->value(), node->value_size());
             }
             else if (compare(node->local_name(), node->local_name_size(),
-                             "MailboxType", std::strlen("MailboxType")))
+                             "MailboxType", strlen("MailboxType")))
             {
                 mailbox_type = std::string(node->value(), node->value_size());
             }
             else if (compare(node->local_name(), node->local_name_size(),
-                             "ItemId", std::strlen("ItemId")))
+                             "ItemId", strlen("ItemId")))
             {
                 id = item_id::from_xml_element(*node);
             }
@@ -8824,7 +8824,7 @@ public:
     //!
     //! If this is a <tt>\<FileAttachment></tt>, returns the size in bytes
     //! of the file attachment; otherwise 0.
-    std::size_t content_size() const
+    size_t content_size() const
     {
         const auto node = get_node("Size");
         if (!node)
@@ -8843,7 +8843,7 @@ public:
     //! If this is a <tt>\<FileAttachment></tt>, writes content to file.
     //! Does nothing if this is an <tt>\<ItemAttachment></tt>.  Returns the
     //! number of bytes written.
-    std::size_t write_content_to_file(const std::string& file_path) const
+    size_t write_content_to_file(const std::string& file_path) const
     {
         if (get_type() == type::item)
         {
@@ -8974,7 +8974,7 @@ private:
              child = child->next_sibling())
         {
             if (compare(child->local_name(), child->local_name_size(),
-                        local_name, std::strlen(local_name)))
+                        local_name, strlen(local_name)))
             {
                 node = child;
                 break;
@@ -9778,7 +9778,7 @@ public:
 #endif
 
     //! Copies \p len bytes from \p ptr into an internal buffer.
-    mime_content(std::string charset, const char* const ptr, std::size_t len)
+    mime_content(std::string charset, const char* const ptr, size_t len)
         : charset_(std::move(charset)), bytearray_(ptr, ptr + len)
     {
     }
@@ -9789,7 +9789,7 @@ public:
     //! Note: the pointer to the data is not 0-terminated
     const char* bytes() const EWS_NOEXCEPT { return bytearray_.data(); }
 
-    std::size_t len_bytes() const EWS_NOEXCEPT { return bytearray_.size(); }
+    size_t len_bytes() const EWS_NOEXCEPT { return bytearray_.size(); }
 
     //! Returns true if no MIME content is available.
     //!
@@ -9910,22 +9910,21 @@ public:
         for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
             if (compare(node->local_name(), node->local_name_size(), "Mailbox",
-                        std::strlen("Mailbox")))
+                        strlen("Mailbox")))
             {
                 addr = mailbox::from_xml_element(*node);
             }
             else if (compare(node->local_name(), node->local_name_size(),
-                             "ResponseType", std::strlen("ResponseType")))
+                             "ResponseType", strlen("ResponseType")))
             {
                 resp_type = internal::str_to_response_type(
                     std::string(node->value(), node->value_size()));
             }
             else if (compare(node->local_name(), node->local_name_size(),
-                             "LastResponseTime",
-                             std::strlen("LastResponseTime")))
+                             "LastResponseTime", strlen("LastResponseTime")))
             {
-                last_resp_time = date_time(
-                    std::string(node->value(), node->value_size()));
+                last_resp_time =
+                    date_time(std::string(node->value(), node->value_size()));
             }
             else
             {
@@ -10174,7 +10173,7 @@ public:
         using rapidxml::internal::compare;
 
         EWS_ASSERT(compare(elem.name(), elem.name_size(), "t:ExtendedFieldURI",
-                           std::strlen("t:ExtendedFieldURI")) &&
+                           strlen("t:ExtendedFieldURI")) &&
                    "Expected a <ExtendedFieldURI/>, got something else");
 
         std::string distinguished_set_id;
@@ -10189,33 +10188,33 @@ public:
         {
             if (compare(attr->name(), attr->name_size(),
                         "DistinguishedPropertySetId",
-                        std::strlen("DistinguishedPropertySetId")))
+                        strlen("DistinguishedPropertySetId")))
             {
                 distinguished_set_id =
                     std::string(attr->value(), attr->value_size());
             }
             else if (compare(attr->name(), attr->name_size(), "PropertySetId",
-                             std::strlen("PropertySetId")))
+                             strlen("PropertySetId")))
             {
                 set_id = std::string(attr->value(), attr->value_size());
             }
             else if (compare(attr->name(), attr->name_size(), "PropertyTag",
-                             std::strlen("PropertyTag")))
+                             strlen("PropertyTag")))
             {
                 tag = std::string(attr->value(), attr->value_size());
             }
             else if (compare(attr->name(), attr->name_size(), "PropertyName",
-                             std::strlen("PropertyName")))
+                             strlen("PropertyName")))
             {
                 name = std::string(attr->value(), attr->value_size());
             }
             else if (compare(attr->name(), attr->name_size(), "PropertyId",
-                             std::strlen("PropertyId")))
+                             strlen("PropertyId")))
             {
                 id = std::string(attr->value(), attr->value_size());
             }
             else if (compare(attr->name(), attr->name_size(), "PropertyType",
-                             std::strlen("PropertyType")))
+                             strlen("PropertyType")))
             {
                 type = std::string(attr->value(), attr->value_size());
             }
@@ -10534,20 +10533,20 @@ public:
                  attr = attr->next_attribute())
             {
                 if (compare(attr->name(), attr->name_size(), "BodyType",
-                            std::strlen("BodyType")))
+                            strlen("BodyType")))
                 {
                     if (compare(attr->value(), attr->value_size(), "HTML",
-                                std::strlen("HTML")))
+                                strlen("HTML")))
                     {
                         b.set_type(body_type::html);
                     }
                     else if (compare(attr->value(), attr->value_size(), "Text",
-                                     std::strlen("Text")))
+                                     strlen("Text")))
                     {
                         b.set_type(body_type::plain_text);
                     }
                     else if (compare(attr->value(), attr->value_size(), "Best",
-                                     std::strlen("Best")))
+                                     strlen("Best")))
                     {
                         b.set_type(body_type::best);
                     }
@@ -10558,10 +10557,10 @@ public:
                     }
                 }
                 else if (compare(attr->name(), attr->name_size(), "IsTruncated",
-                                 std::strlen("IsTruncated")))
+                                 strlen("IsTruncated")))
                 {
                     const auto val = compare(attr->value(), attr->value_size(),
-                                             "true", std::strlen("true"));
+                                             "true", strlen("true"));
                     b.set_truncated(val);
                 }
                 else
@@ -10610,7 +10609,7 @@ public:
     //! \brief Size in bytes of an item.
     //!
     //! This is a read-only property. Default: 0
-    std::size_t get_size() const
+    size_t get_size() const
     {
         const auto size = xml().get_value_as_string("Size");
         return size.empty() ? 0U : std::stoul(size);
@@ -10795,7 +10794,7 @@ public:
 
     //! \brief Sets the minutes before due date that a reminder should be
     //! shown to the user.
-    void set_reminder_minutes_before_start(std::uint32_t minutes)
+    void set_reminder_minutes_before_start(uint32_t minutes)
     {
         xml().set_or_update("ReminderMinutesBeforeStart",
                             std::to_string(minutes));
@@ -10803,7 +10802,7 @@ public:
 
     //! \brief Returns the number of minutes before due date that a
     //! reminder should be shown to the user.
-    std::uint32_t get_reminder_minutes_before_start() const
+    uint32_t get_reminder_minutes_before_start() const
     {
         std::string minutes =
             xml().get_value_as_string("ReminderMinutesBeforeStart");
@@ -10852,8 +10851,7 @@ public:
              top_node != nullptr; top_node = top_node->next_sibling())
         {
             if (!compare(top_node->name(), top_node->name_size(),
-                         "t:ExtendedProperty",
-                         std::strlen("t:ExtendedProperty")))
+                         "t:ExtendedProperty", strlen("t:ExtendedProperty")))
             {
                 continue;
             }
@@ -10868,13 +10866,13 @@ public:
                 node = node->next_sibling(); // go to value(es)
 
                 if (compare(node->name(), node->name_size(), "t:Value",
-                            std::strlen("t:Value")))
+                            strlen("t:Value")))
                 {
                     values.emplace_back(
                         std::string(node->value(), node->value_size()));
                 }
                 else if (compare(node->name(), node->name_size(), "t:Values",
-                                 std::strlen("t:Values")))
+                                 strlen("t:Values")))
                 {
                     for (auto child = node->first_node(); child != nullptr;
                          child = child->next_sibling())
@@ -10899,7 +10897,7 @@ public:
 
         auto ptr_to_qname = doc->allocate_string("t:ExtendedProperty");
         auto top_node = doc->allocate_node(rapidxml::node_element);
-        top_node->qname(ptr_to_qname, std::strlen("t:ExtendedProperty"),
+        top_node->qname(ptr_to_qname, strlen("t:ExtendedProperty"),
                         ptr_to_qname + 2);
         top_node->namespace_uri(internal::uri<>::microsoft::types(),
                                 internal::uri<>::microsoft::types_size);
@@ -11122,25 +11120,24 @@ public:
         for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
             if (compare(node->local_name(), node->local_name_size(), "SID",
-                        std::strlen("SID")))
+                        strlen("SID")))
             {
                 sid = std::string(node->value(), node->value_size());
             }
             else if (compare(node->local_name(), node->local_name_size(),
                              "PrimarySmtpAddress",
-                             std::strlen("PrimarySmtpAddress")))
+                             strlen("PrimarySmtpAddress")))
             {
                 primary_smtp_address =
                     std::string(node->value(), node->value_size());
             }
             else if (compare(node->local_name(), node->local_name_size(),
-                             "DisplayName", std::strlen("DisplayName")))
+                             "DisplayName", strlen("DisplayName")))
             {
                 display_name = std::string(node->value(), node->value_size());
             }
             else if (compare(node->local_name(), node->local_name_size(),
-                             "DistinguishedUser",
-                             std::strlen("DistinguishedUser")))
+                             "DistinguishedUser", strlen("DistinguishedUser")))
             {
                 const auto val = std::string(node->value(), node->value_size());
                 if (val != "Anonymous")
@@ -11150,7 +11147,7 @@ public:
             }
             else if (compare(node->local_name(), node->local_name_size(),
                              "ExternalUserIdentity",
-                             std::strlen("ExternalUserIdentity")))
+                             strlen("ExternalUserIdentity")))
             {
                 external_user_identity = true;
             }
@@ -11328,25 +11325,24 @@ public:
         for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
             if (compare(node->local_name(), node->local_name_size(), "UserId",
-                        std::strlen("UserId")))
+                        strlen("UserId")))
             {
                 id = user_id::from_xml_element(*node);
             }
             else if (compare(node->local_name(), node->local_name_size(),
                              "DelegatePermissions",
-                             std::strlen("DelegatePermissions")))
+                             strlen("DelegatePermissions")))
             {
                 perms = delegate_permissions::from_xml_element(*node);
             }
             else if (compare(node->local_name(), node->local_name_size(),
                              "ReceiveCopiesOfMeetingMessages",
-                             std::strlen("ReceiveCopiesOfMeetingMessages")))
+                             strlen("ReceiveCopiesOfMeetingMessages")))
             {
                 receive_copies = true;
             }
             else if (compare(node->local_name(), node->local_name_size(),
-                             "ViewPrivateItems",
-                             std::strlen("ViewPrivateItems")))
+                             "ViewPrivateItems", strlen("ViewPrivateItems")))
             {
                 view_private_items = true;
             }
@@ -12263,42 +12259,42 @@ public:
         for (auto child = node.first_node(); child != nullptr;
              child = child->next_sibling())
         {
-            if (compare("Title", std::strlen("Title"), child->local_name(),
+            if (compare("Title", strlen("Title"), child->local_name(),
                         child->local_name_size()))
             {
                 title = std::string(child->value(), child->value_size());
             }
-            else if (compare("FirstName", std::strlen("FirstName"),
+            else if (compare("FirstName", strlen("FirstName"),
                              child->local_name(), child->local_name_size()))
             {
                 firstname = std::string(child->value(), child->value_size());
             }
-            else if (compare("MiddleName", std::strlen("MiddleName"),
+            else if (compare("MiddleName", strlen("MiddleName"),
                              child->local_name(), child->local_name_size()))
             {
                 middlename = std::string(child->value(), child->value_size());
             }
-            else if (compare("LastName", std::strlen("LastName"),
+            else if (compare("LastName", strlen("LastName"),
                              child->local_name(), child->local_name_size()))
             {
                 lastname = std::string(child->value(), child->value_size());
             }
-            else if (compare("Suffix", std::strlen("Suffix"),
-                             child->local_name(), child->local_name_size()))
+            else if (compare("Suffix", strlen("Suffix"), child->local_name(),
+                             child->local_name_size()))
             {
                 suffix = std::string(child->value(), child->value_size());
             }
-            else if (compare("Initials", std::strlen("Initials"),
+            else if (compare("Initials", strlen("Initials"),
                              child->local_name(), child->local_name_size()))
             {
                 initials = std::string(child->value(), child->value_size());
             }
-            else if (compare("FullName", std::strlen("FullName"),
+            else if (compare("FullName", strlen("FullName"),
                              child->local_name(), child->local_name_size()))
             {
                 fullname = std::string(child->value(), child->value_size());
             }
-            else if (compare("Nickname", std::strlen("Nickname"),
+            else if (compare("Nickname", strlen("Nickname"),
                              child->local_name(), child->local_name_size()))
             {
                 nickname = std::string(child->value(), child->value_size());
@@ -12415,7 +12411,7 @@ email_address::from_xml_element(const rapidxml::xml_node<char>& node)
     // </t:EmailAddresses>
 
     EWS_ASSERT(compare(node.local_name(), node.local_name_size(), "Entry",
-                       std::strlen("Entry")));
+                       strlen("Entry")));
     auto key = node.first_attribute("Key");
     EWS_ASSERT(key && "Expected attribute Key");
     return email_address(
@@ -12545,7 +12541,7 @@ physical_address::from_xml_element(const rapidxml::xml_node<char>& node)
     using rapidxml::internal::compare;
 
     EWS_ASSERT(compare(node.local_name(), node.local_name_size(), "Entry",
-                       std::strlen("Entry")));
+                       strlen("Entry")));
 
     // <Entry Key="Home">
     //      <Street>
@@ -12569,28 +12565,28 @@ physical_address::from_xml_element(const rapidxml::xml_node<char>& node)
     for (auto child = node.first_node(); child != nullptr;
          child = child->next_sibling())
     {
-        if (compare("Street", std::strlen("Street"), child->local_name(),
+        if (compare("Street", strlen("Street"), child->local_name(),
                     child->local_name_size()))
         {
             street = std::string(child->value(), child->value_size());
         }
-        if (compare("City", std::strlen("City"), child->local_name(),
+        if (compare("City", strlen("City"), child->local_name(),
                     child->local_name_size()))
         {
             city = std::string(child->value(), child->value_size());
         }
-        if (compare("State", std::strlen("State"), child->local_name(),
+        if (compare("State", strlen("State"), child->local_name(),
                     child->local_name_size()))
         {
             state = std::string(child->value(), child->value_size());
         }
-        if (compare("CountryOrRegion", std::strlen("CountryOrRegion"),
+        if (compare("CountryOrRegion", strlen("CountryOrRegion"),
                     child->local_name(), child->local_name_size()))
         {
             cor = std::string(child->value(), child->value_size());
         }
-        if (compare("PostalCode", std::strlen("PostalCode"),
-                    child->local_name(), child->local_name_size()))
+        if (compare("PostalCode", strlen("PostalCode"), child->local_name(),
+                    child->local_name_size()))
         {
             postal_code = std::string(child->value(), child->value_size());
         }
@@ -12857,7 +12853,7 @@ im_address::from_xml_element(const rapidxml::xml_node<char>& node)
     // </t:ImAddresses>
 
     EWS_ASSERT(compare(node.local_name(), node.local_name_size(), "Entry",
-                       std::strlen("Entry")));
+                       strlen("Entry")));
     auto key = node.first_attribute("Key");
     EWS_ASSERT(key && "Expected attribute Key");
     return im_address(
@@ -13078,7 +13074,7 @@ phone_number::from_xml_element(const rapidxml::xml_node<char>& node)
     // </t:PhoneNumbers>
 
     EWS_ASSERT(compare(node.local_name(), node.local_name_size(), "Entry",
-                       std::strlen("Entry")));
+                       strlen("Entry")));
     auto key = node.first_attribute("Key");
     EWS_ASSERT(key && "Expected attribute Key");
     return phone_number(
@@ -13775,7 +13771,7 @@ private:
             {
                 if (compare(attr->name(), attr->name_size(), "Key", 3) &&
                     compare(attr->value(), attr->value_size(), key,
-                            std::strlen(key)))
+                            strlen(key)))
                 {
                     return std::string(entry->value(), entry->value_size());
                 }
@@ -13806,7 +13802,7 @@ private:
                 {
                     if (compare(attr->name(), attr->name_size(), "Key", 3) &&
                         compare(attr->value(), attr->value_size(), key,
-                                std::strlen(key)))
+                                strlen(key)))
                     {
                         exists = true;
                         break;
@@ -13912,24 +13908,24 @@ public:
         for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
             if (compare(node->local_name(), node->local_name_size(),
-                        "OriginalStart", std::strlen("OriginalStart")))
+                        "OriginalStart", strlen("OriginalStart")))
             {
                 original_start =
                     date_time(std::string(node->value(), node->value_size()));
             }
             else if (compare(node->local_name(), node->local_name_size(), "End",
-                             std::strlen("End")))
+                             strlen("End")))
             {
                 end = date_time(std::string(node->value(), node->value_size()));
             }
             else if (compare(node->local_name(), node->local_name_size(),
-                             "Start", std::strlen("Start")))
+                             "Start", strlen("Start")))
             {
                 start =
                     date_time(std::string(node->value(), node->value_size()));
             }
             else if (compare(node->local_name(), node->local_name_size(),
-                             "ItemId", std::strlen("ItemId")))
+                             "ItemId", strlen("ItemId")))
             {
                 id = item_id::from_xml_element(*node);
             }
@@ -14088,20 +14084,17 @@ static_assert(!std::is_move_assignable<relative_yearly_recurrence>::value, "");
 class absolute_yearly_recurrence final : public recurrence_pattern
 {
 public:
-    absolute_yearly_recurrence(std::uint32_t day_of_month, month m)
+    absolute_yearly_recurrence(uint32_t day_of_month, month m)
         : day_of_month_(day_of_month), month_(m)
     {
     }
 
-    std::uint32_t get_day_of_month() const EWS_NOEXCEPT
-    {
-        return day_of_month_;
-    }
+    uint32_t get_day_of_month() const EWS_NOEXCEPT { return day_of_month_; }
 
     month get_month() const EWS_NOEXCEPT { return month_; }
 
 private:
-    std::uint32_t day_of_month_;
+    uint32_t day_of_month_;
     month month_;
 
     std::string to_xml_impl() const override
@@ -14159,22 +14152,18 @@ static_assert(!std::is_move_assignable<absolute_yearly_recurrence>::value, "");
 class absolute_monthly_recurrence final : public recurrence_pattern
 {
 public:
-    absolute_monthly_recurrence(std::uint32_t interval,
-                                std::uint32_t day_of_month)
+    absolute_monthly_recurrence(uint32_t interval, uint32_t day_of_month)
         : interval_(interval), day_of_month_(day_of_month)
     {
     }
 
-    std::uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
+    uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
 
-    std::uint32_t get_days_of_month() const EWS_NOEXCEPT
-    {
-        return day_of_month_;
-    }
+    uint32_t get_days_of_month() const EWS_NOEXCEPT { return day_of_month_; }
 
 private:
-    std::uint32_t interval_;
-    std::uint32_t day_of_month_;
+    uint32_t interval_;
+    uint32_t day_of_month_;
 
     std::string to_xml_impl() const override
     {
@@ -14234,14 +14223,13 @@ static_assert(!std::is_move_assignable<absolute_monthly_recurrence>::value, "");
 class relative_monthly_recurrence final : public recurrence_pattern
 {
 public:
-    relative_monthly_recurrence(std::uint32_t interval,
-                                day_of_week days_of_week,
+    relative_monthly_recurrence(uint32_t interval, day_of_week days_of_week,
                                 day_of_week_index index)
         : interval_(interval), days_of_week_(days_of_week), index_(index)
     {
     }
 
-    std::uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
+    uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
 
     day_of_week get_days_of_week() const EWS_NOEXCEPT { return days_of_week_; }
 
@@ -14251,7 +14239,7 @@ public:
     }
 
 private:
-    std::uint32_t interval_;
+    uint32_t interval_;
     day_of_week days_of_week_;
     day_of_week_index index_;
 
@@ -14307,7 +14295,7 @@ static_assert(!std::is_move_assignable<relative_monthly_recurrence>::value, "");
 class weekly_recurrence final : public recurrence_pattern
 {
 public:
-    weekly_recurrence(std::uint32_t interval, day_of_week days_of_week,
+    weekly_recurrence(uint32_t interval, day_of_week days_of_week,
                       day_of_week first_day_of_week = day_of_week::mon)
         : interval_(interval), days_of_week_(),
           first_day_of_week_(first_day_of_week)
@@ -14315,15 +14303,14 @@ public:
         days_of_week_.push_back(days_of_week);
     }
 
-    weekly_recurrence(std::uint32_t interval,
-                      std::vector<day_of_week> days_of_week,
+    weekly_recurrence(uint32_t interval, std::vector<day_of_week> days_of_week,
                       day_of_week first_day_of_week = day_of_week::mon)
         : interval_(interval), days_of_week_(std::move(days_of_week)),
           first_day_of_week_(first_day_of_week)
     {
     }
 
-    std::uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
+    uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
 
     const std::vector<day_of_week>& get_days_of_week() const EWS_NOEXCEPT
     {
@@ -14336,7 +14323,7 @@ public:
     }
 
 private:
-    std::uint32_t interval_;
+    uint32_t interval_;
     std::vector<day_of_week> days_of_week_;
     day_of_week first_day_of_week_;
 
@@ -14394,12 +14381,12 @@ static_assert(!std::is_move_assignable<weekly_recurrence>::value, "");
 class daily_recurrence final : public recurrence_pattern
 {
 public:
-    explicit daily_recurrence(std::uint32_t interval) : interval_(interval) {}
+    explicit daily_recurrence(uint32_t interval) : interval_(interval) {}
 
-    std::uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
+    uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
 
 private:
-    std::uint32_t interval_;
+    uint32_t interval_;
 
     std::string to_xml_impl() const override
     {
@@ -14593,7 +14580,7 @@ static_assert(!std::is_move_assignable<end_date_recurrence_range>::value, "");
 class numbered_recurrence_range final : public recurrence_range
 {
 public:
-    numbered_recurrence_range(date start_date, std::uint32_t no_of_occurrences)
+    numbered_recurrence_range(date start_date, uint32_t no_of_occurrences)
         : start_date_(std::move(start_date)),
           no_of_occurrences_(no_of_occurrences)
     {
@@ -14601,14 +14588,14 @@ public:
 
     const date_time& get_start_date() const EWS_NOEXCEPT { return start_date_; }
 
-    std::uint32_t get_number_of_occurrences() const EWS_NOEXCEPT
+    uint32_t get_number_of_occurrences() const EWS_NOEXCEPT
     {
         return no_of_occurrences_;
     }
 
 private:
     date start_date_;
-    std::uint32_t no_of_occurrences_;
+    uint32_t no_of_occurrences_;
 
     std::string to_xml_impl() const override
     {
@@ -16837,63 +16824,54 @@ static_assert(std::is_move_assignable<contains>::value, "");
 //! \brief A paged view of items in a folder
 //!
 //! Represents a paged view of items in item search operations.
-class paging_view
+class paging_view final
 {
 public:
-    paging_view() : max_entries_returned_(1000), offset_(0),
-        base_point_(paging_base_point::beginning)
-    {
-    }
-
-    paging_view(std::uint32_t max_entries_returned)
-        : max_entries_returned_(max_entries_returned), offset_(0), 
+    paging_view()
+        : max_entries_returned_(1000), offset_(0),
           base_point_(paging_base_point::beginning)
     {
     }
 
-    paging_view(std::uint32_t max_entries_returned, 
-        std::uint32_t offset)
+    paging_view(uint32_t max_entries_returned)
+        : max_entries_returned_(max_entries_returned), offset_(0),
+          base_point_(paging_base_point::beginning)
+    {
+    }
+
+    paging_view(uint32_t max_entries_returned, uint32_t offset)
         : max_entries_returned_(max_entries_returned), offset_(offset),
           base_point_(paging_base_point::beginning)
     {
     }
 
-    paging_view(std::uint32_t max_entries_returned,
-        std::uint32_t offset, 
-        paging_base_point base_point)
-        : max_entries_returned_(max_entries_returned), offset_(offset), 
+    paging_view(uint32_t max_entries_returned, uint32_t offset,
+                paging_base_point base_point)
+        : max_entries_returned_(max_entries_returned), offset_(offset),
           base_point_(base_point)
     {
     }
 
-    std::uint32_t get_max_entries_returned() const EWS_NOEXCEPT
+    uint32_t get_max_entries_returned() const EWS_NOEXCEPT
     {
         return max_entries_returned_;
     }
 
-    std::uint32_t get_offset() const EWS_NOEXCEPT
-    {
-        return offset_;
-    }
+    uint32_t get_offset() const EWS_NOEXCEPT { return offset_; }
 
     std::string to_xml() const
     {
         return "<m:IndexedPageItemView MaxEntriesReturned=\"" +
-            std::to_string(max_entries_returned_) +
-            "\" Offset=\"" +
-            std::to_string(offset_) +
-            "\" BasePoint=\"" +
-            internal::enum_to_str(base_point_) + "\" />";
+               std::to_string(max_entries_returned_) + "\" Offset=\"" +
+               std::to_string(offset_) + "\" BasePoint=\"" +
+               internal::enum_to_str(base_point_) + "\" />";
     }
 
-    void advance()
-    {
-        offset_ += max_entries_returned_;
-    }
+    void advance() { offset_ += max_entries_returned_; }
 
 private:
-    std::uint32_t max_entries_returned_;
-    std::uint32_t offset_;
+    uint32_t max_entries_returned_;
+    uint32_t offset_;
     paging_base_point base_point_;
 };
 
@@ -16919,13 +16897,13 @@ public:
     }
 
     calendar_view(date_time start_date, date_time end_date,
-                  std::uint32_t max_entries_returned)
+                  uint32_t max_entries_returned)
         : start_date_(std::move(start_date)), end_date_(std::move(end_date)),
           max_entries_returned_(max_entries_returned), max_entries_set_(true)
     {
     }
 
-    std::uint32_t get_max_entries_returned() const EWS_NOEXCEPT
+    uint32_t get_max_entries_returned() const EWS_NOEXCEPT
     {
         return max_entries_returned_;
     }
@@ -16952,7 +16930,7 @@ public:
 private:
     date_time start_date_;
     date_time end_date_;
-    std::uint32_t max_entries_returned_;
+    uint32_t max_entries_returned_;
     bool max_entries_set_;
 };
 
@@ -17217,8 +17195,9 @@ public:
     //! \brief Gets a task from the Exchange store.
     //!
     //! The returned task includes specified additional properties.
-    std::vector<task> get_tasks(const std::vector<item_id>& ids,
-                  const std::vector<property_path>& additional_properties)
+    std::vector<task>
+    get_tasks(const std::vector<item_id>& ids,
+              const std::vector<property_path>& additional_properties)
     {
         return get_item_impl<task>(ids, base_shape::all_properties,
                                    additional_properties);
@@ -17249,8 +17228,9 @@ public:
     //! \brief Gets a contact from the Exchange store.
     //!
     //! The returned contact includes specified additional properties.
-    std::vector<contact> get_contacts(const std::vector<item_id>& ids,
-                        const std::vector<property_path>& additional_properties)
+    std::vector<contact>
+    get_contacts(const std::vector<item_id>& ids,
+                 const std::vector<property_path>& additional_properties)
     {
         return get_item_impl<contact>(ids, base_shape::all_properties,
                                       additional_properties);
@@ -17319,15 +17299,17 @@ public:
         return get_item_impl<message>(ids, base_shape::all_properties);
     }
 
-    std::vector<message> get_messages(const std::vector<item_id>& ids,
-                        const std::vector<property_path>& additional_properties)
+    std::vector<message>
+    get_messages(const std::vector<item_id>& ids,
+                 const std::vector<property_path>& additional_properties)
     {
         return get_item_impl<message>(ids, base_shape::all_properties,
                                       additional_properties);
     }
 
-    std::vector<message> get_messages(const std::vector<item_id>& ids,
-                        const std::vector<extended_field_uri>& ext_field_uri)
+    std::vector<message>
+    get_messages(const std::vector<item_id>& ids,
+                 const std::vector<extended_field_uri>& ext_field_uri)
     {
         return get_item_impl<message>(ids, ext_field_uri);
     }
@@ -17703,21 +17685,21 @@ public:
         }
     }
 
-    std::vector<item_id> find_item(const folder_id& parent_folder_id, const paging_view& view)
+    std::vector<item_id> find_item(const folder_id& parent_folder_id,
+                                   const paging_view& view)
     {
         const std::string request_string =
             "<m:FindItem Traversal=\"Shallow\">"
             "<m:ItemShape>"
             "<t:BaseShape>IdOnly</t:BaseShape>"
             "</m:ItemShape>" +
-            view.to_xml() +
-            "<m:ParentFolderIds>" +
-            parent_folder_id.to_xml() +
+            view.to_xml() + "<m:ParentFolderIds>" + parent_folder_id.to_xml() +
             "</m:ParentFolderIds>"
             "</m:FindItem>";
 
         auto response = request(request_string);
-        const auto response_message = internal::find_item_response_message::parse(std::move(response));
+        const auto response_message =
+            internal::find_item_response_message::parse(std::move(response));
         if (!response_message.success())
         {
             throw exchange_error(response_message.result());
@@ -18408,9 +18390,8 @@ private:
 
     // Creates multiple items on the server and returns the item_ids.
     template <typename ItemType>
-    std::vector<item_id>
-    create_item_impl(const std::vector<ItemType>& items,
-                     const folder_id& folder)
+    std::vector<item_id> create_item_impl(const std::vector<ItemType>& items,
+                                          const folder_id& folder)
     {
         std::stringstream sstr;
         sstr << "<m:CreateItem>";
@@ -18445,7 +18426,8 @@ private:
         const std::vector<ItemType> res_items = response_messages.items();
         std::vector<item_id> res;
         res.reserve(res_items.size());
-        std::transform(begin(res_items), end(res_items), std::back_inserter(res),
+        std::transform(begin(res_items), end(res_items),
+                       std::back_inserter(res),
                        [](const ItemType& elem) { return elem.get_item_id(); });
 
         return res;
@@ -18526,8 +18508,9 @@ private:
         const std::vector<calendar_item> res_items = response_messages.items();
         std::vector<item_id> res;
         res.reserve(res_items.size());
-        std::transform(begin(res_items), end(res_items), std::back_inserter(res),
-                       [](const calendar_item& elem) { return elem.get_item_id(); });
+        std::transform(
+            begin(res_items), end(res_items), std::back_inserter(res),
+            [](const calendar_item& elem) { return elem.get_item_id(); });
 
         return res;
     }
@@ -18572,10 +18555,9 @@ private:
         return item_id();
     }
 
-    std::vector<item_id>
-    create_item_impl(const std::vector<message>& messages,
-                     ews::message_disposition disposition,
-                     const folder_id& folder)
+    std::vector<item_id> create_item_impl(const std::vector<message>& messages,
+                                          ews::message_disposition disposition,
+                                          const folder_id& folder)
     {
         std::stringstream sstr;
         sstr << "<m:CreateItem MessageDisposition=\""
@@ -18733,7 +18715,8 @@ private:
              << "</m:ResolveNames>";
         auto response = request(sstr.str());
         const auto response_message =
-            internal::resolve_names_response_message::parse(std::move(response));
+            internal::resolve_names_response_message::parse(
+                std::move(response));
         if (response_message.result().code ==
                 response_code::error_name_resolution_no_results ||
             response_message.result().code ==
@@ -18954,8 +18937,7 @@ namespace internal
         for_each_child_node(
             response_element, [&](const rapidxml::xml_node<>& node) {
                 if (compare(node.local_name(), node.local_name_size(),
-                            "ResponseMessages",
-                            std::strlen("ResponseMessages")))
+                            "ResponseMessages", strlen("ResponseMessages")))
                 {
                     for_each_child_node(
                         node, [&](const rapidxml::xml_node<>& msg) {
@@ -18965,7 +18947,7 @@ namespace internal
                                     if (compare(msg_content.local_name(),
                                                 msg_content.local_name_size(),
                                                 "DelegateUser",
-                                                std::strlen("DelegateUser")))
+                                                strlen("DelegateUser")))
                                     {
                                         delegate_users.emplace_back(
                                             delegate_user::from_xml_element(
@@ -19035,8 +19017,7 @@ namespace internal
             for_each_child_node(*resp, [](const rapidxml::xml_node<>& elem) {
 
                 if (compare(elem.local_name(), elem.local_name_size(),
-                            "ResponseMessages",
-                            std::strlen("ResponseMessages")))
+                            "ResponseMessages", strlen("ResponseMessages")))
                 {
                     for_each_child_node(
                         elem, [](const rapidxml::xml_node<>& msg) {
@@ -19111,15 +19092,15 @@ namespace internal
                  attr != nullptr; attr = attr->next_attribute())
             {
                 if (compare("IndexedPagingOffset",
-                            std::strlen("IndexedPagingOffset"),
-                            attr->local_name(), attr->local_name_size()))
+                            strlen("IndexedPagingOffset"), attr->local_name(),
+                            attr->local_name_size()))
                 {
                     resolutions.indexed_paging_offset =
                         std::stoi(resolution_set_element
                                       ->first_attribute("IndexedPagingOffset")
                                       ->value());
                 }
-                if (compare("NumeratorOffset", std::strlen("NumeratorOffset"),
+                if (compare("NumeratorOffset", strlen("NumeratorOffset"),
                             attr->local_name(), attr->local_name_size()))
                 {
                     resolutions.numerator_offset =
@@ -19128,8 +19109,8 @@ namespace internal
                                       ->value());
                 }
                 if (compare("AbsoluteDenominator",
-                            std::strlen("AbsoluteDenominator"),
-                            attr->local_name(), attr->local_name_size()))
+                            strlen("AbsoluteDenominator"), attr->local_name(),
+                            attr->local_name_size()))
                 {
                     resolutions.absolute_denominator =
                         std::stoi(resolution_set_element
@@ -19137,7 +19118,7 @@ namespace internal
                                       ->value());
                 }
                 if (compare("IncludesLastItemInRange",
-                            std::strlen("IncludesLastItemInRange"),
+                            strlen("IncludesLastItemInRange"),
                             attr->local_name(), attr->local_name_size()))
                 {
                     auto includes =
@@ -19153,7 +19134,7 @@ namespace internal
                         resolutions.includes_last_item_in_range = false;
                     }
                 }
-                if (compare("TotalItemsInView", std::strlen("TotalItemsInView"),
+                if (compare("TotalItemsInView", strlen("TotalItemsInView"),
                             attr->local_name(), attr->local_name_size()))
                 {
                     resolutions.total_items_in_view =
@@ -19170,19 +19151,20 @@ namespace internal
                 EWS_ASSERT(res && "Expected <Resolution> element");
                 resolution r;
 
-                if (compare("Mailbox", std::strlen("Mailbox"),
+                if (compare("Mailbox", strlen("Mailbox"),
                             res->first_node()->local_name(),
                             res->first_node()->local_name_size()))
                 {
                     auto mailbox_elem = res->first_node("t:Mailbox");
                     r.mailbox = mailbox::from_xml_element(*mailbox_elem);
                 }
-                if (compare("Contact", std::strlen("Contact"),
+                if (compare("Contact", strlen("Contact"),
                             res->last_node()->local_name(),
                             res->last_node()->local_name_size()))
                 {
                     auto contact_elem = res->last_node("t:Contact");
-                    directory_id id(contact_elem->first_node("t:DirectoryId")->value());
+                    directory_id id(
+                        contact_elem->first_node("t:DirectoryId")->value());
                     r.directory_id = id;
                 }
 
@@ -19340,42 +19322,42 @@ delegate_user::delegate_permissions::from_xml_element(
     {
         if (compare(node->local_name(), node->local_name_size(),
                     "CalendarFolderPermissionLevel",
-                    std::strlen("CalendarFolderPermissionLevel")))
+                    strlen("CalendarFolderPermissionLevel")))
         {
             perms.calendar_folder = internal::str_to_permission_level(
                 std::string(node->value(), node->value_size()));
         }
         else if (compare(node->local_name(), node->local_name_size(),
                          "TasksFolderPermissionLevel",
-                         std::strlen("TasksFolderPermissionLevel")))
+                         strlen("TasksFolderPermissionLevel")))
         {
             perms.tasks_folder = internal::str_to_permission_level(
                 std::string(node->value(), node->value_size()));
         }
         else if (compare(node->local_name(), node->local_name_size(),
                          "InboxFolderPermissionLevel",
-                         std::strlen("InboxFolderPermissionLevel")))
+                         strlen("InboxFolderPermissionLevel")))
         {
             perms.inbox_folder = internal::str_to_permission_level(
                 std::string(node->value(), node->value_size()));
         }
         else if (compare(node->local_name(), node->local_name_size(),
                          "ContactsFolderPermissionLevel",
-                         std::strlen("ContactsFolderPermissionLevel")))
+                         strlen("ContactsFolderPermissionLevel")))
         {
             perms.contacts_folder = internal::str_to_permission_level(
                 std::string(node->value(), node->value_size()));
         }
         else if (compare(node->local_name(), node->local_name_size(),
                          "NotesFolderPermissionLevel",
-                         std::strlen("NotesFolderPermissionLevel")))
+                         strlen("NotesFolderPermissionLevel")))
         {
             perms.notes_folder = internal::str_to_permission_level(
                 std::string(node->value(), node->value_size()));
         }
         else if (compare(node->local_name(), node->local_name_size(),
                          "JournalFolderPermissionLevel",
-                         std::strlen("JournalFolderPermissionLevel")))
+                         strlen("JournalFolderPermissionLevel")))
         {
             perms.journal_folder = internal::str_to_permission_level(
                 std::string(node->value(), node->value_size()));
@@ -19403,19 +19385,19 @@ recurrence_pattern::from_xml_element(const rapidxml::xml_node<>& elem)
     if (node)
     {
         auto mon = month::jan;
-        std::uint32_t day_of_month = 0U;
+        uint32_t day_of_month = 0U;
 
         for (auto child = node->first_node(); child;
              child = child->next_sibling())
         {
             if (compare(child->local_name(), child->local_name_size(), "Month",
-                        std::strlen("Month")))
+                        strlen("Month")))
             {
                 mon = str_to_month(
                     std::string(child->value(), child->value_size()));
             }
             else if (compare(child->local_name(), child->local_name_size(),
-                             "DayOfMonth", std::strlen("DayOfMonth")))
+                             "DayOfMonth", strlen("DayOfMonth")))
             {
                 day_of_month = std::stoul(
                     std::string(child->value(), child->value_size()));
@@ -19444,19 +19426,19 @@ recurrence_pattern::from_xml_element(const rapidxml::xml_node<>& elem)
              child = child->next_sibling())
         {
             if (compare(child->local_name(), child->local_name_size(), "Month",
-                        std::strlen("Month")))
+                        strlen("Month")))
             {
                 mon = str_to_month(
                     std::string(child->value(), child->value_size()));
             }
             else if (compare(child->local_name(), child->local_name_size(),
-                             "DayOfWeekIndex", std::strlen("DayOfWeekIndex")))
+                             "DayOfWeekIndex", strlen("DayOfWeekIndex")))
             {
                 index = str_to_day_of_week_index(
                     std::string(child->value(), child->value_size()));
             }
             else if (compare(child->local_name(), child->local_name_size(),
-                             "DaysOfWeek", std::strlen("DaysOfWeek")))
+                             "DaysOfWeek", strlen("DaysOfWeek")))
             {
                 days_of_week = str_to_day_of_week(
                     std::string(child->value(), child->value_size()));
@@ -19477,20 +19459,20 @@ recurrence_pattern::from_xml_element(const rapidxml::xml_node<>& elem)
                               "AbsoluteMonthlyRecurrence");
     if (node)
     {
-        std::uint32_t interval = 0U;
-        std::uint32_t day_of_month = 0U;
+        uint32_t interval = 0U;
+        uint32_t day_of_month = 0U;
 
         for (auto child = node->first_node(); child;
              child = child->next_sibling())
         {
             if (compare(child->local_name(), child->local_name_size(),
-                        "Interval", std::strlen("Interval")))
+                        "Interval", strlen("Interval")))
             {
                 interval = std::stoul(
                     std::string(child->value(), child->value_size()));
             }
             else if (compare(child->local_name(), child->local_name_size(),
-                             "DayOfMonth", std::strlen("DayOfMonth")))
+                             "DayOfMonth", strlen("DayOfMonth")))
             {
                 day_of_month = std::stoul(
                     std::string(child->value(), child->value_size()));
@@ -19511,7 +19493,7 @@ recurrence_pattern::from_xml_element(const rapidxml::xml_node<>& elem)
                               "RelativeMonthlyRecurrence");
     if (node)
     {
-        std::uint32_t interval = 0U;
+        uint32_t interval = 0U;
         auto days_of_week = day_of_week::sun;
         auto index = day_of_week_index::first;
 
@@ -19519,19 +19501,19 @@ recurrence_pattern::from_xml_element(const rapidxml::xml_node<>& elem)
              child = child->next_sibling())
         {
             if (compare(child->local_name(), child->local_name_size(),
-                        "Interval", std::strlen("Interval")))
+                        "Interval", strlen("Interval")))
             {
                 interval = std::stoul(
                     std::string(child->value(), child->value_size()));
             }
             else if (compare(child->local_name(), child->local_name_size(),
-                             "DaysOfWeek", std::strlen("DaysOfWeek")))
+                             "DaysOfWeek", strlen("DaysOfWeek")))
             {
                 days_of_week = str_to_day_of_week(
                     std::string(child->value(), child->value_size()));
             }
             else if (compare(child->local_name(), child->local_name_size(),
-                             "DayOfWeekIndex", std::strlen("DayOfWeekIndex")))
+                             "DayOfWeekIndex", strlen("DayOfWeekIndex")))
             {
                 index = str_to_day_of_week_index(
                     std::string(child->value(), child->value_size()));
@@ -19552,7 +19534,7 @@ recurrence_pattern::from_xml_element(const rapidxml::xml_node<>& elem)
     node = elem.first_node_ns(uri<>::microsoft::types(), "WeeklyRecurrence");
     if (node)
     {
-        std::uint32_t interval = 0U;
+        uint32_t interval = 0U;
         auto days_of_week = std::vector<day_of_week>();
         auto first_day_of_week = day_of_week::mon;
 
@@ -19560,13 +19542,13 @@ recurrence_pattern::from_xml_element(const rapidxml::xml_node<>& elem)
              child = child->next_sibling())
         {
             if (compare(child->local_name(), child->local_name_size(),
-                        "Interval", std::strlen("Interval")))
+                        "Interval", strlen("Interval")))
             {
                 interval = std::stoul(
                     std::string(child->value(), child->value_size()));
             }
             else if (compare(child->local_name(), child->local_name_size(),
-                             "DaysOfWeek", std::strlen("DaysOfWeek")))
+                             "DaysOfWeek", strlen("DaysOfWeek")))
             {
                 const auto list =
                     std::string(child->value(), child->value_size());
@@ -19578,7 +19560,7 @@ recurrence_pattern::from_xml_element(const rapidxml::xml_node<>& elem)
                 }
             }
             else if (compare(child->local_name(), child->local_name_size(),
-                             "FirstDayOfWeek", std::strlen("FirstDayOfWeek")))
+                             "FirstDayOfWeek", strlen("FirstDayOfWeek")))
             {
                 first_day_of_week = str_to_day_of_week(
                     std::string(child->value(), child->value_size()));
@@ -19599,13 +19581,13 @@ recurrence_pattern::from_xml_element(const rapidxml::xml_node<>& elem)
     node = elem.first_node_ns(uri<>::microsoft::types(), "DailyRecurrence");
     if (node)
     {
-        std::uint32_t interval = 0U;
+        uint32_t interval = 0U;
 
         for (auto child = node->first_node(); child;
              child = child->next_sibling())
         {
             if (compare(child->local_name(), child->local_name_size(),
-                        "Interval", std::strlen("Interval")))
+                        "Interval", strlen("Interval")))
             {
                 interval = std::stoul(
                     std::string(child->value(), child->value_size()));
@@ -19646,7 +19628,7 @@ recurrence_range::from_xml_element(const rapidxml::xml_node<>& elem)
              child = child->next_sibling())
         {
             if (compare(child->local_name(), child->local_name_size(),
-                        "StartDate", std::strlen("StartDate")))
+                        "StartDate", strlen("StartDate")))
             {
                 start_date =
                     date_time(std::string(child->value(), child->value_size()));
@@ -19672,13 +19654,13 @@ recurrence_range::from_xml_element(const rapidxml::xml_node<>& elem)
              child = child->next_sibling())
         {
             if (compare(child->local_name(), child->local_name_size(),
-                        "StartDate", std::strlen("StartDate")))
+                        "StartDate", strlen("StartDate")))
             {
                 start_date =
                     date_time(std::string(child->value(), child->value_size()));
             }
             else if (compare(child->local_name(), child->local_name_size(),
-                             "EndDate", std::strlen("EndDate")))
+                             "EndDate", strlen("EndDate")))
             {
                 end_date =
                     date_time(std::string(child->value(), child->value_size()));
@@ -19700,20 +19682,20 @@ recurrence_range::from_xml_element(const rapidxml::xml_node<>& elem)
     if (node)
     {
         date_time start_date;
-        std::uint32_t no_of_occurrences = 0U;
+        uint32_t no_of_occurrences = 0U;
 
         for (auto child = node->first_node(); child;
              child = child->next_sibling())
         {
             if (compare(child->local_name(), child->local_name_size(),
-                        "StartDate", std::strlen("StartDate")))
+                        "StartDate", strlen("StartDate")))
             {
                 start_date =
                     date_time(std::string(child->value(), child->value_size()));
             }
             else if (compare(child->local_name(), child->local_name_size(),
                              "NumberOfOccurrences",
-                             std::strlen("NumberOfOccurrences")))
+                             strlen("NumberOfOccurrences")))
             {
                 no_of_occurrences = std::stoul(
                     std::string(child->value(), child->value_size()));
