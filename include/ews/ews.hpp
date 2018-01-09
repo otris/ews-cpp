@@ -769,7 +769,7 @@ enum class response_code
     //! SpecifiedOccurrenceOnly.
     error_cannot_delete_task_occurrence,
 
-    //! Indicates that an attempt was made to disable a mandatorty
+    //! Indicates that an attempt was made to disable a mandatory
     //! extension.
     error_cannot_disable_mandatory_extension,
 
@@ -5515,7 +5515,8 @@ namespace internal
 //! and <tt>\<FindFolder\></tt>.
 enum class paging_base_point
 {
-    //! The paged view starts at the beginning of the found conversation or item set.
+    //! The paged view starts at the beginning of the found conversation or item
+    //! set.
     beginning,
 
     //! The paged view starts at the end of the found conversation or item set.
@@ -6307,7 +6308,6 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-
 }
 
 //! Exception thrown when a request was not successful
@@ -8189,13 +8189,9 @@ public:
 #else
     directory_id() {}
 #endif
-    explicit directory_id(const std::string& str)
-     : id_(str)
-    {}
-    const std::string& get_id() const EWS_NOEXCEPT
-    {
-        return id_;
-    }
+    explicit directory_id(const std::string& str) : id_(str) {}
+    const std::string& get_id() const EWS_NOEXCEPT { return id_; }
+
 private:
     std::string id_;
 };
@@ -9523,32 +9519,42 @@ namespace internal
     };
 }
 
-//! \brief A thin wrapper for xs:dateTime formatted strings.
+//! \brief A thin wrapper around xs:dateTime formatted strings.
 //!
-//! Note About Dates in EWS
+//! Microsoft EWS uses date and date/time string representations as described
+//! in https://www.w3.org/TR/xmlschema-2/, notably xs:dateTime and xs:date. Both
+//! seem to be a subset of ISO 8601.
 //!
-//! Microsoft EWS uses date and date/time string representations as
-//! described in http://www.w3.org/TR/xmlschema-2/, notably xs:dateTime (or
-//! http://www.w3.org/2001/XMLSchema:dateTime) and xs:date (also known as
-//! http://www.w3.org/2001/XMLSchema:date).
+//! For example, the lexical representation of xs:dateTime is
 //!
-//! For example, the lexical representation of xs:date is
+//!     [-]CCYY-MM-DDThh:mm:ss[Z|(+|-)hh:mm]
 //!
-//!     '-'? yyyy '-' mm '-' dd zzzzzz?
+//! whereas the last part represents the timezone (as offset to UTC). The Z
+//! means Zulu time which is a fancy way of meaning UTC. Two examples of date
+//! strings are:
 //!
-//! whereas the z represents the timezone. Two examples of date strings are:
-//! 2000-01-16Z and 1981-07-02 (the Z means Zulu time which is the same as
-//! UTC). xs:dateTime is formatted accordingly, just with a time component;
-//! you get the idea.
+//! 2000-01-16Z and 1981-07-02.
+//!
+//! xs:dateTime is formatted accordingly, just with a time component:
+//!
+//! 2001-10-26T21:32:52+02:00 and 2001-10-26T19:32:52Z.
+//!
+//! You get the idea.
+//!
+//! \note Always specify an UTC offset (and thus a time zone) when working with
+//! date and time values or convert the value to UTC (passing the 'Z' flag)
+//! before handing them over to EWS. Microsoft Exchange Server internally stores
+//! all date and time values in UTC and will use subtle rules to convert them
+//! to UTC when no UTC offset is given.
 //!
 //! This library does not interpret, parse, or in any way touch date nor
-//! date/time strings in any circumstance. This library provides the
-//! \ref date_time class, which acts solely as a thin wrapper to make the
-//! signatures of public API functions more type-rich and easier to
-//! understand. date_time is implicitly convertible from std::string.
+//! date/time strings in any circumstance. The date_time class acts solely as a
+//! thin wrapper to make the signatures of public API functions more type-rich
+//! and easier to understand. date_time is implicitly convertible from
+//! std::string.
 //!
-//! If your date or date/time strings are not formatted properly, Microsoft
-//! EWS will likely give you a SOAP fault which this library transports to
+//! If your date or date/time strings are not formatted properly, the Exchange
+//! Server will likely give you a SOAP fault which this library transports to
 //! you as an exception of type ews::soap_fault.
 class date_time final
 {
@@ -9807,8 +9813,8 @@ public:
     }
 
     explicit attendee(mailbox address)
-        : mailbox_(std::move(address)),
-          response_type_(response_type::unknown), last_response_time_()
+        : mailbox_(std::move(address)), response_type_(response_type::unknown),
+          last_response_time_()
     {
     }
 
