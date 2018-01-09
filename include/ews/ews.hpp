@@ -16819,10 +16819,10 @@ static_assert(std::is_move_assignable<contains>::value, "");
 class paging_view
 {
 public:
-	paging_view() : max_entries_returned_(1000), offset_(0),
-		base_point_(paging_base_point::beginning)
-	{
-	}
+    paging_view() : max_entries_returned_(1000), offset_(0),
+        base_point_(paging_base_point::beginning)
+    {
+    }
 
     paging_view(std::uint32_t max_entries_returned)
         : max_entries_returned_(max_entries_returned), offset_(0), 
