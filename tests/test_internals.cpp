@@ -505,6 +505,44 @@ TEST(Base64, FillByteTwo)
     EXPECT_EQ(decoded, text);
 }
 #endif
+
+TEST(DateTime, ToEpochInUTCNoDST)
+{
+    ews::date_time dt("2018-01-08T10:03:30Z");
+    EXPECT_EQ(1515405810, dt.to_epoch());
+}
+
+TEST(DateTime, ToEpochInUTCAndDST)
+{
+    ews::date_time dt("2001-10-26T19:32:52Z");
+    EXPECT_EQ(1004124772, dt.to_epoch());
+}
+
+TEST(DateTime, ToEpochWithOffsetAndDST)
+{
+    ews::date_time dt1("2001-10-26T21:32:52+02:00");
+    EXPECT_EQ(1004124772, dt1.to_epoch());
+
+    ews::date_time dt2("2001-10-26T14:32:52-05:00");
+    EXPECT_EQ(1004124772, dt2.to_epoch());
+}
+
+TEST(DateTime, ToEpochWithZeroOffsetAndDST)
+{
+    ews::date_time dt("2001-10-26T19:32:52+00:00");
+    EXPECT_EQ(1004124772, dt.to_epoch());
+}
+
+TEST(DateTime, ToEpochWithPOSIXReferencePoint)
+{
+    ews::date_time dt("1986-12-31T23:59:59Z");
+    EXPECT_EQ(536457599, dt.to_epoch());
+}
+
+TEST(DateTime, ToEpochWithEmptyDateTimeThrows)
+{
+    EXPECT_THROW(ews::date_time("").to_epoch(), ews::exception);
+}
 }
 
 // vim:et ts=4 sw=4

@@ -9715,7 +9715,133 @@ public:
 
     inline bool is_set() const EWS_NOEXCEPT { return !val_.empty(); }
 
+    //! Converts this xs:dateTime to Seconds since the Epoch.
+    //!
+    //! Returns this date-time string's corresponding seconds since the Epoch
+    //! (this value is always in UTC) expressed as a value of type time_t or
+    //! throws an exception of type ews::exception if this fails for some
+    //! reason.
+    time_t to_epoch() const
+    {
+        if (!is_set())
+        {
+            throw exception("to_epoch called on empty date_time");
+        }
+
+        bool local_time = false;
+        time_t offset = 0U; // Seconds east of UTC
+
+        int y, M, d, h, m, tzh, tzm;
+        tzh = tzm = 0;
+        float s;
+        char tzo;
+        auto res = sscanf(val_.c_str(), "%d-%d-%dT%d:%d:%f%c%d:%d", &y, &M, &d,
+                          &h, &m, &s, &tzo, &tzh, &tzm);
+        if (res == EOF)
+        {
+            throw exception("sscanf failed");
+        }
+        else if (res == 6)
+        {
+            // without 'Z', interpreted as local time
+            local_time = true;
+        }
+        else if (res == 7)
+        {
+            if (tzo == 'Z')
+            {
+                // UTC offset: 0
+            }
+            else
+            {
+                throw exception("to_epoch: unexpected character at match 7");
+            }
+        }
+        else if (res == 9)
+        {
+            if (tzo == '-')
+            {
+                offset = (tzh * 60 * 60) + (tzm * 60);
+            }
+            else if (tzo == '+')
+            {
+                offset = ((tzh * 60 * 60) + (tzm * 60)) * (-1);
+            }
+            else
+            {
+                throw exception("to_epoch: unexpected character at match 7");
+            }
+        }
+        else if (res < 6) // Whats that? Error case?
+        {
+        }
+
+        // The following broken-down time struct is always in local time.
+        tm t;
+        memset(&t, 0, sizeof(struct tm));
+        t.tm_year = y - 1900;           // Year since 1900
+        t.tm_mon = M - 1;               // 0-11
+        t.tm_mday = d;                  // 1-31
+        t.tm_hour = h;                  // 0-23
+        t.tm_min = m;                   // 0-59
+        t.tm_sec = static_cast<int>(s); // 0 - 61
+        t.tm_isdst = -1; // Tells mktime() to determine if DST is in effect
+                         // using system's TZ infos
+
+        auto epoch = 0L;
+        if (offset == 0)
+        {
+            epoch = mktime(&t);
+            if (epoch == -1L)
+            {
+                throw exception(
+                    "mktime: time cannot be represented as calendar time");
+            }
+        }
+        else
+        {
+            // timegm is a nonstandard GNU extension that is also present on
+            // some BSDs including macOS
+            epoch = timegm(&t);
+            if (epoch == -1L)
+            {
+                throw exception(
+                    "timegm: time cannot be represented as calendar time");
+            }
+        }
+        const auto bias =
+            local_time ? 0L : (offset == 0L ? utc_offset(&epoch) : offset);
+        return epoch + bias;
+    }
+
 private:
+    // Compute the offset between local time and UTC in seconds for a given
+    // time point. If time point is the null pointer, the current offset is
+    // returned. Note: this implementation might not work when DST changes
+    // during the call.
+    static time_t utc_offset(const time_t* timepoint)
+    {
+        time_t now;
+        if (timepoint == nullptr)
+        {
+            now = time(nullptr);
+        }
+        else
+        {
+            now = *timepoint;
+        }
+        tm result;
+        auto utc_time = gmtime_r(&now, &result);
+        utc_time->tm_isdst = -1;
+        const auto utc_epoch = mktime(utc_time);
+
+        auto local_time = localtime_r(&now, &result);
+        local_time->tm_isdst = -1;
+        const auto local_epoch = mktime(local_time);
+
+        return local_epoch - utc_epoch;
+    }
+
     friend bool operator==(const date_time&, const date_time&);
     std::string val_;
 };
