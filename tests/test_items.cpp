@@ -280,6 +280,21 @@ TEST(OfflineItemTest, GetAndSetBodyProperty)
     EXPECT_STREQ(original.content().c_str(), actual.content().c_str());
 }
 
+TEST_F(ItemTest, BodyPropertyIsProperlyEscaped)
+{
+    auto task = ews::task();
+    task.set_body(
+        ews::body("some special character &", ews::body_type::plain_text));
+    auto id = service().create_item(task);
+    ews::internal::on_scope_exit cleanup([&] { service().delete_item(id); });
+
+    ews::property prop(
+        ews::item_property_path::body,
+        ews::body("this should work too &", ews::body_type::plain_text));
+    ews::update update(prop, ews::update::operation::set_item_field);
+    id = service().update_item(id, update);
+}
+
 // TODO: Attachments-Test
 
 TEST(OfflineItemTest, GetDateTimeReceivedProperty)

@@ -356,13 +356,14 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
         "Use shared (DLL) run-time lib even when Google Test is built as static lib.")
 endif()
 add_subdirectory(${GTEST_ROOT} EXCLUDE_FROM_ALL)
-include_directories(${GTEST_INCLUDE_DIR})
+include_directories(${GTEST_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 add_executable(tests
     ${ews_SOURCES}
     ${rapidxml_SOURCES}
     tests/fixtures.hpp
     tests/main.cpp
+    tests/regressions/91.cpp
     tests/test_attachments.cpp
     tests/test_autodiscover.cpp
     tests/test_calendar_items.cpp

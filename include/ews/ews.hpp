@@ -7709,7 +7709,21 @@ namespace internal
 
         throw exception("Autodiscovery failed unexpectedly");
     }
+
+    inline std::string escape(const char* str)
+    {
+        std::string res;
+        rapidxml::internal::copy_and_expand_chars(str, &str[strlen(str)], '\0',
+                                                  std::back_inserter(res));
+        return res;
+    }
+
+    inline std::string escape(const std::string& str)
+    {
+        return escape(str.c_str());
+    }
 }
+
 //! Set-up EWS library.
 //!
 //! Should be called when application is still in single-threaded context.
@@ -9729,7 +9743,7 @@ public:
         }
         else
         {
-            sstr << content_;
+            sstr << internal::escape(content_);
         }
         sstr << "</t:Body>";
         return sstr.str();
@@ -16072,7 +16086,7 @@ namespace conversation_property_path
 
 //! \brief Represents a single property
 //!
-//! Used in ews::service::update_item method call
+//! Used in ews::service::update_item method call.
 class property final
 {
 public:
@@ -16081,12 +16095,13 @@ public:
 
     // Use this constructor (and following overloads) whenever you want to
     // set or update an item's property
-    property(property_path path, std::string value) : value_(path.to_xml(value))
+    property(property_path path, const std::string& value)
+        : value_(path.to_xml(internal::escape(value)))
     {
     }
 
     property(property_path path, const char* value)
-        : value_(path.to_xml(std::string(value)))
+        : value_(path.to_xml(internal::escape(value)))
     {
     }
 
