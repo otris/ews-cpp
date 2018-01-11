@@ -9127,6 +9127,22 @@ namespace internal
         }
     };
 
+    class find_folder_response_message final
+        : public response_message_with_items<item_id>
+    {
+    public:
+        // implemented below
+        static find_folder_response_message parse(http_response&&);
+
+    private:
+        find_folder_response_message(response_result&& res,
+            std::vector<item_id>&& items)
+            : response_message_with_items<item_id>(std::move(res),
+                std::move(items))
+        {
+        }
+    };
+
     class find_item_response_message final
         : public response_message_with_items<item_id>
     {
@@ -17703,6 +17719,27 @@ public:
         }
     }
 
+    std::vector<item_id> find_folder(const folder_id& parent_folder_id)
+    {
+        const std::string request_string =
+            "<m:FindFolder Traversal=\"Shallow\">"
+            "<m:FolderShape>"
+            "<t:BaseShape>IdOnly</t:BaseShape>"
+            "</m:FolderShape>"
+            "<m:ParentFolderIds>" +
+            parent_folder_id.to_xml() +
+            "</m:ParentFolderIds>"
+            "</m:FindFolder>";
+
+        auto response = request(request_string);
+        const auto response_message = internal::find_folder_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+        return response_message.items();
+    }
+
     std::vector<item_id> find_item(const folder_id& parent_folder_id, const paging_view& view)
     {
         const std::string request_string =
@@ -18805,6 +18842,36 @@ namespace internal
             });
         return create_item_response_message(std::move(result),
                                             std::move(item_ids));
+    }
+
+    inline find_folder_response_message
+        find_folder_response_message::parse(http_response&& response)
+    {
+        const auto doc = parse_response(std::move(response));
+        auto elem = get_element_by_qname(*doc, "FindFolderResponseMessage",
+            uri<>::microsoft::messages());
+
+        EWS_ASSERT(elem && "Expected <FindFolderResponseMessage>, got nullptr");
+        auto result = parse_response_class_and_code(*elem);
+
+        auto root_folder =
+            elem->first_node_ns(uri<>::microsoft::messages(), "RootFolder");
+
+        auto items_elem =
+            root_folder->first_node_ns(uri<>::microsoft::types(), "Folders");
+        EWS_ASSERT(items_elem && "Expected <t:Folders> element");
+
+        auto items = std::vector<item_id>();
+        for (auto item_elem = items_elem->first_node(); item_elem;
+            item_elem = item_elem->next_sibling())
+        {
+            // TODO: Check that item is 'FolderId'
+            EWS_ASSERT(item_elem && "Expected an element, got nullptr");
+            auto item_id_elem = item_elem->first_node();
+            EWS_ASSERT(item_id_elem && "Expected <FolderId> element");
+            items.emplace_back(item_id::from_xml_element(*item_id_elem));
+        }
+        return find_folder_response_message(std::move(result), std::move(items));
     }
 
     inline find_item_response_message
