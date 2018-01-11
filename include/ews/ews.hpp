@@ -17719,6 +17719,15 @@ public:
         }
     }
 
+    //! \brief Sends a \<FindFolder/> operation to the server
+    //!
+    //! Returns all subfolder in a specified folder from the users
+    //! mailbox.
+    //!
+    //! \param parent_folder_id The parent folder in the mailbox
+    //!
+    //! Returns a list of subfolder (item_ids) that are located inside
+    //! the specified parent folder
     std::vector<item_id> find_folder(const folder_id& parent_folder_id)
     {
         const std::string request_string =
