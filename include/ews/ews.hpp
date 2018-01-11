@@ -9128,7 +9128,7 @@ namespace internal
     };
 
     class find_folder_response_message final
-        : public response_message_with_items<item_id>
+        : public response_message_with_items<folder_id>
     {
     public:
         // implemented below
@@ -9136,8 +9136,8 @@ namespace internal
 
     private:
         find_folder_response_message(response_result&& res,
-            std::vector<item_id>&& items)
-            : response_message_with_items<item_id>(std::move(res),
+            std::vector<folder_id>&& items)
+            : response_message_with_items<folder_id>(std::move(res),
                 std::move(items))
         {
         }
@@ -17728,7 +17728,7 @@ public:
     //!
     //! Returns a list of subfolder (item_ids) that are located inside
     //! the specified parent folder
-    std::vector<item_id> find_folder(const folder_id& parent_folder_id)
+    std::vector<folder_id> find_folder(const folder_id& parent_folder_id)
     {
         const std::string request_string =
             "<m:FindFolder Traversal=\"Shallow\">"
@@ -18870,7 +18870,7 @@ namespace internal
             root_folder->first_node_ns(uri<>::microsoft::types(), "Folders");
         EWS_ASSERT(items_elem && "Expected <t:Folders> element");
 
-        auto items = std::vector<item_id>();
+        auto items = std::vector<folder_id>();
         for (auto item_elem = items_elem->first_node(); item_elem;
             item_elem = item_elem->next_sibling())
         {
@@ -18878,7 +18878,7 @@ namespace internal
             EWS_ASSERT(item_elem && "Expected an element, got nullptr");
             auto item_id_elem = item_elem->first_node();
             EWS_ASSERT(item_id_elem && "Expected <FolderId> element");
-            items.emplace_back(item_id::from_xml_element(*item_id_elem));
+            items.emplace_back(folder_id::from_xml_element(*item_id_elem));
         }
         return find_folder_response_message(std::move(result), std::move(items));
     }
