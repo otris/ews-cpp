@@ -45,6 +45,7 @@ class distinguished_folder_id;
 class duration;
 class exception;
 class exchange_error;
+class folder;
 class folder_id;
 class http_error;
 class indexed_property_path;
