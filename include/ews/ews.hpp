@@ -9566,6 +9566,27 @@ namespace internal
         }
     };
 
+    class delete_folder_response_message final : public response_message_base
+    {
+    public:
+        static delete_folder_response_message parse(http_response&& response)
+        {
+            const auto doc = parse_response(std::move(response));
+            auto elem = get_element_by_qname(*doc, "DeleteFolderResponseMessage",
+                uri<>::microsoft::messages());
+            auto result = parse_response_class_and_code(*elem);
+            EWS_ASSERT(elem &&
+                "Expected <DeleteFolderResponseMessage>, got nullptr");
+            return delete_folder_response_message(std::move(result));
+        }
+
+    private:
+        explicit delete_folder_response_message(response_result&& res)
+            : response_message_base(std::move(res))
+        {
+        }
+    };
+
     class delete_item_response_message final : public response_message_base
     {
     public:
@@ -17597,6 +17618,29 @@ public:
                         const std::vector<extended_field_uri>& ext_field_uri)
     {
         return get_item_impl<message>(ids, ext_field_uri);
+    }
+
+    //! Delete a folder from the Exchange store
+    void delete_folder(const folder_id& id,
+        delete_type del_type = delete_type::hard_delete)
+    {
+        const std::string request_string =
+            "<m:DeleteFolder "
+            "DeleteType=\"" +
+            internal::enum_to_str(del_type) +
+            "\">"
+            "<m:FolderIds>" +
+            id.to_xml() + "</m:FolderIds>"
+            "</m:DeleteFolder>";
+
+        auto response = request(request_string);
+        const auto response_message =
+            internal::delete_folder_response_message::parse(
+                std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
     }
 
     //! Delete an arbitrary item from the Exchange store
