@@ -18060,7 +18060,9 @@ public:
             "</m:FindFolder>";
 
         auto response = request(request_string);
-        const auto response_message = internal::find_folder_response_message::parse(std::move(response));
+        const auto response_message = 
+			internal::find_folder_response_message::parse(
+				std::move(response));
         if (!response_message.success())
         {
             throw exchange_error(response_message.result());
@@ -19082,7 +19084,7 @@ private:
 
         auto response = request(sstr.str());
         const auto response_messages =
-            internal::folder_response_messages<message>::parse(
+            internal::folder_response_message::parse(
                 std::move(response));
         if (!response_messages.success())
         {
@@ -19091,11 +19093,11 @@ private:
         EWS_ASSERT(!response_messages.items().empty() &&
             "Expected at least one item");
 
-        const std::vector<message> items = response_messages.items();
+        const std::vector<folder> items = response_messages.items();
         std::vector<folder_id> res;
         res.reserve(items.size());
         std::transform(begin(items), end(items), std::back_inserter(res),
-            [](const message& elem) { return elem.get_item_id(); });
+            [](const folder& elem) { return elem.get_item_id(); });
 
         return res;
     }
@@ -19124,7 +19126,8 @@ private:
         auto response = request(sstr.str());
 
         const auto response_message =
-            internal::create_item_response_message::parse(std::move(response));
+            internal::create_item_response_message::parse(
+				std::move(response));
         if (!response_message.success())
         {
             throw exchange_error(response_message.result());
