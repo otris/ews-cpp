@@ -10610,49 +10610,6 @@ protected:
     }
 #endif
 
-    void set_array_of_strings_helper(const std::vector<std::string>& strings,
-                                     const char* name)
-    {
-        // TODO: this does not meet strong exception safety guarantees
-
-        using namespace internal;
-
-        auto outer_node = xml().get_node(name);
-        if (outer_node)
-        {
-            auto doc = outer_node->document();
-            doc->remove_node(outer_node);
-        }
-
-        if (strings.empty())
-        {
-            // Nothing to do
-            return;
-        }
-
-        outer_node = &create_node(*xml().document(), std::string("t:") + name);
-        for (const auto& element : strings)
-        {
-            create_node(*outer_node, "t:String", element);
-        }
-    }
-
-    std::vector<std::string> get_array_of_strings_helper(const char* name) const
-    {
-        auto node = xml().get_node(name);
-        if (!node)
-        {
-            return std::vector<std::string>();
-        }
-        auto res = std::vector<std::string>();
-        for (auto entry = node->first_node(); entry;
-             entry = entry->next_sibling())
-        {
-            res.emplace_back(std::string(entry->value(), entry->value_size()));
-        }
-        return res;
-    }
-
 private:
     template <typename U> friend class basic_service;
 
