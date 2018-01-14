@@ -9111,6 +9111,22 @@ namespace internal
         std::vector<item_type> items_;
     };
 
+    class create_folder_response_message final
+        : public response_message_with_items<folder_id>
+    {
+    public:
+        // implemented below
+        static create_folder_response_message parse(http_response&&);
+
+    private:
+        create_folder_response_message(response_result&& res,
+            std::vector<folder_id>&& items)
+            : response_message_with_items<folder_id>(std::move(res),
+                std::move(items))
+        {
+        }
+    };
+
     class create_item_response_message final
         : public response_message_with_items<item_id>
     {
@@ -9123,6 +9139,22 @@ namespace internal
                                      std::vector<item_id>&& items)
             : response_message_with_items<item_id>(std::move(res),
                                                    std::move(items))
+        {
+        }
+    };
+
+    class find_folder_response_message final
+        : public response_message_with_items<folder_id>
+    {
+    public:
+        // implemented below
+        static find_folder_response_message parse(http_response&&);
+
+    private:
+        find_folder_response_message(response_result&& res,
+            std::vector<folder_id>&& items)
+            : response_message_with_items<folder_id>(std::move(res),
+                std::move(items))
         {
         }
     };
@@ -9173,6 +9205,82 @@ namespace internal
                                                    std::move(items))
         {
         }
+    };
+
+    class get_folder_response_message final
+        : public response_message_with_items<folder>
+    {
+    public:
+        // implemented below
+        static get_folder_response_message parse(http_response&&);
+
+    private:
+        get_folder_response_message(response_result&& res,
+            std::vector<folder>&& items)
+            : response_message_with_items<folder>(std::move(res),
+                std::move(items))
+        {
+        }
+    };
+
+    class folder_response_message final
+    {
+    public:
+        typedef std::tuple<response_class, response_code,
+            std::vector<folder>>
+            response_message;
+
+        std::vector<folder> items() const
+        {
+            std::vector<folder> items;
+            items.reserve(messages_.size()); // Seems like there is always one
+                                             // item per message
+            for (const auto& msg : messages_)
+            {
+                const auto& msg_items = std::get<2>(msg);
+                std::copy(begin(msg_items), end(msg_items),
+                    std::back_inserter(items));
+            }
+            return items;
+        }
+
+        bool success() const
+        {
+            // Consequently, this means we're aborting here because of a
+            // warning. Is this desired? Don't think so. At least it is
+            // consistent with response_message_base::success().
+
+            return std::all_of(begin(messages_), end(messages_),
+                [](const response_message& msg)
+            {
+                return std::get<0>(msg) ==
+                    response_class::success;
+            });
+        }
+
+        response_code first_error_or_warning() const
+        {
+            auto it = std::find_if_not(begin(messages_), end(messages_),
+                [](const response_message& msg)
+            {
+                return std::get<0>(msg) ==
+                    response_class::success;
+            });
+            return it == end(messages_) ? response_code::no_error
+                : std::get<1>(*it);
+        }
+
+        // implemented below
+        static folder_response_message parse(http_response&&);
+
+    private:
+        explicit folder_response_message(
+            std::vector<response_message>&& messages)
+            : messages_(std::move(messages))
+        {
+        }
+
+        std::vector<response_message> messages_;
     };
 
     template <typename ItemType>
@@ -9453,6 +9561,27 @@ namespace internal
 
     private:
         explicit send_item_response_message(response_result&& res)
+            : response_message_base(std::move(res))
+        {
+        }
+    };
+
+    class delete_folder_response_message final : public response_message_base
+    {
+    public:
+        static delete_folder_response_message parse(http_response&& response)
+        {
+            const auto doc = parse_response(std::move(response));
+            auto elem = get_element_by_qname(*doc, "DeleteFolderResponseMessage",
+                uri<>::microsoft::messages());
+            auto result = parse_response_class_and_code(*elem);
+            EWS_ASSERT(elem &&
+                "Expected <DeleteFolderResponseMessage>, got nullptr");
+            return delete_folder_response_message(std::move(result));
+        }
+
+    private:
+        explicit delete_folder_response_message(response_result&& res)
             : response_message_base(std::move(res))
         {
         }
@@ -10408,6 +10537,137 @@ static_assert(std::is_copy_constructible<extended_property>::value, "");
 static_assert(std::is_copy_assignable<extended_property>::value, "");
 static_assert(std::is_move_constructible<extended_property>::value, "");
 static_assert(std::is_move_assignable<extended_property>::value, "");
+#endif
+
+//! Represents a generic <tt>\<Folder></tt> in the Exchange store
+class folder final
+{
+public:
+    //! Cosntructs a new folder
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    folder() = default;
+#else
+    folder() {}
+#endif
+    //! Constructs a new folder with the given folder_id
+    explicit folder(folder_id id) : folder_id_(std::move(id)), xml_subtree_() {}
+
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
+    folder(folder_id&& id, internal::xml_subtree&& properties)
+        : folder_id_(std::move(id)), xml_subtree_(std::move(properties))
+    {
+    }
+#endif
+
+    //! Returns the id of a folder
+    const folder_id& get_item_id() const EWS_NOEXCEPT { return folder_id_; }
+
+    //! Returns this folders display name
+    std::string get_display_name() const
+    {
+        return xml().get_value_as_string("DisplayName");
+    }
+
+    //! Sets this folders display name.
+    void set_display_name(const std::string& display_name)
+    {
+        xml().set_or_update("DisplayName", display_name);
+    }
+
+    //! Returns the total number of items in this folder.
+    int get_total_count() const 
+    {
+        return std::stoi(xml().get_value_as_string("TotalCount"));
+    }
+
+    //! Returns the number of child folders in this folder.
+    int get_child_folder_count() const 
+    {
+        return std::stoi(xml().get_value_as_string("ChildFolderCount"));
+    }
+
+    //! Returns the number of unread items in this folder
+    int get_unread_count()const 
+    {
+        return std::stoi(xml().get_value_as_string("UnreadCount"));
+    }
+
+    //! Makes a message instance from a \<Message> XML element
+    static folder from_xml_element(const rapidxml::xml_node<>& elem)
+    {
+        auto id_node =
+            elem.first_node_ns(internal::uri<>::microsoft::types(), "FolderId");
+        EWS_ASSERT(id_node && "Expected <FolderId>");
+        return folder(folder_id::from_xml_element(*id_node),
+            internal::xml_subtree(elem));
+    }
+
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
+protected:
+    internal::xml_subtree& xml() EWS_NOEXCEPT { return xml_subtree_; }
+
+    const internal::xml_subtree& xml() const EWS_NOEXCEPT
+    {
+        return xml_subtree_;
+    }
+#endif
+
+    void set_array_of_strings_helper(const std::vector<std::string>& strings,
+        const char* name)
+    {
+        // TODO: this does not meet strong exception safety guarantees
+
+        using namespace internal;
+
+        auto outer_node = xml().get_node(name);
+        if (outer_node)
+        {
+            auto doc = outer_node->document();
+            doc->remove_node(outer_node);
+        }
+
+        if (strings.empty())
+        {
+            // Nothing to do
+            return;
+        }
+
+        outer_node = &create_node(*xml().document(), std::string("t:") + name);
+        for (const auto& element : strings)
+        {
+            create_node(*outer_node, "t:String", element);
+        }
+    }
+
+    std::vector<std::string> get_array_of_strings_helper(const char* name) const
+    {
+        auto node = xml().get_node(name);
+        if (!node)
+        {
+            return std::vector<std::string>();
+        }
+        auto res = std::vector<std::string>();
+        for (auto entry = node->first_node(); entry;
+            entry = entry->next_sibling())
+        {
+            res.emplace_back(std::string(entry->value(), entry->value_size()));
+        }
+        return res;
+    }
+
+private:
+    template <typename U> friend class basic_service;
+
+    folder_id folder_id_;
+    internal::xml_subtree xml_subtree_;
+};
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+static_assert(std::is_default_constructible<folder>::value, "");
+static_assert(std::is_copy_constructible<folder>::value, "");
+static_assert(std::is_copy_assignable<folder>::value, "");
+static_assert(std::is_move_constructible<folder>::value, "");
+static_assert(std::is_move_assignable<folder>::value, "");
 #endif
 
 //! Represents a generic <tt>\<Item></tt> in the Exchange store
@@ -17170,6 +17430,34 @@ public:
         return *this;
     }
 
+    //! Gets a folder from the Exchange store.
+    folder get_folder(const folder_id& id)
+    {
+        return get_folder_impl(id, base_shape::all_properties);
+    }
+
+    //! Gets a folder from the Exchange store.
+    folder get_folder(const folder_id& id,
+        const std::vector<property_path>& additional_properties)
+    {
+        return get_folder_impl(id, base_shape::default_shape, 
+            additional_properties);
+    }
+
+    //! Gets a list of folders from the Exchange store.
+    std::vector<folder> get_folders(const std::vector<folder_id>& ids)
+    {
+        return get_folders_impl(ids, base_shape::all_properties);
+    }
+
+    //! Gets a list of folders from Exchange store.
+    std::vector<folder> get_folders(const std::vector<folder_id>& ids, 
+        const std::vector<property_path>& additional_properties)
+    {
+        return get_folders(ids, base_shape::all_properties, 
+            additional_properties);
+    }
+
     //! Gets a task from the Exchange store.
     task get_task(const item_id& id)
     {
@@ -17314,6 +17602,29 @@ public:
         return get_item_impl<message>(ids, ext_field_uri);
     }
 
+    //! Delete a folder from the Exchange store
+    void delete_folder(const folder_id& id,
+        delete_type del_type = delete_type::hard_delete)
+    {
+        const std::string request_string =
+            "<m:DeleteFolder "
+            "DeleteType=\"" +
+            internal::enum_to_str(del_type) +
+            "\">"
+            "<m:FolderIds>" +
+            id.to_xml() + "</m:FolderIds>"
+            "</m:DeleteFolder>";
+
+        auto response = request(request_string);
+        const auto response_message =
+            internal::delete_folder_response_message::parse(
+                std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+    }
+
     //! Delete an arbitrary item from the Exchange store
     void delete_item(const item_id& id,
                      delete_type del_type = delete_type::hard_delete,
@@ -17391,6 +17702,30 @@ public:
     //
     // Only purpose of this overload-set is to prevent exploding template
     // code in errors messages in caller's code.
+    
+    //! \brief Create a new folder in the Exchange store.
+    //!
+    //! \param new_folder The new folder that specified the display name.
+    //! \param parent_folder The parent folder of the new folder.
+    //!
+    //! \return The new folders folder_id if successful.
+    folder_id create_folder(const folder& new_folder, 
+        const folder_id& parent_folder)
+    {
+        return create_folder_impl(new_folder, parent_folder);
+    }
+
+    //! \brief Create a new folder in the Exchange store.
+    //!
+    //! \param new_folders The new folder that specified the display name.
+    //! \param parent_folder The parent folder of the new folder.
+    //!
+    //! \return The new folders folder_id if successful.
+    std::vector<folder_id> create_folder(const std::vector<folder>& new_folders,
+        const folder_id& parent_folder)
+    {
+        return create_folder_impl(new_folders, parent_folder);
+    }
 
     //! \brief Creates a new task from the given object in the Exchange store.
     //!
@@ -17685,8 +18020,39 @@ public:
         }
     }
 
-    std::vector<item_id> find_item(const folder_id& parent_folder_id,
-                                   const paging_view& view)
+    //! \brief Sends a \<FindFolder/> operation to the server
+    //!
+    //! Returns all subfolder in a specified folder from the users
+    //! mailbox.
+    //!
+    //! \param parent_folder_id The parent folder in the mailbox
+    //!
+    //! Returns a list of subfolder (item_ids) that are located inside
+    //! the specified parent folder
+    std::vector<folder_id> find_folder(const folder_id& parent_folder_id)
+    {
+        const std::string request_string =
+            "<m:FindFolder Traversal=\"Shallow\">"
+            "<m:FolderShape>"
+            "<t:BaseShape>IdOnly</t:BaseShape>"
+            "</m:FolderShape>"
+            "<m:ParentFolderIds>" +
+            parent_folder_id.to_xml() +
+            "</m:ParentFolderIds>"
+            "</m:FindFolder>";
+
+        auto response = request(request_string);
+        const auto response_message = 
+			internal::find_folder_response_message::parse(
+				std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+        return response_message.items();
+    }
+
+    std::vector<item_id> find_item(const folder_id& parent_folder_id, const paging_view& view)
     {
         const std::string request_string =
             "<m:FindItem Traversal=\"Shallow\">"
@@ -18183,6 +18549,138 @@ private:
             throw http_error(response.code());
         }
     }
+    
+    folder get_folder_impl(const folder_id& id, base_shape shape)
+    {
+        const std::string request_string =
+            "<m:GetFolder>"
+            "<m:FolderShape>"
+            "<t:BaseShape>" +
+            internal::enum_to_str(shape) +
+            "</t:BaseShape>"
+            "</m:FolderShape>"
+            "<m:FolderIds>" +
+            id.to_xml() +
+            "</m:FolderIds>"
+            "</m:GetFolder>";
+
+        auto response = request(request_string);
+        const auto response_message =
+            internal::get_folder_response_message::parse(
+                std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+        EWS_ASSERT(!response_message.items().empty() &&
+            "Expected at least one item");
+        return response_message.items().front();
+    }
+
+    folder get_folder_impl(const folder_id& id, base_shape shape,
+        const std::vector<property_path>& additional_properties)
+    {
+        EWS_ASSERT(!additional_properties.empty());
+
+        std::stringstream sstr;
+        sstr << "<m:GetFolder>"
+            "<m:FolderShape>"
+            "<t:BaseShape>"
+            << internal::enum_to_str(shape)
+            << "</t:BaseShape>"
+            "<t:AdditionalProperties>";
+        for (const auto& prop : additional_properties)
+        {
+            sstr << prop.to_xml();
+        }
+        sstr << "</t:AdditionalProperties>"
+            "</m:FolderShape>"
+            "<m:FolderIds>"
+            << id.to_xml()
+            << "</m:FolderIds>"
+            "</m:GetFolder>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::folder_response_message::parse(
+                std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        return response_messages.items();
+    }
+
+    std::vector<folder> get_folders_impl(const std::vector<folder_id>& ids,
+        base_shape shape)
+    {
+        EWS_ASSERT(!ids.empty());
+        EWS_ASSERT(!additional_properties.empty());
+
+        std::stringstream sstr;
+        sstr << "<m:GetFolder>"
+            "<m:FolderShape>"
+            "<t:BaseShape>"
+            << internal::enum_to_str(shape)
+            << "</t:BaseShape>"
+            "</m:FolderShape>"
+            "<m:FolderIds>";
+        for (const auto& id : ids)
+        {
+            sstr << id.to_xml();
+        }
+        sstr << "</m:FolderIds>"
+            "</m:GetFolder>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::folder_response_message::parse(
+                std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        return response_messages.items();
+    }
+
+    std::vector<folder> get_folders_impl(const std::vector<folder_id>& ids,
+        base_shape shape,
+        const std::vector<property_path>& additional_properties)
+    {
+        EWS_ASSERT(!ids.empty());
+        EWS_ASSERT(!additional_properties.empty());
+
+        std::stringstream sstr;
+        sstr << "<m:GetFolder>"
+            "<m:FolderShape>"
+            "<t:BaseShape>"
+            << internal::enum_to_str(shape)
+            << "</t:BaseShape>"
+            "<t:AdditionalProperties>";
+        for (const auto& prop : additional_properties)
+        {
+            sstr << prop.to_xml();
+        }
+        sstr << "</t:AdditionalProperties>"
+            "</m:FolderShape>"
+            "<m:FolderIds>";
+        for (const auto& id : ids)
+        {
+            sstr << id.to_xml();
+        }
+        sstr << "</m:FolderIds>"
+            "</m:GetFolder>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::folder_response_message::parse(
+                std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        return response_messages.items();
+    }
 
     // Gets an item from the server
     template <typename ItemType>
@@ -18515,6 +19013,77 @@ private:
         return res;
     }
 
+    folder_id create_folder_impl(const folder& new_folder,
+        const folder_id& parent_folder)
+    {
+        EWS_ASSERT(parent_folder.valid());
+
+        std::stringstream sstr;
+        sstr << "<m:CreateFolder >"
+            "<m:ParentFolderId>"
+            << parent_folder.to_xml()
+            << "</m:ParentFolderId>"
+            "<m:Folders>"
+            "<t:Folder>"
+            << new_folder.xml().to_string()
+            << "</t:Folder>"
+            "</m:Folders>"
+            "</m:CreateFolder>";
+
+        auto response = request(sstr.str());
+        const auto response_message =
+            internal::create_folder_response_message::parse(
+                std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+        EWS_ASSERT(!response_message.items().empty() &&
+            "Expected at least one item");
+        return response_message.items().front();
+    }
+
+    std::vector<folder_id>
+    create_folder_impl(const std::vector<folder>& new_folders,
+        const folder_id& parent_folder)
+    {
+        EWS_ASSERT(parent_folder.valid());
+
+        std::stringstream sstr;
+        sstr << "<m:CreateFolder >"
+            "<m:ParentFolderId>"
+            << parent_folder.to_xml()
+            << "</m:ParentFolderId>"
+            "<m:Folders>";
+        for (const auto& folder : new_folders)
+        {
+            sstr << "<t:Folder>"
+                << folder.xml().to_string()
+                << "</t:Folder>";
+        }
+        sstr <<	"</m:Folders>"
+            "</m:CreateFolder>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::folder_response_message::parse(
+                std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        EWS_ASSERT(!response_messages.items().empty() &&
+            "Expected at least one item");
+
+        const std::vector<folder> items = response_messages.items();
+        std::vector<folder_id> res;
+        res.reserve(items.size());
+        std::transform(begin(items), end(items), std::back_inserter(res),
+            [](const folder& elem) { return elem.get_item_id(); });
+
+        return res;
+    }
+
     item_id create_item_impl(const message& the_message,
                              message_disposition disposition,
                              const folder_id& folder)
@@ -18539,7 +19108,8 @@ private:
         auto response = request(sstr.str());
 
         const auto response_message =
-            internal::create_item_response_message::parse(std::move(response));
+            internal::create_item_response_message::parse(
+				std::move(response));
         if (!response_message.success())
         {
             throw exchange_error(response_message.result());
@@ -18766,6 +19336,31 @@ inline void ntlm_credentials::certify(internal::http_request* request) const
 
 namespace internal
 {
+    inline create_folder_response_message
+    create_folder_response_message::parse(http_response&& response)
+    {
+        const auto doc = parse_response(std::move(response));
+        auto elem = get_element_by_qname(*doc, "CreateFolderResponseMessage",
+            uri<>::microsoft::messages());
+
+        EWS_ASSERT(elem && "Expected <CreateFolderResponseMessage>, got nullptr");
+        auto result = parse_response_class_and_code(*elem);
+        auto item_ids = std::vector<folder_id>();
+        auto items_elem =
+            elem->first_node_ns(uri<>::microsoft::messages(), "Folders");
+        EWS_ASSERT(items_elem && "Expected <Folders> element");
+
+        for_each_child_node(
+            *items_elem, [&item_ids](const rapidxml::xml_node<>& item_elem)
+        {
+            auto item_id_elem = item_elem.first_node();
+            EWS_ASSERT(item_id_elem && "Expected <FolderId> element");
+            item_ids.emplace_back(folder_id::from_xml_element(*item_id_elem));
+        });
+        return create_folder_response_message(std::move(result),
+            std::move(item_ids));
+    }
+
     inline create_item_response_message
     create_item_response_message::parse(http_response&& response)
     {
@@ -18788,6 +19383,36 @@ namespace internal
             });
         return create_item_response_message(std::move(result),
                                             std::move(item_ids));
+    }
+
+    inline find_folder_response_message
+        find_folder_response_message::parse(http_response&& response)
+    {
+        const auto doc = parse_response(std::move(response));
+        auto elem = get_element_by_qname(*doc, "FindFolderResponseMessage",
+            uri<>::microsoft::messages());
+
+        EWS_ASSERT(elem && "Expected <FindFolderResponseMessage>, got nullptr");
+        auto result = parse_response_class_and_code(*elem);
+
+        auto root_folder =
+            elem->first_node_ns(uri<>::microsoft::messages(), "RootFolder");
+
+        auto items_elem =
+            root_folder->first_node_ns(uri<>::microsoft::types(), "Folders");
+        EWS_ASSERT(items_elem && "Expected <t:Folders> element");
+
+        auto items = std::vector<folder_id>();
+        for (auto item_elem = items_elem->first_node(); item_elem;
+            item_elem = item_elem->next_sibling())
+        {
+            // TODO: Check that item is 'FolderId'
+            EWS_ASSERT(item_elem && "Expected an element, got nullptr");
+            auto item_id_elem = item_elem->first_node();
+            EWS_ASSERT(item_id_elem && "Expected <FolderId> element");
+            items.emplace_back(folder_id::from_xml_element(*item_id_elem));
+        }
+        return find_folder_response_message(std::move(result), std::move(items));
     }
 
     inline find_item_response_message
@@ -18870,6 +19495,63 @@ namespace internal
         }
         return update_item_response_message(std::move(result),
                                             std::move(items));
+    }
+
+    inline get_folder_response_message
+    get_folder_response_message::parse(http_response&& response)
+    {
+        const auto doc = parse_response(std::move(response));
+        auto elem = get_element_by_qname(*doc, "GetFolderResponseMessage",
+            uri<>::microsoft::messages());
+        EWS_ASSERT(elem && "Expected <GetFolderResponseMessage>, got nullptr");
+        auto result = parse_response_class_and_code(*elem);
+        auto items_elem =
+            elem->first_node_ns(uri<>::microsoft::messages(), "Folders");
+        EWS_ASSERT(items_elem && "Expected <Folders> element");
+        auto items = std::vector<folder>();
+        for_each_child_node(
+            *items_elem, [&items](const rapidxml::xml_node<>& item_elem)
+        {
+            items.emplace_back(folder::from_xml_element(item_elem));
+        });
+        return get_folder_response_message(std::move(result), std::move(items));
+    }
+
+    inline folder_response_message
+    folder_response_message::parse(http_response&& response)
+    {
+        const auto doc = parse_response(std::move(response));
+
+        auto response_messages = get_element_by_qname(
+            *doc, "ResponseMessages", uri<>::microsoft::messages());
+        EWS_ASSERT(response_messages &&
+            "Expected <ResponseMessages> node, got nullptr");
+
+        std::vector<folder_response_message::response_message> messages;
+        for_each_child_node(
+            *response_messages,
+            [&](const rapidxml::xml_node<>& response_message)
+        {
+            auto result = parse_response_class_and_code(response_message);
+
+            auto items_elem = response_message.first_node_ns(
+                uri<>::microsoft::messages(), "Folders");
+            EWS_ASSERT(items_elem && "Expected <Folders> element");
+
+            auto items = std::vector<folder>();
+            for_each_child_node(
+                *items_elem,
+                [&items](const rapidxml::xml_node<>& item_elem)
+            {
+                items.emplace_back(
+                    folder::from_xml_element(item_elem));
+            });
+
+            messages.emplace_back(
+                std::make_tuple(result.cls, result.code, std::move(items)));
+        });
+
+        return folder_response_message(std::move(messages));
     }
 
     template <typename ItemType>
