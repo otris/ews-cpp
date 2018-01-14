@@ -54,3 +54,6 @@ cscope.out
 
 # VS Code
 .vscode/
+
+# CLion
+.idea/
