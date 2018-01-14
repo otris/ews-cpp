@@ -35,13 +35,14 @@ int main()
 
         ews::distinguished_folder_id folder_id = ews::standard_folder::inbox;
 
-		// Query all sub folders of the specified parent_folder
-		auto folder = service.get_folder(folder_id);
+        // Query all sub folders of the specified parent_folder
+        auto folder = service.get_folder(folder_id);
 
-		std::cout << "Display name: " << folder.get_display_name() << "\n";
-		std::cout << "Item count: " << folder.get_total_count() << "\n";
-		std::cout << "Unread item count: " << folder.get_unread_count() << "\n";
-		std::cout << "Sub folder count: " << folder.get_child_folder_count() << std::endl;
+        std::cout << "Display name: " << folder.get_display_name() << "\n";
+        std::cout << "Item count: " << folder.get_total_count() << "\n";
+        std::cout << "Unread item count: " << folder.get_unread_count() << "\n";
+        std::cout << "Sub folder count: " << folder.get_child_folder_count()
+                  << std::endl;
     }
     catch (std::exception& exc)
     {

@@ -35,14 +35,14 @@ int main()
 
         ews::distinguished_folder_id parent_folder = ews::standard_folder::root;
 
-		// Query all sub folders of the specified parent_folder
-		auto sub_folders = service.find_folder(parent_folder);
+        // Query all sub folders of the specified parent_folder
+        auto sub_folders = service.find_folder(parent_folder);
 
-		// Now iterate over all sub folder and display their ID
-		for (const auto& folder : sub_folders)
-		{
-			std::cout << folder.id() << "\n";
-		}
+        // Now iterate over all sub folder and display their ID
+        for (const auto& folder : sub_folders)
+        {
+            std::cout << folder.id() << "\n";
+        }
     }
     catch (std::exception& exc)
     {

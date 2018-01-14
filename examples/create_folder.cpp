@@ -33,11 +33,12 @@ int main()
         auto service = ews::service(env.server_uri, env.domain, env.username,
                                     env.password);
 
-        ews::distinguished_folder_id parent_folder = ews::standard_folder::inbox;
-		ews::folder new_folder;
-		new_folder.set_display_name("New test folder");
-		auto folder_id = service.create_folder(new_folder, parent_folder);
-		std::cout << folder_id.id() << std::endl;
+        ews::distinguished_folder_id parent_folder =
+            ews::standard_folder::inbox;
+        ews::folder new_folder;
+        new_folder.set_display_name("New test folder");
+        auto folder_id = service.create_folder(new_folder, parent_folder);
+        std::cout << folder_id.id() << std::endl;
     }
     catch (std::exception& exc)
     {

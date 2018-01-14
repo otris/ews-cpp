@@ -33,14 +33,15 @@ int main()
         auto service = ews::service(env.server_uri, env.domain, env.username,
                                     env.password);
 
-		// Be careful! This deletes all folders inside the Inbox permanently.
-        ews::distinguished_folder_id parent_folder = ews::standard_folder::inbox;
-		auto sub_folders = service.find_folder(parent_folder);
+        // Be careful! This deletes all folders inside the Inbox permanently.
+        ews::distinguished_folder_id parent_folder =
+            ews::standard_folder::inbox;
+        auto sub_folders = service.find_folder(parent_folder);
 
-		for (const auto& folder : sub_folders)
-		{
-			service.delete_folder(folder);
-		}
+        for (const auto& folder : sub_folders)
+        {
+            service.delete_folder(folder);
+        }
     }
     catch (std::exception& exc)
     {
