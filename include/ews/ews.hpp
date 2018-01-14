@@ -10558,7 +10558,7 @@ public:
 #endif
 
     //! Returns the id of a folder
-    const folder_id& get_item_id() const EWS_NOEXCEPT { return folder_id_; }
+    const folder_id& get_folder_id() const EWS_NOEXCEPT { return folder_id_; }
 
     //! Returns this folders display name
     std::string get_display_name() const
@@ -19018,7 +19018,7 @@ private:
         std::vector<folder_id> res;
         res.reserve(items.size());
         std::transform(begin(items), end(items), std::back_inserter(res),
-                       [](const folder& elem) { return elem.get_item_id(); });
+                       [](const folder& elem) { return elem.get_folder_id(); });
 
         return res;
     }
