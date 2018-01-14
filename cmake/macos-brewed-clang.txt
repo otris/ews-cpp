@@ -1,0 +1,7 @@
+# See https://libcxx.llvm.org/docs/UsingLibcxx.html and cmake-variables(7) for
+# reference.
+set(CMAKE_C_COMPILER "/usr/local/opt/llvm/bin/clang" CACHE string "clang compiler" FORCE)
+set(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang++" CACHE string "clang++ compiler" FORCE)
+set(CMAKE_CXX_FLAGS "-stdlib=libc++" CACHE string "compiler flags" FORCE)
+set(CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES "-nostdinc++ -I/usr/local/opt/llvm/include/c++/v1" CACHE string "include directories" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS "-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib" CACHE string "linker flags" FORCE)
