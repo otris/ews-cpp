@@ -10541,7 +10541,7 @@ static_assert(std::is_move_assignable<extended_property>::value, "");
 class folder final
 {
 public:
-//! Cosntructs a new folder
+//! Constructs a new folder
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
     folder() = default;
 #else
