@@ -9788,7 +9788,7 @@ public:
         t.tm_isdst = -1; // Tells mktime() to determine if DST is in effect
                          // using system's TZ infos
 
-        auto epoch = 0L;
+        time_t epoch = 0L;
         if (offset == 0)
         {
             epoch = mktime(&t);
@@ -9800,9 +9800,13 @@ public:
         }
         else
         {
+#ifdef _WIN32
             // timegm is a nonstandard GNU extension that is also present on
             // some BSDs including macOS
+            epoch = _mkgmtime(&t);
+#else
             epoch = timegm(&t);
+#endif
             if (epoch == -1L)
             {
                 throw exception(
@@ -9830,12 +9834,21 @@ private:
         {
             now = *timepoint;
         }
+
+#ifdef _WIN32
+        auto utc_time = gmtime(&now);
+#else
         tm result;
         auto utc_time = gmtime_r(&now, &result);
+#endif
         utc_time->tm_isdst = -1;
         const auto utc_epoch = mktime(utc_time);
 
+#ifdef _WIN32
+        auto local_time = localtime(&now);
+#else
         auto local_time = localtime_r(&now, &result);
+#endif
         local_time->tm_isdst = -1;
         const auto local_epoch = mktime(local_time);
 
