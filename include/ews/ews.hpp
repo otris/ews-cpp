@@ -15842,6 +15842,8 @@ public:
     }
 
 private:
+    // TODO: why no const char* overload?
+
     std::string to_xml_impl() const override
     {
         std::stringstream sstr;
@@ -16292,6 +16294,8 @@ namespace conversation_property_path
 class property final
 {
 public:
+    // TODO: shouldn't the c'tors take const& instead?
+
     //! Use this constructor if you want to delete a property from an item
     explicit property(property_path path) : value_(path.to_xml()) {}
 
@@ -17000,10 +17004,9 @@ namespace internal
     }
 }
 
-//! \brief Check if a text property contains a sub-string
+//! \brief Check if a text property contains a sub-string.
 //!
-//! A search filter that allows you to do text searches on string
-//! properties.
+//! A search filter that allows you to do text searches on string properties.
 class contains final : public search_expression
 {
 public:
