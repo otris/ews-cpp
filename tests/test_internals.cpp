@@ -543,6 +543,16 @@ TEST(DateTime, ToEpochWithEmptyDateTimeThrows)
 {
     EXPECT_THROW(ews::date_time("").to_epoch(), ews::exception);
 }
+
+TEST(DateTime, EpochToDateTime)
+{
+    EXPECT_STREQ("1986-12-31T23:59:59Z",
+                 ews::date_time::from_epoch(536457599).to_string().c_str());
+    EXPECT_STREQ("2001-10-26T19:32:52Z",
+                 ews::date_time::from_epoch(1004124772).to_string().c_str());
+    EXPECT_STREQ("2018-01-08T10:03:30Z",
+                 ews::date_time::from_epoch(1515405810).to_string().c_str());
+}
 }
 
 // vim:et ts=4 sw=4

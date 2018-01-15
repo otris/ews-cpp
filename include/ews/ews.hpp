@@ -9774,6 +9774,7 @@ public:
         }
         else if (res < 6) // Whats that? Error case?
         {
+            throw exception("to_epoch: could not parse string");
         }
 
         // The following broken-down time struct is always in local time.
@@ -9816,6 +9817,33 @@ public:
         const auto bias =
             local_time ? 0L : (offset == 0L ? utc_offset(&epoch) : offset);
         return epoch + bias;
+    }
+
+    //! Constructs a xs:dateTime formatted string from given time value.
+    //!
+    //! The resulting string is always formatted as:
+    //!
+    //!    yyyy-MM-ddThh:mm:ssZ
+    //!
+    //! \param epoch Seconds since the Epoch (this value is always in UTC)
+    //!
+    //! This function throws an exception of type ews::exception if converting
+    //! to a string fails.
+    static date_time from_epoch(time_t epoch)
+    {
+#ifdef _WIN32
+        auto t = gmtime(&epoch);
+#else
+        tm result;
+        auto t = gmtime_r(&epoch, &result);
+#endif
+        char buf[21];
+        auto len = strftime(buf, sizeof buf, "%Y-%m-%dT%H:%M:%SZ", t);
+        if (len == 0)
+        {
+            throw exception("strftime failed");
+        }
+        return date_time(buf);
     }
 
 private:
