@@ -9660,6 +9660,57 @@ namespace internal
     };
 }
 
+class sync_folder_items_result final
+    : public internal::response_message_base
+{
+public:
+    // implemented below
+    static sync_folder_items_result parse(internal::http_response&&);
+
+    std::string get_sync_state() const EWS_NOEXCEPT
+    {
+        return sync_state_;
+    }
+
+    std::vector<item_id> get_created_items() const EWS_NOEXCEPT
+    {
+        return created_items_;
+    }
+
+    std::vector<item_id> get_updated_items() const EWS_NOEXCEPT
+    {
+        return updated_items_;
+    }
+
+    std::vector<item_id> get_deleted_items() const EWS_NOEXCEPT
+    {
+        return deleted_items_;
+    }
+
+    std::vector<std::pair<item_id, bool>> get_read_flag_changed() const EWS_NOEXCEPT
+    {
+        return read_flag_changed_;
+    }
+
+    bool get_includes_last_item_in_range() const EWS_NOEXCEPT
+    {
+        return includes_last_item_in_range_;
+    }
+
+private:
+    sync_folder_items_result(internal::response_result&& res)
+        : response_message_base(std::move(res))
+    {
+    }
+
+    std::string sync_state_;
+    std::vector<item_id> created_items_;
+    std::vector<item_id> updated_items_;
+    std::vector<item_id> deleted_items_;
+    std::vector<std::pair<item_id, bool>> read_flag_changed_;
+    bool includes_last_item_in_range_;
+};
+
 //! \brief A thin wrapper around xs:dateTime formatted strings.
 //!
 //! Microsoft EWS uses date and date/time string representations as described
@@ -17385,6 +17436,19 @@ public:
         return *this;
     }
 
+    //! Synchronizes a folder in the Exchagne store.
+    sync_folder_items_result sync_folder_items(
+        const folder_id& folder_id,
+        const std::string& sync_state = "",
+        int max_changes_returned = 512,
+        std::vector<item_id> ignored_items = {})
+    {
+        return sync_folder_items_impl(folder_id,
+            sync_state,
+            max_changes_returned,
+            ignored_items);
+    }
+
     //! Gets a folder from the Exchange store.
     folder get_folder(const folder_id& id)
     {
@@ -18504,6 +18568,43 @@ private:
         }
     }
 
+    sync_folder_items_result sync_folder_items_impl(const folder_id& folder_id,
+        const std::string& sync_state = "",
+        int max_changes_returned = 512,
+        std::vector<item_id> ignored_items = {})
+    {
+        std::stringstream sstr;
+        sstr << "<m:SyncFolderItems>"
+            "<m:ItemShape>" << internal::enum_to_str(ews::base_shape::id_only) << "</m:ItemShape>"
+            "<m:SyncFolderId>" << folder_id.to_xml() << "</m:SyncFolderId>";
+        if (!sync_state.empty())
+        {
+            sstr << "<m:SyncState>" << sync_state << "</m:SyncState>";
+        }
+        if (!ignored_items.empty())
+        {
+            sstr << "<m:Ignore>";
+            for (const auto& i : ignored_items)
+            {
+                sstr << i.to_xml();
+            }
+            sstr << "</m:Ignore>";
+        }
+        sstr << "<m:MaxChangesReturned>" << max_changes_returned << "</m:MaxChangesReturned>"
+            << "</m:SyncFolderItems>";
+
+        auto response = request(sstr.str());
+        const auto response_message =
+            sync_folder_items_result::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+        EWS_ASSERT(!response_message.get_sync_state().empty() &&
+            "Expected at least a sync state");
+        return response_message;
+    }
+
     folder get_folder_impl(const folder_id& id, base_shape shape)
     {
         const std::string request_string = "<m:GetFolder>"
@@ -19270,6 +19371,114 @@ inline void ntlm_credentials::certify(internal::http_request* request) const
         (domain_.empty() ? "" : domain_ + "\\") + username_ + ":" + password_;
     request->set_option(CURLOPT_USERPWD, login.c_str());
     request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
+}
+
+inline sync_folder_items_result
+sync_folder_items_result::parse(internal::http_response&& response)
+{
+    std::string content(response.content().begin(), response.content().end());
+    const auto doc = parse_response(std::move(response));
+    auto elem = internal::get_element_by_qname(*doc, 
+        "SyncFolderItemsResponseMessage",
+        internal::uri<>::microsoft::messages());
+
+    EWS_ASSERT(elem &&
+        "Expected <SyncFolderItemsResponseMessage>, got nullptr");
+    auto result = internal::parse_response_class_and_code(*elem);
+
+    auto sync_state_elem = elem->first_node_ns(
+        internal::uri<>::microsoft::messages(), "SyncState");
+    EWS_ASSERT(sync_state_elem && "Expected <SyncState> element");
+    auto sync_state = std::string(sync_state_elem->value(), 
+        sync_state_elem->value_size());
+
+    auto includes_last_item_in_range_elem = elem->first_node_ns(
+        internal::uri<>::microsoft::messages(),
+        "IncludesLastItemInRange");
+    EWS_ASSERT(includes_last_item_in_range_elem &&
+        "Expected <IncludesLastItemInRange> element");
+    auto includes_last_item_in_range = rapidxml::internal::compare(
+        includes_last_item_in_range_elem->value(),
+        includes_last_item_in_range_elem->value_size(),
+        "true", strlen("true"));
+
+    auto changes_elem = elem->first_node_ns(
+        internal::uri<>::microsoft::messages(), "Changes");
+    EWS_ASSERT(changes_elem && "Excepted <Changes> element");
+    std::vector<item_id> created_items;
+    std::vector<item_id> updated_items;
+    std::vector<item_id> deleted_items;
+    std::vector<std::pair<item_id, bool>> read_flag_changed;
+    internal::for_each_child_node(
+        *changes_elem, 
+        [&created_items, &updated_items, &deleted_items, &read_flag_changed]
+        (const rapidxml::xml_node<>& item_elem)
+    {
+        if (std::strcmp(item_elem.local_name(), "Create") == 0)
+        {
+            const auto item_id_elem =
+                item_elem.first_node()->first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
+            EWS_ASSERT(item_id_elem && 
+                "Expected <ItemId> element");
+            const auto item_id = 
+                item_id::from_xml_element(*item_id_elem);
+            created_items.emplace_back(item_id);
+        }
+
+        if (std::strcmp(item_elem.local_name(), "Update") == 0)
+        {
+            const auto item_id_elem =
+                item_elem.first_node()->first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
+            EWS_ASSERT(item_id_elem &&
+                "Expected <ItemId> element");
+            const auto item_id =
+                item_id::from_xml_element(*item_id_elem);
+            updated_items.emplace_back(item_id);
+        }
+
+        if (std::strcmp(item_elem.local_name(), "Delete") == 0)
+        {
+            const auto item_id_elem =
+                item_elem.first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
+            EWS_ASSERT(item_id_elem &&
+                "Expected <ItemId> element");
+            const auto item_id =
+                item_id::from_xml_element(*item_id_elem);
+            deleted_items.emplace_back(item_id);
+        }
+
+        if (std::strcmp(item_elem.local_name(), "ReadFlagChange") == 0)
+        {
+            const auto item_id_elem = 
+                item_elem.first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
+            EWS_ASSERT(item_id_elem &&
+                "Expected <ItemId> element");
+
+            const auto read_elem =
+                item_elem.first_node_ns(internal::uri<>::microsoft::types(), "IsRead");
+            EWS_ASSERT(read_elem && 
+                "Expected <IsRead> element");
+
+            const auto item_id =
+                item_id::from_xml_element(*item_id_elem);
+
+            const bool read =
+                std::strcmp(read_elem->value(), "true") == 0;
+
+            read_flag_changed.emplace_back(
+                std::make_pair(item_id, read));
+        }
+    });
+
+    sync_folder_items_result response_message(std::move(result));
+    response_message.sync_state_ = std::move(sync_state);
+    response_message.created_items_ = std::move(created_items);
+    response_message.updated_items_ = std::move(updated_items);
+    response_message.deleted_items_ = std::move(deleted_items);
+    response_message.read_flag_changed_ = std::move(read_flag_changed);
+    response_message.includes_last_item_in_range_ = includes_last_item_in_range;
+
+    return response_message;
 }
 
 namespace internal
