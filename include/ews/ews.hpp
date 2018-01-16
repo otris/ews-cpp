@@ -18665,7 +18665,6 @@ private:
                                          base_shape shape)
     {
         EWS_ASSERT(!ids.empty());
-        EWS_ASSERT(!additional_properties.empty());
 
         std::stringstream sstr;
         sstr << "<m:GetFolder>"
