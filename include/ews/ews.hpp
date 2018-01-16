@@ -19545,7 +19545,8 @@ inline void ntlm_credentials::certify(internal::http_request* request) const
 inline sync_folder_items_result
 sync_folder_items_result::parse(internal::http_response&& response)
 {
-    std::string content(response.content().begin(), response.content().end());
+    using rapidxml::internal::compare;
+
     const auto doc = parse_response(std::move(response));
     auto elem = internal::get_element_by_qname(*doc, 
         "SyncFolderItemsResponseMessage",
@@ -19583,7 +19584,8 @@ sync_folder_items_result::parse(internal::http_response&& response)
         [&created_items, &updated_items, &deleted_items, &read_flag_changed]
         (const rapidxml::xml_node<>& item_elem)
     {
-        if (std::strcmp(item_elem.local_name(), "Create") == 0)
+        if (compare(item_elem.local_name(), item_elem.local_name_size(),
+                "Create", strlen("Create")))
         {
             const auto item_id_elem =
                 item_elem.first_node()->first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
@@ -19594,7 +19596,8 @@ sync_folder_items_result::parse(internal::http_response&& response)
             created_items.emplace_back(item_id);
         }
 
-        if (std::strcmp(item_elem.local_name(), "Update") == 0)
+        if (compare(item_elem.local_name(), item_elem.local_name_size(),
+            "Update", strlen("Update")))
         {
             const auto item_id_elem =
                 item_elem.first_node()->first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
@@ -19605,7 +19608,8 @@ sync_folder_items_result::parse(internal::http_response&& response)
             updated_items.emplace_back(item_id);
         }
 
-        if (std::strcmp(item_elem.local_name(), "Delete") == 0)
+        if (compare(item_elem.local_name(), item_elem.local_name_size(),
+            "Delete", strlen("Delete")))
         {
             const auto item_id_elem =
                 item_elem.first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
@@ -19616,7 +19620,8 @@ sync_folder_items_result::parse(internal::http_response&& response)
             deleted_items.emplace_back(item_id);
         }
 
-        if (std::strcmp(item_elem.local_name(), "ReadFlagChange") == 0)
+        if (compare(item_elem.local_name(), item_elem.local_name_size(),
+            "ReadFlagChange", strlen("ReadFlagChange")))
         {
             const auto item_id_elem = 
                 item_elem.first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
@@ -19631,8 +19636,8 @@ sync_folder_items_result::parse(internal::http_response&& response)
             const auto item_id =
                 item_id::from_xml_element(*item_id_elem);
 
-            const bool read =
-                std::strcmp(read_elem->value(), "true") == 0;
+            const bool read = compare(read_elem->local_name(),
+                read_elem->local_name_size(), "true", strlen("true"));
 
             read_flag_changed.emplace_back(
                 std::make_pair(item_id, read));
