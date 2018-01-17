@@ -71,12 +71,10 @@ int main() {
 ```
 
 # Documentation
-
 We host automatically generated API documentation here:
 [otris.github.io/ews-cpp](https://otris.github.io/ews-cpp/).
 
 # Overview
-
 EWS is an API that third-party programmers can use to communicate with
 Microsoft Exchange Server. The API exists since Exchange Server 2007 and is
 continuously up-dated by Microsoft and present in the latest iteration of the
@@ -85,9 +83,7 @@ product, Exchange Server 2016.
 This library provides a native and platform-independent way to use EWS in your
 C++ application.
 
-
 <img src="ews-overview.png" width=80%>
-
 
 ## Supported Operations and Elements
 
@@ -96,6 +92,8 @@ C++ application.
   items. But we're working on it.
 * We support `<CreateItem>`, `<SendItem>`, `<FindItem>`, `<GetItem>`,
   `<UpdateItem>`, and `<DeleteItem>` operations.
+* `<CreateFolder>`, `<GetFolder>`, `<DeleteFolder>`, `<FindFolder>` operations
+  on folders.
 * Basic support for attachments: `<CreateAttachment>`, `<GetAttachment>`,
   `<DeleteAttachment>` for file attachments. Note: Item attachments are not
   supported yet.
@@ -124,7 +122,7 @@ Note: Kerberos is currently not supported but its on the TODO list.
 
 ## Supported Operating Systems
 
-* Microsoft Windows 8.1 and Windows 10
+* Microsoft Windows 10
 * macOS starting with 10.12
 * RHEL 7
 * Ubuntu starting with 16.04 LTS
@@ -136,9 +134,7 @@ Note: Kerberos is currently not supported but its on the TODO list.
 However, our goal is to support all Exchange Server versions since 2007.
 
 ## Run-time Dependencies
-The only thing you need for ews-cpp to run is
-
-* libcurl, at least version 7.22
+The only thing you need for ews-cpp to run is [libcurl](https://curl.haxx.se/).
 
 ## Dev Dependencies
 If you want to hack on ews-cpp itself you additionally need
@@ -150,7 +146,6 @@ If you want to hack on ews-cpp itself you additionally need
 * Python 2 or 3 (optional)
 
 ## Note Windows Users
-
 You can obtain an up-to-date and easy-to-use binary distribution of libcurl
 from here: [confusedbycode.com/curl](http://www.confusedbycode.com/curl/)
 
@@ -163,7 +158,6 @@ You can also use the Windows batch script provided in
 version of Visual Studio.
 
 ## Source Code
-
 ews-cpp's source code is available as a Git repository. To obtain it, type:
 
 ```bash
@@ -171,9 +165,7 @@ git clone --recursive https://github.com/otris/ews-cpp.git
 ```
 
 ## Building
-
 ### Linux
-
 The library is header-only. So there is no need to build anything. Just copy the
 `include/ews/` directory wherever you may like.
 
@@ -189,7 +181,6 @@ Type `make edit_cache` to see all configuration options. `make help` shows you
 all available targets.
 
 ### Windows
-
 To build the tests and examples on Windows you can use `cmake-gui`.  For more
 see: https://cmake.org/runningcmake/
 
@@ -210,7 +201,6 @@ cmake --build .
 Make sure to choose the right generator for your environment.
 
 ### API Docs
-
 Use the `doc` target to create the API documentation with Doxygen.  Type:
 
 ```bash
@@ -219,7 +209,6 @@ open html/index.html
 ```
 
 ### Test Suite
-
 In order to run individual examples or the test suite export following
 environment variables like this:
 
@@ -240,7 +229,6 @@ Once you've build the project, you can execute the tests with:
 ```
 
 ## Design Notes
-
 ews-cpp is written in a "modern C++" way:
 
 * C++ Standard Library, augmented with rapidxml for XML parsing
@@ -265,9 +253,7 @@ Exchange](https://msdn.microsoft.com/en-us/library/office/bb204119%28v=exchg.150
 for all available parameters to pass and all available attributes on items.
 From 10.000ft it looks like this:
 
-
 <img src="ews-objects.png" width=80%>
-
 
 You have items and you have **the** service. You use the service whenever you
 want to talk to the Exchange server.
@@ -293,7 +279,6 @@ Cons:
   effort here
 
 # More EWS Resources
-
 * [EWS Editor](http://ewseditor.codeplex.com/) is an excellent Open Source tool to test EWS Managed API and do raw SOAP POSTs. Sources are available here: [github.com/dseph/EwsEditor](https://github.com/dseph/EwsEditor).
 * [This article](https://blogs.msdn.microsoft.com/webdav_101/2015/05/11/best-practices-ews-authentication-and-access-issues/) on blogs.msdn.microsoft.com describing best practices in EWS Authentication and solving access issues.
 
