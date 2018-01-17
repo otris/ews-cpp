@@ -17437,16 +17437,34 @@ public:
     }
 
     //! Synchronizes a folder in the Exchagne store.
-    sync_folder_items_result sync_folder_items(
-        const folder_id& folder_id,
-        const std::string& sync_state = "",
-        int max_changes_returned = 512,
-        std::vector<item_id> ignored_items = {})
+    sync_folder_items_result sync_folder_items(const folder_id& folder_id,
+                                               int max_changes_returned = 512)
+    {
+        return sync_folder_items(folder_id,
+            "",
+            max_changes_returned);
+    }
+
+    sync_folder_items_result sync_folder_items(const folder_id& folder_id,
+                                               const std::string& sync_state,
+                                               int max_changes_returned = 512)
+    {
+        std::vector<item_id> ignored_items;
+        return sync_folder_items(folder_id,
+            sync_state,
+            ignored_items,
+            max_changes_returned);
+    }
+
+    sync_folder_items_result sync_folder_items(const folder_id& folder_id, 
+        const std::string& sync_state,
+        const std::vector<item_id>& ignored_items,
+        int max_changes_returned = 512)
     {
         return sync_folder_items_impl(folder_id,
             sync_state,
-            max_changes_returned,
-            ignored_items);
+            ignored_items,
+            max_changes_returned);
     }
 
     //! Gets a folder from the Exchange store.
@@ -18569,17 +18587,23 @@ private:
     }
 
     sync_folder_items_result sync_folder_items_impl(const folder_id& folder_id,
-        const std::string& sync_state = "",
-        int max_changes_returned = 512,
-        std::vector<item_id> ignored_items = {})
+                                                    const std::string& sync_state,
+                                                    std::vector<item_id> ignored_items,
+                                                    int max_changes_returned = 512)
     {
         std::stringstream sstr;
         sstr << "<m:SyncFolderItems>"
-            "<m:ItemShape>" << internal::enum_to_str(ews::base_shape::id_only) << "</m:ItemShape>"
-            "<m:SyncFolderId>" << folder_id.to_xml() << "</m:SyncFolderId>";
+            "<m:ItemShape>"
+            << internal::enum_to_str(ews::base_shape::id_only)
+            << "</m:ItemShape>"
+            "<m:SyncFolderId>"
+            << folder_id.to_xml()
+            << "</m:SyncFolderId>";
         if (!sync_state.empty())
         {
-            sstr << "<m:SyncState>" << sync_state << "</m:SyncState>";
+            sstr << "<m:SyncState>"
+                << sync_state
+                << "</m:SyncState>";
         }
         if (!ignored_items.empty())
         {
@@ -18590,8 +18614,10 @@ private:
             }
             sstr << "</m:Ignore>";
         }
-        sstr << "<m:MaxChangesReturned>" << max_changes_returned << "</m:MaxChangesReturned>"
-            << "</m:SyncFolderItems>";
+        sstr << "<m:MaxChangesReturned>"
+            << max_changes_returned
+            << "</m:MaxChangesReturned>"
+            "</m:SyncFolderItems>";
 
         auto response = request(sstr.str());
         const auto response_message =
