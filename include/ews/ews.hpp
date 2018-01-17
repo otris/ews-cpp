@@ -9664,8 +9664,10 @@ class sync_folder_items_result final
     : public internal::response_message_base
 {
 public:
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
     // implemented below
     static sync_folder_items_result parse(internal::http_response&&);
+#endif
 
     std::string get_sync_state() const EWS_NOEXCEPT
     {
@@ -19398,6 +19400,7 @@ inline void ntlm_credentials::certify(internal::http_request* request) const
     request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
 }
 
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
 inline sync_folder_items_result
 sync_folder_items_result::parse(internal::http_response&& response)
 {
@@ -19510,6 +19513,7 @@ sync_folder_items_result::parse(internal::http_response&& response)
 
     return response_message;
 }
+#endif
 
 namespace internal
 {
