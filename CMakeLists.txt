@@ -343,6 +343,7 @@ add_example(raw_soap_request)
 add_example(remove_delegate)
 add_example(resolve_names)
 add_example(send_message)
+add_example(sync_folder_items)
 add_example(update_contact)
 
 # Python is optional as it is only used by TimeoutTest
