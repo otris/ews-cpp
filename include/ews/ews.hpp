@@ -9174,7 +9174,7 @@ public:
         item_id id;
         folder_id f_id;
         folder_id parent_folder_id;
-        int unread_count;
+        int unread_count = 0;
         for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
             if (compare(node->local_name(), node->local_name_size(),
