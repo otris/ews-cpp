@@ -9163,11 +9163,7 @@ private:
 class modified_event final : public internal::event_base
 {
 public:
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
-    modified_event() = default;
-#else
-    modified_event() {}
-#endif
+    modified_event() : unread_count_(0) {}
 
     static modified_event from_xml_element(const rapidxml::xml_node<>& elem)
     {
