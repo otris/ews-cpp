@@ -14,7 +14,6 @@
 //
 //   This project is hosted at https://github.com/otris
 
-#ifdef EWS_HAS_VARIANT
 #include "fixtures.hpp"
 
 #include <cstring>
@@ -66,4 +65,3 @@ TEST_F(SubscribeTest, SendCorrectRequest)
 }
 
 #endif // EWS_USE_BOOST_LIBRARY
-#endif
