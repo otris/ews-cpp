@@ -8913,7 +8913,7 @@ namespace internal
     };
 }
 //! Represents a <CopiedEvent>
-class copied_event : public internal::event_base
+class copied_event final : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -9018,7 +9018,7 @@ private:
 };
 
 //! Represents a <CreatedEvent>
-class created_event : public internal::event_base
+class created_event final : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -9088,7 +9088,7 @@ private:
 };
 
 //! Represents a <DeletedEvent>
-class deleted_event : public internal::event_base
+class deleted_event final : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -9160,7 +9160,7 @@ private:
 };
 
 //! Represents a <ModifiedEvent>
-class modified_event : public internal::event_base
+class modified_event final : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -9241,7 +9241,7 @@ private:
 };
 
 //! Represents a <MovedEvent>
-class moved_event : public internal::event_base
+class moved_event final : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -9346,7 +9346,7 @@ private:
 };
 
 //! Represents a <NewMailEvent>
-class new_mail_event : public internal::event_base
+class new_mail_event final : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -9409,7 +9409,7 @@ private:
 };
 
 //! Represents a <StatusEvent>
-class status_event : public internal::event_base
+class status_event final : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -9438,7 +9438,7 @@ public:
 };
 
 //! Represents a <FreeBusyChangedEvent>
-class free_busy_changed_event : public internal::event_base
+class free_busy_changed_event final : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
