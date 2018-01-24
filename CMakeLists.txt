@@ -375,7 +375,8 @@ endif()
 add_subdirectory(${GTEST_ROOT} EXCLUDE_FROM_ALL)
 include_directories(${GTEST_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
-set(ews_TESTS tests/fixtures.hpp
+set(ews_TESTS
+    tests/fixtures.hpp
     tests/main.cpp
     tests/regressions/91.cpp
     tests/test_attachments.cpp
