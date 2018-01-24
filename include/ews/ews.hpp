@@ -8896,8 +8896,24 @@ static_assert(std::is_move_assignable<distinguished_folder_id>::value, "");
 #endif
 
 #ifdef EWS_HAS_VARIANT
+namespace internal
+{
+    class event_base
+    {
+    public:
+        const event_type& get_type() const EWS_NOEXCEPT { return type_; }
+        const std::string& get_watermark() const EWS_NOEXCEPT
+        {
+            return watermark_;
+        }
+
+    protected:
+        event_type type_;
+        std::string watermark_;
+    };
+}
 //! Represents a <CopiedEvent>
-class copied_event final
+class copied_event : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -8974,8 +8990,6 @@ public:
         return e;
     };
 
-    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
-    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
     const std::string& get_timestamp() const EWS_NOEXCEPT { return timestamp_; }
     const item_id& get_item_id() const EWS_NOEXCEPT { return id_; }
     const item_id& get_old_item_id() const EWS_NOEXCEPT { return old_item_id_; }
@@ -8994,8 +9008,6 @@ public:
     }
 
 private:
-    event_type type_;
-    std::string watermark_;
     std::string timestamp_;
     item_id id_;
     item_id old_item_id_;
@@ -9006,7 +9018,7 @@ private:
 };
 
 //! Represents a <CreatedEvent>
-class created_event final
+class created_event : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -9060,8 +9072,6 @@ public:
         return e;
     };
 
-    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
-    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
     const std::string& get_timestamp() const EWS_NOEXCEPT { return timestamp_; }
     const item_id& get_item_id() const EWS_NOEXCEPT { return id_; }
     const folder_id& get_folder_id() const EWS_NOEXCEPT { return folder_id_; }
@@ -9071,8 +9081,6 @@ public:
     }
 
 private:
-    event_type type_;
-    std::string watermark_;
     std::string timestamp_;
     item_id id_;
     folder_id folder_id_;
@@ -9080,7 +9088,7 @@ private:
 };
 
 //! Represents a <DeletedEvent>
-class deleted_event final
+class deleted_event : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -9136,8 +9144,6 @@ public:
         return e;
     };
 
-    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
-    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
     const std::string& get_timestamp() const EWS_NOEXCEPT { return timestamp_; }
     const item_id& get_item_id() const EWS_NOEXCEPT { return id_; }
     const folder_id& get_folder_id() const EWS_NOEXCEPT { return folder_id_; }
@@ -9147,8 +9153,6 @@ public:
     }
 
 private:
-    event_type type_;
-    std::string watermark_;
     std::string timestamp_;
     item_id id_;
     folder_id folder_id_;
@@ -9156,7 +9160,7 @@ private:
 };
 
 //! Represents a <ModifiedEvent>
-class modified_event final
+class modified_event : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -9219,8 +9223,6 @@ public:
         return e;
     };
 
-    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
-    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
     const std::string& get_timestamp() const EWS_NOEXCEPT { return timestamp_; }
     const item_id& get_item_id() const EWS_NOEXCEPT { return id_; }
     const folder_id& get_folder_id() const EWS_NOEXCEPT { return folder_id_; }
@@ -9231,8 +9233,6 @@ public:
     const int& get_unread_count() const EWS_NOEXCEPT { return unread_count_; }
 
 private:
-    event_type type_;
-    std::string watermark_;
     std::string timestamp_;
     int unread_count_;
     item_id id_;
@@ -9241,7 +9241,7 @@ private:
 };
 
 //! Represents a <MovedEvent>
-class moved_event final
+class moved_event : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -9318,8 +9318,6 @@ public:
         return e;
     };
 
-    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
-    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
     const std::string& get_timestamp() const EWS_NOEXCEPT { return timestamp_; }
     const item_id& get_item_id() const EWS_NOEXCEPT { return id_; }
     const item_id& get_old_item_id() const EWS_NOEXCEPT { return old_item_id_; }
@@ -9338,8 +9336,6 @@ public:
     }
 
 private:
-    event_type type_;
-    std::string watermark_;
     std::string timestamp_;
     item_id id_;
     item_id old_item_id_;
@@ -9350,7 +9346,7 @@ private:
 };
 
 //! Represents a <NewMailEvent>
-class new_mail_event final
+class new_mail_event : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -9399,8 +9395,6 @@ public:
         return e;
     };
 
-    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
-    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
     const std::string& get_timestamp() const EWS_NOEXCEPT { return timestamp_; }
     const item_id& get_item_id() const EWS_NOEXCEPT { return id_; }
     const folder_id& get_parent_folder_id() const EWS_NOEXCEPT
@@ -9409,15 +9403,13 @@ public:
     }
 
 private:
-    event_type type_;
-    std::string watermark_;
     std::string timestamp_;
     item_id id_;
     folder_id parent_folder_id_;
 };
 
 //! Represents a <StatusEvent>
-class status_event final
+class status_event : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -9425,14 +9417,10 @@ public:
 #else
     status_event() {}
 #endif
-    explicit status_event(event_type type, std::string watermark)
-        : type_(std::move(type)), watermark_(std::move(watermark))
-    {
-    }
-
     static status_event from_xml_element(const rapidxml::xml_node<>& elem)
     {
         using rapidxml::internal::compare;
+        status_event e;
         std::string watermark;
         for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
@@ -9442,19 +9430,15 @@ public:
                 watermark = std::string(node->value(), node->value_size());
             }
         }
-        return status_event(event_type::status_event, watermark);
+        e.type_ = event_type::new_mail_event;
+        e.watermark_ = watermark;
+        return e;
     };
 
-    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
-    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
-
-private:
-    event_type type_;
-    std::string watermark_;
 };
 
 //! Represents a <FreeBusyChangedEvent>
-class free_busy_changed_event final
+class free_busy_changed_event : public internal::event_base
 {
 public:
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -9462,12 +9446,6 @@ public:
 #else
     free_busy_changed_event() {}
 #endif
-    explicit free_busy_changed_event(event_type type, std::string watermark,
-                                     std::string timestamp, item_id id)
-        : type_(std::move(type)), watermark_(std::move(watermark)),
-          timestamp_(std::move(timestamp)), id_(std::move(id))
-    {
-    }
 
     static free_busy_changed_event
     from_xml_element(const rapidxml::xml_node<>& elem)
@@ -9510,8 +9488,6 @@ public:
         return e;
     };
 
-    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
-    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
     const std::string& get_timestamp() const EWS_NOEXCEPT { return timestamp_; }
     const item_id& get_item_id() const EWS_NOEXCEPT { return id_; }
     const folder_id& get_parent_folder_id() const EWS_NOEXCEPT
@@ -9520,8 +9496,6 @@ public:
     }
 
 private:
-    event_type type_;
-    std::string watermark_;
     std::string timestamp_;
     item_id id_;
     folder_id parent_folder_id_;
