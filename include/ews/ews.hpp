@@ -8906,7 +8906,7 @@ public:
     copied_event() {}
 #endif
 
-    static copied_event from_xml_element(rapidxml::xml_node<char>* elem)
+    static copied_event from_xml_element(const rapidxml::xml_node<>& elem)
     {
         using rapidxml::internal::compare;
         copied_event e;
@@ -8918,7 +8918,7 @@ public:
         folder_id old_f_id;
         folder_id parent_folder_id;
         folder_id old_parent_folder_id;
-        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
             if (compare(node->local_name(), node->local_name_size(),
                         "Watermark", strlen("Watermark")))
@@ -9014,7 +9014,7 @@ public:
 #else
     created_event() {}
 #endif
-    static created_event from_xml_element(rapidxml::xml_node<char>* elem)
+    static created_event from_xml_element(const rapidxml::xml_node<>& elem)
     {
         using rapidxml::internal::compare;
         created_event e;
@@ -9023,7 +9023,7 @@ public:
         item_id id;
         folder_id f_id;
         folder_id parent_folder_id;
-        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
             if (compare(node->local_name(), node->local_name_size(),
                         "Watermark", strlen("Watermark")))
@@ -9089,7 +9089,7 @@ public:
     deleted_event() {}
 #endif
 
-    static deleted_event from_xml_element(rapidxml::xml_node<char>* elem)
+    static deleted_event from_xml_element(const rapidxml::xml_node<>& elem)
     {
         using rapidxml::internal::compare;
         deleted_event e;
@@ -9098,7 +9098,7 @@ public:
         item_id id;
         folder_id f_id;
         folder_id parent_folder_id;
-        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
             if (compare(node->local_name(), node->local_name_size(),
                         "Watermark", strlen("Watermark")))
@@ -9165,7 +9165,7 @@ public:
     modified_event() {}
 #endif
 
-    static modified_event from_xml_element(rapidxml::xml_node<char>* elem)
+    static modified_event from_xml_element(const rapidxml::xml_node<>& elem)
     {
         using rapidxml::internal::compare;
         modified_event e;
@@ -9175,7 +9175,7 @@ public:
         folder_id f_id;
         folder_id parent_folder_id;
         int unread_count;
-        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
             if (compare(node->local_name(), node->local_name_size(),
                         "Watermark", strlen("Watermark")))
@@ -9250,7 +9250,7 @@ public:
     moved_event() {}
 #endif
 
-    static moved_event from_xml_element(rapidxml::xml_node<char>* elem)
+    static moved_event from_xml_element(const rapidxml::xml_node<>& elem)
     {
         using rapidxml::internal::compare;
         moved_event e;
@@ -9262,7 +9262,7 @@ public:
         folder_id old_f_id;
         folder_id parent_folder_id;
         folder_id old_parent_folder_id;
-        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
             if (compare(node->local_name(), node->local_name_size(),
                         "Watermark", strlen("Watermark")))
@@ -9359,7 +9359,7 @@ public:
     new_mail_event() {}
 #endif
 
-    static new_mail_event from_xml_element(rapidxml::xml_node<char>* elem)
+    static new_mail_event from_xml_element(const rapidxml::xml_node<>& elem)
     {
         using rapidxml::internal::compare;
         new_mail_event e;
@@ -9367,7 +9367,7 @@ public:
         std::string timestamp;
         item_id id;
         folder_id parent_folder_id;
-        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
             if (compare(node->local_name(), node->local_name_size(),
                         "Watermark", strlen("Watermark")))
@@ -9430,11 +9430,11 @@ public:
     {
     }
 
-    static status_event from_xml_element(rapidxml::xml_node<char>* elem)
+    static status_event from_xml_element(const rapidxml::xml_node<>& elem)
     {
         using rapidxml::internal::compare;
         std::string watermark;
-        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
             if (compare(node->local_name(), node->local_name_size(),
                         "Watermark", strlen("Watermark")))
@@ -9470,7 +9470,7 @@ public:
     }
 
     static free_busy_changed_event
-    from_xml_element(rapidxml::xml_node<char>* elem)
+    from_xml_element(const rapidxml::xml_node<>& elem)
     {
         using rapidxml::internal::compare;
         free_busy_changed_event e;
@@ -9478,7 +9478,7 @@ public:
         std::string timestamp;
         item_id id;
         folder_id parent_folder_id;
-        for (auto node = elem->first_node(); node; node = node->next_sibling())
+        for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
             if (compare(node->local_name(), node->local_name_size(),
                         "Watermark", strlen("Watermark")))
@@ -21233,7 +21233,7 @@ namespace internal
             {
                 auto e = notification_element->first_node_ns(
                     uri<>::microsoft::types(), "StatusEvent");
-                status_event s = status_event::from_xml_element(e);
+                status_event s = status_event::from_xml_element(*e);
                 n.events.emplace_back(s);
             }
             else
@@ -21242,42 +21242,42 @@ namespace internal
                          uri<>::microsoft::types(), "CopiedEvent");
                      res; res = res->next_sibling())
                 {
-                    copied_event c = copied_event::from_xml_element(res);
+                    copied_event c = copied_event::from_xml_element(*res);
                     n.events.emplace_back(c);
                 }
                 for (auto res = notification_element->first_node_ns(
                          uri<>::microsoft::types(), "CreatedEvent");
                      res; res = res->next_sibling())
                 {
-                    created_event c = created_event::from_xml_element(res);
+                    created_event c = created_event::from_xml_element(*res);
                     n.events.emplace_back(c);
                 }
                 for (auto res = notification_element->first_node_ns(
                          uri<>::microsoft::types(), "DeletedEvent");
                      res; res = res->next_sibling())
                 {
-                    deleted_event d = deleted_event::from_xml_element(res);
+                    deleted_event d = deleted_event::from_xml_element(*res);
                     n.events.emplace_back(d);
                 }
                 for (auto res = notification_element->first_node_ns(
                          uri<>::microsoft::types(), "ModifiedEvent");
                      res; res = res->next_sibling())
                 {
-                    modified_event d = modified_event::from_xml_element(res);
+                    modified_event d = modified_event::from_xml_element(*res);
                     n.events.emplace_back(d);
                 }
                 for (auto res = notification_element->first_node_ns(
                          uri<>::microsoft::types(), "MovedEvent");
                      res; res = res->next_sibling())
                 {
-                    moved_event m = moved_event::from_xml_element(res);
+                    moved_event m = moved_event::from_xml_element(*res);
                     n.events.emplace_back(m);
                 }
                 for (auto res = notification_element->first_node_ns(
                          uri<>::microsoft::types(), "NewMailEvent");
                      res; res = res->next_sibling())
                 {
-                    new_mail_event m = new_mail_event::from_xml_element(res);
+                    new_mail_event m = new_mail_event::from_xml_element(*res);
                     n.events.emplace_back(m);
                 }
                 for (auto res = notification_element->first_node_ns(
@@ -21285,7 +21285,7 @@ namespace internal
                      res; res = res->next_sibling())
                 {
                     free_busy_changed_event f =
-                        free_busy_changed_event::from_xml_element(res);
+                        free_busy_changed_event::from_xml_element(*res);
                     n.events.emplace_back(f);
                 }
             }
