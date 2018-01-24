@@ -8974,15 +8974,24 @@ public:
         return e;
     };
 
-    event_type get_type() { return type_; }
-    std::string get_watermark() { return watermark_; }
-    std::string get_timestamp() { return timestamp_; }
-    item_id get_item_id() { return id_; }
-    item_id get_old_item_id() { return old_item_id_; }
-    folder_id get_folder_id() { return folder_id_; }
-    folder_id get_old_folder_id() { return old_folder_id_; }
-    folder_id get_parent_folder_id() { return parent_folder_id_; }
-    folder_id get_old_parent_folder_id() { return old_parent_folder_id_; }
+    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
+    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
+    const std::string& get_timestamp() const EWS_NOEXCEPT { return timestamp_; }
+    const item_id& get_item_id() const EWS_NOEXCEPT { return id_; }
+    const item_id& get_old_item_id() const EWS_NOEXCEPT { return old_item_id_; }
+    const folder_id& get_folder_id() const EWS_NOEXCEPT { return folder_id_; }
+    const folder_id& get_old_folder_id() const EWS_NOEXCEPT
+    {
+        return old_folder_id_;
+    }
+    const folder_id& get_parent_folder_id() const EWS_NOEXCEPT
+    {
+        return parent_folder_id_;
+    }
+    const folder_id& get_old_parent_folder_id() const EWS_NOEXCEPT
+    {
+        return old_parent_folder_id_;
+    }
 
 private:
     event_type type_;
@@ -9051,12 +9060,15 @@ public:
         return e;
     };
 
-    event_type get_type() { return type_; }
-    std::string get_watermark() { return watermark_; }
-    std::string get_timestamp() { return timestamp_; }
-    item_id get_item_id() { return id_; }
-    folder_id get_folder_id() { return folder_id_; }
-    folder_id get_parent_folder_id() { return parent_folder_id_; }
+    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
+    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
+    const std::string& get_timestamp() const EWS_NOEXCEPT { return timestamp_; }
+    const item_id& get_item_id() const EWS_NOEXCEPT { return id_; }
+    const folder_id& get_folder_id() const EWS_NOEXCEPT { return folder_id_; }
+    const folder_id& get_parent_folder_id() const EWS_NOEXCEPT
+    {
+        return parent_folder_id_;
+    }
 
 private:
     event_type type_;
@@ -9124,12 +9136,15 @@ public:
         return e;
     };
 
-    event_type get_type() { return type_; }
-    std::string get_watermark() { return watermark_; }
-    std::string get_timestamp() { return timestamp_; }
-    item_id get_item_id() { return id_; }
-    folder_id get_folder_id() { return folder_id_; }
-    folder_id get_parent_folder_id() { return parent_folder_id_; }
+    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
+    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
+    const std::string& get_timestamp() const EWS_NOEXCEPT { return timestamp_; }
+    const item_id& get_item_id() const EWS_NOEXCEPT { return id_; }
+    const folder_id& get_folder_id() const EWS_NOEXCEPT { return folder_id_; }
+    const folder_id& get_parent_folder_id() const EWS_NOEXCEPT
+    {
+        return parent_folder_id_;
+    }
 
 private:
     event_type type_;
@@ -9204,13 +9219,16 @@ public:
         return e;
     };
 
-    event_type get_type() { return type_; }
-    std::string get_watermark() { return watermark_; }
-    std::string get_timestamp() { return timestamp_; }
-    item_id get_item_id() { return id_; }
-    folder_id get_folder_id() { return folder_id_; }
-    folder_id get_parent_folder_id() { return parent_folder_id_; }
-    int get_unread_count() { return unread_count_; }
+    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
+    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
+    const std::string& get_timestamp() const EWS_NOEXCEPT { return timestamp_; }
+    const item_id& get_item_id() const EWS_NOEXCEPT { return id_; }
+    const folder_id& get_folder_id() const EWS_NOEXCEPT { return folder_id_; }
+    const folder_id& get_parent_folder_id() const EWS_NOEXCEPT
+    {
+        return parent_folder_id_;
+    }
+    const int& get_unread_count() const EWS_NOEXCEPT { return unread_count_; }
 
 private:
     event_type type_;
@@ -9300,15 +9318,24 @@ public:
         return e;
     };
 
-    event_type get_type() { return type_; }
-    std::string get_watermark() { return watermark_; }
-    std::string get_timestamp() { return timestamp_; }
-    item_id get_item_id() { return id_; }
-    item_id get_old_item_id() { return old_item_id_; }
-    folder_id get_folder_id() { return folder_id_; }
-    folder_id get_old_folder_id() { return old_folder_id_; }
-    folder_id get_parent_folder_id() { return parent_folder_id_; }
-    folder_id get_old_parent_folder_id() { return old_parent_folder_id_; }
+    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
+    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
+    const std::string& get_timestamp() const EWS_NOEXCEPT { return timestamp_; }
+    const item_id& get_item_id() const EWS_NOEXCEPT { return id_; }
+    const item_id& get_old_item_id() const EWS_NOEXCEPT { return old_item_id_; }
+    const folder_id& get_folder_id() const EWS_NOEXCEPT { return folder_id_; }
+    const folder_id& get_old_folder_id() const EWS_NOEXCEPT
+    {
+        return old_folder_id_;
+    }
+    const folder_id& get_parent_folder_id() const EWS_NOEXCEPT
+    {
+        return parent_folder_id_;
+    }
+    const folder_id& get_old_parent_folder_id() const EWS_NOEXCEPT
+    {
+        return old_parent_folder_id_;
+    }
 
 private:
     event_type type_;
@@ -9372,11 +9399,14 @@ public:
         return e;
     };
 
-    event_type get_type() { return type_; }
-    std::string get_watermark() { return watermark_; }
-    std::string get_timestamp() { return timestamp_; }
-    item_id get_item_id() { return id_; }
-    folder_id get_parent_folder_id() { return parent_folder_id_; }
+    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
+    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
+    const std::string& get_timestamp() const EWS_NOEXCEPT { return timestamp_; }
+    const item_id& get_item_id() const EWS_NOEXCEPT { return id_; }
+    const folder_id& get_parent_folder_id() const EWS_NOEXCEPT
+    {
+        return parent_folder_id_;
+    }
 
 private:
     event_type type_;
@@ -9415,8 +9445,8 @@ public:
         return status_event(event_type::status_event, watermark);
     };
 
-    event_type get_type() { return type_; }
-    std::string get_watermark() { return watermark_; }
+    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
+    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
 
 private:
     event_type type_;
@@ -9480,11 +9510,14 @@ public:
         return e;
     };
 
-    event_type get_type() { return type_; }
-    std::string get_watermark() { return watermark_; }
-    std::string get_timestamp() { return timestamp_; }
-    item_id get_item_id() { return id_; }
-    folder_id get_parent_folder_id() { return parent_folder_id_; }
+    const event_type& get_type() const EWS_NOEXCEPT { return type_; }
+    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
+    const std::string& get_timestamp() const EWS_NOEXCEPT { return timestamp_; }
+    const item_id& get_item_id() const EWS_NOEXCEPT { return id_; }
+    const folder_id& get_parent_folder_id() const EWS_NOEXCEPT
+    {
+        return parent_folder_id_;
+    }
 
 private:
     event_type type_;
