@@ -5,6 +5,7 @@ You'll find a complete list of changes at the project site on [GitHub](https://g
 New features:
 - Support for the `<ResolveNames>` operation ([#73](https://github.com/otris/ews-cpp/issues/73)) has been added.
 - Support for `<CreateFolder>`, `<GetFolder>`, `<DeleteFolder>`, `<FindFolder>` operations ([#96](https://github.com/otris/ews-cpp/pull/96)) has been added.
+- Support for EWS notification operations (`<Subscribe>`, `<GetEvents>`, `<Unsubscribe>`) has been added ([#85](https://github.com/otris/ews-cpp/pull/85)).
 
 ### 0.6 (2011-11-27)
 New features:

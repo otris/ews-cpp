@@ -104,6 +104,8 @@ C++ application.
     permissions individually to each mailbox and directly modify folder
     permissions.
 * Discovering Exchange servers in your network with Autodiscover is supported.
+* EWS notification operations (`<Subscribe>`, `<GetEvents>`, `<Unsubscribe>`)
+  to inform you about specific item or folder changes are supported.
 
 ## Supported Authentication Schemes
 
