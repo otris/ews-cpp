@@ -65,7 +65,8 @@ int main()
         {
             std::visit(
                 overloaded{
-                    [](auto&& arg) {
+                    [](auto&&) { /* do nothing */ },
+                    [](ews::created_event arg) {
                         std::cout << "EventType: "
                                   << ews::internal::enum_to_str(arg.get_type())
                                   << std::endl;
@@ -73,13 +74,7 @@ int main()
                                   << std::endl;
                         std::cout << "Timestamp: " << arg.get_timestamp()
                                   << std::endl;
-                    },
-                    [](ews::status_event arg) {
-                        std::cout << "EventType: "
-                                  << ews::internal::enum_to_str(arg.get_type())
-                                  << std::endl;
-                        std::cout << "Watermark: " << arg.get_watermark()
-                                  << std::endl;
+
                     }},
                 e);
         }
