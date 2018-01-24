@@ -376,10 +376,7 @@ add_subdirectory(${GTEST_ROOT} EXCLUDE_FROM_ALL)
 include_directories(${GTEST_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 if(!HAS_VARIANT)
-add_executable(tests
-    ${ews_SOURCES}
-    ${rapidxml_SOURCES}
-    tests/fixtures.hpp
+set(ews_TESTS tests/fixtures.hpp
     tests/main.cpp
     tests/regressions/91.cpp
     tests/test_attachments.cpp
@@ -398,10 +395,7 @@ add_executable(tests
 endif()
 
 if(HAS_VARIANT)
-add_executable(tests
-    ${ews_SOURCES}
-    ${rapidxml_SOURCES}
-    tests/fixtures.hpp
+set(ews_TESTS tests/fixtures.hpp
     tests/main.cpp
     tests/regressions/91.cpp
     tests/test_attachments.cpp
@@ -419,6 +413,11 @@ add_executable(tests
     tests/test_tasks.cpp
     tests/test_timeout.cpp)
 endif()
+
+add_executable(tests
+    ${ews_SOURCES}
+    ${rapidxml_SOURCES}
+    ${ews_TESTS})
 
 if(Boost_FOUND)
     target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES}
