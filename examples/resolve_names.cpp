@@ -34,14 +34,14 @@ int main()
                                     env.password);
 
         std::string name = "person";
-        auto response =
+        auto resolution_set =
             service.resolve_names(name, ews::search_scope::active_directory);
-        std::cout << response.total_items_in_view << std::endl;
-        for (const auto& reso : response.resolutions)
+        std::cout << resolution_set.total_items_in_view << std::endl;
+        for (const auto& hit : resolution_set)
         {
-            std::cout << reso.mailbox.name() << std::endl;
-            std::cout << reso.mailbox.value() << std::endl;
-            std::cout << reso.directory_id.get_id() << std::endl;
+            std::cout << hit.mailbox.name() << "\n"
+                      << hit.mailbox.value() << "\n"
+                      << hit.directory_id.get_id() << std::endl;
         }
     }
     catch (std::exception& exc)
