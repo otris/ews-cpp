@@ -6319,22 +6319,28 @@ namespace internal
 //! Identifies the type of event returned or to subscribe to.
 enum class event_type
 {
-    //! an event in which an item or folder is copied.
+    //! An event in which an item or folder is copied.
     copied_event,
-    //! an event in which an item or folder is created.
+
+    //! An event in which an item or folder is created.
     created_event,
-    //! an event in which an item or folder is deleted.
+
+    //! An event in which an item or folder is deleted.
     deleted_event,
-    //! an event in which an item or folder is modified.
+
+    //! An event in which an item or folder is modified.
     modified_event,
-    //! an event in which an item or folder is moved from one parent folder to
+
+    //! An event in which an item or folder is moved from one parent folder to
     //! another parent folder.
     moved_event,
-    //! an event that is triggered by a new mail item in a mailbox.
+
+    //! An event that is triggered by a new mail item in a mailbox.
     new_mail_event,
-    //! a notification that no new activity has occurred in the mailbox.
+    //! A notification that no new activity has occurred in the mailbox.
     status_event,
-    //! an event in which an item’s free/busy time has changed.
+
+    //! An event in which an item’s free/busy time has changed.
     free_busy_changed_event
 };
 
@@ -6342,7 +6348,7 @@ namespace internal
 {
     inline std::string enum_to_str(event_type e)
     {
-        switch(e)
+        switch (e)
         {
         case event_type::copied_event:
             return "CopiedEvent";
@@ -7680,9 +7686,10 @@ namespace internal
         if (!account_node)
         {
             // Check for <Error/> element
-            const auto error_node = get_element_by_qname(
-                *doc, "Error", "http://schemas.microsoft.com/exchange/"
-                               "autodiscover/responseschema/2006");
+            const auto error_node =
+                get_element_by_qname(*doc, "Error",
+                                     "http://schemas.microsoft.com/exchange/"
+                                     "autodiscover/responseschema/2006");
             if (error_node)
             {
                 std::string error_code;
@@ -8371,10 +8378,7 @@ public:
     {
         return subscription_id_;
     }
-    const std::string& get_watermark() const EWS_NOEXCEPT
-    {
-        return watermark_;
-    }
+    const std::string& get_watermark() const EWS_NOEXCEPT { return watermark_; }
 
 private:
     std::string subscription_id_;
@@ -8382,7 +8386,8 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<subscription_information>::value, "");
+static_assert(std::is_default_constructible<subscription_information>::value,
+              "");
 static_assert(std::is_copy_constructible<subscription_information>::value, "");
 static_assert(std::is_copy_assignable<subscription_information>::value, "");
 static_assert(std::is_move_constructible<subscription_information>::value, "");
@@ -9436,7 +9441,6 @@ public:
         e.watermark_ = watermark;
         return e;
     };
-
 };
 
 //! Represents a <FreeBusyChangedEvent>
@@ -9782,8 +9786,9 @@ namespace internal
             if (message_text_elem)
             {
                 return response_result(
-                    cls, code, std::string(message_text_elem->value(),
-                                           message_text_elem->value_size()));
+                    cls, code,
+                    std::string(message_text_elem->value(),
+                                message_text_elem->value_size()));
             }
         }
 
@@ -10205,7 +10210,7 @@ namespace internal
 
     private:
         subscribe_response_message(response_result&& res,
-                                       subscription_information&& info)
+                                   subscription_information&& info)
             : response_message_base(std::move(res)),
               information_(std::move(info))
         {
@@ -10466,8 +10471,7 @@ namespace internal
     };
 }
 
-class sync_folder_items_result final
-    : public internal::response_message_base
+class sync_folder_items_result final : public internal::response_message_base
 {
 public:
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
@@ -10475,10 +10479,7 @@ public:
     static sync_folder_items_result parse(internal::http_response&&);
 #endif
 
-    std::string get_sync_state() const EWS_NOEXCEPT
-    {
-        return sync_state_;
-    }
+    std::string get_sync_state() const EWS_NOEXCEPT { return sync_state_; }
 
     std::vector<item_id> get_created_items() const EWS_NOEXCEPT
     {
@@ -10495,7 +10496,8 @@ public:
         return deleted_items_;
     }
 
-    std::vector<std::pair<item_id, bool>> get_read_flag_changed() const EWS_NOEXCEPT
+    std::vector<std::pair<item_id, bool>>
+    get_read_flag_changed() const EWS_NOEXCEPT
     {
         return read_flag_changed_;
     }
@@ -12185,15 +12187,15 @@ public:
         return xml().get_value_as_string("Culture");
     }
 
-// Following properties are beyond 2007 scope:
-//   <EffectiveRights/>
-//   <LastModifiedName/>
-//   <LastModifiedTime/>
-//   <IsAssociated/>
-//   <WebClientReadFormQueryString/>
-//   <WebClientEditFormQueryString/>
-//   <ConversationId/>
-//   <UniqueBody/>
+        // Following properties are beyond 2007 scope:
+        //   <EffectiveRights/>
+        //   <LastModifiedName/>
+        //   <LastModifiedTime/>
+        //   <IsAssociated/>
+        //   <WebClientReadFormQueryString/>
+        //   <WebClientEditFormQueryString/>
+        //   <ConversationId/>
+        //   <UniqueBody/>
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
 protected:
@@ -14492,8 +14494,8 @@ public:
 
     void set_email_address(const email_address& address)
     {
-        using rapidxml::internal::compare;
         using internal::create_node;
+        using rapidxml::internal::compare;
         auto doc = xml().document();
         auto email_addresses = xml().get_node("EmailAddresses");
 
@@ -14554,8 +14556,8 @@ public:
 
     void set_physical_address(const physical_address& address)
     {
-        using rapidxml::internal::compare;
         using internal::create_node;
+        using rapidxml::internal::compare;
         auto doc = xml().document();
         auto addresses = xml().get_node("PhysicalAddresses");
         // <PhysicalAddresses>
@@ -14638,8 +14640,8 @@ public:
     // A collection of phone numbers for the contact
     void set_phone_number(const phone_number& number)
     {
-        using rapidxml::internal::compare;
         using internal::create_node;
+        using rapidxml::internal::compare;
         auto doc = xml().document();
         auto phone_numbers = xml().get_node("PhoneNumbers");
 
@@ -14798,8 +14800,8 @@ public:
 
     void set_im_address(const im_address& im_address)
     {
-        using rapidxml::internal::compare;
         using internal::create_node;
+        using rapidxml::internal::compare;
         auto doc = xml().document();
         auto im_addresses = xml().get_node("ImAddresses");
 
@@ -15025,8 +15027,8 @@ private:
     // Helper function for set_email_address_{1,2,3}
     void set_email_address_by_key(const char* key, mailbox&& mail)
     {
-        using rapidxml::internal::compare;
         using internal::create_node;
+        using rapidxml::internal::compare;
 
         auto doc = xml().document();
         auto addresses = xml().get_node("EmailAddresses");
@@ -18418,9 +18420,7 @@ public:
     sync_folder_items_result sync_folder_items(const folder_id& folder_id,
                                                int max_changes_returned = 512)
     {
-        return sync_folder_items(folder_id,
-            "",
-            max_changes_returned);
+        return sync_folder_items(folder_id, "", max_changes_returned);
     }
 
     sync_folder_items_result sync_folder_items(const folder_id& folder_id,
@@ -18428,21 +18428,17 @@ public:
                                                int max_changes_returned = 512)
     {
         std::vector<item_id> ignored_items;
-        return sync_folder_items(folder_id,
-            sync_state,
-            ignored_items,
-            max_changes_returned);
+        return sync_folder_items(folder_id, sync_state, ignored_items,
+                                 max_changes_returned);
     }
 
-    sync_folder_items_result sync_folder_items(const folder_id& folder_id, 
-        const std::string& sync_state,
-        const std::vector<item_id>& ignored_items,
-        int max_changes_returned = 512)
+    sync_folder_items_result
+    sync_folder_items(const folder_id& folder_id, const std::string& sync_state,
+                      const std::vector<item_id>& ignored_items,
+                      int max_changes_returned = 512)
     {
-        return sync_folder_items_impl(folder_id,
-            sync_state,
-            ignored_items,
-            max_changes_returned);
+        return sync_folder_items_impl(folder_id, sync_state, ignored_items,
+                                      max_changes_returned);
     }
 
     //! Gets a folder from the Exchange store.
@@ -18627,8 +18623,9 @@ public:
                                            internal::enum_to_str(del_type) +
                                            "\">"
                                            "<m:FolderIds>" +
-                                           id.to_xml() + "</m:FolderIds>"
-                                                         "</m:DeleteFolder>";
+                                           id.to_xml() +
+                                           "</m:FolderIds>"
+                                           "</m:DeleteFolder>";
 
         auto response = request(request_string);
         const auto response_message =
@@ -18653,15 +18650,18 @@ public:
         const std::string request_string =
             "<m:DeleteItem "
             "DeleteType=\"" +
-            internal::enum_to_str(del_type) + "\" "
-                                              "SendMeetingCancellations=\"" +
+            internal::enum_to_str(del_type) +
+            "\" "
+            "SendMeetingCancellations=\"" +
             internal::enum_to_str(cancellations) +
             "\" "
             "AffectedTaskOccurrences=\"" +
-            internal::enum_to_str(affected) + "\">"
-                                              "<m:ItemIds>" +
-            id.to_xml() + "</m:ItemIds>"
-                          "</m:DeleteItem>";
+            internal::enum_to_str(affected) +
+            "\">"
+            "<m:ItemIds>" +
+            id.to_xml() +
+            "</m:ItemIds>"
+            "</m:DeleteItem>";
 
         auto response = request(request_string);
         const auto response_message =
@@ -19052,8 +19052,9 @@ public:
             "<t:BaseShape>IdOnly</t:BaseShape>"
             "</m:FolderShape>"
             "<m:ParentFolderIds>" +
-            parent_folder_id.to_xml() + "</m:ParentFolderIds>"
-                                        "</m:FindFolder>";
+            parent_folder_id.to_xml() +
+            "</m:ParentFolderIds>"
+            "</m:FindFolder>";
 
         auto response = request(request_string);
         const auto response_message =
@@ -19121,8 +19122,9 @@ public:
             "<m:FindItem Traversal=\"Shallow\">"
             "<m:ItemShape>"
             "<t:BaseShape>" +
-            internal::enum_to_str(shape) + "</t:BaseShape>"
-                                           "</m:ItemShape>" +
+            internal::enum_to_str(shape) +
+            "</t:BaseShape>"
+            "</m:ItemShape>" +
             view.to_xml() + "<m:ParentFolderIds>" + parent_folder_id.to_xml() +
             "</m:ParentFolderIds>"
             "</m:FindItem>";
@@ -19152,16 +19154,17 @@ public:
     std::vector<item_id> find_item(const folder_id& parent_folder_id,
                                    search_expression restriction)
     {
-        const std::string request_string =
-            "<m:FindItem Traversal=\"Shallow\">"
-            "<m:ItemShape>"
-            "<t:BaseShape>IdOnly</t:BaseShape>"
-            "</m:ItemShape>"
-            "<m:Restriction>" +
-            restriction.to_xml() + "</m:Restriction>"
-                                   "<m:ParentFolderIds>" +
-            parent_folder_id.to_xml() + "</m:ParentFolderIds>"
-                                        "</m:FindItem>";
+        const std::string request_string = "<m:FindItem Traversal=\"Shallow\">"
+                                           "<m:ItemShape>"
+                                           "<t:BaseShape>IdOnly</t:BaseShape>"
+                                           "</m:ItemShape>"
+                                           "<m:Restriction>" +
+                                           restriction.to_xml() +
+                                           "</m:Restriction>"
+                                           "<m:ParentFolderIds>" +
+                                           parent_folder_id.to_xml() +
+                                           "</m:ParentFolderIds>"
+                                           "</m:FindItem>";
 
         auto response = request(request_string);
         const auto response_message =
@@ -19356,10 +19359,12 @@ public:
         auto response = request("<m:CreateAttachment>"
                                 "<m:ParentItemId Id=\"" +
                                 parent_item.id() + "\" ChangeKey=\"" +
-                                parent_item.change_key() + "\"/>"
-                                                           "<m:Attachments>" +
-                                a.to_xml() + "</m:Attachments>"
-                                             "</m:CreateAttachment>");
+                                parent_item.change_key() +
+                                "\"/>"
+                                "<m:Attachments>" +
+                                a.to_xml() +
+                                "</m:Attachments>"
+                                "</m:CreateAttachment>");
 
         const auto response_message =
             internal::create_attachment_response_message::parse(
@@ -19404,8 +19409,9 @@ public:
                                 "<m:AdditionalProperties/>"
                                 "</m:AttachmentShape>"
                                 "<m:AttachmentIds>" +
-                                id.to_xml() + "</m:AttachmentIds>"
-                                              "</m:GetAttachment>");
+                                id.to_xml() +
+                                "</m:AttachmentIds>"
+                                "</m:GetAttachment>");
 
         const auto response_message =
             internal::get_attachment_response_message::parse(
@@ -19428,8 +19434,9 @@ public:
     {
         auto response = request("<m:DeleteAttachment>"
                                 "<m:AttachmentIds>" +
-                                id.to_xml() + "</m:AttachmentIds>"
-                                              "</m:DeleteAttachment>");
+                                id.to_xml() +
+                                "</m:AttachmentIds>"
+                                "</m:DeleteAttachment>");
         const auto response_message =
             internal::delete_attachment_response_message::parse(
                 std::move(response));
@@ -19496,8 +19503,7 @@ public:
     //! \param subscription_id The id of the subscription to unsubscribe from
     //!
     //! Returns void
-    void
-    unsubscribe(const std::string& subscription_id)
+    void unsubscribe(const std::string& subscription_id)
     {
         return unsubscribe_impl(subscription_id);
     }
@@ -19524,8 +19530,8 @@ private:
     // checks the response for faults.
     internal::http_response request(const std::string& request_string)
     {
-        using rapidxml::internal::compare;
         using internal::get_element_by_qname;
+        using rapidxml::internal::compare;
 
         auto soap_headers = std::vector<std::string>();
         soap_headers.emplace_back("<t:RequestServerVersion Version=\"" +
@@ -19604,24 +19610,20 @@ private:
         }
     }
 
-    sync_folder_items_result sync_folder_items_impl(const folder_id& folder_id,
-                                                    const std::string& sync_state,
-                                                    std::vector<item_id> ignored_items,
-                                                    int max_changes_returned = 512)
+    sync_folder_items_result sync_folder_items_impl(
+        const folder_id& folder_id, const std::string& sync_state,
+        std::vector<item_id> ignored_items, int max_changes_returned = 512)
     {
         std::stringstream sstr;
         sstr << "<m:SyncFolderItems>"
-            "<m:ItemShape>"
-            << internal::enum_to_str(ews::base_shape::id_only)
-            << "</m:ItemShape>"
-            "<m:SyncFolderId>"
-            << folder_id.to_xml()
-            << "</m:SyncFolderId>";
+                "<m:ItemShape>"
+             << internal::enum_to_str(ews::base_shape::id_only)
+             << "</m:ItemShape>"
+                "<m:SyncFolderId>"
+             << folder_id.to_xml() << "</m:SyncFolderId>";
         if (!sync_state.empty())
         {
-            sstr << "<m:SyncState>"
-                << sync_state
-                << "</m:SyncState>";
+            sstr << "<m:SyncState>" << sync_state << "</m:SyncState>";
         }
         if (!ignored_items.empty())
         {
@@ -19632,10 +19634,9 @@ private:
             }
             sstr << "</m:Ignore>";
         }
-        sstr << "<m:MaxChangesReturned>"
-            << max_changes_returned
-            << "</m:MaxChangesReturned>"
-            "</m:SyncFolderItems>";
+        sstr << "<m:MaxChangesReturned>" << max_changes_returned
+             << "</m:MaxChangesReturned>"
+                "</m:SyncFolderItems>";
 
         auto response = request(sstr.str());
         const auto response_message =
@@ -19645,7 +19646,7 @@ private:
             throw exchange_error(response_message.result());
         }
         EWS_ASSERT(!response_message.get_sync_state().empty() &&
-            "Expected at least a sync state");
+                   "Expected at least a sync state");
         return response_message;
     }
 
@@ -19658,8 +19659,9 @@ private:
                                            "</t:BaseShape>"
                                            "</m:FolderShape>"
                                            "<m:FolderIds>" +
-                                           id.to_xml() + "</m:FolderIds>"
-                                                         "</m:GetFolder>";
+                                           id.to_xml() +
+                                           "</m:FolderIds>"
+                                           "</m:GetFolder>";
 
         auto response = request(request_string);
         const auto response_message =
@@ -19683,8 +19685,9 @@ private:
         sstr << "<m:GetFolder>"
                 "<m:FolderShape>"
                 "<t:BaseShape>"
-             << internal::enum_to_str(shape) << "</t:BaseShape>"
-                                                "<t:AdditionalProperties>";
+             << internal::enum_to_str(shape)
+             << "</t:BaseShape>"
+                "<t:AdditionalProperties>";
         for (const auto& prop : additional_properties)
         {
             sstr << prop.to_xml();
@@ -19692,8 +19695,9 @@ private:
         sstr << "</t:AdditionalProperties>"
                 "</m:FolderShape>"
                 "<m:FolderIds>"
-             << id.to_xml() << "</m:FolderIds>"
-                               "</m:GetFolder>";
+             << id.to_xml()
+             << "</m:FolderIds>"
+                "</m:GetFolder>";
 
         auto response = request(sstr.str());
         const auto response_messages =
@@ -19714,9 +19718,10 @@ private:
         sstr << "<m:GetFolder>"
                 "<m:FolderShape>"
                 "<t:BaseShape>"
-             << internal::enum_to_str(shape) << "</t:BaseShape>"
-                                                "</m:FolderShape>"
-                                                "<m:FolderIds>";
+             << internal::enum_to_str(shape)
+             << "</t:BaseShape>"
+                "</m:FolderShape>"
+                "<m:FolderIds>";
         for (const auto& id : ids)
         {
             sstr << id.to_xml();
@@ -19745,8 +19750,9 @@ private:
         sstr << "<m:GetFolder>"
                 "<m:FolderShape>"
                 "<t:BaseShape>"
-             << internal::enum_to_str(shape) << "</t:BaseShape>"
-                                                "<t:AdditionalProperties>";
+             << internal::enum_to_str(shape)
+             << "</t:BaseShape>"
+                "<t:AdditionalProperties>";
         for (const auto& prop : additional_properties)
         {
             sstr << prop.to_xml();
@@ -19782,8 +19788,9 @@ private:
                                            "</t:BaseShape>"
                                            "</m:ItemShape>"
                                            "<m:ItemIds>" +
-                                           id.to_xml() + "</m:ItemIds>"
-                                                         "</m:GetItem>";
+                                           id.to_xml() +
+                                           "</m:ItemIds>"
+                                           "</m:GetItem>";
 
         auto response = request(request_string);
         const auto response_message =
@@ -19810,8 +19817,9 @@ private:
         sstr << "<m:GetItem>"
                 "<m:ItemShape>"
                 "<t:BaseShape>"
-             << internal::enum_to_str(shape) << "</t:BaseShape>"
-                                                "<t:AdditionalProperties>";
+             << internal::enum_to_str(shape)
+             << "</t:BaseShape>"
+                "<t:AdditionalProperties>";
         for (const auto& prop : additional_properties)
         {
             sstr << prop.to_xml();
@@ -19819,8 +19827,9 @@ private:
         sstr << "</t:AdditionalProperties>"
                 "</m:ItemShape>"
                 "<m:ItemIds>"
-             << id.to_xml() << "</m:ItemIds>"
-                               "</m:GetItem>";
+             << id.to_xml()
+             << "</m:ItemIds>"
+                "</m:GetItem>";
 
         auto response = request(sstr.str());
         const auto response_message =
@@ -19846,9 +19855,10 @@ private:
         sstr << "<m:GetItem>"
                 "<m:ItemShape>"
                 "<t:BaseShape>"
-             << internal::enum_to_str(shape) << "</t:BaseShape>"
-                                                "</m:ItemShape>"
-                                                "<m:ItemIds>";
+             << internal::enum_to_str(shape)
+             << "</t:BaseShape>"
+                "</m:ItemShape>"
+                "<m:ItemIds>";
         for (const auto& id : ids)
         {
             sstr << id.to_xml();
@@ -19881,8 +19891,9 @@ private:
         sstr << "<m:GetItem>"
                 "<m:ItemShape>"
                 "<t:BaseShape>"
-             << internal::enum_to_str(shape) << "</t:BaseShape>"
-                                                "<t:AdditionalProperties>";
+             << internal::enum_to_str(shape)
+             << "</t:BaseShape>"
+                "<t:AdditionalProperties>";
         for (const auto& prop : additional_properties)
         {
             sstr << prop.to_xml();
@@ -19927,8 +19938,9 @@ private:
         sstr << "</t:AdditionalProperties>"
                 "</m:ItemShape>"
                 "<m:ItemIds>"
-             << id.to_xml() << "</m:ItemIds>"
-                               "</m:GetItem>";
+             << id.to_xml()
+             << "</m:ItemIds>"
+                "</m:GetItem>";
 
         auto response = request(sstr.str());
         const auto response_message =
@@ -20110,12 +20122,14 @@ private:
         std::stringstream sstr;
         sstr << "<m:CreateFolder >"
                 "<m:ParentFolderId>"
-             << parent_folder.to_xml() << "</m:ParentFolderId>"
-                                          "<m:Folders>"
-                                          "<t:Folder>"
-             << new_folder.xml().to_string() << "</t:Folder>"
-                                                "</m:Folders>"
-                                                "</m:CreateFolder>";
+             << parent_folder.to_xml()
+             << "</m:ParentFolderId>"
+                "<m:Folders>"
+                "<t:Folder>"
+             << new_folder.xml().to_string()
+             << "</t:Folder>"
+                "</m:Folders>"
+                "</m:CreateFolder>";
 
         auto response = request(sstr.str());
         const auto response_message =
@@ -20139,8 +20153,9 @@ private:
         std::stringstream sstr;
         sstr << "<m:CreateFolder >"
                 "<m:ParentFolderId>"
-             << parent_folder.to_xml() << "</m:ParentFolderId>"
-                                          "<m:Folders>";
+             << parent_folder.to_xml()
+             << "</m:ParentFolderId>"
+                "<m:Folders>";
         for (const auto& folder : new_folders)
         {
             sstr << "<t:Folder>" << folder.xml().to_string() << "</t:Folder>";
@@ -20421,9 +20436,7 @@ private:
     {
         std::stringstream sstr;
         sstr << "<m:Unsubscribe>"
-             << "<m:SubscriptionId>"
-             << id
-             << "</m:SubscriptionId>"
+             << "<m:SubscriptionId>" << id << "</m:SubscriptionId>"
              << "</m:Unsubscribe>";
         auto response = request(sstr.str());
         const auto response_message =
@@ -20438,12 +20451,8 @@ private:
     {
         std::stringstream sstr;
         sstr << "<m:GetEvents>"
-             << "<m:SubscriptionId>"
-             << id
-             << "</m:SubscriptionId>"
-             << "<m:Watermark>"
-             << mark
-             << "</m:Watermark>"
+             << "<m:SubscriptionId>" << id << "</m:SubscriptionId>"
+             << "<m:Watermark>" << mark << "</m:Watermark>"
              << "</m:GetEvents>";
         auto response = request(sstr.str());
         const auto response_message =
@@ -20495,101 +20504,89 @@ sync_folder_items_result::parse(internal::http_response&& response)
     using rapidxml::internal::compare;
 
     const auto doc = parse_response(std::move(response));
-    auto elem = internal::get_element_by_qname(*doc, 
-        "SyncFolderItemsResponseMessage",
-        internal::uri<>::microsoft::messages());
+    auto elem =
+        internal::get_element_by_qname(*doc, "SyncFolderItemsResponseMessage",
+                                       internal::uri<>::microsoft::messages());
 
     EWS_ASSERT(elem &&
-        "Expected <SyncFolderItemsResponseMessage>, got nullptr");
+               "Expected <SyncFolderItemsResponseMessage>, got nullptr");
     auto result = internal::parse_response_class_and_code(*elem);
 
     auto sync_state_elem = elem->first_node_ns(
         internal::uri<>::microsoft::messages(), "SyncState");
     EWS_ASSERT(sync_state_elem && "Expected <SyncState> element");
-    auto sync_state = std::string(sync_state_elem->value(), 
-        sync_state_elem->value_size());
+    auto sync_state =
+        std::string(sync_state_elem->value(), sync_state_elem->value_size());
 
     auto includes_last_item_in_range_elem = elem->first_node_ns(
-        internal::uri<>::microsoft::messages(),
-        "IncludesLastItemInRange");
+        internal::uri<>::microsoft::messages(), "IncludesLastItemInRange");
     EWS_ASSERT(includes_last_item_in_range_elem &&
-        "Expected <IncludesLastItemInRange> element");
+               "Expected <IncludesLastItemInRange> element");
     auto includes_last_item_in_range = rapidxml::internal::compare(
         includes_last_item_in_range_elem->value(),
-        includes_last_item_in_range_elem->value_size(),
-        "true", strlen("true"));
+        includes_last_item_in_range_elem->value_size(), "true", strlen("true"));
 
-    auto changes_elem = elem->first_node_ns(
-        internal::uri<>::microsoft::messages(), "Changes");
+    auto changes_elem =
+        elem->first_node_ns(internal::uri<>::microsoft::messages(), "Changes");
     EWS_ASSERT(changes_elem && "Excepted <Changes> element");
     std::vector<item_id> created_items;
     std::vector<item_id> updated_items;
     std::vector<item_id> deleted_items;
     std::vector<std::pair<item_id, bool>> read_flag_changed;
     internal::for_each_child_node(
-        *changes_elem, 
-        [&created_items, &updated_items, &deleted_items, &read_flag_changed]
-        (const rapidxml::xml_node<>& item_elem)
-    {
-        if (compare(item_elem.local_name(), item_elem.local_name_size(),
-                "Create", strlen("Create")))
-        {
-            const auto item_id_elem =
-                item_elem.first_node()->first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
-            EWS_ASSERT(item_id_elem && 
-                "Expected <ItemId> element");
-            const auto item_id = 
-                item_id::from_xml_element(*item_id_elem);
-            created_items.emplace_back(item_id);
-        }
+        *changes_elem,
+        [&created_items, &updated_items, &deleted_items,
+         &read_flag_changed](const rapidxml::xml_node<>& item_elem) {
+            if (compare(item_elem.local_name(), item_elem.local_name_size(),
+                        "Create", strlen("Create")))
+            {
+                const auto item_id_elem = item_elem.first_node()->first_node_ns(
+                    internal::uri<>::microsoft::types(), "ItemId");
+                EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
+                const auto item_id = item_id::from_xml_element(*item_id_elem);
+                created_items.emplace_back(item_id);
+            }
 
-        if (compare(item_elem.local_name(), item_elem.local_name_size(),
-            "Update", strlen("Update")))
-        {
-            const auto item_id_elem =
-                item_elem.first_node()->first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
-            EWS_ASSERT(item_id_elem &&
-                "Expected <ItemId> element");
-            const auto item_id =
-                item_id::from_xml_element(*item_id_elem);
-            updated_items.emplace_back(item_id);
-        }
+            if (compare(item_elem.local_name(), item_elem.local_name_size(),
+                        "Update", strlen("Update")))
+            {
+                const auto item_id_elem = item_elem.first_node()->first_node_ns(
+                    internal::uri<>::microsoft::types(), "ItemId");
+                EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
+                const auto item_id = item_id::from_xml_element(*item_id_elem);
+                updated_items.emplace_back(item_id);
+            }
 
-        if (compare(item_elem.local_name(), item_elem.local_name_size(),
-            "Delete", strlen("Delete")))
-        {
-            const auto item_id_elem =
-                item_elem.first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
-            EWS_ASSERT(item_id_elem &&
-                "Expected <ItemId> element");
-            const auto item_id =
-                item_id::from_xml_element(*item_id_elem);
-            deleted_items.emplace_back(item_id);
-        }
+            if (compare(item_elem.local_name(), item_elem.local_name_size(),
+                        "Delete", strlen("Delete")))
+            {
+                const auto item_id_elem = item_elem.first_node_ns(
+                    internal::uri<>::microsoft::types(), "ItemId");
+                EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
+                const auto item_id = item_id::from_xml_element(*item_id_elem);
+                deleted_items.emplace_back(item_id);
+            }
 
-        if (compare(item_elem.local_name(), item_elem.local_name_size(),
-            "ReadFlagChange", strlen("ReadFlagChange")))
-        {
-            const auto item_id_elem = 
-                item_elem.first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
-            EWS_ASSERT(item_id_elem &&
-                "Expected <ItemId> element");
+            if (compare(item_elem.local_name(), item_elem.local_name_size(),
+                        "ReadFlagChange", strlen("ReadFlagChange")))
+            {
+                const auto item_id_elem = item_elem.first_node_ns(
+                    internal::uri<>::microsoft::types(), "ItemId");
+                EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
 
-            const auto read_elem =
-                item_elem.first_node_ns(internal::uri<>::microsoft::types(), "IsRead");
-            EWS_ASSERT(read_elem && 
-                "Expected <IsRead> element");
+                const auto read_elem = item_elem.first_node_ns(
+                    internal::uri<>::microsoft::types(), "IsRead");
+                EWS_ASSERT(read_elem && "Expected <IsRead> element");
 
-            const auto item_id =
-                item_id::from_xml_element(*item_id_elem);
+                const auto item_id = item_id::from_xml_element(*item_id_elem);
 
-            const bool read = compare(read_elem->local_name(),
-                read_elem->local_name_size(), "true", strlen("true"));
+                const bool read = compare(read_elem->local_name(),
+                                          read_elem->local_name_size(), "true",
+                                          strlen("true"));
 
-            read_flag_changed.emplace_back(
-                std::make_pair(item_id, read));
-        }
-    });
+                read_flag_changed.emplace_back(std::make_pair(item_id, read));
+            }
+        });
 
     sync_folder_items_result response_message(std::move(result));
     response_message.sync_state_ = std::move(sync_state);

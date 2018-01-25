@@ -25,16 +25,14 @@ namespace tests
 {
 TEST_F(SubscribeTest, SubscriptionSuccessful)
 {
-    set_next_fake_response(
-        read_file(assets_dir() / "subscribe_response.xml"));
+    set_next_fake_response(read_file(assets_dir() / "subscribe_response.xml"));
 
     ews::distinguished_folder_id folder(ews::standard_folder::inbox);
     auto type = ews::event_type::created_event;
     std::vector<ews::distinguished_folder_id> folders = {folder};
     std::vector<ews::event_type> types = {type};
 
-    auto response =
-        service().subscribe(folders, types, 10);
+    auto response = service().subscribe(folders, types, 10);
     EXPECT_EQ(response.get_subscription_id(), "abc-foo-123-456");
     EXPECT_EQ(response.get_watermark(), "AAAAAHgGAAAAAAAAAQ==");
 }
@@ -46,8 +44,7 @@ TEST_F(SubscribeTest, SendCorrectRequest)
     std::vector<ews::distinguished_folder_id> folders = {folder};
     std::vector<ews::event_type> types = {type};
 
-    auto response =
-        service().subscribe(folders, types, 10);
+    auto response = service().subscribe(folders, types, 10);
     EXPECT_NE(get_last_request().request_string().find(
                   "<soap:Body>"
                   "<m:Subscribe>"

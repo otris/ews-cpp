@@ -54,7 +54,7 @@ int main()
         contact.set_surname("Duck");
         contact.set_email_address(
             ews::email_address(ews::email_address::key::email_address_1,
-                "superhero@ducktales.com"));
+                               "superhero@ducktales.com"));
         contact.set_job_title("Average Citizen");
         auto item_id = service.create_item(contact);
 
@@ -67,7 +67,7 @@ int main()
             std::cout << item.id() << "\n";
         }
 
-        //TODO: Show that updated items are synched
+        // TODO: Show that updated items are synced
         // But service.update_item(...) creates a new item
 
         // Delete test item

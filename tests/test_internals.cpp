@@ -151,7 +151,7 @@ TEST(InternalTest, MimeContentConstructionWithData)
         EXPECT_NE(nullptr, m.bytes());
     }
 
-// b was destructed
+        // b was destructed
 
 #if EWS_HAS_ROBUST_NONMODIFYING_SEQ_OPS
     EXPECT_TRUE(std::equal(m.bytes(), m.bytes() + m.len_bytes(), content,

@@ -64,9 +64,9 @@ TEST(RestrictionTest, AndExpressionRendersCorrectly)
 
 TEST(RestrictionTest, OrExpressionRendersCorrectly)
 {
-    using ews::or_;
     using ews::contains;
     using ews::is_equal_to;
+    using ews::or_;
 
     const char* expected = "<t:Or>"
                            "<t:IsEqualTo>"
@@ -91,8 +91,8 @@ TEST(RestrictionTest, OrExpressionRendersCorrectly)
 
 TEST(RestrictionTest, NotExpressionRendersCorrectly)
 {
-    using ews::not_;
     using ews::is_equal_to;
+    using ews::not_;
 
     const char* expected = "<t:Not>"
                            "<t:IsEqualTo>"

@@ -16,12 +16,12 @@
 #include <ews/ews_test_support.hpp>
 
 #include <chrono>
-#include <thread>
 #include <cstdlib>
 #include <exception>
 #include <iostream>
 #include <ostream>
 #include <string>
+#include <thread>
 
 namespace
 {
@@ -60,25 +60,25 @@ int main()
         // This way, we can get all the needed information from the events for
         // further handling.
         auto notification = service.get_events(sub_info.get_subscription_id(),
-                                         sub_info.get_watermark());
+                                               sub_info.get_watermark());
         std::cout << "SubscriptionId: " << notification.subscription_id
                   << std::endl;
         std::cout << "MoreEvents: " << notification.more_events << std::endl;
         for (auto& e : notification.events)
         {
             std::visit(
-                overloaded{
-                    [](auto&&) { /* do nothing */ },
-                    [](ews::created_event arg) {
-                        std::cout << "EventType: "
-                                  << ews::internal::enum_to_str(arg.get_type())
-                                  << std::endl;
-                        std::cout << "Watermark: " << arg.get_watermark()
-                                  << std::endl;
-                        std::cout << "Timestamp: " << arg.get_timestamp()
-                                  << std::endl;
+                overloaded{[](auto&&) { /* do nothing */ },
+                           [](ews::created_event arg) {
+                               std::cout
+                                   << "EventType: "
+                                   << ews::internal::enum_to_str(arg.get_type())
+                                   << std::endl;
+                               std::cout << "Watermark: " << arg.get_watermark()
+                                         << std::endl;
+                               std::cout << "Timestamp: " << arg.get_timestamp()
+                                         << std::endl;
 
-                    }},
+                           }},
                 e);
         }
 
