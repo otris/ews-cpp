@@ -8337,10 +8337,13 @@ public:
     {
     }
 
+    //! Whether the resolution_set has no elements
     bool empty() const EWS_NOEXCEPT { return resolutions.empty(); }
 
-    // range-based for loop support
+    //! Range-based for loop support
     std::vector<resolution>::iterator begin() { return resolutions.begin(); }
+
+    //! Range-based for loop support
     std::vector<resolution>::iterator end() { return resolutions.end(); }
 
     bool includes_last_item_in_range;
