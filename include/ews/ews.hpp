@@ -10514,8 +10514,10 @@ public:
     }
 
 private:
-    sync_folder_items_result(internal::response_result&& res)
-        : response_message_base(std::move(res))
+    explicit sync_folder_items_result(internal::response_result&& res)
+        : response_message_base(std::move(res)), sync_state_(),
+          created_items_(), updated_items_(), deleted_items_(),
+          read_flag_changed_(), includes_last_item_in_range_(false)
     {
     }
 
@@ -10526,6 +10528,15 @@ private:
     std::vector<std::pair<item_id, bool>> read_flag_changed_;
     bool includes_last_item_in_range_;
 };
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+static_assert(!std::is_default_constructible<sync_folder_items_result>::value,
+              "");
+static_assert(std::is_copy_constructible<sync_folder_items_result>::value, "");
+static_assert(std::is_copy_assignable<sync_folder_items_result>::value, "");
+static_assert(std::is_move_constructible<sync_folder_items_result>::value, "");
+static_assert(std::is_move_assignable<sync_folder_items_result>::value, "");
+#endif
 
 //! \brief A thin wrapper around xs:dateTime formatted strings.
 //!
