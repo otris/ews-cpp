@@ -10482,24 +10482,27 @@ public:
     static sync_folder_items_result parse(internal::http_response&&);
 #endif
 
-    std::string get_sync_state() const EWS_NOEXCEPT { return sync_state_; }
+    const std::string& get_sync_state() const EWS_NOEXCEPT
+    {
+        return sync_state_;
+    }
 
-    std::vector<item_id> get_created_items() const EWS_NOEXCEPT
+    const std::vector<item_id>& get_created_items() const EWS_NOEXCEPT
     {
         return created_items_;
     }
 
-    std::vector<item_id> get_updated_items() const EWS_NOEXCEPT
+    const std::vector<item_id>& get_updated_items() const EWS_NOEXCEPT
     {
         return updated_items_;
     }
 
-    std::vector<item_id> get_deleted_items() const EWS_NOEXCEPT
+    const std::vector<item_id>& get_deleted_items() const EWS_NOEXCEPT
     {
         return deleted_items_;
     }
 
-    std::vector<std::pair<item_id, bool>>
+    const std::vector<std::pair<item_id, bool>>&
     get_read_flag_changed() const EWS_NOEXCEPT
     {
         return read_flag_changed_;
