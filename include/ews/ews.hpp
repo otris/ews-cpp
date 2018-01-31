@@ -962,7 +962,7 @@ enum class response_code
     //! returned, the subscription is also deleted.
     error_event_not_found,
 
-    //! This error -iIndicates that there are more concurrent requests
+    //! This error indicates that there are more concurrent requests
     //! against the server than are allowed by a user's policy.
     error_exceeded_connection_count,
 
@@ -18419,7 +18419,7 @@ public:
         return *this;
     }
 
-    //! Synchronizes a folder in the Exchagne store.
+    //! Synchronizes a folder in the Exchange store.
     sync_folder_items_result sync_folder_items(const folder_id& folder_id,
                                                int max_changes_returned = 512)
     {
