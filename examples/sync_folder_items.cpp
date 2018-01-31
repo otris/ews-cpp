@@ -23,6 +23,17 @@
 #include <ostream>
 #include <string>
 
+// EWS provides two methods that allow you to discover changes that have
+// occurred in your mailbox from some starting point (indicated by a
+// sync_state) until the time the request is made:
+//
+// - sync_folder_hierarchy is used to watch for changes made to your mailbox's
+//   folders
+// - sync_folder_items is used to determine changes to the contents of a single
+//   folder
+//
+// This example is about the latter.
+
 int main()
 {
     int res = EXIT_SUCCESS;
@@ -40,7 +51,7 @@ int main()
         auto result = service.sync_folder_items(folder);
 
         // Store sync_state for further synchronization calls
-        auto sync_state = result.get_sync_state();
+        const auto sync_state = result.get_sync_state();
 
         // Output all existing items
         for (const auto& item : result.get_created_items())
