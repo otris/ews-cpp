@@ -6,6 +6,8 @@ New features:
 - Support for the `<ResolveNames>` operation ([#73](https://github.com/otris/ews-cpp/issues/73)) has been added.
 - Support for `<CreateFolder>`, `<GetFolder>`, `<DeleteFolder>`, `<FindFolder>` operations ([#96](https://github.com/otris/ews-cpp/pull/96)) has been added.
 - Support for EWS notification operations (`<Subscribe>`, `<GetEvents>`, `<Unsubscribe>`) has been added ([#85](https://github.com/otris/ews-cpp/pull/85)).
+- There is a new `date_time::to_epoch` and a `date_time::from_epoch` function to convert a xs:dateTime to the epoch back and forth.
+- Support for the `<SyncFolderItems>` operation has been added ([#101](https://github.com/otris/ews-cpp/pull/101)). See the [example](https://github.com/otris/ews-cpp/blob/master/examples/sync_folder_items.cpp).
 
 ### 0.6 (2011-11-27)
 New features:
