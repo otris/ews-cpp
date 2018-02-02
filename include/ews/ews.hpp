@@ -19658,10 +19658,6 @@ private:
         auto response = request(sstr.str());
         const auto response_message =
             sync_folder_items_result::parse(std::move(response));
-        if (!response_message.success())
-        {
-            throw exchange_error(response_message.result());
-        }
         EWS_ASSERT(!response_message.get_sync_state().empty() &&
                    "Expected at least a sync state");
         return response_message;
@@ -20528,6 +20524,10 @@ sync_folder_items_result::parse(internal::http_response&& response)
     EWS_ASSERT(elem &&
                "Expected <SyncFolderItemsResponseMessage>, got nullptr");
     auto result = internal::parse_response_class_and_code(*elem);
+    if (result.cls == response_class::error)
+    {
+        throw exchange_error(result);
+    }
 
     auto sync_state_elem = elem->first_node_ns(
         internal::uri<>::microsoft::messages(), "SyncState");
@@ -20545,7 +20545,7 @@ sync_folder_items_result::parse(internal::http_response&& response)
 
     auto changes_elem =
         elem->first_node_ns(internal::uri<>::microsoft::messages(), "Changes");
-    EWS_ASSERT(changes_elem && "Excepted <Changes> element");
+    EWS_ASSERT(changes_elem && "Expected <Changes> element");
     std::vector<item_id> created_items;
     std::vector<item_id> updated_items;
     std::vector<item_id> deleted_items;
