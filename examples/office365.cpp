@@ -83,7 +83,9 @@ int main()
                                return calitem.get_item_id();
                            });
 
-            const auto calendar_items = service.get_calendar_items(ids);
+		    ews::item_shape shape();
+			shape.set_base_shape(ews::base_shape::all_properties);
+            const auto calendar_items = service.get_calendar_items(ids, shape);
 
             for (const auto& cal_item : calendar_items)
             {
