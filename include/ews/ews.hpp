@@ -17510,7 +17510,7 @@ class item_shape final
 {
 public:
     item_shape()
-        : base_shape_(base_shape::all_properties),
+        : base_shape_(base_shape::default_shape),
         body_type_(body_type::best),
         filter_html_content_(false),
         include_mime_content_(false),
@@ -17519,7 +17519,7 @@ public:
     }
 
     item_shape(std::vector<property_path>&& additional_properties)
-        : base_shape_(base_shape::all_properties),
+        : base_shape_(base_shape::default_shape),
         body_type_(body_type::best),
         additional_properties_(std::move(additional_properties)),
         filter_html_content_(false),
@@ -17529,7 +17529,7 @@ public:
     }
 
     item_shape(std::vector<extended_field_uri>&& extended_field_uris)
-        : base_shape_(base_shape::all_properties),
+        : base_shape_(base_shape::default_shape),
         body_type_(body_type::best),
         extended_field_uris_(std::move(extended_field_uris)),
         filter_html_content_(false),
@@ -17540,7 +17540,7 @@ public:
 
     item_shape(std::vector<property_path>&& additional_properties,
         std::vector<extended_field_uri>&& extended_field_uris)
-        : base_shape_(base_shape::all_properties),
+        : base_shape_(base_shape::default_shape),
         body_type_(body_type::best),
         additional_properties_(std::move(additional_properties)),
         extended_field_uris_(std::move(extended_field_uris)),
