@@ -86,8 +86,7 @@ int main()
                                return calitem.get_item_id();
                            });
 
-            const auto calendar_items = service.get_calendar_items(
-                ids, ews::base_shape::all_properties);
+            const auto calendar_items = service.get_calendar_items(ids);
 
             // Done. Now we print some basic properties of each item.
 
