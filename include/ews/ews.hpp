@@ -17512,8 +17512,6 @@ public:
     item_shape()
         : base_shape_(base_shape::all_properties),
         body_type_(body_type::best),
-        additional_properties_{},
-        extended_field_uris_{},
         filter_html_content_(false),
         include_mime_content_(false),
         convert_html_code_page_to_utf8_(true)
@@ -17524,7 +17522,6 @@ public:
         : base_shape_(base_shape::all_properties),
         body_type_(body_type::best),
         additional_properties_(std::move(additional_properties)),
-        extended_field_uris_{},
         filter_html_content_(false),
         include_mime_content_(false),
         convert_html_code_page_to_utf8_(true)
@@ -17534,7 +17531,6 @@ public:
     item_shape(std::vector<extended_field_uri>&& extended_field_uris)
         : base_shape_(base_shape::all_properties),
         body_type_(body_type::best),
-        additional_properties_{},
         extended_field_uris_(std::move(extended_field_uris)),
         filter_html_content_(false),
         include_mime_content_(false),
