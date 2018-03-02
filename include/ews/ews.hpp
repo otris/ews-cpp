@@ -17576,15 +17576,15 @@ public:
         sstr << "</t:AdditionalProperties>"
 
                 "<t:FilterHtmlContent>";
-        sstr << filter_html_content_ ? "true" : "false";
+        sstr << (filter_html_content_ ? "true" : "false");
         sstr << "</t:FilterHtmlContent>"
 
                 "<t:IncludeMimeContent>";
-        sstr << include_mime_content_ ? "true" : "false";
+        sstr << (include_mime_content_ ? "true" : "false");
         sstr << "</t:IncludeMimeContent>"
 
                 "<t:ConvertHtmlCodePageToUTF8>";
-        sstr << convert_html_code_page_to_utf8_ ? "true" : "false";
+        sstr << (convert_html_code_page_to_utf8_ ? "true" : "false");
         sstr << "</t:ConvertHtmlCodePageToUTF8>"
 
                 "</m:ItemShape>";
