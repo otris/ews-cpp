@@ -17506,6 +17506,7 @@ static_assert(std::is_move_constructible<property>::value, "");
 static_assert(std::is_move_assignable<property>::value, "");
 #endif
 
+//! Renders an \<ItemShape> element
 class item_shape final
 {
 public:
@@ -19199,6 +19200,7 @@ public:
 
     std::vector<item_id> find_item(const folder_id& parent_folder_id)
     {
+        // TODO: add item_shape to function parameters
         const std::string request_string = "<m:FindItem Traversal=\"Shallow\">"
                                            "<m:ItemShape>"
                                            "<t:BaseShape>IdOnly</t:BaseShape>"
@@ -19258,6 +19260,7 @@ public:
     std::vector<item_id> find_item(const folder_id& parent_folder_id,
                                    search_expression restriction)
     {
+        // TODO: add item_shape to function parameters
         const std::string request_string = "<m:FindItem Traversal=\"Shallow\">"
                                            "<m:ItemShape>"
                                            "<t:BaseShape>IdOnly</t:BaseShape>"
