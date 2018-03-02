@@ -19228,9 +19228,7 @@ public:
                                          const item_shape& shape = item_shape())
     {
         const std::string request_string =
-            "<m:FindItem Traversal=\"Shallow\">"
-            "<m:ItemShape>" + shape.to_xml() + 
-            "</m:ItemShape>" +
+            "<m:FindItem Traversal=\"Shallow\">" + shape.to_xml() +
             view.to_xml() + "<m:ParentFolderIds>" + parent_folder_id.to_xml() +
             "</m:ParentFolderIds>"
             "</m:FindItem>";
