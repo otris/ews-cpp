@@ -210,7 +210,7 @@ TEST_F(ItemTest, GetMimeContentProperty)
         [&] { s.delete_contact(std::move(contact)); });
     auto additional_properties = std::vector<ews::property_path>();
     additional_properties.push_back(ews::item_property_path::mime_content);
-	ews::item_shape shape(std::move(additional_properties));
+    ews::item_shape shape(std::move(additional_properties));
     contact = s.get_contact(item_id, shape);
     EXPECT_FALSE(contact.get_mime_content().none());
 }
@@ -895,7 +895,7 @@ TEST_F(ItemTest, ExtendedProperty)
     all_field_uri.push_back(field_uri1);
     all_field_uri.push_back(field_uri2);
     all_field_uri.push_back(field_uri3);
-	ews::item_shape shape(std::move(all_field_uri));
+    ews::item_shape shape(std::move(all_field_uri));
     msg = service().get_message(item_id, shape);
 
     auto ep_actual = msg.get_extended_properties();

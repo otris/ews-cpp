@@ -17511,11 +17511,9 @@ class item_shape final
 {
 public:
     item_shape()
-        : base_shape_(base_shape::default_shape),
-        body_type_(body_type::best),
-        filter_html_content_(false),
-        include_mime_content_(false),
-        convert_html_code_page_to_utf8_(true)
+        : base_shape_(base_shape::default_shape), body_type_(body_type::best),
+          filter_html_content_(false), include_mime_content_(false),
+          convert_html_code_page_to_utf8_(true)
     {
     }
 
@@ -17527,34 +17525,28 @@ public:
     }
 
     explicit item_shape(std::vector<property_path>&& additional_properties)
-        : base_shape_(base_shape::default_shape),
-        body_type_(body_type::best),
-        additional_properties_(std::move(additional_properties)),
-        filter_html_content_(false),
-        include_mime_content_(false),
-        convert_html_code_page_to_utf8_(true)
+        : base_shape_(base_shape::default_shape), body_type_(body_type::best),
+          additional_properties_(std::move(additional_properties)),
+          filter_html_content_(false), include_mime_content_(false),
+          convert_html_code_page_to_utf8_(true)
     {
     }
 
     explicit item_shape(std::vector<extended_field_uri>&& extended_field_uris)
-        : base_shape_(base_shape::default_shape),
-        body_type_(body_type::best),
-        extended_field_uris_(std::move(extended_field_uris)),
-        filter_html_content_(false),
-        include_mime_content_(false),
-        convert_html_code_page_to_utf8_(true)
+        : base_shape_(base_shape::default_shape), body_type_(body_type::best),
+          extended_field_uris_(std::move(extended_field_uris)),
+          filter_html_content_(false), include_mime_content_(false),
+          convert_html_code_page_to_utf8_(true)
     {
     }
 
     item_shape(std::vector<property_path>&& additional_properties,
-        std::vector<extended_field_uri>&& extended_field_uris)
-        : base_shape_(base_shape::default_shape),
-        body_type_(body_type::best),
-        additional_properties_(std::move(additional_properties)),
-        extended_field_uris_(std::move(extended_field_uris)),
-        filter_html_content_(false),
-        include_mime_content_(false),
-        convert_html_code_page_to_utf8_(true)
+               std::vector<extended_field_uri>&& extended_field_uris)
+        : base_shape_(base_shape::default_shape), body_type_(body_type::best),
+          additional_properties_(std::move(additional_properties)),
+          extended_field_uris_(std::move(extended_field_uris)),
+          filter_html_content_(false), include_mime_content_(false),
+          convert_html_code_page_to_utf8_(true)
     {
     }
 
@@ -17600,24 +17592,18 @@ public:
         return sstr.str();
     }
 
-    base_shape get_base_shape() const EWS_NOEXCEPT
-    {
-        return base_shape_;
-    }
+    base_shape get_base_shape() const EWS_NOEXCEPT { return base_shape_; }
 
-    body_type get_body_type() const EWS_NOEXCEPT
-    {
-        return body_type_;
-    }
+    body_type get_body_type() const EWS_NOEXCEPT { return body_type_; }
 
     const std::vector<property_path>&
-        get_additional_properties() const EWS_NOEXCEPT
+    get_additional_properties() const EWS_NOEXCEPT
     {
-        return  additional_properties_;
+        return additional_properties_;
     }
 
     const std::vector<extended_field_uri>&
-        get_extended_field_uris() const EWS_NOEXCEPT
+    get_extended_field_uris() const EWS_NOEXCEPT
     {
         return extended_field_uris_;
     }
@@ -17637,15 +17623,9 @@ public:
         return convert_html_code_page_to_utf8_;
     }
 
-    void set_base_shape(base_shape base_shape)
-    {
-        base_shape_ = base_shape;
-    }
+    void set_base_shape(base_shape base_shape) { base_shape_ = base_shape; }
 
-    void set_body_type(body_type body_type)
-    {
-        body_type_ = body_type;
-    }
+    void set_body_type(body_type body_type) { body_type_ = body_type; }
 
     void set_filter_html_content(bool filter_html_content)
     {
@@ -17657,8 +17637,8 @@ public:
         include_mime_content_ = include_mime_content;
     }
 
-    void set_convert_html_code_page_to_utf8_(
-        bool convert_html_code_page_to_utf8)
+    void
+    set_convert_html_code_page_to_utf8_(bool convert_html_code_page_to_utf8)
     {
         convert_html_code_page_to_utf8_ = convert_html_code_page_to_utf8;
     }
@@ -18669,33 +18649,29 @@ public:
     }
 
     //! Gets multiple tasks from the Exchange store.
-    std::vector<task>
-    get_tasks(const std::vector<item_id>& ids,
-              const item_shape& shape = item_shape())
+    std::vector<task> get_tasks(const std::vector<item_id>& ids,
+                                const item_shape& shape = item_shape())
     {
         return get_item_impl<task>(ids, shape);
     }
 
     //! Gets a contact from the Exchange store.
-    contact
-    get_contact(const item_id& id,
-                const item_shape& shape = item_shape())
+    contact get_contact(const item_id& id,
+                        const item_shape& shape = item_shape())
     {
         return get_item_impl<contact>(id, shape);
     }
 
     //! Gets multiple contacts from the Exchange store.
-    std::vector<contact>
-    get_contacts(const std::vector<item_id>& ids,
-                 const item_shape& shape = item_shape())
+    std::vector<contact> get_contacts(const std::vector<item_id>& ids,
+                                      const item_shape& shape = item_shape())
     {
         return get_item_impl<contact>(ids, shape);
     }
 
     //! Gets a calendar item from the Exchange store.
-    calendar_item
-    get_calendar_item(const item_id& id,
-                      const item_shape& shape = item_shape())
+    calendar_item get_calendar_item(const item_id& id,
+                                    const item_shape& shape = item_shape())
     {
         return get_item_impl<calendar_item>(id, shape);
     }
@@ -18709,17 +18685,15 @@ public:
     }
 
     //! Gets a message item from the Exchange store.
-    message
-    get_message(const item_id& id,
-                const item_shape& shape = item_shape())
+    message get_message(const item_id& id,
+                        const item_shape& shape = item_shape())
     {
         return get_item_impl<message>(id, shape);
     }
 
     //! Gets multiple message items from the Exchange store.
-    std::vector<message>
-    get_messages(const std::vector<item_id>& ids,
-                 const item_shape& shape = item_shape())
+    std::vector<message> get_messages(const std::vector<item_id>& ids,
+                                      const item_shape& shape = item_shape())
     {
         return get_item_impl<message>(ids, shape);
     }
@@ -19884,10 +19858,8 @@ private:
     template <typename ItemType>
     ItemType get_item_impl(const item_id& id, const item_shape& shape)
     {
-        const std::string request_string = "<m:GetItem>" +
-                                           shape.to_xml() +
-                                           "<m:ItemIds>" +
-                                           id.to_xml() +
+        const std::string request_string = "<m:GetItem>" + shape.to_xml() +
+                                           "<m:ItemIds>" + id.to_xml() +
                                            "</m:ItemIds>"
                                            "</m:GetItem>";
 

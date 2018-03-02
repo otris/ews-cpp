@@ -47,11 +47,10 @@ int main()
 
         // By using ews::base_shape::all_properties we get the full calendar
         // item, not only the item_id
-		ews::item_shape shape;
-		shape.set_base_shape(ews::base_shape::all_properties);
-        const auto found_items =
-            service.find_item(ews::calendar_view(start_date, end_date),
-                              calendar_folder, shape);
+        ews::item_shape shape;
+        shape.set_base_shape(ews::base_shape::all_properties);
+        const auto found_items = service.find_item(
+            ews::calendar_view(start_date, end_date), calendar_folder, shape);
         std::cout << "# calendar items found: " << found_items.size()
                   << std::endl;
 

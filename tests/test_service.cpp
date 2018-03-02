@@ -74,7 +74,7 @@ TEST_F(GetItemRequestTest, WithAdditionalProperties)
 
     auto additional_props = std::vector<ews::property_path>();
     additional_props.push_back(ews::item_property_path::body);
-	ews::item_shape shape(std::move(additional_props));
+    ews::item_shape shape(std::move(additional_props));
     auto cal_item = serv.get_calendar_item(fake_id, shape);
     (void)cal_item;
 
