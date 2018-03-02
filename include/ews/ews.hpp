@@ -17506,6 +17506,173 @@ static_assert(std::is_move_constructible<property>::value, "");
 static_assert(std::is_move_assignable<property>::value, "");
 #endif
 
+class item_shape final
+{
+public:
+    item_shape()
+        : base_shape_(base_shape::default_shape),
+        body_type_(body_type::best),
+        filter_html_content_(false),
+        include_mime_content_(false),
+        convert_html_code_page_to_utf8_(true)
+    {
+    }
+
+    item_shape(std::vector<property_path>&& additional_properties)
+        : base_shape_(base_shape::default_shape),
+        body_type_(body_type::best),
+        additional_properties_(std::move(additional_properties)),
+        filter_html_content_(false),
+        include_mime_content_(false),
+        convert_html_code_page_to_utf8_(true)
+    {
+    }
+
+    item_shape(std::vector<extended_field_uri>&& extended_field_uris)
+        : base_shape_(base_shape::default_shape),
+        body_type_(body_type::best),
+        extended_field_uris_(std::move(extended_field_uris)),
+        filter_html_content_(false),
+        include_mime_content_(false),
+        convert_html_code_page_to_utf8_(true)
+    {
+    }
+
+    item_shape(std::vector<property_path>&& additional_properties,
+        std::vector<extended_field_uri>&& extended_field_uris)
+        : base_shape_(base_shape::default_shape),
+        body_type_(body_type::best),
+        additional_properties_(std::move(additional_properties)),
+        extended_field_uris_(std::move(extended_field_uris)),
+        filter_html_content_(false),
+        include_mime_content_(false),
+        convert_html_code_page_to_utf8_(true)
+    {
+    }
+
+    std::string to_xml() const
+    {
+        std::stringstream sstr;
+
+        sstr << "<m:ItemShape>"
+
+                "<t:BaseShape>";
+        sstr << internal::enum_to_str(base_shape_);
+        sstr << "</t:BaseShape>"
+
+                "<t:BodyType>";
+        sstr << internal::body_type_str(body_type_);
+        sstr << "</t:BodyType>"
+
+                "<t:AdditionalProperties>";
+        for (const auto& prop : additional_properties_)
+        {
+            sstr << prop.to_xml();
+        }
+        for (auto field : extended_field_uris_)
+        {
+            sstr << field.to_xml();
+        }
+        sstr << "</t:AdditionalProperties>"
+
+                "<t:FilterHtmlContent>";
+        sstr << filter_html_content_ ? "true" : "false";
+        sstr << "</t:FilterHtmlContent>"
+
+                "<t:IncludeMimeContent>";
+        sstr << include_mime_content_ ? "true" : "false";
+        sstr << "</t:IncludeMimeContent>"
+
+                "<t:ConvertHtmlCodePageToUTF8>";
+        sstr << convert_html_code_page_to_utf8_ ? "true" : "false";
+        sstr << "</t:ConvertHtmlCodePageToUTF8>"
+
+                "</m:ItemShape>";
+
+        return sstr.str();
+    }
+
+    base_shape get_base_shape() const EWS_NOEXCEPT
+    {
+        return base_shape_;
+    }
+
+    body_type get_body_type() const EWS_NOEXCEPT
+    {
+        return body_type_;
+    }
+
+    const std::vector<property_path>&
+        get_additional_properties() const EWS_NOEXCEPT
+    {
+        return  additional_properties_;
+    }
+
+    const std::vector<extended_field_uri>&
+        get_extended_field_uris() const EWS_NOEXCEPT
+    {
+        return extended_field_uris_;
+    }
+
+    bool has_filter_html_content() const EWS_NOEXCEPT
+    {
+        return filter_html_content_;
+    }
+
+    bool has_include_mime_content() const EWS_NOEXCEPT
+    {
+        return include_mime_content_;
+    }
+
+    bool has_convert_html_code_page_to_utf8() const EWS_NOEXCEPT
+    {
+        return convert_html_code_page_to_utf8_;
+    }
+
+    void set_base_shape(base_shape base_shape)
+    {
+        base_shape_ = base_shape;
+    }
+
+    void set_body_type(body_type body_type)
+    {
+        body_type_ = body_type;
+    }
+
+    void set_filter_html_content(bool filter_html_content)
+    {
+        filter_html_content_ = filter_html_content;
+    }
+
+    void set_include_mime_content(bool include_mime_content)
+    {
+        include_mime_content_ = include_mime_content;
+    }
+
+    void set_convert_html_code_page_to_utf8_(
+        bool convert_html_code_page_to_utf8)
+    {
+        convert_html_code_page_to_utf8_ = convert_html_code_page_to_utf8;
+    }
+
+private:
+    base_shape base_shape_;
+    body_type body_type_;
+    std::vector<property_path> additional_properties_;
+    std::vector<extended_field_uri> extended_field_uris_;
+    bool filter_html_content_;
+    bool include_mime_content_;
+    bool convert_html_code_page_to_utf8_;
+};
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+static_assert(std::is_default_constructible<item_shape>::value, "");
+static_assert(std::is_copy_constructible<item_shape>::value, "");
+static_assert(std::is_copy_assignable<item_shape>::value, "");
+static_assert(std::is_move_constructible<item_shape>::value, "");
+static_assert(std::is_move_assignable<item_shape>::value, "");
+#endif
+
 //! \brief Base-class for all search expressions.
 //!
 //! Search expressions are used to restrict the result set of a
@@ -18488,147 +18655,65 @@ public:
     }
 
     //! Gets a task from the Exchange store.
-    task get_task(const item_id& id)
+    task get_task(const item_id& id, const item_shape& shape = item_shape())
     {
-        return get_item_impl<task>(id, base_shape::all_properties);
+        return get_item_impl<task>(id, shape);
     }
 
-    //! \brief Gets a task from the Exchange store.
-    //!
-    //! The returned task includes specified additional properties.
-    task get_task(const item_id& id,
-                  const std::vector<property_path>& additional_properties)
-    {
-        return get_item_impl<task>(id, base_shape::all_properties,
-                                   additional_properties);
-    }
-
-    //! Gets a task from the Exchange store.
-    std::vector<task> get_tasks(const std::vector<item_id>& ids)
-    {
-        return get_item_impl<task>(ids, base_shape::all_properties);
-    }
-
-    //! \brief Gets a task from the Exchange store.
-    //!
-    //! The returned task includes specified additional properties.
+    //! Gets multiple tasks from the Exchange store.
     std::vector<task>
     get_tasks(const std::vector<item_id>& ids,
-              const std::vector<property_path>& additional_properties)
+              const item_shape& shape = item_shape())
     {
-        return get_item_impl<task>(ids, base_shape::all_properties,
-                                   additional_properties);
+        return get_item_impl<task>(ids, shape);
     }
 
     //! Gets a contact from the Exchange store.
-    contact get_contact(const item_id& id)
+    contact
+    get_contact(const item_id& id,
+                const item_shape& shape = item_shape())
     {
-        return get_item_impl<contact>(id, base_shape::all_properties);
+        return get_item_impl<contact>(id, shape);
     }
 
-    //! \brief Gets a contact from the Exchange store.
-    //!
-    //! The returned contact includes specified additional properties.
-    contact get_contact(const item_id& id,
-                        const std::vector<property_path>& additional_properties)
-    {
-        return get_item_impl<contact>(id, base_shape::all_properties,
-                                      additional_properties);
-    }
-
-    //! Gets a contact from the Exchange store.
-    std::vector<contact> get_contacts(const std::vector<item_id>& ids)
-    {
-        return get_item_impl<contact>(ids, base_shape::all_properties);
-    }
-
-    //! \brief Gets a contact from the Exchange store.
-    //!
-    //! The returned contact includes specified additional properties.
+    //! Gets multiple contacts from the Exchange store.
     std::vector<contact>
     get_contacts(const std::vector<item_id>& ids,
-                 const std::vector<property_path>& additional_properties)
+                 const item_shape& shape = item_shape())
     {
-        return get_item_impl<contact>(ids, base_shape::all_properties,
-                                      additional_properties);
+        return get_item_impl<contact>(ids, shape);
     }
 
     //! Gets a calendar item from the Exchange store.
-    calendar_item get_calendar_item(const item_id& id)
-    {
-        return get_item_impl<calendar_item>(id, base_shape::all_properties);
-    }
-
-    //! \brief Gets a calendar item from the Exchange store.
-    //!
-    //! The returned calendar item includes specified additional
-    //! properties.
     calendar_item
     get_calendar_item(const item_id& id,
-                      const std::vector<property_path>& additional_properties)
+                      const item_shape& shape = item_shape())
     {
-        return get_item_impl<calendar_item>(id, base_shape::all_properties,
-                                            additional_properties);
+        return get_item_impl<calendar_item>(id, shape);
     }
 
     //! Gets a bunch of calendar items from the Exchange store at once.
     std::vector<calendar_item>
-    get_calendar_items(const std::vector<item_id>& ids, base_shape shape)
+    get_calendar_items(const std::vector<item_id>& ids,
+                       const item_shape& shape = item_shape())
     {
         return get_item_impl<calendar_item>(ids, shape);
     }
 
-    //! \brief Gets a bunch of calendar items from the Exchange store at once.
-    //!
-    //! Each of the returned calendar items include the specified additional
-    //! properties.
-    std::vector<calendar_item>
-    get_calendar_items(const std::vector<item_id>& ids, base_shape shape,
-                       const std::vector<property_path>& additional_properties)
-    {
-        return get_item_impl<calendar_item>(ids, shape, additional_properties);
-    }
-
     //! Gets a message item from the Exchange store.
-    message get_message(const item_id& id)
+    message
+    get_message(const item_id& id,
+                const item_shape& shape = item_shape())
     {
-        return get_item_impl<message>(id, base_shape::all_properties);
+        return get_item_impl<message>(id, shape);
     }
 
-    //! \brief Gets a message from the Exchange store.
-    //!
-    //! The returned message includes specified additional properties.
-    message get_message(const item_id& id,
-                        const std::vector<property_path>& additional_properties)
-    {
-        return get_item_impl<message>(id, base_shape::all_properties,
-                                      additional_properties);
-    }
-
-    message get_message(const item_id& id,
-                        const std::vector<extended_field_uri>& ext_field_uri)
-    {
-        return get_item_impl<message>(id, ext_field_uri);
-    }
-
-    std::vector<message> get_messages(const std::vector<item_id>& ids)
-    {
-        return get_item_impl<message>(ids, base_shape::all_properties);
-    }
-
+    //! Gets multiple message items from the Exchange store.
     std::vector<message>
     get_messages(const std::vector<item_id>& ids,
-                 const std::vector<property_path>& additional_properties)
+                 const item_shape& shape = item_shape())
     {
-        return get_item_impl<message>(ids, base_shape::all_properties,
-                                      additional_properties);
-    }
-
-    std::vector<message>
-    get_messages(const std::vector<item_id>& ids,
-                 const std::vector<extended_field_uri>& ext_field_uri)
-    {
-        return get_item_impl<message>(ids, ext_field_uri);
+        return get_item_impl<message>(ids, shape);
     }
 
     //! Delete a folder from the Exchange store
@@ -19133,14 +19218,11 @@ public:
     //! occurrences of recurring meetings.
     std::vector<calendar_item> find_item(const calendar_view& view,
                                          const folder_id& parent_folder_id,
-                                         base_shape shape = base_shape::id_only)
+                                         const item_shape& shape = item_shape())
     {
         const std::string request_string =
             "<m:FindItem Traversal=\"Shallow\">"
-            "<m:ItemShape>"
-            "<t:BaseShape>" +
-            internal::enum_to_str(shape) +
-            "</t:BaseShape>"
+            "<m:ItemShape>" + shape.to_xml() + 
             "</m:ItemShape>" +
             view.to_xml() + "<m:ParentFolderIds>" + parent_folder_id.to_xml() +
             "</m:ParentFolderIds>"
@@ -19792,14 +19874,10 @@ private:
 
     // Gets an item from the server
     template <typename ItemType>
-    ItemType get_item_impl(const item_id& id, base_shape shape)
+    ItemType get_item_impl(const item_id& id, const item_shape& shape)
     {
-        const std::string request_string = "<m:GetItem>"
-                                           "<m:ItemShape>"
-                                           "<t:BaseShape>" +
-                                           internal::enum_to_str(shape) +
-                                           "</t:BaseShape>"
-                                           "</m:ItemShape>"
+        const std::string request_string = "<m:GetItem>" +
+                                           shape.to_xml() +
                                            "<m:ItemIds>" +
                                            id.to_xml() +
                                            "</m:ItemIds>"
@@ -19818,60 +19896,17 @@ private:
         return response_message.items().front();
     }
 
-    // Gets an item from the server with additional properties
-    template <typename ItemType>
-    ItemType
-    get_item_impl(const item_id& id, base_shape shape,
-                  const std::vector<property_path>& additional_properties)
-    {
-        EWS_ASSERT(!additional_properties.empty());
-
-        std::stringstream sstr;
-        sstr << "<m:GetItem>"
-                "<m:ItemShape>"
-                "<t:BaseShape>"
-             << internal::enum_to_str(shape)
-             << "</t:BaseShape>"
-                "<t:AdditionalProperties>";
-        for (const auto& prop : additional_properties)
-        {
-            sstr << prop.to_xml();
-        }
-        sstr << "</t:AdditionalProperties>"
-                "</m:ItemShape>"
-                "<m:ItemIds>"
-             << id.to_xml()
-             << "</m:ItemIds>"
-                "</m:GetItem>";
-
-        auto response = request(sstr.str());
-        const auto response_message =
-            internal::get_item_response_message<ItemType>::parse(
-                std::move(response));
-        if (!response_message.success())
-        {
-            throw exchange_error(response_message.result());
-        }
-        EWS_ASSERT(!response_message.items().empty() &&
-                   "Expected at least one item");
-        return response_message.items().front();
-    }
-
     // Gets a bunch of items from the server all at once
     template <typename ItemType>
     std::vector<ItemType> get_item_impl(const std::vector<item_id>& ids,
-                                        base_shape shape)
+                                        const item_shape& shape)
     {
         EWS_ASSERT(!ids.empty());
 
         std::stringstream sstr;
-        sstr << "<m:GetItem>"
-                "<m:ItemShape>"
-                "<t:BaseShape>"
-             << internal::enum_to_str(shape)
-             << "</t:BaseShape>"
-                "</m:ItemShape>"
-                "<m:ItemIds>";
+        sstr << "<m:GetItem>";
+        sstr << shape.to_xml();
+        sstr << "<m:ItemIds>";
         for (const auto& id : ids)
         {
             sstr << id.to_xml();
@@ -19888,84 +19923,6 @@ private:
             throw exchange_error(response_messages.first_error_or_warning());
         }
         return response_messages.items();
-    }
-
-    // Gets a bunch of items from the server all at once including given
-    // additional properties
-    template <typename ItemType>
-    std::vector<ItemType>
-    get_item_impl(const std::vector<item_id>& ids, base_shape shape,
-                  const std::vector<property_path>& additional_properties)
-    {
-        EWS_ASSERT(!ids.empty());
-        EWS_ASSERT(!additional_properties.empty());
-
-        std::stringstream sstr;
-        sstr << "<m:GetItem>"
-                "<m:ItemShape>"
-                "<t:BaseShape>"
-             << internal::enum_to_str(shape)
-             << "</t:BaseShape>"
-                "<t:AdditionalProperties>";
-        for (const auto& prop : additional_properties)
-        {
-            sstr << prop.to_xml();
-        }
-        sstr << "</t:AdditionalProperties>"
-                "</m:ItemShape>"
-                "<m:ItemIds>";
-        for (const auto& id : ids)
-        {
-            sstr << id.to_xml();
-        }
-        sstr << "</m:ItemIds>"
-                "</m:GetItem>";
-
-        auto response = request(sstr.str());
-        const auto response_messages =
-            internal::item_response_messages<ItemType>::parse(
-                std::move(response));
-        if (!response_messages.success())
-        {
-            throw exchange_error(response_messages.first_error_or_warning());
-        }
-        return response_messages.items();
-    }
-
-    template <typename ItemType>
-    ItemType
-    get_item_impl(const item_id& id,
-                  const std::vector<extended_field_uri>& ext_field_uris)
-    {
-        EWS_ASSERT(!ext_field_uris.empty());
-
-        std::stringstream sstr;
-        sstr << "<m:GetItem>"
-                "<m:ItemShape>"
-                "<t:BaseShape>AllProperties</t:BaseShape>"
-                "<t:AdditionalProperties>";
-        for (auto item : ext_field_uris)
-        {
-            sstr << item.to_xml();
-        }
-        sstr << "</t:AdditionalProperties>"
-                "</m:ItemShape>"
-                "<m:ItemIds>"
-             << id.to_xml()
-             << "</m:ItemIds>"
-                "</m:GetItem>";
-
-        auto response = request(sstr.str());
-        const auto response_message =
-            internal::get_item_response_message<ItemType>::parse(
-                std::move(response));
-        if (!response_message.success())
-        {
-            throw exchange_error(response_message.result());
-        }
-        EWS_ASSERT(!response_message.items().empty() &&
-                   "Expected at least one item");
-        return response_message.items().front();
     }
 
     // Creates an item on the server and returns it's item_id.

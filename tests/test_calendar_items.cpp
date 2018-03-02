@@ -1262,8 +1262,7 @@ TEST_F(CalendarItemTest, FindCalendarItemsWithCalendarViews)
     // 11:01 AM - 12 PM -> B
     auto view2 = ews::calendar_view(ews::date_time("2016-01-12T11:01:00Z"),
                                     ews::date_time("2016-01-12T12:00:00Z"));
-    result = service().find_item(view2, calendar_folder,
-                                 ews::base_shape::default_shape);
+    result = service().find_item(view2, calendar_folder);
     ASSERT_EQ(1U, result.size());
     EXPECT_STREQ("Appointment B", result[0].get_subject().c_str());
 
