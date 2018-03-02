@@ -17518,7 +17518,14 @@ public:
     {
     }
 
-    item_shape(std::vector<property_path>&& additional_properties)
+    item_shape(base_shape shape) // intentionally not explicit
+        : base_shape_(shape), body_type_(body_type::best),
+          filter_html_content_(false), include_mime_content_(false),
+          convert_html_code_page_to_utf8_(true)
+    {
+    }
+
+    explicit item_shape(std::vector<property_path>&& additional_properties)
         : base_shape_(base_shape::default_shape),
         body_type_(body_type::best),
         additional_properties_(std::move(additional_properties)),
@@ -17528,7 +17535,7 @@ public:
     {
     }
 
-    item_shape(std::vector<extended_field_uri>&& extended_field_uris)
+    explicit item_shape(std::vector<extended_field_uri>&& extended_field_uris)
         : base_shape_(base_shape::default_shape),
         body_type_(body_type::best),
         extended_field_uris_(std::move(extended_field_uris)),

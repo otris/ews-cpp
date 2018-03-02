@@ -66,11 +66,9 @@ int main()
         std::string start_date("2017-03-01T00:00:00-07:00");
         std::string end_date("2017-03-31T23:59:59-07:00");
 
-		ews::item_shape shape;
-		shape.set_base_shape(ews::base_shape::id_only);
         const auto found_items =
             service.find_item(ews::calendar_view(start_date, end_date),
-                              calendar_folder, shape);
+                              calendar_folder, ews::base_shape::id_only);
         std::cout << "# calender items found: " << found_items.size()
                   << std::endl;
 
@@ -85,9 +83,8 @@ int main()
                                return calitem.get_item_id();
                            });
 
-		    ews::item_shape shape;
-			shape.set_base_shape(ews::base_shape::all_properties);
-            const auto calendar_items = service.get_calendar_items(ids, shape);
+            const auto calendar_items = service.get_calendar_items(
+                ids, ews::item_shape(ews::base_shape::all_properties));
 
             for (const auto& cal_item : calendar_items)
             {
