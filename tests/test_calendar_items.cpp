@@ -508,7 +508,8 @@ TEST_F(CalendarItemTest, CreateAndDeleteCalendarItem)
 
         auto item_id = service().create_item(calitem);
 
-        calitem = service().get_calendar_item(item_id);
+        calitem = service().get_calendar_item(item_id,
+                                              ews::base_shape::all_properties);
         auto subject = calitem.get_subject();
         EXPECT_STREQ("Write chapter explaining Vogon poetry", subject.c_str());
         auto body = calitem.get_body();
@@ -599,7 +600,7 @@ TEST_F(CalendarItemTest, UpdateIsAllDayEventProperty)
     auto prop =
         ews::property(ews::calendar_property_path::is_all_day_event, true);
     auto new_id = service().update_item(cal.get_item_id(), prop);
-    cal = service().get_calendar_item(new_id);
+    cal = service().get_calendar_item(new_id, ews::base_shape::all_properties);
     EXPECT_TRUE(cal.is_all_day_event());
 }
 
@@ -674,7 +675,7 @@ TEST_F(CalendarItemTest, UpdateWhenProperty)
     auto prop =
         ews::property(ews::calendar_property_path::when, "Next Christmas");
     auto new_id = service().update_item(cal.get_item_id(), prop);
-    cal = service().get_calendar_item(new_id);
+    cal = service().get_calendar_item(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Next Christmas", cal.get_when().c_str());
 }
 
@@ -1038,7 +1039,8 @@ TEST_F(CalendarItemTest, CreateRecurringSeries)
     auto master_id = service().create_item(master);
     ews::internal::on_scope_exit remove_items(
         [&] { service().delete_item(master_id); });
-    master = service().get_calendar_item(master_id);
+    master =
+        service().get_calendar_item(master_id, ews::base_shape::all_properties);
 
     auto recurrence = master.get_recurrence();
     ASSERT_TRUE(recurrence.first && recurrence.second);
@@ -1134,7 +1136,7 @@ TEST_F(CalendarItemTest, UpdateConferenceTypeProperty)
     auto cal = test_calendar_item();
     auto prop = ews::property(ews::calendar_property_path::conference_type, 2);
     auto new_id = service().update_item(cal.get_item_id(), prop);
-    cal = service().get_calendar_item(new_id);
+    cal = service().get_calendar_item(new_id, ews::base_shape::all_properties);
     EXPECT_EQ(2, cal.get_conference_type());
 }
 
@@ -1160,7 +1162,7 @@ TEST_F(CalendarItemTest, UpdateAllowNewTimeProposalProperty)
     auto prop = ews::property(
         ews::calendar_property_path::allow_new_time_proposal, true);
     auto new_id = service().update_item(cal.get_item_id(), prop);
-    cal = service().get_calendar_item(new_id);
+    cal = service().get_calendar_item(new_id, ews::base_shape::all_properties);
     EXPECT_TRUE(cal.is_new_time_proposal_allowed());
 }
 
@@ -1186,7 +1188,7 @@ TEST_F(CalendarItemTest, UpdateIsOnlineMeetingProperty)
     auto prop =
         ews::property(ews::calendar_property_path::is_online_meeting, true);
     auto new_id = service().update_item(cal.get_item_id(), prop);
-    cal = service().get_calendar_item(new_id);
+    cal = service().get_calendar_item(new_id, ews::base_shape::all_properties);
     EXPECT_TRUE(cal.is_online_meeting());
 
     prop = ews::property(ews::calendar_property_path::is_online_meeting, false);
@@ -1218,7 +1220,7 @@ TEST_F(CalendarItemTest, UpdateMeetingWorkspaceUrlProperty)
     auto prop = ews::property(
         ews::calendar_property_path::meeting_workspace_url, "kitchen");
     auto new_id = service().update_item(cal.get_item_id(), prop);
-    cal = service().get_calendar_item(new_id);
+    cal = service().get_calendar_item(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("kitchen", cal.get_meeting_workspace_url().c_str());
 }
 

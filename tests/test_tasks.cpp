@@ -77,7 +77,8 @@ TEST_F(TaskTest, CreateAndDelete)
     task.set_reminder_due_by(start_time);
     const auto item_id = service().create_item(task);
 
-    auto created_task = service().get_task(item_id);
+    auto created_task =
+        service().get_task(item_id, ews::base_shape::all_properties);
     // Check properties
     EXPECT_STREQ("Something really important to do",
                  created_task.get_subject().c_str());
@@ -140,12 +141,12 @@ TEST_F(TaskTest, UpdateActualWorkProperty)
     auto task = test_task();
     auto prop = ews::property(ews::task_property_path::actual_work, 42);
     auto new_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(new_id);
+    task = service().get_task(new_id, ews::base_shape::all_properties);
     EXPECT_EQ(42, task.get_actual_work());
 
     prop = ews::property(ews::task_property_path::actual_work, 1729);
     new_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(new_id);
+    task = service().get_task(new_id, ews::base_shape::all_properties);
     EXPECT_EQ(1729, task.get_actual_work());
 }
 
@@ -176,14 +177,14 @@ TEST_F(TaskTest, UpdateBillingInformationProperty)
     auto prop = ews::property(ews::task_property_path::billing_information,
                               "Billing Information Test 1");
     auto new_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(new_id);
+    task = service().get_task(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Billing Information Test 1",
                  task.get_billing_information().c_str());
 
     prop = ews::property(ews::task_property_path::billing_information,
                          "Billing Information Test 2");
     new_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(new_id);
+    task = service().get_task(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Billing Information Test 2",
                  task.get_billing_information().c_str());
 }
@@ -220,7 +221,7 @@ TEST_F(TaskTest, UpdateCompaniesProperty)
     auto task = test_task();
     auto prop = ews::property(ews::task_property_path::companies, companies);
     auto new_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(new_id);
+    task = service().get_task(new_id, ews::base_shape::all_properties);
     ASSERT_EQ(1U, task.get_companies().size());
     EXPECT_STREQ("Tic Tric Tac Inc.", task.get_companies()[0].c_str());
 }
@@ -264,7 +265,7 @@ TEST_F(TaskTest, UpdateContactsProperty)
     auto task = test_task();
     auto prop = ews::property(ews::task_property_path::contacts, contacts);
     auto new_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(new_id);
+    task = service().get_task(new_id, ews::base_shape::all_properties);
     contacts = task.get_contacts();
     ASSERT_EQ(2U, contacts.size());
     EXPECT_STREQ("T. E. Lawrence", contacts[0].c_str());
@@ -301,7 +302,7 @@ TEST_F(TaskTest, UpdateIsCompleteProperty)
     ASSERT_FALSE(get_milk.is_complete());
     auto prop = ews::property(ews::task_property_path::percent_complete, 100);
     auto new_id = service().update_item(get_milk.get_item_id(), prop);
-    get_milk = service().get_task(new_id);
+    get_milk = service().get_task(new_id, ews::base_shape::all_properties);
 
     EXPECT_TRUE(get_milk.is_complete());
     get_milk.get_complete_date();
@@ -333,13 +334,13 @@ TEST_F(TaskTest, UpdateMileageProperty)
     auto prop = ews::property(ews::task_property_path::mileage,
                               "Thousands and thousands of parsecs");
     auto new_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(new_id);
+    task = service().get_task(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Thousands and thousands of parsecs",
                  task.get_mileage().c_str());
 
     prop = ews::property(ews::task_property_path::mileage, "A few steps");
     new_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(new_id);
+    task = service().get_task(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("A few steps", task.get_mileage().c_str());
 }
 
@@ -398,12 +399,12 @@ TEST_F(TaskTest, UpdateTotalWorkProperty)
     auto task = test_task();
     auto prop = ews::property(ews::task_property_path::total_work, 3000);
     auto new_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(new_id);
+    task = service().get_task(new_id, ews::base_shape::all_properties);
     EXPECT_EQ(3000, task.get_total_work());
 
     prop = ews::property(ews::task_property_path::total_work, 6000);
     new_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(new_id);
+    task = service().get_task(new_id, ews::base_shape::all_properties);
     EXPECT_EQ(6000, task.get_total_work());
 }
 }

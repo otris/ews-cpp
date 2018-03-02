@@ -293,14 +293,14 @@ TEST_F(ServiceTest, UpdateItemWithSetItemField)
     auto new_id =
         service().update_item(minnie.get_item_id(), spouse_name_property,
                               ews::conflict_resolution::auto_resolve);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Mickey", minnie.get_spouse_name().c_str());
 
     spouse_name_property =
         ews::property(ews::contact_property_path::spouse_name, "Peg-Leg Pedro");
     new_id = service().update_item(minnie.get_item_id(), spouse_name_property,
                                    ews::conflict_resolution::auto_resolve);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Peg-Leg Pedro", minnie.get_spouse_name().c_str());
 }
 

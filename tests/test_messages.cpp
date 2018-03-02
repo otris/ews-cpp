@@ -222,7 +222,7 @@ TEST_F(MessageTest, CreateMessageWithInternetMessageId)
     auto id = service().create_item(msg, ews::message_disposition::save_only);
     ews::internal::on_scope_exit remove_message(
         [&]() { service().delete_item(id); });
-    msg = service().get_message(id);
+    msg = service().get_message(id, ews::base_shape::all_properties);
     EXPECT_STREQ("xxxxxxxx-xxxx-mxxx-nxxx-xxxxxxxxxxxx",
                  msg.get_internet_message_id().c_str());
 }

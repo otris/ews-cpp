@@ -279,7 +279,7 @@ public:
         task_.set_start_date(ews::date_time("2015-06-17T19:00:00Z"));
         task_.set_due_date(ews::date_time("2015-06-17T19:30:00Z"));
         const auto item_id = service().create_item(task_);
-        task_ = service().get_task(item_id);
+        task_ = service().get_task(item_id, ews::base_shape::all_properties);
     }
 
     void TearDown()
@@ -311,7 +311,8 @@ public:
         contact_.set_job_title("Damsel in distress");
 
         const auto item_id = service().create_item(contact_);
-        contact_ = service().get_contact(item_id);
+        contact_ =
+            service().get_contact(item_id, ews::base_shape::all_properties);
     }
 
     void TearDown()
@@ -340,7 +341,8 @@ public:
         message_.set_to_recipients(recipients);
         const auto item_id = service().create_item(
             message_, ews::message_disposition::save_only);
-        message_ = service().get_message(item_id);
+        message_ =
+            service().get_message(item_id, ews::base_shape::all_properties);
     }
 
     void TearDown()
@@ -366,7 +368,8 @@ public:
         calitem_.set_start(ews::date_time("2004-12-25T10:00:00.000Z"));
         calitem_.set_end(ews::date_time("2004-12-27T10:00:00.000Z"));
         const auto item_id = service().create_item(calitem_);
-        calitem_ = service().get_calendar_item(item_id);
+        calitem_ = service().get_calendar_item(item_id,
+                                               ews::base_shape::all_properties);
     }
 
     void TearDown()
@@ -396,7 +399,8 @@ public:
         msg.set_to_recipients(recipients);
         auto item_id =
             service().create_item(msg, ews::message_disposition::save_only);
-        message_ = service().get_message(item_id);
+        message_ =
+            service().get_message(item_id, ews::base_shape::all_properties);
     }
 
     void TearDown()

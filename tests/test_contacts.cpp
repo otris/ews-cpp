@@ -91,7 +91,7 @@ TEST_F(ContactTest, UpdateFileAsMappingValue)
     prop = ews::property(ews::contact_property_path::file_as_mapping,
                          "LastSpaceFirst");
     new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_EQ(ews::internal::file_as_mapping::last_space_first,
               minnie.get_file_as_mapping());
     EXPECT_STREQ("Mouse Minerva", minnie.get_file_as().c_str());
@@ -333,13 +333,13 @@ TEST_F(ContactTest, UpdateAssistantNameValue)
     auto prop =
         ews::property(ews::contact_property_path::assistant_name, "Pluto");
     auto new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Pluto", minnie.get_assistant_name().c_str());
 
     prop =
         ews::property(ews::contact_property_path::assistant_name, "Plutocrat");
     new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Plutocrat", minnie.get_assistant_name().c_str());
 }
 
@@ -363,14 +363,14 @@ TEST_F(ContactTest, UpdateBusinessHomePageValue)
     auto prop = ews::property(ews::contact_property_path::business_home_page,
                               "holstensicecream.com");
     auto new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("holstensicecream.com",
                  minnie.get_business_homepage().c_str());
 
     prop = ews::property(ews::contact_property_path::business_home_page,
                          "lainchan.org");
     new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("lainchan.org", minnie.get_business_homepage().c_str());
 }
 
@@ -421,12 +421,12 @@ TEST_F(ContactTest, UpdateGenerationValue)
     auto minnie = test_contact();
     auto prop = ews::property(ews::contact_property_path::generation, "III");
     auto new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("III", minnie.get_generation().c_str());
 
     prop = ews::property(ews::contact_property_path::generation, "Jr.");
     new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Jr.", minnie.get_generation().c_str());
 }
 
@@ -477,13 +477,13 @@ TEST_F(ContactTest, UpdateManagerValue)
     auto prop =
         ews::property(ews::contact_property_path::manager, "Scrooge McDuck");
     auto new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Scrooge McDuck", minnie.get_manager().c_str());
 
     prop = ews::property(ews::contact_property_path::manager,
                          "Flintheart Glomgold");
     new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Flintheart Glomgold", minnie.get_manager().c_str());
 }
 
@@ -505,12 +505,12 @@ TEST_F(ContactTest, UpdateMileageValue)
     auto minnie = test_contact();
     auto prop = ews::property(ews::contact_property_path::mileage, "20km");
     auto new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("20km", minnie.get_mileage().c_str());
 
     prop = ews::property(ews::contact_property_path::mileage, "Infinite");
     new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Infinite", minnie.get_mileage().c_str());
 }
 
@@ -562,12 +562,12 @@ TEST_F(ContactTest, UpdateProfessionValue)
     auto prop =
         ews::property(ews::contact_property_path::profession, "Veterinarian");
     auto new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Veterinarian", minnie.get_profession().c_str());
 
     prop = ews::property(ews::contact_property_path::profession, "Engineer");
     new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Engineer", minnie.get_profession().c_str());
 }
 
@@ -590,12 +590,12 @@ TEST_F(ContactTest, UpdateSpouseName)
     auto prop =
         ews::property(ews::contact_property_path::spouse_name, "Donald");
     auto new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Donald", minnie.get_spouse_name().c_str());
 
     prop = ews::property(ews::contact_property_path::spouse_name, "Scrooge");
     new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("Scrooge", minnie.get_spouse_name().c_str());
 }
 
@@ -677,7 +677,7 @@ TEST_F(ContactTest, UpdateBirthdayValue)
     auto birthday = ews::date_time("1994-11-03");
     auto prop = ews::property(ews::contact_property_path::birthday, birthday);
     auto new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("1994-11-03T00:00:00Z", minnie.get_birthday().c_str());
 }
 
@@ -701,7 +701,7 @@ TEST_F(ContactTest, UpdateWeddingAnniversaryValue)
     auto prop =
         ews::property(ews::contact_property_path::wedding_anniversary, wedding);
     auto new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_STREQ("2006-06-06T00:00:00Z",
                  minnie.get_wedding_anniversary().c_str());
 }
@@ -731,7 +731,7 @@ TEST_F(ContactTest, UpdateChildrenValue)
     children.push_back("Bando");
     auto prop = ews::property(ews::contact_property_path::children, children);
     auto new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_FALSE(minnie.get_children().empty());
 }
 
@@ -760,7 +760,7 @@ TEST_F(ContactTest, UpdateCompaniesValue)
     companies.push_back("Aperture Science");
     auto prop = ews::property(ews::contact_property_path::companies, companies);
     auto new_id = service().update_item(minnie.get_item_id(), prop);
-    minnie = service().get_contact(new_id);
+    minnie = service().get_contact(new_id, ews::base_shape::all_properties);
     EXPECT_FALSE(minnie.get_companies().empty());
 }
 

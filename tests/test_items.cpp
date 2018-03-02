@@ -257,13 +257,13 @@ TEST_F(ItemTest, UpdateSensitivityProperty)
     auto item_id = service().create_item(task);
     ews::internal::on_scope_exit remove_task(
         [&] { service().delete_task(std::move(task)); });
-    task = service().get_task(item_id);
+    task = service().get_task(item_id, ews::base_shape::all_properties);
     EXPECT_EQ(ews::sensitivity::personal, task.get_sensitivity());
 
     auto prop = ews::property(ews::item_property_path::sensitivity,
                               ews::sensitivity::confidential);
     item_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(item_id);
+    task = service().get_task(item_id, ews::base_shape::all_properties);
     EXPECT_EQ(ews::sensitivity::confidential, task.get_sensitivity());
 }
 
@@ -320,7 +320,7 @@ TEST_F(ItemTest, GetDateTimeReceivedProperty)
     auto item_id = service().create_item(task);
     ews::internal::on_scope_exit remove_task(
         [&] { service().delete_task(std::move(task)); });
-    task = service().get_task(item_id);
+    task = service().get_task(item_id, ews::base_shape::all_properties);
     EXPECT_TRUE(task.get_date_time_received().is_set());
 }
 
@@ -371,7 +371,7 @@ TEST_F(ItemTest, GetCategoriesProperty)
     auto item_id = service().create_item(task);
     ews::internal::on_scope_exit remove_task(
         [&] { service().delete_task(std::move(task)); });
-    task = service().get_task(item_id);
+    task = service().get_task(item_id, ews::base_shape::all_properties);
     ASSERT_EQ(2U, task.get_categories().size());
     EXPECT_EQ("ham", task.get_categories()[0]);
     EXPECT_EQ("spam", task.get_categories()[1]);
@@ -383,7 +383,7 @@ TEST_F(ItemTest, GetCategoriesProperty)
     auto prop =
         ews::property(ews::item_property_path::categories, prop_categories);
     item_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(item_id);
+    task = service().get_task(item_id, ews::base_shape::all_properties);
     ASSERT_EQ(2U, task.get_categories().size());
     EXPECT_EQ("note", task.get_categories()[0]);
     EXPECT_EQ("info", task.get_categories()[1]);
@@ -421,14 +421,14 @@ TEST_F(ItemTest, GetInReplyToProperty)
     auto prop = ews::property(ews::item_property_path::in_reply_to,
                               "nobody@noreply.com");
     item_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(item_id);
+    task = service().get_task(item_id, ews::base_shape::all_properties);
     ASSERT_EQ("nobody@noreply.com", task.get_in_reply_to());
 
     // update
     prop = ews::property(ews::item_property_path::in_reply_to,
                          "somebody@noreply.com");
     item_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(item_id);
+    task = service().get_task(item_id, ews::base_shape::all_properties);
     EXPECT_EQ("somebody@noreply.com", task.get_in_reply_to());
 }
 
@@ -576,7 +576,7 @@ TEST_F(ItemTest, GetDateTimeSentProperty)
     auto item_id = service().create_item(task);
     ews::internal::on_scope_exit remove_task(
         [&] { service().delete_task(std::move(task)); });
-    task = service().get_task(item_id);
+    task = service().get_task(item_id, ews::base_shape::all_properties);
     EXPECT_TRUE(task.get_date_time_sent().is_set());
 }
 
@@ -599,7 +599,7 @@ TEST_F(ItemTest, GetDateTimeCreatedProperty)
     auto item_id = service().create_item(task);
     ews::internal::on_scope_exit remove_task(
         [&] { service().delete_task(std::move(task)); });
-    task = service().get_task(item_id);
+    task = service().get_task(item_id, ews::base_shape::all_properties);
     EXPECT_TRUE(task.get_date_time_created().is_set());
 }
 
@@ -624,7 +624,7 @@ TEST_F(ItemTest, ReminderDueByProperty)
     auto item_id = service().create_item(task);
     ews::internal::on_scope_exit remove_task(
         [&] { service().delete_task(std::move(task)); });
-    task = service().get_task(item_id);
+    task = service().get_task(item_id, ews::base_shape::all_properties);
     EXPECT_EQ(ews::date_time("2001-09-11T12:00:11Z"),
               task.get_reminder_due_by());
 }
@@ -651,7 +651,7 @@ TEST_F(ItemTest, ReminderMinutesBeforeStartProperty)
     auto item_id = service().create_item(task);
     ews::internal::on_scope_exit remove_task(
         [&] { service().delete_task(std::move(task)); });
-    task = service().get_task(item_id);
+    task = service().get_task(item_id, ews::base_shape::all_properties);
     EXPECT_EQ(999U, task.get_reminder_minutes_before_start());
 }
 
@@ -966,12 +966,12 @@ TEST_F(ItemTest, CultureProperty)
 
     auto prop = ews::property(ews::item_property_path::culture, "zu-ZA");
     item_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(item_id);
+    task = service().get_task(item_id, ews::base_shape::all_properties);
     ASSERT_EQ("zu-ZA", task.get_culture());
 
     prop = ews::property(ews::item_property_path::culture, "yo-NG");
     item_id = service().update_item(task.get_item_id(), prop);
-    task = service().get_task(item_id);
+    task = service().get_task(item_id, ews::base_shape::all_properties);
     EXPECT_EQ("yo-NG", task.get_culture());
 }
 
