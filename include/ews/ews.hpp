@@ -7952,6 +7952,125 @@ static_assert(std::is_move_constructible<item_id>::value, "");
 static_assert(std::is_move_assignable<item_id>::value, "");
 #endif
 
+//! \brief The OccurrenceItemId element identifies a single occurrence of a 
+//! recurring item.
+class occurrence_item_id final
+{
+public:
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+    //! Constructs an invalid item_id instance
+    occurrence_item_id() = default;
+#else
+    occurrence_item_id()
+    {
+    }
+#endif
+
+    //! Constructs an <tt>\<OccurrenceItemId></tt> from given \p id string.
+    explicit occurrence_item_id(std::string id)
+        : id_(std::move(id)), change_key_(), instance_index_(1)
+    {
+    }
+
+    //! \brief Constructrs an <tt>\<OccurrenceItemId></tt> from a given
+    //! item_id instance
+    occurrence_item_id(const item_id& item_id)
+        : id_(item_id.id()), change_key_(item_id.change_key()),
+        instance_index_(1)
+    {
+    }
+
+    //! \brief Constructrs an <tt>\<OccurrenceItemId></tt> from a given
+    //! item_id instance
+    occurrence_item_id(const item_id& item_id, int instance_index)
+        : id_(item_id.id()), change_key_(item_id.change_key()),
+        instance_index_(instance_index)
+    {
+    }
+
+    //! \brief Constructs an <tt>\<OccurrenceItemId></tt> from given identifier
+    //! and change key.
+    occurrence_item_id(std::string id, std::string change_key,
+        int instance_index)
+        : id_(std::move(id)), change_key_(std::move(change_key)),
+        instance_index_(instance_index)
+    {
+    }
+
+    //! Returns the identifier.
+    const std::string& id() const EWS_NOEXCEPT
+    {
+        return id_;
+    }
+
+    //! Returns the change key
+    const std::string& change_key() const EWS_NOEXCEPT
+    {
+        return change_key_;
+    }
+
+    //! Returns the instance index
+    const int instance_index() const EWS_NOEXCEPT
+    {
+        return instance_index_;
+    }
+
+    //! Whether this item_id is expected to be valid
+    bool valid() const EWS_NOEXCEPT
+    {
+        return !id_.empty();
+    }
+
+    //! Serializes this occurrence_item_id to an XML string
+    std::string to_xml() const
+    {
+        std::stringstream sstr;
+        sstr << "<t:OccurrenceItemId RecurringMasterId=\"" << id();
+        sstr << "\" ChangeKey=\"" << change_key() << "\" InstanceIndex=\"";
+        sstr << instance_index() << "\"/>";
+        return sstr.str();
+    }
+
+    //! Makes an occurrence_item_id instance from an
+    //! <tt>\<OccurrenceItemId></tt> XML element
+    static occurrence_item_id from_xml_element(
+        const rapidxml::xml_node<>& elem)
+    {
+        auto id_attr = elem.first_attribute("RecurringMasterId");
+        EWS_ASSERT(id_attr &&
+            "Missing attribute RecurringMasterId in <OccurrenceItemId>");
+        auto id = std::string(id_attr->value(), id_attr->value_size());
+
+        auto ckey_attr = elem.first_attribute("ChangeKey");
+        EWS_ASSERT(ckey_attr &&
+            "Missing attribute ChangeKey in <OccurrenceItemId>");
+        auto ckey = std::string(ckey_attr->value(), ckey_attr->value_size());
+
+        auto index_attr = elem.first_attribute("InstanceIndex");
+        EWS_ASSERT(index_attr &&
+            "Missing attribute InstanceIndex in <OccurrenceItemId>");
+        auto index = std::stoi(
+            std::string(index_attr->value(), index_attr->value_size()));
+
+        return occurrence_item_id(std::move(id), std::move(ckey), index);
+    }
+
+private:
+    // case-sensitive; therefore, comparisons between IDs must be
+    // case-sensitive or binary
+    std::string id_;
+    std::string change_key_;
+    int instance_index_;
+};
+
+#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+static_assert(std::is_default_constructible<occurrence_item_id>::value, "");
+static_assert(std::is_copy_constructible<occurrence_item_id>::value, "");
+static_assert(std::is_copy_assignable<occurrence_item_id>::value, "");
+static_assert(std::is_move_constructible<occurrence_item_id>::value, "");
+static_assert(std::is_move_assignable<occurrence_item_id>::value, "");
+#endif
+
 //! \brief Contains the unique identifier of an attachment.
 //!
 //! The AttachmentId element identifies an item or file attachment. This
@@ -18680,6 +18799,59 @@ public:
                        const item_shape& shape = item_shape())
     {
         return get_item_impl<calendar_item>(ids, shape);
+    }
+
+    //! Gets a calendar item from the Exchange store.
+    calendar_item get_calendar_item(const occurrence_item_id& id,
+                                    const item_shape& shape = item_shape())
+    {
+        const std::string request_string = "<m:GetItem>" +
+                                           shape.to_xml() +
+                                           "<m:ItemIds>" +
+                                           id.to_xml() +
+                                           "</m:ItemIds>"
+                                           "</m:GetItem>";
+
+        auto response = request(request_string);
+        const auto response_message =
+            internal::get_item_response_message<calendar_item>::parse(
+                std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+        EWS_ASSERT(!response_message.items().empty() &&
+            "Expected at least one item");
+        return response_message.items().front();
+    }
+
+    //! Gets a bunch of calendar items from the Exchange store at once.
+    std::vector<calendar_item>
+    get_calendar_items(const std::vector<occurrence_item_id>& ids,
+                       const item_shape& shape = item_shape())
+    {
+        EWS_ASSERT(!ids.empty());
+
+        std::stringstream sstr;
+        sstr << "<m:GetItem>";
+        sstr << shape.to_xml();
+        sstr << "<m:ItemIds>";
+        for (const auto& id : ids)
+        {
+            sstr << id.to_xml();
+        }
+        sstr << "</m:ItemIds>"
+            "</m:GetItem>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::item_response_messages<calendar_item>::parse(
+                std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        return response_messages.items();
     }
 
     //! Gets a message item from the Exchange store.
