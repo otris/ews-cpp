@@ -21102,8 +21102,8 @@ namespace internal
                     ->first_node_ns(uri<>::microsoft::messages(), "Watermark")
                     ->value();
         }
-        return subscribe_response_message(
-            std::move(result), std::move(subscription_information(id, mark)));
+        return subscribe_response_message(std::move(result),
+                                          subscription_information(id, mark));
     }
 
     inline unsubscribe_response_message
