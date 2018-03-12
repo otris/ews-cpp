@@ -7969,7 +7969,7 @@ public:
 #endif
 
     //! Constructs an <tt>\<OccurrenceItemId></tt> from given \p id string.
-    explicit occurrence_item_id(std::string id)
+    occurrence_item_id(std::string id)
         : id_(std::move(id)), change_key_(), instance_index_(1)
     {
     }
