@@ -407,6 +407,6 @@ TEST_F(TaskTest, UpdateTotalWorkProperty)
     task = service().get_task(new_id, ews::base_shape::all_properties);
     EXPECT_EQ(6000, task.get_total_work());
 }
-}
+} // namespace tests
 
 // vim:et ts=4 sw=4

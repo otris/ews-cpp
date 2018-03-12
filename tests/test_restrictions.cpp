@@ -236,6 +236,6 @@ TEST(RestrictionTest, IsGreaterThanOrEqualToIntConstantRendersCorrectly)
         ews::task_property_path::percent_complete, 80);
     EXPECT_STREQ(expected, restr.to_xml().c_str());
 }
-}
+} // namespace tests
 
 // vim:et ts=4 sw=4

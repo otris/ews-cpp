@@ -1080,6 +1080,6 @@ TEST_F(ItemTest, SendItemsWithEmptyVector)
     std::vector<ews::item_id> ids;
     EXPECT_THROW(service().send_item(ids), ews::exception);
 }
-}
+} // namespace tests
 
 // vim:et ts=4 sw=4

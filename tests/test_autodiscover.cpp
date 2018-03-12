@@ -189,7 +189,7 @@ TEST_F(AutodiscoverTest, GetExchangeWebServicesURLExceptionText)
                      exc.what());
     }
 }
-}
+} // namespace tests
 
 #endif // EWS_USE_BOOST_LIBRARY
 

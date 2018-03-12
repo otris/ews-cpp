@@ -278,7 +278,6 @@ TEST_F(FileAttachmentTest, WriteContentToFileThrowsOnEmptyFileName)
     EXPECT_THROW(
         {
             attachment.write_content_to_file("");
-
         },
         ews::exception);
 }
@@ -319,7 +318,6 @@ TEST_F(FileAttachmentTest, CreateFromFileThrowsIfFileDoesNotExists)
     EXPECT_THROW(
         {
             ews::attachment::from_file(path.string(), "image/png", "");
-
         },
         ews::exception);
 }
@@ -400,11 +398,10 @@ TEST_F(FileAttachmentTest, CreateAndDeleteFileAttachmentOnServer)
     EXPECT_THROW(
         {
             service().get_attachment(attachment_id);
-
         },
         ews::exchange_error);
 }
 #endif // EWS_USE_BOOST_LIBRARY
-}
+} // namespace tests
 
 // vim:et ts=4 sw=4

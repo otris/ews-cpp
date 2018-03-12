@@ -847,6 +847,6 @@ TEST_F(ContactTest, GetCompleteNameProperty)
     EXPECT_STREQ("Minerva Mouse", complete_name.get_full_name().c_str());
     EXPECT_STREQ("Minnie", complete_name.get_nickname().c_str());
 }
-}
+} // namespace tests
 
 // vim:et ts=4 sw=4

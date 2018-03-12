@@ -171,7 +171,7 @@ void init_from_args(int* argc, char** argv)
     ews::test::global_data::instance().assets_dir = assets_dir;
     std::cout << "Loading assets from: '" << assets_dir << "'\n";
 }
-}
+} // namespace
 
 int main(int argc, char** argv)
 {

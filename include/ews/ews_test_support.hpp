@@ -86,7 +86,7 @@ namespace test
             return inst;
         }
     };
-}
-}
+} // namespace test
+} // namespace ews
 
 // vim:et ts=4 sw=4

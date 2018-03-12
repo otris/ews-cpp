@@ -1274,6 +1274,6 @@ TEST_F(CalendarItemTest, FindCalendarItemsWithCalendarViews)
     result = service().find_item(view3, calendar_folder);
     ASSERT_EQ(3U, result.size());
 }
-}
+} // namespace tests
 
 // vim:et ts=4 sw=4

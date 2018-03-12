@@ -59,6 +59,6 @@ TEST_F(SubscribeTest, SendCorrectRequest)
                   "</m:PullSubscriptionRequest>"),
               std::string::npos);
 }
-}
+} // namespace tests
 
 #endif // EWS_USE_BOOST_LIBRARY

@@ -108,7 +108,7 @@ const std::string malformed_xml_2 =
     "        </m:GetItemResponse>\n"
     "    </s:Body>\n"
     "</s:Envelope>";
-}
+} // namespace
 
 namespace tests
 {
@@ -151,7 +151,7 @@ TEST(InternalTest, MimeContentConstructionWithData)
         EXPECT_NE(nullptr, m.bytes());
     }
 
-        // b was destructed
+    // b was destructed
 
 #if EWS_HAS_ROBUST_NONMODIFYING_SEQ_OPS
     EXPECT_TRUE(std::equal(m.bytes(), m.bytes() + m.len_bytes(), content,
@@ -553,6 +553,6 @@ TEST(DateTime, EpochToDateTime)
     EXPECT_STREQ("2018-01-08T10:03:30Z",
                  ews::date_time::from_epoch(1515405810).to_string().c_str());
 }
-}
+} // namespace tests
 
 // vim:et ts=4 sw=4

@@ -57,6 +57,6 @@ TEST_F(ResolveNamesTest, SendCorrectRequest)
                   "</m:ResolveNames>"),
               std::string::npos);
 }
-}
+} // namespace tests
 
 #endif // EWS_USE_BOOST_LIBRARY

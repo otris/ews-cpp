@@ -371,6 +371,6 @@ TEST_F(ServiceTest, SendItem)
     msg = service().get_message(item_id);
     EXPECT_NO_THROW({ service().send_item(msg.get_item_id()); });
 }
-}
+} // namespace tests
 
 // vim:et ts=4 sw=4

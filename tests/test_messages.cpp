@@ -226,6 +226,6 @@ TEST_F(MessageTest, CreateMessageWithInternetMessageId)
     EXPECT_STREQ("xxxxxxxx-xxxx-mxxx-nxxx-xxxxxxxxxxxx",
                  msg.get_internet_message_id().c_str());
 }
-}
+} // namespace tests
 
 // vim:et ts=4 sw=4

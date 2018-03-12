@@ -350,7 +350,7 @@ namespace internal
 
             return ret;
         }
-    }
+    } // namespace base64
 
     template <typename T>
     inline bool points_within_array(T* p, T* begin, T* end)
@@ -361,7 +361,7 @@ namespace internal
 
     // Forward declarations
     class http_request;
-}
+} // namespace internal
 
 //! The ResponseClass attribute of a ResponseMessage
 enum class response_class
@@ -5513,7 +5513,7 @@ namespace internal
             throw exception("Unrecognized response code");
         }
     }
-}
+} // namespace internal
 
 //! \brief Defines the base point for
 //! paged searches with <tt>\<FindItem\></tt>
@@ -5542,7 +5542,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 //! \brief Defines the different values for the
 //! <tt>\<RequestServerVersion\></tt> element.
@@ -5634,7 +5634,7 @@ namespace internal
             throw exception("Unrecognized <RequestServerVersion>");
         }
     }
-}
+} // namespace internal
 
 //! \brief Specifies the set of properties that a GetItem or GetFolder
 //! method call will return.
@@ -5669,7 +5669,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 //! \brief Describes how items are deleted from the Exchange store.
 //!
@@ -5698,7 +5698,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 //! Indicates which occurrences of a recurring series should be deleted
 enum class affected_task_occurrences
@@ -5724,7 +5724,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 //! Describes how a meeting will be canceled
 enum class send_meeting_cancellations
@@ -5760,7 +5760,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 //! \brief The type of conflict resolution to try during an UpdateItem
 //! method call.
@@ -5799,7 +5799,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 //! \brief <tt>\<CreateItem\></tt> and <tt>\<UpdateItem\></tt> methods use
 //! this attribute. Only
@@ -5834,7 +5834,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 //! Gets the free/busy status that is associated with the event
 enum class free_busy_status
@@ -5878,7 +5878,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 //! The CalendarItemType class represents an Exchange calendar item.
 enum class calendar_item_type
@@ -5970,7 +5970,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 //! \brief Well known folder names enumeration. Usually rendered to XML as
 //! <tt>\<DistinguishedFolderId></tt> element.
@@ -6182,7 +6182,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 //! \brief This enumeration indicates the importance of an item.
 //!
@@ -6253,7 +6253,7 @@ namespace internal
         {
         }
     };
-}
+} // namespace internal
 
 //! Identifies the order and scope for a ResolveNames search.
 enum class search_scope
@@ -6313,7 +6313,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 #ifdef EWS_HAS_VARIANT
 //! Identifies the type of event returned or to subscribe to.
@@ -6404,7 +6404,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 #endif
 
 //! Exception thrown when a request was not successful
@@ -6547,7 +6547,7 @@ namespace internal
         }
         return "";
     }
-}
+} // namespace internal
 
 //! Exception thrown when a HTTP request was not successful
 class http_error final : public exception
@@ -7019,7 +7019,7 @@ namespace internal
 #endif
         virtual void certify(http_request*) const = 0;
     };
-}
+} // namespace internal
 
 //! \brief This class allows HTTP basic authentication.
 //!
@@ -7818,7 +7818,7 @@ namespace internal
     {
         return escape(str.c_str());
     }
-}
+} // namespace internal
 
 //! Set-up EWS library.
 //!
@@ -8925,7 +8925,7 @@ namespace internal
         event_type type_;
         std::string watermark_;
     };
-}
+} // namespace internal
 //! Represents a <CopiedEvent>
 class copied_event final : public internal::event_base
 {
@@ -10472,7 +10472,7 @@ namespace internal
 
         item_id root_item_id_;
     };
-}
+} // namespace internal
 
 class sync_folder_items_result final : public internal::response_message_base
 {
@@ -10870,7 +10870,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 //! \brief Represents the actual content of a message.
 //!
@@ -11207,7 +11207,7 @@ namespace internal
         property_id,
         property_type
     };
-}
+} // namespace internal
 
 //! The ExtendedFieldURI element identifies an extended MAPI property
 class extended_field_uri final
@@ -12204,15 +12204,15 @@ public:
         return xml().get_value_as_string("Culture");
     }
 
-        // Following properties are beyond 2007 scope:
-        //   <EffectiveRights/>
-        //   <LastModifiedName/>
-        //   <LastModifiedTime/>
-        //   <IsAssociated/>
-        //   <WebClientReadFormQueryString/>
-        //   <WebClientEditFormQueryString/>
-        //   <ConversationId/>
-        //   <UniqueBody/>
+    // Following properties are beyond 2007 scope:
+    //   <EffectiveRights/>
+    //   <LastModifiedName/>
+    //   <LastModifiedTime/>
+    //   <IsAssociated/>
+    //   <WebClientReadFormQueryString/>
+    //   <WebClientEditFormQueryString/>
+    //   <ConversationId/>
+    //   <UniqueBody/>
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
 protected:
@@ -12701,7 +12701,7 @@ namespace internal
         }
         return level;
     }
-}
+} // namespace internal
 
 //! \brief Describes the state of a delegated task.
 //!
@@ -12751,7 +12751,7 @@ namespace internal
             throw exception("Unexpected <DelegationState>");
         }
     }
-}
+} // namespace internal
 
 //! Specifies the status of a task item
 enum class status
@@ -12792,7 +12792,7 @@ namespace internal
             throw exception("Unexpected <Status>");
         }
     }
-}
+} // namespace internal
 
 //! Describes the month when a yearly recurring item occurs
 enum class month
@@ -12926,7 +12926,7 @@ namespace internal
         }
         return mon;
     }
-}
+} // namespace internal
 
 //! Describes working days
 enum class day_of_week
@@ -13040,7 +13040,7 @@ namespace internal
             throw exception("Unexpected <DaysOfWeek>");
         }
     }
-}
+} // namespace internal
 
 //! \brief This element describes which week in a month is used in a
 //! relative recurrence pattern.
@@ -13115,7 +13115,7 @@ namespace internal
             throw exception("Unexpected <DayOfWeekIndex>");
         }
     }
-}
+} // namespace internal
 
 //! Represents a concrete task in the Exchange store
 class task final : public item
@@ -13657,7 +13657,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 inline email_address
 email_address::from_xml_element(const rapidxml::xml_node<char>& node)
@@ -13792,7 +13792,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 inline physical_address
 physical_address::from_xml_element(const rapidxml::xml_node<char>& node)
@@ -14032,7 +14032,7 @@ namespace internal
         }
         return mappingtype;
     }
-}
+} // namespace internal
 
 class im_address final
 {
@@ -14099,7 +14099,7 @@ namespace internal
         }
         return k;
     }
-}
+} // namespace internal
 
 inline im_address
 im_address::from_xml_element(const rapidxml::xml_node<char>& node)
@@ -14320,7 +14320,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 inline phone_number
 phone_number::from_xml_element(const rapidxml::xml_node<char>& node)
@@ -16947,7 +16947,7 @@ namespace folder_property_path
     static const property_path effective_rights = "folder:EffectiveRights";
     static const property_path sharing_effective_rights =
         "folder:SharingEffectiveRights";
-}
+} // namespace folder_property_path
 
 namespace item_property_path
 {
@@ -17016,7 +17016,7 @@ namespace item_property_path
     static const property_path text_body = "item:TextBody";
     static const property_path icon_index = "item:IconIndex";
     static const property_path mime_content_utf8 = "item:MimeContentUTF8";
-}
+} // namespace item_property_path
 
 namespace message_property_path
 {
@@ -17046,7 +17046,7 @@ namespace message_property_path
     static const property_path voting_information = "message:VotingInformation";
     static const property_path reminder_message_data =
         "message:ReminderMessageData";
-}
+} // namespace message_property_path
 
 namespace meeting_property_path
 {
@@ -17058,7 +17058,7 @@ namespace meeting_property_path
     static const property_path response_type = "meeting:ResponseType";
     static const property_path proposed_start = "meeting:ProposedStart";
     static const property_path proposed_end = "meeting:PropsedEnd";
-}
+} // namespace meeting_property_path
 
 namespace meeting_request_property_path
 {
@@ -17068,7 +17068,7 @@ namespace meeting_request_property_path
         "meetingRequest:IntendedFreeBusyStatus";
     static const property_path change_highlights =
         "meetingRequest:ChangeHighlights";
-}
+} // namespace meeting_request_property_path
 
 namespace calendar_property_path
 {
@@ -17138,7 +17138,7 @@ namespace calendar_property_path
     static const property_path online_meeting_settings =
         "calendar:OnlineMeetingSettings";
     static const property_path is_organizer = "calendar:IsOrganizer";
-}
+} // namespace calendar_property_path
 
 namespace task_property_path
 {
@@ -17165,7 +17165,7 @@ namespace task_property_path
     static const property_path status = "task:Status";
     static const property_path status_description = "task:StatusDescription";
     static const property_path total_work = "task:TotalWork";
-}
+} // namespace task_property_path
 
 namespace contact_property_path
 {
@@ -17224,7 +17224,7 @@ namespace contact_property_path
                                                  "Pager");
         static const indexed_property_path
             business_phone("contacts:PhoneNumber", "BusinessPhone");
-    }
+    } // namespace phone_number
 
     static const property_path phonetic_full_name = "contacts:PhoneticFullName";
     static const property_path phonetic_first_name =
@@ -17246,7 +17246,7 @@ namespace contact_property_path
             country_or_region("contacts:PhysicalAddress", "CountryOrRegion");
         static const indexed_property_path
             postal_code("contacts:PhysicalAddress", "PostalCode");
-    }
+    } // namespace physical_address
 
     static const property_path postal_address_index =
         "contacts:PostalAddressIndex";
@@ -17258,7 +17258,7 @@ namespace contact_property_path
     static const property_path smime_certificate =
         "contacts:UserSMIMECertificate";
     static const property_path has_picture = "contacts:HasPicture";
-}
+} // namespace contact_property_path
 
 namespace distribution_list_property_path
 {
@@ -17331,7 +17331,7 @@ namespace conversation_property_path
         "conversation:GlobalIconIndex";
     static const property_path draft_item_ids = "conversation:DraftItemIds";
     static const property_path has_clutter = "conversation:HasClutter";
-}
+} // namespace conversation_property_path
 
 //! \brief Represents a single property
 //!
@@ -18162,7 +18162,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 //! \brief This enumeration determines how case and non-spacing characters
 //! are considered when evaluating a text search expression.
@@ -18202,7 +18202,7 @@ namespace internal
             throw exception("Bad enum value");
         }
     }
-}
+} // namespace internal
 
 //! \brief Check if a text property contains a sub-string.
 //!
@@ -18489,7 +18489,7 @@ namespace internal
             throw exception("Unrecognized ConnectingSID");
         }
     }
-}
+} // namespace internal
 
 connecting_sid::connecting_sid(connecting_sid::type t, const std::string& id)
     : xml_()
@@ -20915,13 +20915,11 @@ namespace internal
             using rapidxml::internal::compare;
 
             for_each_child_node(*resp, [](const rapidxml::xml_node<>& elem) {
-
                 if (compare(elem.local_name(), elem.local_name_size(),
                             "ResponseMessages", strlen("ResponseMessages")))
                 {
                     for_each_child_node(
                         elem, [](const rapidxml::xml_node<>& msg) {
-
                             auto response_class_attr =
                                 msg.first_attribute("ResponseClass");
                             if (compare(response_class_attr->value(),
@@ -20957,10 +20955,8 @@ namespace internal
 
                                 throw exchange_error(code);
                             }
-
                         });
                 }
-
             });
         }
 
@@ -21220,7 +21216,7 @@ namespace internal
         return get_events_response_message(std::move(result), std::move(n));
     }
 #endif
-}
+} // namespace internal
 
 //! \brief Creates a new <tt>\<ItemAttachment></tt> from a given item.
 //!
@@ -21229,20 +21225,20 @@ namespace internal
 inline attachment attachment::from_item(const item& the_item,
                                         const std::string& name)
 {
-// Creating a new <ItemAttachment> with the <CreateAttachment>
-// method is pretty similar to a <CreateItem> method call. However,
-// most of the times we do not want to create item attachments out
-// of thin air but attach an _existing_ item.
-//
-// If we want create an attachment from an existing item, we need
-// to first call <GetItem> before we call <CreateItem> and put the
-// complete item from the response into the <CreateAttachment>
-// call.
-//
-// There is a shortcut for Calendar, E-mail message items, and Posting
-// notes: use <BaseShape>IdOnly</BaseShape> and <AdditionalProperties>
-// with item::MimeContent in <GetItem> call, remove <ItemId> from the
-// response and pass that to <CreateAttachment>.
+    // Creating a new <ItemAttachment> with the <CreateAttachment>
+    // method is pretty similar to a <CreateItem> method call. However,
+    // most of the times we do not want to create item attachments out
+    // of thin air but attach an _existing_ item.
+    //
+    // If we want create an attachment from an existing item, we need
+    // to first call <GetItem> before we call <CreateItem> and put the
+    // complete item from the response into the <CreateAttachment>
+    // call.
+    //
+    // There is a shortcut for Calendar, E-mail message items, and Posting
+    // notes: use <BaseShape>IdOnly</BaseShape> and <AdditionalProperties>
+    // with item::MimeContent in <GetItem> call, remove <ItemId> from the
+    // response and pass that to <CreateAttachment>.
 
 #if 0
         const auto item_class = the_item.get_item_class();
@@ -21763,6 +21759,6 @@ recurrence_range::from_xml_element(const rapidxml::xml_node<>& elem)
                "<NoEndRecurrence>, <EndDateRecurrence>, <NumberedRecurrence>");
     return std::unique_ptr<recurrence_range>();
 }
-}
+} // namespace ews
 
 // vim:et ts=4 sw=4

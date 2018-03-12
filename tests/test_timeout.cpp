@@ -30,7 +30,7 @@ namespace timeout_test
             server_started = true;
         }
     }
-}
+} // namespace timeout_test
 
 class TimeoutTest : public BaseFixture
 {
@@ -90,7 +90,7 @@ TEST_F(TimeoutTest, NoTimeout)
     }
     EXPECT_TRUE(!reached_timeout);
 }
-}
+} // namespace tests
 
 #endif
 

@@ -40,7 +40,7 @@ operator<<(std::ostream& os,
     os << "Notes:    " << ews::internal::enum_to_str(perms.notes_folder);
     return os;
 }
-}
+} // namespace
 
 int main()
 {
