@@ -13,16 +13,14 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
+#include <algorithm>
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
-
-#include <stdlib.h>
-
-#include <algorithm>
 #include <exception>
 #include <iostream>
 #include <iterator>
 #include <ostream>
+#include <stdlib.h>
 #include <string>
 
 // This example demonstrates how to retrieve all occurrences, exceptions, and

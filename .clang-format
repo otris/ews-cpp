@@ -32,6 +32,8 @@ IndentWidth:     4
 UseTab:          false
 BreakBeforeBraces: Allman
 IndentFunctionDeclarationAfterType: false
+IncludeBlocks:   Regroup
+IndentPPDirectives: AfterHash
 SpacesInParentheses: false
 SpaceInEmptyParentheses: false
 SpacesInCStyleCastParentheses: false

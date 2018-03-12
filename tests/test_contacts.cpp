@@ -16,6 +16,7 @@
 //   This project is hosted at https://github.com/otris
 
 #include "fixtures.hpp"
+
 #include <utility>
 
 namespace tests

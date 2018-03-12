@@ -14,12 +14,10 @@
 //   limitations under the License.
 
 #include <ews/ews.hpp>
-
-#include <stdlib.h>
-
 #include <exception>
 #include <iostream>
 #include <ostream>
+#include <stdlib.h>
 #include <string>
 
 // This example shows how to connect to an Office 365 account via EWS and

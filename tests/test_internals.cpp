@@ -15,18 +15,15 @@
 //
 //   This project is hosted at https://github.com/otris
 
-#include <string.h>
-
 #include <algorithm>
-#include <iterator>
-#include <sstream>
-#include <string>
-#include <vector>
-
-#include <gtest/gtest.h>
-
 #include <ews/ews.hpp>
 #include <ews/rapidxml/rapidxml_print.hpp>
+#include <gtest/gtest.h>
+#include <iterator>
+#include <sstream>
+#include <string.h>
+#include <string>
+#include <vector>
 
 namespace
 {

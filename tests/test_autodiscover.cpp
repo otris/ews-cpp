@@ -17,11 +17,11 @@
 
 #ifdef EWS_USE_BOOST_LIBRARY
 
-#include "fixtures.hpp"
+#    include "fixtures.hpp"
 
-#include <cstring>
-#include <string>
-#include <vector>
+#    include <cstring>
+#    include <string>
+#    include <vector>
 
 namespace tests
 {

@@ -17,23 +17,22 @@
 
 #pragma once
 
-#include <ctype.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-
 #include <algorithm>
 #include <chrono>
+#include <ctype.h>
 #include <exception>
 #include <fstream>
 #include <functional>
 #include <ios>
 #include <iterator>
 #include <memory>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 #ifdef EWS_HAS_OPTIONAL
-#include <optional>
+#    include <optional>
 #endif
 #include <sstream>
 #include <stdexcept>
@@ -42,19 +41,18 @@
 #include <type_traits>
 #include <utility>
 #ifdef EWS_HAS_VARIANT
-#include <variant>
+#    include <variant>
 #endif
-#include <vector>
-
-#include <curl/curl.h>
-
 #include "rapidxml/rapidxml.hpp"
 #include "rapidxml/rapidxml_print.hpp"
 
+#include <curl/curl.h>
+#include <vector>
+
 // Print more detailed error messages, HTTP request/response etc to stderr
 #ifdef EWS_ENABLE_VERBOSE
-#include <iostream>
-#include <ostream>
+#    include <iostream>
+#    include <ostream>
 #endif
 
 #include "ews_fwd.hpp"
@@ -65,11 +63,11 @@
 // during compilation.
 #define EWS_ASSERT(expr) ((void)0)
 #ifndef NDEBUG
-#ifdef EWS_ENABLE_ASSERTS
-#include <assert.h>
-#undef EWS_ASSERT
-#define EWS_ASSERT(expr) assert(expr)
-#endif
+#    ifdef EWS_ENABLE_ASSERTS
+#        include <assert.h>
+#        undef EWS_ASSERT
+#        define EWS_ASSERT(expr) assert(expr)
+#    endif
 #endif // !NDEBUG
 
 //! Contains all classes, functions, and enumerations of this library
@@ -137,10 +135,10 @@ namespace internal
     // Poor man's std::optional replacement
     template <typename T> class optional final
     {
-#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+#    ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
         static_assert(std::is_copy_constructible<T>::value,
                       "T needs to be default constructible");
-#endif
+#    endif
 
     public:
         typedef T value_type;
@@ -7252,11 +7250,11 @@ namespace internal
             set_option(CURLOPT_WRITEDATA, std::addressof(response_data));
 
 #ifdef EWS_DISABLE_TLS_CERT_VERIFICATION
-// Warn in release builds
-#ifdef NDEBUG
-#pragma message(                                                               \
-    "warning: TLS verification of the server's authenticity is disabled")
-#endif
+    // Warn in release builds
+#    ifdef NDEBUG
+#        pragma message(                                                       \
+            "warning: TLS verification of the server's authenticity is disabled")
+#    endif
             // Turn-off verification of the server's authenticity
             set_option(CURLOPT_SSL_VERIFYPEER, 0L);
             set_option(CURLOPT_SSL_VERIFYHOST, 0L);
@@ -8367,11 +8365,11 @@ static_assert(std::is_move_assignable<resolution_set>::value, "");
 class subscription_information final
 {
 public:
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
+#    ifdef EWS_HAS_DEFAULT_AND_DELETE
     subscription_information() = default;
-#else
+#    else
     subscription_information() {}
-#endif
+#    endif
     subscription_information(std::string id, std::string mark)
         : subscription_id_(std::move(id)), watermark_(std::move(mark))
     {
@@ -8388,14 +8386,14 @@ private:
     std::string watermark_;
 };
 
-#ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
+#    ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
 static_assert(std::is_default_constructible<subscription_information>::value,
               "");
 static_assert(std::is_copy_constructible<subscription_information>::value, "");
 static_assert(std::is_copy_assignable<subscription_information>::value, "");
 static_assert(std::is_move_constructible<subscription_information>::value, "");
 static_assert(std::is_move_assignable<subscription_information>::value, "");
-#endif
+#    endif
 #endif
 
 //! \brief Identifies a folder.
@@ -8930,11 +8928,11 @@ namespace internal
 class copied_event final : public internal::event_base
 {
 public:
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
+#    ifdef EWS_HAS_DEFAULT_AND_DELETE
     copied_event() = default;
-#else
+#    else
     copied_event() {}
-#endif
+#    endif
 
     static copied_event from_xml_element(const rapidxml::xml_node<>& elem)
     {
@@ -9035,11 +9033,11 @@ private:
 class created_event final : public internal::event_base
 {
 public:
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
+#    ifdef EWS_HAS_DEFAULT_AND_DELETE
     created_event() = default;
-#else
+#    else
     created_event() {}
-#endif
+#    endif
     static created_event from_xml_element(const rapidxml::xml_node<>& elem)
     {
         using rapidxml::internal::compare;
@@ -9105,11 +9103,11 @@ private:
 class deleted_event final : public internal::event_base
 {
 public:
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
+#    ifdef EWS_HAS_DEFAULT_AND_DELETE
     deleted_event() = default;
-#else
+#    else
     deleted_event() {}
-#endif
+#    endif
 
     static deleted_event from_xml_element(const rapidxml::xml_node<>& elem)
     {
@@ -9254,11 +9252,11 @@ private:
 class moved_event final : public internal::event_base
 {
 public:
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
+#    ifdef EWS_HAS_DEFAULT_AND_DELETE
     moved_event() = default;
-#else
+#    else
     moved_event() {}
-#endif
+#    endif
 
     static moved_event from_xml_element(const rapidxml::xml_node<>& elem)
     {
@@ -9359,11 +9357,11 @@ private:
 class new_mail_event final : public internal::event_base
 {
 public:
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
+#    ifdef EWS_HAS_DEFAULT_AND_DELETE
     new_mail_event() = default;
-#else
+#    else
     new_mail_event() {}
-#endif
+#    endif
 
     static new_mail_event from_xml_element(const rapidxml::xml_node<>& elem)
     {
@@ -9422,11 +9420,11 @@ private:
 class status_event final : public internal::event_base
 {
 public:
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
+#    ifdef EWS_HAS_DEFAULT_AND_DELETE
     status_event() = default;
-#else
+#    else
     status_event() {}
-#endif
+#    endif
     static status_event from_xml_element(const rapidxml::xml_node<>& elem)
     {
         using rapidxml::internal::compare;
@@ -9450,11 +9448,11 @@ public:
 class free_busy_changed_event final : public internal::event_base
 {
 public:
-#ifdef EWS_HAS_DEFAULT_AND_DELETE
+#    ifdef EWS_HAS_DEFAULT_AND_DELETE
     free_busy_changed_event() = default;
-#else
+#    else
     free_busy_changed_event() {}
-#endif
+#    endif
 
     static free_busy_changed_event
     from_xml_element(const rapidxml::xml_node<>& elem)
@@ -11214,7 +11212,7 @@ class extended_field_uri final
 {
 public:
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
-#ifdef EWS_HAS_TYPE_ALIAS
+#    ifdef EWS_HAS_TYPE_ALIAS
     using distinguished_property_set_id =
         internal::str_wrapper<internal::distinguished_property_set_id>;
     using property_set_id = internal::str_wrapper<internal::property_set_id>;
@@ -11222,7 +11220,7 @@ public:
     using property_name = internal::str_wrapper<internal::property_name>;
     using property_id = internal::str_wrapper<internal::property_id>;
     using property_type = internal::str_wrapper<internal::property_type>;
-#else
+#    else
     typedef internal::str_wrapper<internal::distinguished_property_set_id>
         distinguished_property_set_id;
     typedef internal::str_wrapper<internal::property_set_id> property_set_id;
@@ -11230,7 +11228,7 @@ public:
     typedef internal::str_wrapper<internal::property_name> property_name;
     typedef internal::str_wrapper<internal::property_id> property_id;
     typedef internal::str_wrapper<internal::property_type> property_type;
-#endif
+#    endif
 #endif
 
 #ifdef EWS_HAS_DEFAULT_AND_DELETE

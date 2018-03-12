@@ -26,7 +26,7 @@
 namespace tests
 {
 #ifdef _MSC_VER
-#pragma warning(suppress : 6262)
+#    pragma warning(suppress : 6262)
 #endif
 TEST(OfflineTaskTest, FromXMLElement)
 {

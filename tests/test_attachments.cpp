@@ -18,11 +18,9 @@
 #include "fixtures.hpp"
 
 #include <ews/rapidxml/rapidxml_print.hpp>
-
-#include <string.h>
-
 #include <iterator>
 #include <stdexcept>
+#include <string.h>
 #include <string>
 #include <vector>
 
@@ -275,11 +273,7 @@ TEST_F(FileAttachmentTest, WriteContentToFileThrowsOnEmptyFileName)
     const auto path = assets_dir() / "ballmer_peak.png";
     auto attachment =
         ews::attachment::from_file(path.string(), "image/png", "Ballmer Peak");
-    EXPECT_THROW(
-        {
-            attachment.write_content_to_file("");
-        },
-        ews::exception);
+    EXPECT_THROW({ attachment.write_content_to_file(""); }, ews::exception);
 }
 
 TEST_F(FileAttachmentTest, WriteContentToFileExceptionMessage)
@@ -316,9 +310,7 @@ TEST_F(FileAttachmentTest, CreateFromFileThrowsIfFileDoesNotExists)
 {
     const auto path = assets_dir() / "unlikely_to_exist.txt";
     EXPECT_THROW(
-        {
-            ews::attachment::from_file(path.string(), "image/png", "");
-        },
+        { ews::attachment::from_file(path.string(), "image/png", ""); },
         ews::exception);
 }
 
@@ -395,11 +387,8 @@ TEST_F(FileAttachmentTest, CreateAndDeleteFileAttachmentOnServer)
     ASSERT_NO_THROW({ service().delete_attachment(file_attachment.id()); });
 
     // Check if it is still in store
-    EXPECT_THROW(
-        {
-            service().get_attachment(attachment_id);
-        },
-        ews::exchange_error);
+    EXPECT_THROW({ service().get_attachment(attachment_id); },
+                 ews::exchange_error);
 }
 #endif // EWS_USE_BOOST_LIBRARY
 } // namespace tests

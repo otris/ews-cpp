@@ -25,7 +25,7 @@
 #include <utility>
 
 #ifdef EWS_USE_BOOST_LIBRARY
-#include <boost/filesystem.hpp>
+#    include <boost/filesystem.hpp>
 #endif
 
 using ews::internal::on_scope_exit;

@@ -12,11 +12,10 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-#include <ews/ews.hpp>
-#include <ews/ews_test_support.hpp>
-
 #include <chrono>
 #include <cstdlib>
+#include <ews/ews.hpp>
+#include <ews/ews_test_support.hpp>
 #include <exception>
 #include <iostream>
 #include <ostream>

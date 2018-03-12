@@ -18,21 +18,20 @@
 #pragma once
 
 #include <algorithm>
+#include <ews/ews.hpp>
+#include <ews/ews_test_support.hpp>
+#include <ews/rapidxml/rapidxml.hpp>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <ews/ews.hpp>
-#include <ews/ews_test_support.hpp>
-#include <ews/rapidxml/rapidxml.hpp>
-
 #ifdef EWS_USE_BOOST_LIBRARY
-#include <boost/filesystem.hpp>
-#include <fstream>
-#include <iostream>
-#include <iterator>
+#    include <boost/filesystem.hpp>
+#    include <fstream>
+#    include <iostream>
+#    include <iterator>
 #endif
 
 #include <gtest/gtest.h>

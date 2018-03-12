@@ -16,12 +16,10 @@
 #include <ews/ews.hpp>
 #include <ews/ews_test_support.hpp>
 #include <ews/rapidxml/rapidxml_print.hpp>
-
-#include <stdlib.h>
-
 #include <exception>
 #include <iostream>
 #include <ostream>
+#include <stdlib.h>
 #include <string>
 
 using namespace ews::internal;

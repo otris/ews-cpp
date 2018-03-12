@@ -15,13 +15,11 @@
 //
 //   This project is hosted at https://github.com/otris
 
-#include <string.h>
-
-#include <vector>
+#include "fixtures.hpp"
 
 #include <ews/ews.hpp>
-
-#include "fixtures.hpp"
+#include <string.h>
+#include <vector>
 
 using ews::item_id;
 typedef rapidxml::xml_document<> xml_document;
@@ -51,7 +49,7 @@ TEST(ItemIdTest, DefaultConstruction)
 }
 
 #ifdef _MSC_VER
-#pragma warning(suppress : 6262)
+#    pragma warning(suppress : 6262)
 #endif
 TEST(ItemIdTest, FromXMLNode)
 {
@@ -72,7 +70,7 @@ TEST(ItemIdTest, ToXMLWithNamespace)
 }
 
 #ifdef _MSC_VER
-#pragma warning(suppress : 6262)
+#    pragma warning(suppress : 6262)
 #endif
 TEST(ItemIdTest, FromAndToXMLRoundTrip)
 {

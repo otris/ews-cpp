@@ -16,23 +16,21 @@
 //   This project is hosted at https://github.com/otris
 
 #include <ews/ews_test_support.hpp>
-
-#include <stdlib.h>
-#include <string.h>
-
 #include <iostream>
 #include <ostream>
 #include <stdexcept>
+#include <stdlib.h>
+#include <string.h>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #ifdef _WIN32
-#include <direct.h>
-#define getcwd _getcwd
+#    include <direct.h>
+#    define getcwd _getcwd
 #else
-#include <limits.h>
-#include <unistd.h>
+#    include <limits.h>
+#    include <unistd.h>
 #endif
 
 #include <gtest/gtest.h>
@@ -132,16 +130,16 @@ void init_from_args(int* argc, char** argv)
         if (starts_with("~", assets_dir))
         {
 #ifdef _WIN32
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4996)
-#endif
+#    ifdef _MSC_VER
+#        pragma warning(push)
+#        pragma warning(disable : 4996)
+#    endif
 
             const char* const env = getenv("USERPROFILE");
 
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
+#    ifdef _MSC_VER
+#        pragma warning(pop)
+#    endif
 #else
             const char* const env = getenv("HOME");
 #endif

@@ -17,15 +17,13 @@
 
 #include "fixtures.hpp"
 
+#include <algorithm>
 #include <ews/rapidxml/rapidxml.hpp>
 #include <ews/rapidxml/rapidxml_print.hpp>
-
-#include <string.h>
-
-#include <algorithm>
 #include <iterator>
 #include <memory>
 #include <sstream>
+#include <string.h>
 #include <string>
 #include <vector>
 
