@@ -7250,7 +7250,7 @@ namespace internal
             set_option(CURLOPT_WRITEDATA, std::addressof(response_data));
 
 #ifdef EWS_DISABLE_TLS_CERT_VERIFICATION
-    // Warn in release builds
+            // Warn in release builds
 #    ifdef NDEBUG
 #        pragma message(                                                       \
             "warning: TLS verification of the server's authenticity is disabled")
@@ -7952,7 +7952,7 @@ static_assert(std::is_move_constructible<item_id>::value, "");
 static_assert(std::is_move_assignable<item_id>::value, "");
 #endif
 
-//! \brief The OccurrenceItemId element identifies a single occurrence of a 
+//! \brief The OccurrenceItemId element identifies a single occurrence of a
 //! recurring item.
 class occurrence_item_id final
 {
@@ -7961,9 +7961,7 @@ public:
     //! Constructs an invalid item_id instance
     occurrence_item_id() = default;
 #else
-    occurrence_item_id()
-    {
-    }
+    occurrence_item_id() {}
 #endif
 
     //! Constructs an <tt>\<OccurrenceItemId></tt> from given \p id string.
@@ -7976,7 +7974,7 @@ public:
     //! item_id instance
     occurrence_item_id(const item_id& item_id)
         : id_(item_id.id()), change_key_(item_id.change_key()),
-        instance_index_(1)
+          instance_index_(1)
     {
     }
 
@@ -7984,42 +7982,30 @@ public:
     //! item_id instance
     occurrence_item_id(const item_id& item_id, int instance_index)
         : id_(item_id.id()), change_key_(item_id.change_key()),
-        instance_index_(instance_index)
+          instance_index_(instance_index)
     {
     }
 
     //! \brief Constructs an <tt>\<OccurrenceItemId></tt> from given identifier
     //! and change key.
     occurrence_item_id(std::string id, std::string change_key,
-        int instance_index)
+                       int instance_index)
         : id_(std::move(id)), change_key_(std::move(change_key)),
-        instance_index_(instance_index)
+          instance_index_(instance_index)
     {
     }
 
     //! Returns the identifier.
-    const std::string& id() const EWS_NOEXCEPT
-    {
-        return id_;
-    }
+    const std::string& id() const EWS_NOEXCEPT { return id_; }
 
     //! Returns the change key
-    const std::string& change_key() const EWS_NOEXCEPT
-    {
-        return change_key_;
-    }
+    const std::string& change_key() const EWS_NOEXCEPT { return change_key_; }
 
     //! Returns the instance index
-    const int instance_index() const EWS_NOEXCEPT
-    {
-        return instance_index_;
-    }
+    const int instance_index() const EWS_NOEXCEPT { return instance_index_; }
 
     //! Whether this item_id is expected to be valid
-    bool valid() const EWS_NOEXCEPT
-    {
-        return !id_.empty();
-    }
+    bool valid() const EWS_NOEXCEPT { return !id_.empty(); }
 
     //! Serializes this occurrence_item_id to an XML string
     std::string to_xml() const
@@ -8033,22 +8019,21 @@ public:
 
     //! Makes an occurrence_item_id instance from an
     //! <tt>\<OccurrenceItemId></tt> XML element
-    static occurrence_item_id from_xml_element(
-        const rapidxml::xml_node<>& elem)
+    static occurrence_item_id from_xml_element(const rapidxml::xml_node<>& elem)
     {
         auto id_attr = elem.first_attribute("RecurringMasterId");
         EWS_ASSERT(id_attr &&
-            "Missing attribute RecurringMasterId in <OccurrenceItemId>");
+                   "Missing attribute RecurringMasterId in <OccurrenceItemId>");
         auto id = std::string(id_attr->value(), id_attr->value_size());
 
         auto ckey_attr = elem.first_attribute("ChangeKey");
         EWS_ASSERT(ckey_attr &&
-            "Missing attribute ChangeKey in <OccurrenceItemId>");
+                   "Missing attribute ChangeKey in <OccurrenceItemId>");
         auto ckey = std::string(ckey_attr->value(), ckey_attr->value_size());
 
         auto index_attr = elem.first_attribute("InstanceIndex");
         EWS_ASSERT(index_attr &&
-            "Missing attribute InstanceIndex in <OccurrenceItemId>");
+                   "Missing attribute InstanceIndex in <OccurrenceItemId>");
         auto index = std::stoi(
             std::string(index_attr->value(), index_attr->value_size()));
 
@@ -18805,10 +18790,8 @@ public:
     calendar_item get_calendar_item(const occurrence_item_id& id,
                                     const item_shape& shape = item_shape())
     {
-        const std::string request_string = "<m:GetItem>" +
-                                           shape.to_xml() +
-                                           "<m:ItemIds>" +
-                                           id.to_xml() +
+        const std::string request_string = "<m:GetItem>" + shape.to_xml() +
+                                           "<m:ItemIds>" + id.to_xml() +
                                            "</m:ItemIds>"
                                            "</m:GetItem>";
 
@@ -18821,7 +18804,7 @@ public:
             throw exchange_error(response_message.result());
         }
         EWS_ASSERT(!response_message.items().empty() &&
-            "Expected at least one item");
+                   "Expected at least one item");
         return response_message.items().front();
     }
 
@@ -18841,7 +18824,7 @@ public:
             sstr << id.to_xml();
         }
         sstr << "</m:ItemIds>"
-            "</m:GetItem>";
+                "</m:GetItem>";
 
         auto response = request(sstr.str());
         const auto response_messages =
