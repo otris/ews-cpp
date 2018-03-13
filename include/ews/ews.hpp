@@ -8002,7 +8002,7 @@ public:
     const std::string& change_key() const EWS_NOEXCEPT { return change_key_; }
 
     //! Returns the instance index
-    const int instance_index() const EWS_NOEXCEPT { return instance_index_; }
+    int instance_index() const EWS_NOEXCEPT { return instance_index_; }
 
     //! Whether this item_id is expected to be valid
     bool valid() const EWS_NOEXCEPT { return !id_.empty(); }
