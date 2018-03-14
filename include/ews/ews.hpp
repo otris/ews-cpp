@@ -7965,20 +7965,20 @@ public:
 #endif
 
     //! Constructs an <tt>\<OccurrenceItemId></tt> from given \p id string.
-    occurrence_item_id(std::string id)
+    occurrence_item_id(std::string id) // intentionally not explicit
         : id_(std::move(id)), change_key_(), instance_index_(1)
     {
     }
 
-    //! \brief Constructrs an <tt>\<OccurrenceItemId></tt> from a given
+    //! \brief Constructs an <tt>\<OccurrenceItemId></tt> from a given
     //! item_id instance
-    occurrence_item_id(const item_id& item_id)
+    occurrence_item_id(const item_id& item_id) // intentionally not explicit
         : id_(item_id.id()), change_key_(item_id.change_key()),
           instance_index_(1)
     {
     }
 
-    //! \brief Constructrs an <tt>\<OccurrenceItemId></tt> from a given
+    //! \brief Constructs an <tt>\<OccurrenceItemId></tt> from a given
     //! item_id instance
     occurrence_item_id(const item_id& item_id, int instance_index)
         : id_(item_id.id()), change_key_(item_id.change_key()),
