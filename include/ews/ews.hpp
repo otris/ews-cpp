@@ -20904,10 +20904,10 @@ namespace internal
         std::vector<folder_response_message::response_message> messages;
         for_each_child_node(
             *response_messages,
-            [&](const rapidxml::xml_node<>& response_message) {
-                auto result = parse_response_class_and_code(response_message);
+            [&](const rapidxml::xml_node<>& node) {
+                auto result = parse_response_class_and_code(node);
 
-                auto items_elem = response_message.first_node_ns(
+                auto items_elem = node.first_node_ns(
                     uri<>::microsoft::messages(), "Folders");
                 EWS_ASSERT(items_elem && "Expected <Folders> element");
 
@@ -20959,10 +20959,10 @@ namespace internal
         std::vector<item_response_messages::response_message> messages;
         for_each_child_node(
             *response_messages,
-            [&](const rapidxml::xml_node<>& response_message) {
-                auto result = parse_response_class_and_code(response_message);
+            [&](const rapidxml::xml_node<>& node) {
+                auto result = parse_response_class_and_code(node);
 
-                auto items_elem = response_message.first_node_ns(
+                auto items_elem = node.first_node_ns(
                     uri<>::microsoft::messages(), "Items");
                 EWS_ASSERT(items_elem && "Expected <Items> element");
 
