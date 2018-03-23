@@ -9746,6 +9746,39 @@ public:
                           internal::xml_subtree(elem));
     }
 
+    //! \brief Creates a new <tt>\<FileAttachment></tt> from a given base64
+    //! string.
+    //!
+    //! Returns a new <tt>\<FileAttachment></tt> that you can pass to
+    //! ews::service::create_attachment in order to create the attachment on
+    //! the server.
+    //!
+    //! \param content Base64 content of a file
+    //! \param content_type The (RFC 2046) MIME content type of the
+    //!        attachment
+    //! \param name A name for this attachment
+    //!
+    //! On Windows you can use HKEY_CLASSES_ROOT/MIME/Database/Content Type
+    //! registry hive to get the content type from a file extension. On a
+    //! UNIX see magic(5) and file(1).
+    static attachment from_base64(const std::string& content,
+                                  std::string content_type, std::string name)
+    {
+        using internal::create_node;
+
+        auto obj = attachment();
+        obj.type_ = type::file;
+
+        auto& attachment_node =
+            create_node(*obj.xml_.document(), "t:FileAttachment");
+        create_node(attachment_node, "t:Name", name);
+        create_node(attachment_node, "t:ContentType", content_type);
+        create_node(attachment_node, "t:Content", content);
+        create_node(attachment_node, "t:Size", std::to_string(content.size()));
+
+        return obj;
+    }
+
     //! \brief Creates a new <tt>\<FileAttachment></tt> from a given file.
     //!
     //! Returns a new <tt>\<FileAttachment></tt> that you can pass to
