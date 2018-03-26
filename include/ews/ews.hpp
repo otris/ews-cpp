@@ -10141,6 +10141,38 @@ namespace internal
         std::vector<response_message> messages_;
     };
 
+    class get_room_lists_response_message final
+        : public response_message_with_items<mailbox>
+    {
+    public:
+        // implemented below
+        static get_room_lists_response_message parse(http_response&&);
+
+    private:
+        get_room_lists_response_message(response_result&& res,
+                                        std::vector<mailbox>&& items)
+            : response_message_with_items<mailbox>(std::move(res),
+                                                   std::move(items))
+        {
+        }
+    };
+
+    class get_rooms_response_message final
+        : public response_message_with_items<mailbox>
+    {
+    public:
+        // implemented below
+        static get_rooms_response_message parse(http_response&&);
+
+    private:
+        get_rooms_response_message(response_result&& res,
+            std::vector<mailbox>&& items)
+            : response_message_with_items<mailbox>(std::move(res),
+                std::move(items))
+        {
+        }
+    };
+
     template <typename ItemType>
     class get_item_response_message final
         : public response_message_with_items<ItemType>
@@ -18690,6 +18722,42 @@ public:
         return *this;
     }
 
+    //! Gets all room lists in the Exchange store.
+    std::vector<mailbox> get_room_lists()
+    {
+        std::string msg = "<m:GetRoomLists />";
+        auto response = request(msg);
+        const auto response_message =
+            internal::get_room_lists_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+        return response_message.items();
+    }
+
+    //! Gets all rooms from a room list in the Exchange store.
+    std::vector<mailbox> get_rooms(const mailbox& room_list)
+    {
+        std::stringstream sstr;
+        sstr << "<m:GetRooms>"
+            "<m:RoomList>"
+            "<t:EmailAddress>"
+            << room_list.value()
+            << "</t:EmailAddress>"
+            "</m:RoomList>"
+            "</m:GetRooms>";
+
+        auto response = request(sstr.str());
+        const auto response_message =
+            internal::get_rooms_response_message::parse(std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+        return response_message.items();
+    }
+
     //! Synchronizes a folder in the Exchange store.
     sync_folder_items_result sync_folder_items(const folder_id& folder_id,
                                                int max_changes_returned = 512)
@@ -20889,6 +20957,61 @@ namespace internal
                 items.emplace_back(folder::from_xml_element(item_elem));
             });
         return get_folder_response_message(std::move(result), std::move(items));
+    }
+
+    inline get_room_lists_response_message
+    get_room_lists_response_message::parse(http_response&& response)
+    {
+        const auto doc = parse_response(std::move(response));
+        auto elem = get_element_by_qname(*doc, "GetRoomListsResponse",
+                                         uri<>::microsoft::messages());
+
+        EWS_ASSERT(elem &&
+                   "Expected <GetRoomListsResponse>, got nullptr");
+        auto result = parse_response_class_and_code(*elem);
+        auto room_lists = std::vector<mailbox>();
+        auto items_elem =
+            elem->first_node_ns(uri<>::microsoft::messages(), "RoomLists");
+        EWS_ASSERT(items_elem && "Expected <RoomLists> element");
+
+        for_each_child_node(
+            *items_elem, [&room_lists](const rapidxml::xml_node<>& item_elem)
+        {
+            room_lists.emplace_back(mailbox::from_xml_element(item_elem));
+        });
+        return get_room_lists_response_message(std::move(result),
+                                               std::move(room_lists));
+    }
+
+    inline get_rooms_response_message
+        get_rooms_response_message::parse(http_response&& response)
+    {
+        const auto doc = parse_response(std::move(response));
+        auto elem = get_element_by_qname(*doc, "GetRoomsResponse",
+                                         uri<>::microsoft::messages());
+
+        EWS_ASSERT(elem &&
+                   "Expected <GetRoomsResponse>, got nullptr");
+        auto result = parse_response_class_and_code(*elem);
+        auto rooms = std::vector<mailbox>();
+        auto items_elem =
+            elem->first_node_ns(uri<>::microsoft::messages(), "Rooms");
+        if (!items_elem)
+        {
+            return get_rooms_response_message(std::move(result),
+                                              std::move(rooms));
+        }
+
+        for_each_child_node(
+            *items_elem, [&rooms](const rapidxml::xml_node<>& item_elem)
+        {
+            auto room_elem = item_elem.first_node_ns(uri<>::microsoft::types(),
+                                                     "Id");
+            EWS_ASSERT(room_elem && "Expected <Id> element");
+            rooms.emplace_back(mailbox::from_xml_element(*room_elem));
+        });
+        return get_rooms_response_message(std::move(result),
+                                          std::move(rooms));
     }
 
     inline folder_response_message
