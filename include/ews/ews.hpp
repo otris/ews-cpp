@@ -18728,7 +18728,8 @@ public:
         std::string msg = "<m:GetRoomLists />";
         auto response = request(msg);
         const auto response_message =
-            internal::get_room_lists_response_message::parse(std::move(response));
+            internal::get_room_lists_response_message::parse(
+                std::move(response));
         if (!response_message.success())
         {
             throw exchange_error(response_message.result());
