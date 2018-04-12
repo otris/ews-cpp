@@ -10166,9 +10166,9 @@ namespace internal
 
     private:
         get_rooms_response_message(response_result&& res,
-            std::vector<mailbox>&& items)
+                                   std::vector<mailbox>&& items)
             : response_message_with_items<mailbox>(std::move(res),
-                std::move(items))
+                                                   std::move(items))
         {
         }
     };
@@ -18742,12 +18742,12 @@ public:
     {
         std::stringstream sstr;
         sstr << "<m:GetRooms>"
-            "<m:RoomList>"
-            "<t:EmailAddress>"
-            << room_list.value()
-            << "</t:EmailAddress>"
-            "</m:RoomList>"
-            "</m:GetRooms>";
+                "<m:RoomList>"
+                "<t:EmailAddress>"
+             << room_list.value()
+             << "</t:EmailAddress>"
+                "</m:RoomList>"
+                "</m:GetRooms>";
 
         auto response = request(sstr.str());
         const auto response_message =
@@ -20967,8 +20967,7 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "GetRoomListsResponse",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem &&
-                   "Expected <GetRoomListsResponse>, got nullptr");
+        EWS_ASSERT(elem && "Expected <GetRoomListsResponse>, got nullptr");
         auto result = parse_response_class_and_code(*elem);
         auto room_lists = std::vector<mailbox>();
         auto items_elem =
@@ -20976,23 +20975,21 @@ namespace internal
         EWS_ASSERT(items_elem && "Expected <RoomLists> element");
 
         for_each_child_node(
-            *items_elem, [&room_lists](const rapidxml::xml_node<>& item_elem)
-        {
-            room_lists.emplace_back(mailbox::from_xml_element(item_elem));
-        });
+            *items_elem, [&room_lists](const rapidxml::xml_node<>& item_elem) {
+                room_lists.emplace_back(mailbox::from_xml_element(item_elem));
+            });
         return get_room_lists_response_message(std::move(result),
                                                std::move(room_lists));
     }
 
     inline get_rooms_response_message
-        get_rooms_response_message::parse(http_response&& response)
+    get_rooms_response_message::parse(http_response&& response)
     {
         const auto doc = parse_response(std::move(response));
         auto elem = get_element_by_qname(*doc, "GetRoomsResponse",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem &&
-                   "Expected <GetRoomsResponse>, got nullptr");
+        EWS_ASSERT(elem && "Expected <GetRoomsResponse>, got nullptr");
         auto result = parse_response_class_and_code(*elem);
         auto rooms = std::vector<mailbox>();
         auto items_elem =
@@ -21004,15 +21001,13 @@ namespace internal
         }
 
         for_each_child_node(
-            *items_elem, [&rooms](const rapidxml::xml_node<>& item_elem)
-        {
-            auto room_elem = item_elem.first_node_ns(uri<>::microsoft::types(),
-                                                     "Id");
-            EWS_ASSERT(room_elem && "Expected <Id> element");
-            rooms.emplace_back(mailbox::from_xml_element(*room_elem));
-        });
-        return get_rooms_response_message(std::move(result),
-                                          std::move(rooms));
+            *items_elem, [&rooms](const rapidxml::xml_node<>& item_elem) {
+                auto room_elem =
+                    item_elem.first_node_ns(uri<>::microsoft::types(), "Id");
+                EWS_ASSERT(room_elem && "Expected <Id> element");
+                rooms.emplace_back(mailbox::from_xml_element(*room_elem));
+            });
+        return get_rooms_response_message(std::move(result), std::move(rooms));
     }
 
     inline folder_response_message
@@ -21027,12 +21022,11 @@ namespace internal
 
         std::vector<folder_response_message::response_message> messages;
         for_each_child_node(
-            *response_messages,
-            [&](const rapidxml::xml_node<>& node) {
+            *response_messages, [&](const rapidxml::xml_node<>& node) {
                 auto result = parse_response_class_and_code(node);
 
-                auto items_elem = node.first_node_ns(
-                    uri<>::microsoft::messages(), "Folders");
+                auto items_elem =
+                    node.first_node_ns(uri<>::microsoft::messages(), "Folders");
                 EWS_ASSERT(items_elem && "Expected <Folders> element");
 
                 auto items = std::vector<folder>();
@@ -21082,12 +21076,11 @@ namespace internal
 
         std::vector<item_response_messages::response_message> messages;
         for_each_child_node(
-            *response_messages,
-            [&](const rapidxml::xml_node<>& node) {
+            *response_messages, [&](const rapidxml::xml_node<>& node) {
                 auto result = parse_response_class_and_code(node);
 
-                auto items_elem = node.first_node_ns(
-                    uri<>::microsoft::messages(), "Items");
+                auto items_elem =
+                    node.first_node_ns(uri<>::microsoft::messages(), "Items");
                 EWS_ASSERT(items_elem && "Expected <Items> element");
 
                 auto items = std::vector<ItemType>();

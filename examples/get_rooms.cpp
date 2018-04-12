@@ -31,18 +31,17 @@ int main()
         const auto env = ews::test::environment();
         auto service = ews::service(env.server_uri, env.domain, env.username,
                                     env.password);
-         
+
         auto room_lists = service.get_room_lists();
         if (room_lists.empty())
         {
             std::cout << "There are no room lists configured\n";
-        } 
+        }
         else
-        {   
+        {
             for (const auto& room_list : room_lists)
             {
-                std::cout << "The room list " 
-                          << room_list.name()
+                std::cout << "The room list " << room_list.name()
                           << " contains the following rooms:\n";
                 auto rooms = service.get_rooms(room_list);
                 if (rooms.empty())
