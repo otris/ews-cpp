@@ -144,7 +144,6 @@ If you want to hack on ews-cpp itself you additionally need
 * Git
 * CMake
 * Doxygen (optional)
-* Boost (optional)
 * Python 2 or 3 (optional)
 
 ## Note Windows Users
