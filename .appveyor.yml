@@ -21,7 +21,6 @@ before_build:
       cd C:\projects\ews-cpp
       mkdir build
       cd build
-      set BOOST_ROOT=C:\Libraries\boost_1_65_1
       cmake -G "Visual Studio 15 2017 Win64" -DCURL_INCLUDE_DIR="C:\projects\ews-cpp\scripts\win64\include" -DCURL_LIBRARY="C:\projects\ews-cpp\scripts\win64\lib\libcurl.lib" ..
 
 build:

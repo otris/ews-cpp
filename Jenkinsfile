@@ -7,7 +7,7 @@ def buildProject(String distro, String buildType) {
     sh """
     distribution=\$(lsb_release -is)
     distributionVersion=\$(lsb_release -rs)
-    
+
     if [ "\$distribution" = "Ubuntu" ]; then
         if [ "\$distributionVersion" = "16.04" ]; then
             sudo apt-get install -y \
@@ -15,18 +15,16 @@ def buildProject(String distro, String buildType) {
                 build-essential \
                 g++ \
                 libcurl4-openssl-dev \
-                libasan1 \
-                libboost-all-dev
+                libasan1
         fi
     fi
-    
+
     if [ "\$distribution" = "CentOS" ]; then
         sudo yum install -y \
             cmake \
             gcc-c++ \
             libcurl-devel \
-            libasan \
-            libboost-devel
+            libasan
     fi
     """
 
