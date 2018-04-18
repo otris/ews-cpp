@@ -193,7 +193,7 @@ TEST_F(AttachmentTest, CreateAndDeleteItemAttachmentOnServer)
     EXPECT_STREQ("This message", attachments[0].name().c_str());
 }
 
-#ifdef EWS_USE_BOOST_LIBRARY
+#ifdef EWS_HAS_FILESYSTEM_HEADER
 class FileAttachmentTest : public TemporaryDirectoryFixture, public ServiceMixin
 {
 };
@@ -243,7 +243,7 @@ TEST_F(FileAttachmentTest, WriteContentToFileDoesNothingIfItemAttachment)
     const auto bytes_written =
         item_attachment.write_content_to_file(target_path.string());
     EXPECT_EQ(0U, bytes_written);
-    EXPECT_FALSE(boost::filesystem::exists(target_path));
+    EXPECT_FALSE(std::filesystem::exists(target_path));
 }
 
 TEST_F(FileAttachmentTest, WriteContentToFile)
@@ -263,9 +263,9 @@ TEST_F(FileAttachmentTest, WriteContentToFile)
     auto attachment = ews::attachment::from_xml_element(*node);
     const auto bytes_written =
         attachment.write_content_to_file(target_path.string());
-    on_scope_exit remove_file([&] { boost::filesystem::remove(target_path); });
+    on_scope_exit remove_file([&] { std::filesystem::remove(target_path); });
     EXPECT_EQ(93525U, bytes_written);
-    EXPECT_TRUE(boost::filesystem::exists(target_path));
+    EXPECT_TRUE(std::filesystem::exists(target_path));
 }
 
 TEST_F(FileAttachmentTest, WriteContentToFileThrowsOnEmptyFileName)
@@ -390,5 +390,5 @@ TEST_F(FileAttachmentTest, CreateAndDeleteFileAttachmentOnServer)
     EXPECT_THROW({ service().get_attachment(attachment_id); },
                  ews::exchange_error);
 }
-#endif // EWS_USE_BOOST_LIBRARY
+#endif // EWS_HAS_FILESYSTEM_HEADER
 } // namespace tests
