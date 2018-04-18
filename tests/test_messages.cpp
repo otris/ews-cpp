@@ -227,5 +227,3 @@ TEST_F(MessageTest, CreateMessageWithInternetMessageId)
                  msg.get_internet_message_id().c_str());
 }
 } // namespace tests
-
-// vim:et ts=4 sw=4

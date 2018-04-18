@@ -100,4 +100,3 @@ autodiscover_result get_exchange_web_services_url(const std::string&,
                                                   const basic_credentials&,
                                                   const autodiscover_hints&);
 } // namespace ews
-// vim:et ts=4 sw=4

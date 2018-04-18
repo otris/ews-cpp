@@ -392,5 +392,3 @@ TEST_F(FileAttachmentTest, CreateAndDeleteFileAttachmentOnServer)
 }
 #endif // EWS_USE_BOOST_LIBRARY
 } // namespace tests
-
-// vim:et ts=4 sw=4

@@ -1079,5 +1079,3 @@ TEST_F(ItemTest, SendItemsWithEmptyVector)
     EXPECT_THROW(service().send_item(ids), ews::exception);
 }
 } // namespace tests
-
-// vim:et ts=4 sw=4

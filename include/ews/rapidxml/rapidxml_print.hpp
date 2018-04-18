@@ -522,4 +522,3 @@ namespace rapidxml
 
 #endif
 
-// vim:et ts=4 sw=4

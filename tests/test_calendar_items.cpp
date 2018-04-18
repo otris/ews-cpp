@@ -1273,5 +1273,3 @@ TEST_F(CalendarItemTest, FindCalendarItemsWithCalendarViews)
     ASSERT_EQ(3U, result.size());
 }
 } // namespace tests
-
-// vim:et ts=4 sw=4

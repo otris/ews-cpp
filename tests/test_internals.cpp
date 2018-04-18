@@ -551,5 +551,3 @@ TEST(DateTime, EpochToDateTime)
                  ews::date_time::from_epoch(1515405810).to_string().c_str());
 }
 } // namespace tests
-
-// vim:et ts=4 sw=4

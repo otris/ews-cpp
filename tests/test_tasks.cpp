@@ -408,5 +408,3 @@ TEST_F(TaskTest, UpdateTotalWorkProperty)
     EXPECT_EQ(6000, task.get_total_work());
 }
 } // namespace tests
-
-// vim:et ts=4 sw=4

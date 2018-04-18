@@ -237,5 +237,3 @@ TEST(RestrictionTest, IsGreaterThanOrEqualToIntConstantRendersCorrectly)
     EXPECT_STREQ(expected, restr.to_xml().c_str());
 }
 } // namespace tests
-
-// vim:et ts=4 sw=4

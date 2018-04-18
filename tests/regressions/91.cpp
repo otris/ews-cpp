@@ -40,4 +40,4 @@ TEST_F(Issue91Test, MakeSureUpdateEscapesXMLValues)
 }
 }
 
-// vim:et ts=4 sw=4
+

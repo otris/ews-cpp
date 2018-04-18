@@ -589,5 +589,3 @@ inline ews::message make_fake_message(const char* xml = nullptr)
 }
 #endif // EWS_USE_BOOST_LIBRARY
 } // namespace tests
-
-// vim:et ts=4 sw=4

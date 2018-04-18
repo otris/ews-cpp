@@ -93,5 +93,3 @@ TEST_F(TimeoutTest, NoTimeout)
 } // namespace tests
 
 #endif
-
-// vim:et ts=4 sw=4

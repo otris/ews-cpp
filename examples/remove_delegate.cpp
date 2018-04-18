@@ -53,5 +53,3 @@ int main()
     ews::tear_down();
     return res;
 }
-
-// vim:et ts=4 sw=4

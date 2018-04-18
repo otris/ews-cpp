@@ -116,5 +116,3 @@ TEST(FolderTest, DistinguishedFolderIdAndChangeKeyAttribute)
     EXPECT_STREQ("calendar", folder.id().c_str());
 }
 } // namespace tests
-
-// vim:et ts=4 sw=4

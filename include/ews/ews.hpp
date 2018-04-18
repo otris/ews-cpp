@@ -22063,5 +22063,3 @@ recurrence_range::from_xml_element(const rapidxml::xml_node<>& elem)
     return std::unique_ptr<recurrence_range>();
 }
 } // namespace ews
-
-// vim:et ts=4 sw=4
