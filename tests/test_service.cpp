@@ -24,10 +24,6 @@
 #include <stdexcept>
 #include <utility>
 
-#ifdef EWS_HAS_FILESYSTEM_HEADER
-#    include <boost/filesystem.hpp>
-#endif
-
 using ews::internal::on_scope_exit;
 
 namespace tests

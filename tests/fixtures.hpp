@@ -28,6 +28,7 @@
 #include <vector>
 
 #ifdef EWS_HAS_FILESYSTEM_HEADER
+#    include <cstdio>
 #    include <filesystem>
 #    include <fstream>
 #    include <iostream>
@@ -442,8 +443,7 @@ public:
         BaseFixture::SetUp();
 
         olddir_ = std::filesystem::current_path();
-        workingdir_ = std::filesystem::unique_path(
-            std::filesystem::temp_directory_path() / "%%%%-%%%%-%%%%-%%%%");
+        workingdir_ = std::tmpnam(nullptr);
         ASSERT_TRUE(std::filesystem::create_directory(workingdir_))
             << "Unable to create temporary working directory";
         std::filesystem::current_path(workingdir_);

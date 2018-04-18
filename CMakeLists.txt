@@ -305,7 +305,7 @@ endif()
 # Test support for C++17 <filesystem> header
 CHECK_CXX_SOURCE_COMPILES("
 #include <filesystem>
-int main() { }
+int main() { std::filesystem::path p; }
 " HAS_FILESYSTEM_HEADER)
 if(HAS_FILESYSTEM_HEADER)
     add_definitions(-DEWS_HAS_FILESYSTEM_HEADER)
@@ -400,7 +400,11 @@ add_executable(tests
     ${rapidxml_SOURCES}
     ${ews_TESTS})
 
-target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
+set(_libs ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
+if(HAS_FILESYSTEM_HEADER AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    set(_libs ${_libs} stdc++fs)
+endif()
+target_link_libraries(tests ${_libs})
 set_target_properties(tests PROPERTIES
     LINKER_LANGUAGE CXX
     COMPILE_FLAGS "${SANITIZE_CXXFLAGS}"
