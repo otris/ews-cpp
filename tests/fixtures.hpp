@@ -27,8 +27,9 @@
 #include <utility>
 #include <vector>
 
-#ifdef EWS_USE_BOOST_LIBRARY
-#    include <boost/filesystem.hpp>
+#ifdef EWS_HAS_FILESYSTEM_HEADER
+#    include <cstdio>
+#    include <filesystem>
 #    include <fstream>
 #    include <iostream>
 #    include <iterator>
@@ -52,9 +53,9 @@ inline bool contains_if(const ContainerType& cont, Predicate pred)
     return std::find_if(begin(cont), end(cont), pred) != end(cont);
 }
 
-#ifdef EWS_USE_BOOST_LIBRARY
+#ifdef EWS_HAS_FILESYSTEM_HEADER
 // Read file contents into a buffer
-inline std::vector<char> read_file(const boost::filesystem::path& path)
+inline std::vector<char> read_file(const std::filesystem::path& path)
 {
     std::ifstream ifstr(path.string(), std::ifstream::in | std::ios::binary);
     if (!ifstr.is_open())
@@ -79,7 +80,7 @@ inline std::vector<char> read_file(const boost::filesystem::path& path)
     contents.push_back('\0');
     return contents;
 }
-#endif // EWS_USE_BOOST_LIBRARY
+#endif // EWS_HAS_FILESYSTEM_HEADER
 
 // Allows you to test requests w/o sending anything to the server. See also
 // FakeServiceFixture.
@@ -415,22 +416,22 @@ private:
     ews::message message_;
 };
 
-#ifdef EWS_USE_BOOST_LIBRARY
+#ifdef EWS_HAS_FILESYSTEM_HEADER
 class ResolveNamesTest : public FakeServiceFixture
 {
 public:
-    const boost::filesystem::path assets_dir() const
+    const std::filesystem::path assets_dir() const
     {
-        return boost::filesystem::path(assets());
+        return std::filesystem::path(assets());
     }
 };
 
 class SubscribeTest : public FakeServiceFixture
 {
 public:
-    const boost::filesystem::path assets_dir() const
+    const std::filesystem::path assets_dir() const
     {
-        return boost::filesystem::path(assets());
+        return std::filesystem::path(assets());
     }
 };
 
@@ -441,36 +442,35 @@ public:
     {
         BaseFixture::SetUp();
 
-        olddir_ = boost::filesystem::current_path();
-        workingdir_ = boost::filesystem::unique_path(
-            boost::filesystem::temp_directory_path() / "%%%%-%%%%-%%%%-%%%%");
-        ASSERT_TRUE(boost::filesystem::create_directory(workingdir_))
+        olddir_ = std::filesystem::current_path();
+        workingdir_ = std::tmpnam(nullptr);
+        ASSERT_TRUE(std::filesystem::create_directory(workingdir_))
             << "Unable to create temporary working directory";
-        boost::filesystem::current_path(workingdir_);
+        std::filesystem::current_path(workingdir_);
     }
 
     void TearDown()
     {
-        EXPECT_TRUE(boost::filesystem::is_empty(workingdir_))
+        EXPECT_TRUE(std::filesystem::is_empty(workingdir_))
             << "Temporary directory not empty on TearDown";
-        boost::filesystem::current_path(olddir_);
-        boost::filesystem::remove_all(workingdir_);
+        std::filesystem::current_path(olddir_);
+        std::filesystem::remove_all(workingdir_);
 
         BaseFixture::TearDown();
     }
 
-    const boost::filesystem::path& cwd() const { return workingdir_; }
+    const std::filesystem::path& cwd() const { return workingdir_; }
 
-    const boost::filesystem::path assets_dir() const
+    const std::filesystem::path assets_dir() const
     {
-        return boost::filesystem::path(assets());
+        return std::filesystem::path(assets());
     }
 
 private:
-    boost::filesystem::path olddir_;
-    boost::filesystem::path workingdir_;
+    std::filesystem::path olddir_;
+    std::filesystem::path workingdir_;
 };
-#endif // EWS_USE_BOOST_LIBRARY
+#endif // EWS_HAS_FILESYSTEM_HEADER
 
 inline ews::task make_fake_task(const char* xml = nullptr)
 {
@@ -542,7 +542,7 @@ inline ews::task make_fake_task(const char* xml = nullptr)
     return ews::task::from_xml_element(*node);
 }
 
-#ifdef EWS_USE_BOOST_LIBRARY
+#ifdef EWS_HAS_FILESYSTEM_HEADER
 inline ews::message make_fake_message(const char* xml = nullptr)
 {
     typedef rapidxml::xml_document<> xml_document;
@@ -560,7 +560,7 @@ inline ews::message make_fake_message(const char* xml = nullptr)
     {
         // Load from file
 
-        const auto assets = boost::filesystem::path(
+        const auto assets = std::filesystem::path(
             ews::test::global_data::instance().assets_dir);
         const auto file_path =
             assets / "undeliverable_test_mail_get_item_response.xml";
@@ -587,5 +587,5 @@ inline ews::message make_fake_message(const char* xml = nullptr)
         doc, "Message", ews::internal::uri<>::microsoft::types());
     return ews::message::from_xml_element(*node);
 }
-#endif // EWS_USE_BOOST_LIBRARY
+#endif // EWS_HAS_FILESYSTEM_HEADER
 } // namespace tests

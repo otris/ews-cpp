@@ -269,9 +269,6 @@ TEST(OfflineItemTest, GetAndSetBodyProperty)
 {
     auto item = ews::item();
 
-    // TODO: better: what to do!? EXPECT_FALSE(item.get_body().none());
-    // boost::optional desperately missing
-
     auto original = ews::body("<p>Some of the finest Vogon poetry</p>",
                               ews::body_type::html);
     item.set_body(original);
@@ -490,7 +487,7 @@ TEST(OfflineItemTest, IsUnmodifiedDefaultConstructed)
     EXPECT_FALSE(task.is_unmodified());
 }
 
-#ifdef EWS_USE_BOOST_LIBRARY
+#ifdef EWS_HAS_FILESYSTEM_HEADER
 TEST(OfflineItemTest, GetInternetMessageHeaders)
 {
     auto message = make_fake_message();
@@ -553,7 +550,7 @@ TEST(OfflineItemTest, GetInternetMessageHeaders)
         expected++;
     }
 }
-#endif // EWS_USE_BOOST_LIBRARY
+#endif // EWS_HAS_FILESYSTEM_HEADER
 
 TEST(OfflineItemTest, GetDateTimeSentProperty)
 {

@@ -169,20 +169,6 @@ set(rapidxml_SOURCES
 find_package(CURL 7.29 REQUIRED)
 include_directories(${ews_INCLUDE_DIR} ${CURL_INCLUDE_DIRS})
 
-# Boost is optional as it is only used by some test cases
-if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-    set(Boost_USE_STATIC_LIBS ON)
-else()
-    set(Boost_USE_STATIC_LIBS OFF)
-endif()
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost 1.53 COMPONENTS system filesystem)
-if(Boost_FOUND)
-    add_definitions(-DEWS_USE_BOOST_LIBRARY -DBOOST_FILESYSTEM_NO_DEPRECATED)
-    include_directories(${Boost_INCLUDE_DIRS})
-endif()
-
 if(ENABLE_ASSERTS)
     add_definitions(-DEWS_ENABLE_ASSERTS)
 endif()
@@ -316,6 +302,15 @@ if(HAS_VARIANT)
     add_definitions(-DEWS_HAS_VARIANT)
 endif()
 
+# Test support for C++17 <filesystem> header
+CHECK_CXX_SOURCE_COMPILES("
+#include <filesystem>
+int main() { std::filesystem::path p; }
+" HAS_FILESYSTEM_HEADER)
+if(HAS_FILESYSTEM_HEADER)
+    add_definitions(-DEWS_HAS_FILESYSTEM_HEADER)
+endif()
+
 # Helper function for all those example executables
 function(add_example EXAMPLE_NAME)
     add_executable(${EXAMPLE_NAME}
@@ -405,12 +400,11 @@ add_executable(tests
     ${rapidxml_SOURCES}
     ${ews_TESTS})
 
-if(Boost_FOUND)
-    target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES}
-        ${Boost_LIBRARIES})
-else()
-    target_link_libraries(tests ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
+set(_libs ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
+if(HAS_FILESYSTEM_HEADER AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    set(_libs ${_libs} stdc++fs)
 endif()
+target_link_libraries(tests ${_libs})
 set_target_properties(tests PROPERTIES
     LINKER_LANGUAGE CXX
     COMPILE_FLAGS "${SANITIZE_CXXFLAGS}"

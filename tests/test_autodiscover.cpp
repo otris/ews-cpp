@@ -15,7 +15,7 @@
 //
 //   This project is hosted at https://github.com/otris
 
-#ifdef EWS_USE_BOOST_LIBRARY
+#ifdef EWS_HAS_FILESYSTEM_HEADER
 
 #    include "fixtures.hpp"
 
@@ -191,4 +191,4 @@ TEST_F(AutodiscoverTest, GetExchangeWebServicesURLExceptionText)
 }
 } // namespace tests
 
-#endif // EWS_USE_BOOST_LIBRARY
+#endif // EWS_HAS_FILESYSTEM_HEADER

@@ -8163,7 +8163,7 @@ public:
     //! \brief Creates a new undefined mailbox.
     //!
     //! Only useful as return value to indicate that no mailbox is set or
-    //! available. (Good candidate for {boost,std}::optional)
+    //! available. (Good candidate for std::optional)
     mailbox() = default;
 #else
     mailbox() {}

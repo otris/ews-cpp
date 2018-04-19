@@ -24,16 +24,12 @@
 #include <stdexcept>
 #include <utility>
 
-#ifdef EWS_USE_BOOST_LIBRARY
-#    include <boost/filesystem.hpp>
-#endif
-
 using ews::internal::on_scope_exit;
 
 namespace tests
 {
 
-#ifdef EWS_USE_BOOST_LIBRARY
+#ifdef EWS_HAS_FILESYSTEM_HEADER
 class GetItemRequestTest : public FakeServiceFixture
 {
 private:
@@ -41,7 +37,7 @@ private:
     {
         FakeServiceFixture::SetUp();
 
-        const auto assets = boost::filesystem::path(
+        const auto assets = std::filesystem::path(
             ews::test::global_data::instance().assets_dir);
         const auto file_path = assets / "get_item_response_message.xml";
         std::ifstream ifstr(file_path.string(),
@@ -84,7 +80,7 @@ TEST_F(GetItemRequestTest, WithAdditionalProperties)
                   "</t:AdditionalProperties>"),
               std::string::npos);
 }
-#endif // EWS_USE_BOOST_LIBRARY
+#endif // EWS_HAS_FILESYSTEM_HEADER
 
 class SoapHeader : public FakeServiceFixture
 {

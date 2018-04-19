@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#ifdef EWS_USE_BOOST_LIBRARY
+#ifdef EWS_HAS_FILESYSTEM_HEADER
 namespace tests
 {
 TEST_F(SubscribeTest, SubscriptionSuccessful)
@@ -61,4 +61,4 @@ TEST_F(SubscribeTest, SendCorrectRequest)
 }
 } // namespace tests
 
-#endif // EWS_USE_BOOST_LIBRARY
+#endif // EWS_HAS_FILESYSTEM_HEADER
