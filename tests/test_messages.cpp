@@ -174,15 +174,6 @@ TEST(OfflineMessageTest, FromPropertyInitialValue)
     EXPECT_TRUE(msg.get_from().none());
 }
 
-TEST_F(MessageTest, SetFromWithInvalidMailbox)
-{
-    auto msg = ews::message();
-    msg.set_from(ews::mailbox());
-    auto id = service().create_item(msg, ews::message_disposition::save_only);
-    ews::internal::on_scope_exit remove_message(
-        [&]() { service().delete_item(id); });
-}
-
 TEST(OfflineMessageTest, SetFromProperty)
 {
     auto msg = ews::message();
