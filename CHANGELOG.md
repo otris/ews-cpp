@@ -8,6 +8,7 @@ New features:
 - Support for EWS notification operations (`<Subscribe>`, `<GetEvents>`, `<Unsubscribe>`) has been added ([#85](https://github.com/otris/ews-cpp/pull/85)).
 - There is a new `date_time::to_epoch` and a `date_time::from_epoch` function to convert a xs:dateTime to the epoch back and forth.
 - Support for the `<SyncFolderItems>` operation has been added ([#101](https://github.com/otris/ews-cpp/pull/101)). See the [example](https://github.com/otris/ews-cpp/blob/master/examples/sync_folder_items.cpp).
+- Support for the `<GetRooms>` operation has been added ([#108](https://github.com/otris/ews-cpp/pull/108)).
 
 ### 0.6 (2011-11-27)
 New features:
