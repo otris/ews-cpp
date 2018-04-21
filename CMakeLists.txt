@@ -13,7 +13,7 @@ include(CheckCXXCompilerFlag)
 option(DISABLE_TLS_CERT_VERIFICATION
     "Turn-off verification of the server's authenticity." OFF)
 if(NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
-    option(ENABLE_ASAN "Enable address sanitizer." OFF)
+    option(ENABLE_SANITIZERS "Enable ASAN and UBSAN sanitizers." OFF)
 endif()
 option(ENABLE_VERBOSE
     "Enable verbose output to stderr (You don't want this set in production)."
@@ -32,7 +32,7 @@ endif()
 
 set(SANITIZE_CXXFLAGS)
 set(SANITIZE_LDFLAGS)
-if(ENABLE_ASAN)
+if(ENABLE_SANITIZERS)
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND
        "${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER "4.0")
         set(_enable_ubsan TRUE)
@@ -58,7 +58,7 @@ if(ENABLE_ASAN)
         endif()
 
     else()
-        message(WARNING "Option ENABLE_ASAN only supported with clang and gcc.")
+        message(WARNING "Option ENABLE_SANITIZERS only supported with clang and gcc.")
     endif()
 endif()
 

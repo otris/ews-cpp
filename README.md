@@ -174,7 +174,7 @@ To build the accompanied tests with debugging symbols and Address Sanitizer
 enabled do something like this:
 
 ```bash
-cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_ASAN=ON /path/to/source
+cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZERS=ON /path/to/source
 make
 ```
 

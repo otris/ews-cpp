@@ -31,7 +31,7 @@ def buildProject(String distro, String buildType) {
     withCredentials([usernamePassword(credentialsId: 'c0ede5c0-82be-4ff0-b618-39aeddcdfaba', passwordVariable: 'password', usernameVariable: 'username')]) {
       dir('build') {
         sh """
-        cmake -DCMAKE_BUILD_TYPE=${buildType} -DENABLE_ASAN=ON -DDISABLE_TLS_CERT_VERIFICATION=ON ..
+        cmake -DCMAKE_BUILD_TYPE=${buildType} -DENABLE_SANITIZERS=ON -DDISABLE_TLS_CERT_VERIFICATION=ON ..
         make -j2
 
         EWS_TEST_URI=https://duckburg.otris.de/ews/Exchange.asmx \
