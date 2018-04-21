@@ -122,11 +122,11 @@ namespace internal
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_copy_constructible<on_scope_exit>::value, "");
-    static_assert(!std::is_copy_assignable<on_scope_exit>::value, "");
-    static_assert(!std::is_move_constructible<on_scope_exit>::value, "");
-    static_assert(!std::is_move_assignable<on_scope_exit>::value, "");
-    static_assert(!std::is_default_constructible<on_scope_exit>::value, "");
+    static_assert(!std::is_copy_constructible<on_scope_exit>::value);
+    static_assert(!std::is_copy_assignable<on_scope_exit>::value);
+    static_assert(!std::is_move_constructible<on_scope_exit>::value);
+    static_assert(!std::is_move_assignable<on_scope_exit>::value);
+    static_assert(!std::is_default_constructible<on_scope_exit>::value);
 #endif
 
 #ifndef EWS_HAS_OPTIONAL
@@ -6686,11 +6686,11 @@ namespace internal
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(std::is_default_constructible<curl_ptr>::value, "");
-    static_assert(!std::is_copy_constructible<curl_ptr>::value, "");
-    static_assert(!std::is_copy_assignable<curl_ptr>::value, "");
-    static_assert(std::is_move_constructible<curl_ptr>::value, "");
-    static_assert(std::is_move_assignable<curl_ptr>::value, "");
+    static_assert(std::is_default_constructible<curl_ptr>::value);
+    static_assert(!std::is_copy_constructible<curl_ptr>::value);
+    static_assert(!std::is_copy_assignable<curl_ptr>::value);
+    static_assert(std::is_move_constructible<curl_ptr>::value);
+    static_assert(std::is_move_assignable<curl_ptr>::value);
 #endif
 
     // RAII wrapper class around cURLs slist construct.
@@ -6740,11 +6740,11 @@ namespace internal
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(std::is_default_constructible<curl_string_list>::value, "");
-    static_assert(!std::is_copy_constructible<curl_string_list>::value, "");
-    static_assert(!std::is_copy_assignable<curl_string_list>::value, "");
-    static_assert(std::is_move_constructible<curl_string_list>::value, "");
-    static_assert(std::is_move_assignable<curl_string_list>::value, "");
+    static_assert(std::is_default_constructible<curl_string_list>::value);
+    static_assert(!std::is_copy_constructible<curl_string_list>::value);
+    static_assert(!std::is_copy_assignable<curl_string_list>::value);
+    static_assert(std::is_move_constructible<curl_string_list>::value);
+    static_assert(std::is_move_assignable<curl_string_list>::value);
 #endif
 
     // String constants
@@ -7285,11 +7285,11 @@ namespace internal
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(!std::is_default_constructible<http_request>::value, "");
-    static_assert(!std::is_copy_constructible<http_request>::value, "");
-    static_assert(!std::is_copy_assignable<http_request>::value, "");
-    static_assert(std::is_move_constructible<http_request>::value, "");
-    static_assert(std::is_move_assignable<http_request>::value, "");
+    static_assert(!std::is_default_constructible<http_request>::value);
+    static_assert(!std::is_copy_constructible<http_request>::value);
+    static_assert(!std::is_copy_assignable<http_request>::value);
+    static_assert(std::is_move_constructible<http_request>::value);
+    static_assert(std::is_move_assignable<http_request>::value);
 #endif
 
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
@@ -7594,11 +7594,11 @@ namespace internal
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(std::is_default_constructible<xml_subtree>::value, "");
-    static_assert(std::is_copy_constructible<xml_subtree>::value, "");
-    static_assert(std::is_copy_assignable<xml_subtree>::value, "");
-    static_assert(std::is_move_constructible<xml_subtree>::value, "");
-    static_assert(std::is_move_assignable<xml_subtree>::value, "");
+    static_assert(std::is_default_constructible<xml_subtree>::value);
+    static_assert(std::is_copy_constructible<xml_subtree>::value);
+    static_assert(std::is_copy_assignable<xml_subtree>::value);
+    static_assert(std::is_move_constructible<xml_subtree>::value);
+    static_assert(std::is_move_assignable<xml_subtree>::value);
 #endif
 
 #ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
@@ -7950,11 +7950,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<item_id>::value, "");
-static_assert(std::is_copy_constructible<item_id>::value, "");
-static_assert(std::is_copy_assignable<item_id>::value, "");
-static_assert(std::is_move_constructible<item_id>::value, "");
-static_assert(std::is_move_assignable<item_id>::value, "");
+static_assert(std::is_default_constructible<item_id>::value);
+static_assert(std::is_copy_constructible<item_id>::value);
+static_assert(std::is_copy_assignable<item_id>::value);
+static_assert(std::is_move_constructible<item_id>::value);
+static_assert(std::is_move_assignable<item_id>::value);
 #endif
 
 //! \brief The OccurrenceItemId element identifies a single occurrence of a
@@ -8053,11 +8053,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<occurrence_item_id>::value, "");
-static_assert(std::is_copy_constructible<occurrence_item_id>::value, "");
-static_assert(std::is_copy_assignable<occurrence_item_id>::value, "");
-static_assert(std::is_move_constructible<occurrence_item_id>::value, "");
-static_assert(std::is_move_assignable<occurrence_item_id>::value, "");
+static_assert(std::is_default_constructible<occurrence_item_id>::value);
+static_assert(std::is_copy_constructible<occurrence_item_id>::value);
+static_assert(std::is_copy_assignable<occurrence_item_id>::value);
+static_assert(std::is_move_constructible<occurrence_item_id>::value);
+static_assert(std::is_move_assignable<occurrence_item_id>::value);
 #endif
 
 //! \brief Contains the unique identifier of an attachment.
@@ -8148,11 +8148,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<attachment_id>::value, "");
-static_assert(std::is_copy_constructible<attachment_id>::value, "");
-static_assert(std::is_copy_assignable<attachment_id>::value, "");
-static_assert(std::is_move_constructible<attachment_id>::value, "");
-static_assert(std::is_move_assignable<attachment_id>::value, "");
+static_assert(std::is_default_constructible<attachment_id>::value);
+static_assert(std::is_copy_constructible<attachment_id>::value);
+static_assert(std::is_copy_assignable<attachment_id>::value);
+static_assert(std::is_move_constructible<attachment_id>::value);
+static_assert(std::is_move_assignable<attachment_id>::value);
 #endif
 
 //! \brief Represents a SMTP mailbox.
@@ -8390,11 +8390,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<mailbox>::value, "");
-static_assert(std::is_copy_constructible<mailbox>::value, "");
-static_assert(std::is_copy_assignable<mailbox>::value, "");
-static_assert(std::is_move_constructible<mailbox>::value, "");
-static_assert(std::is_move_assignable<mailbox>::value, "");
+static_assert(std::is_default_constructible<mailbox>::value);
+static_assert(std::is_copy_constructible<mailbox>::value);
+static_assert(std::is_copy_assignable<mailbox>::value);
+static_assert(std::is_move_constructible<mailbox>::value);
+static_assert(std::is_move_assignable<mailbox>::value);
 #endif
 
 class directory_id final
@@ -8413,11 +8413,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<directory_id>::value, "");
-static_assert(std::is_copy_constructible<directory_id>::value, "");
-static_assert(std::is_copy_assignable<directory_id>::value, "");
-static_assert(std::is_move_constructible<directory_id>::value, "");
-static_assert(std::is_move_assignable<directory_id>::value, "");
+static_assert(std::is_default_constructible<directory_id>::value);
+static_assert(std::is_copy_constructible<directory_id>::value);
+static_assert(std::is_copy_assignable<directory_id>::value);
+static_assert(std::is_move_constructible<directory_id>::value);
+static_assert(std::is_move_assignable<directory_id>::value);
 #endif
 
 struct resolution final
@@ -8427,11 +8427,11 @@ struct resolution final
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<resolution>::value, "");
-static_assert(std::is_copy_constructible<resolution>::value, "");
-static_assert(std::is_copy_assignable<resolution>::value, "");
-static_assert(std::is_move_constructible<resolution>::value, "");
-static_assert(std::is_move_assignable<resolution>::value, "");
+static_assert(std::is_default_constructible<resolution>::value);
+static_assert(std::is_copy_constructible<resolution>::value);
+static_assert(std::is_copy_assignable<resolution>::value);
+static_assert(std::is_move_constructible<resolution>::value);
+static_assert(std::is_move_assignable<resolution>::value);
 #endif
 
 class resolution_set final
@@ -8461,11 +8461,11 @@ public:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<resolution_set>::value, "");
-static_assert(std::is_copy_constructible<resolution_set>::value, "");
-static_assert(std::is_copy_assignable<resolution_set>::value, "");
-static_assert(std::is_move_constructible<resolution_set>::value, "");
-static_assert(std::is_move_assignable<resolution_set>::value, "");
+static_assert(std::is_default_constructible<resolution_set>::value);
+static_assert(std::is_copy_constructible<resolution_set>::value);
+static_assert(std::is_copy_assignable<resolution_set>::value);
+static_assert(std::is_move_constructible<resolution_set>::value);
+static_assert(std::is_move_assignable<resolution_set>::value);
 #endif
 
 #ifdef EWS_HAS_VARIANT
@@ -8495,12 +8495,11 @@ private:
 };
 
 #    ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<subscription_information>::value,
-              "");
-static_assert(std::is_copy_constructible<subscription_information>::value, "");
-static_assert(std::is_copy_assignable<subscription_information>::value, "");
-static_assert(std::is_move_constructible<subscription_information>::value, "");
-static_assert(std::is_move_assignable<subscription_information>::value, "");
+static_assert(std::is_default_constructible<subscription_information>::value);
+static_assert(std::is_copy_constructible<subscription_information>::value);
+static_assert(std::is_copy_assignable<subscription_information>::value);
+static_assert(std::is_move_constructible<subscription_information>::value);
+static_assert(std::is_move_assignable<subscription_information>::value);
 #    endif
 #endif
 
@@ -8576,11 +8575,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<folder_id>::value, "");
-static_assert(std::is_copy_constructible<folder_id>::value, "");
-static_assert(std::is_copy_assignable<folder_id>::value, "");
-static_assert(std::is_move_constructible<folder_id>::value, "");
-static_assert(std::is_move_assignable<folder_id>::value, "");
+static_assert(std::is_default_constructible<folder_id>::value);
+static_assert(std::is_copy_constructible<folder_id>::value);
+static_assert(std::is_copy_assignable<folder_id>::value);
+static_assert(std::is_move_constructible<folder_id>::value);
+static_assert(std::is_move_assignable<folder_id>::value);
 #endif
 
 //! \brief Renders a <tt>\<DistinguishedFolderId></tt> element.
@@ -9006,12 +9005,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<distinguished_folder_id>::value,
-              "");
-static_assert(std::is_copy_constructible<distinguished_folder_id>::value, "");
-static_assert(std::is_copy_assignable<distinguished_folder_id>::value, "");
-static_assert(std::is_move_constructible<distinguished_folder_id>::value, "");
-static_assert(std::is_move_assignable<distinguished_folder_id>::value, "");
+static_assert(std::is_default_constructible<distinguished_folder_id>::value);
+static_assert(std::is_copy_constructible<distinguished_folder_id>::value);
+static_assert(std::is_copy_assignable<distinguished_folder_id>::value);
+static_assert(std::is_move_constructible<distinguished_folder_id>::value);
+static_assert(std::is_move_assignable<distinguished_folder_id>::value);
 #endif
 
 #ifdef EWS_HAS_VARIANT
@@ -9880,11 +9878,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<attachment>::value, "");
-static_assert(std::is_copy_constructible<attachment>::value, "");
-static_assert(std::is_copy_assignable<attachment>::value, "");
-static_assert(std::is_move_constructible<attachment>::value, "");
-static_assert(std::is_move_assignable<attachment>::value, "");
+static_assert(std::is_default_constructible<attachment>::value);
+static_assert(std::is_copy_constructible<attachment>::value);
+static_assert(std::is_copy_assignable<attachment>::value);
+static_assert(std::is_move_constructible<attachment>::value);
+static_assert(std::is_move_assignable<attachment>::value);
 #endif
 
 namespace internal
@@ -10692,10 +10690,10 @@ private:
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
 static_assert(!std::is_default_constructible<sync_folder_items_result>::value,
               "");
-static_assert(std::is_copy_constructible<sync_folder_items_result>::value, "");
-static_assert(std::is_copy_assignable<sync_folder_items_result>::value, "");
-static_assert(std::is_move_constructible<sync_folder_items_result>::value, "");
-static_assert(std::is_move_assignable<sync_folder_items_result>::value, "");
+static_assert(std::is_copy_constructible<sync_folder_items_result>::value);
+static_assert(std::is_copy_assignable<sync_folder_items_result>::value);
+static_assert(std::is_move_constructible<sync_folder_items_result>::value);
+static_assert(std::is_move_assignable<sync_folder_items_result>::value);
 #endif
 
 //! \brief A thin wrapper around xs:dateTime formatted strings.
@@ -10931,11 +10929,11 @@ inline bool operator==(const date_time& lhs, const date_time& rhs)
 }
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<date_time>::value, "");
-static_assert(std::is_copy_constructible<date_time>::value, "");
-static_assert(std::is_copy_assignable<date_time>::value, "");
-static_assert(std::is_move_constructible<date_time>::value, "");
-static_assert(std::is_move_assignable<date_time>::value, "");
+static_assert(std::is_default_constructible<date_time>::value);
+static_assert(std::is_copy_constructible<date_time>::value);
+static_assert(std::is_copy_assignable<date_time>::value);
+static_assert(std::is_move_constructible<date_time>::value);
+static_assert(std::is_move_assignable<date_time>::value);
 #endif
 
 //! \brief A xs:date formatted string
@@ -10989,11 +10987,11 @@ inline bool operator==(const duration& lhs, const duration& rhs)
 }
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<duration>::value, "");
-static_assert(std::is_copy_constructible<duration>::value, "");
-static_assert(std::is_copy_assignable<duration>::value, "");
-static_assert(std::is_move_constructible<duration>::value, "");
-static_assert(std::is_move_assignable<duration>::value, "");
+static_assert(std::is_default_constructible<duration>::value);
+static_assert(std::is_copy_constructible<duration>::value);
+static_assert(std::is_copy_assignable<duration>::value);
+static_assert(std::is_move_constructible<duration>::value);
+static_assert(std::is_move_assignable<duration>::value);
 #endif
 
 //! Specifies the type of a <tt>\<Body></tt> element
@@ -11088,11 +11086,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<body>::value, "");
-static_assert(std::is_copy_constructible<body>::value, "");
-static_assert(std::is_copy_assignable<body>::value, "");
-static_assert(std::is_move_constructible<body>::value, "");
-static_assert(std::is_move_assignable<body>::value, "");
+static_assert(std::is_default_constructible<body>::value);
+static_assert(std::is_copy_constructible<body>::value);
+static_assert(std::is_copy_assignable<body>::value);
+static_assert(std::is_move_constructible<body>::value);
+static_assert(std::is_move_assignable<body>::value);
 #endif
 
 //! \brief Represents an item's <tt>\<MimeContent CharacterSet="" /></tt>
@@ -11136,11 +11134,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<mime_content>::value, "");
-static_assert(std::is_copy_constructible<mime_content>::value, "");
-static_assert(std::is_copy_assignable<mime_content>::value, "");
-static_assert(std::is_move_constructible<mime_content>::value, "");
-static_assert(std::is_move_assignable<mime_content>::value, "");
+static_assert(std::is_default_constructible<mime_content>::value);
+static_assert(std::is_copy_constructible<mime_content>::value);
+static_assert(std::is_copy_assignable<mime_content>::value);
+static_assert(std::is_move_constructible<mime_content>::value);
+static_assert(std::is_move_assignable<mime_content>::value);
 #endif
 
 //! \brief An attendee of a meeting or a meeting room.
@@ -11274,11 +11272,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<attendee>::value, "");
-static_assert(std::is_copy_constructible<attendee>::value, "");
-static_assert(std::is_copy_assignable<attendee>::value, "");
-static_assert(std::is_move_constructible<attendee>::value, "");
-static_assert(std::is_move_assignable<attendee>::value, "");
+static_assert(!std::is_default_constructible<attendee>::value);
+static_assert(std::is_copy_constructible<attendee>::value);
+static_assert(std::is_copy_assignable<attendee>::value);
+static_assert(std::is_move_constructible<attendee>::value);
+static_assert(std::is_move_assignable<attendee>::value);
 #endif
 
 //! \brief Represents an <tt>\<InternetMessageHeader\></tt> property.
@@ -11322,12 +11320,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<internet_message_header>::value,
-              "");
-static_assert(std::is_copy_constructible<internet_message_header>::value, "");
-static_assert(std::is_copy_assignable<internet_message_header>::value, "");
-static_assert(std::is_move_constructible<internet_message_header>::value, "");
-static_assert(std::is_move_assignable<internet_message_header>::value, "");
+static_assert(!std::is_default_constructible<internet_message_header>::value);
+static_assert(std::is_copy_constructible<internet_message_header>::value);
+static_assert(std::is_copy_assignable<internet_message_header>::value);
+static_assert(std::is_move_constructible<internet_message_header>::value);
+static_assert(std::is_move_assignable<internet_message_header>::value);
 #endif
 
 namespace internal
@@ -11351,11 +11348,11 @@ namespace internal
     };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-    static_assert(std::is_default_constructible<str_wrapper<0>>::value, "");
-    static_assert(std::is_copy_constructible<str_wrapper<0>>::value, "");
-    static_assert(std::is_copy_assignable<str_wrapper<0>>::value, "");
-    static_assert(std::is_move_constructible<str_wrapper<0>>::value, "");
-    static_assert(std::is_move_assignable<str_wrapper<0>>::value, "");
+    static_assert(std::is_default_constructible<str_wrapper<0>>::value);
+    static_assert(std::is_copy_constructible<str_wrapper<0>>::value);
+    static_assert(std::is_copy_assignable<str_wrapper<0>>::value);
+    static_assert(std::is_move_constructible<str_wrapper<0>>::value);
+    static_assert(std::is_move_assignable<str_wrapper<0>>::value);
 #endif
 
     enum type_tags
@@ -11680,11 +11677,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<extended_field_uri>::value, "");
-static_assert(std::is_copy_constructible<extended_field_uri>::value, "");
-static_assert(std::is_copy_assignable<extended_field_uri>::value, "");
-static_assert(std::is_move_constructible<extended_field_uri>::value, "");
-static_assert(std::is_move_assignable<extended_field_uri>::value, "");
+static_assert(!std::is_default_constructible<extended_field_uri>::value);
+static_assert(std::is_copy_constructible<extended_field_uri>::value);
+static_assert(std::is_copy_assignable<extended_field_uri>::value);
+static_assert(std::is_move_constructible<extended_field_uri>::value);
+static_assert(std::is_move_assignable<extended_field_uri>::value);
 #endif
 
 //! \brief Represents an <tt>\<ExtendedProperty></tt>.
@@ -11735,11 +11732,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<extended_property>::value, "");
-static_assert(std::is_copy_constructible<extended_property>::value, "");
-static_assert(std::is_copy_assignable<extended_property>::value, "");
-static_assert(std::is_move_constructible<extended_property>::value, "");
-static_assert(std::is_move_assignable<extended_property>::value, "");
+static_assert(!std::is_default_constructible<extended_property>::value);
+static_assert(std::is_copy_constructible<extended_property>::value);
+static_assert(std::is_copy_assignable<extended_property>::value);
+static_assert(std::is_move_constructible<extended_property>::value);
+static_assert(std::is_move_assignable<extended_property>::value);
 #endif
 
 //! Represents a generic <tt>\<Folder></tt> in the Exchange store
@@ -11823,11 +11820,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<folder>::value, "");
-static_assert(std::is_copy_constructible<folder>::value, "");
-static_assert(std::is_copy_assignable<folder>::value, "");
-static_assert(std::is_move_constructible<folder>::value, "");
-static_assert(std::is_move_assignable<folder>::value, "");
+static_assert(std::is_default_constructible<folder>::value);
+static_assert(std::is_copy_constructible<folder>::value);
+static_assert(std::is_copy_assignable<folder>::value);
+static_assert(std::is_move_constructible<folder>::value);
+static_assert(std::is_move_assignable<folder>::value);
 #endif
 
 //! Represents a generic <tt>\<Item></tt> in the Exchange store
@@ -12432,11 +12429,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<item>::value, "");
-static_assert(std::is_copy_constructible<item>::value, "");
-static_assert(std::is_copy_assignable<item>::value, "");
-static_assert(std::is_move_constructible<item>::value, "");
-static_assert(std::is_move_assignable<item>::value, "");
+static_assert(std::is_default_constructible<item>::value);
+static_assert(std::is_copy_constructible<item>::value);
+static_assert(std::is_copy_assignable<item>::value);
+static_assert(std::is_move_constructible<item>::value);
+static_assert(std::is_move_assignable<item>::value);
 #endif
 
 class user_id final
@@ -12631,11 +12628,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<user_id>::value, "");
-static_assert(std::is_copy_constructible<user_id>::value, "");
-static_assert(std::is_copy_assignable<user_id>::value, "");
-static_assert(std::is_move_constructible<user_id>::value, "");
-static_assert(std::is_move_assignable<user_id>::value, "");
+static_assert(std::is_default_constructible<user_id>::value);
+static_assert(std::is_copy_constructible<user_id>::value);
+static_assert(std::is_copy_assignable<user_id>::value);
+static_assert(std::is_move_constructible<user_id>::value);
+static_assert(std::is_move_assignable<user_id>::value);
 #endif
 
 //! Represents a single delegate.
@@ -12796,11 +12793,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<delegate_user>::value, "");
-static_assert(std::is_copy_constructible<delegate_user>::value, "");
-static_assert(std::is_copy_assignable<delegate_user>::value, "");
-static_assert(std::is_move_constructible<delegate_user>::value, "");
-static_assert(std::is_move_assignable<delegate_user>::value, "");
+static_assert(std::is_default_constructible<delegate_user>::value);
+static_assert(std::is_copy_constructible<delegate_user>::value);
+static_assert(std::is_copy_assignable<delegate_user>::value);
+static_assert(std::is_move_constructible<delegate_user>::value);
+static_assert(std::is_move_assignable<delegate_user>::value);
 #endif
 
 namespace internal
@@ -13635,11 +13632,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<task>::value, "");
-static_assert(std::is_copy_constructible<task>::value, "");
-static_assert(std::is_copy_assignable<task>::value, "");
-static_assert(std::is_move_constructible<task>::value, "");
-static_assert(std::is_move_assignable<task>::value, "");
+static_assert(std::is_default_constructible<task>::value);
+static_assert(std::is_copy_constructible<task>::value);
+static_assert(std::is_copy_assignable<task>::value);
+static_assert(std::is_move_constructible<task>::value);
+static_assert(std::is_move_assignable<task>::value);
 #endif
 
 class complete_name final
@@ -15277,11 +15274,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<contact>::value, "");
-static_assert(std::is_copy_constructible<contact>::value, "");
-static_assert(std::is_copy_assignable<contact>::value, "");
-static_assert(std::is_move_constructible<contact>::value, "");
-static_assert(std::is_move_assignable<contact>::value, "");
+static_assert(std::is_default_constructible<contact>::value);
+static_assert(std::is_copy_constructible<contact>::value);
+static_assert(std::is_copy_assignable<contact>::value);
+static_assert(std::is_move_constructible<contact>::value);
+static_assert(std::is_move_assignable<contact>::value);
 #endif
 
 //! \brief Holds a subset of properties from an existing calendar item.
@@ -15373,11 +15370,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<occurrence_info>::value, "");
-static_assert(std::is_copy_constructible<occurrence_info>::value, "");
-static_assert(std::is_copy_assignable<occurrence_info>::value, "");
-static_assert(std::is_move_constructible<occurrence_info>::value, "");
-static_assert(std::is_move_assignable<occurrence_info>::value, "");
+static_assert(std::is_default_constructible<occurrence_info>::value);
+static_assert(std::is_copy_constructible<occurrence_info>::value);
+static_assert(std::is_copy_assignable<occurrence_info>::value);
+static_assert(std::is_move_constructible<occurrence_info>::value);
+static_assert(std::is_move_assignable<occurrence_info>::value);
 #endif
 
 //! Abstract base class for all recurrence patterns.
@@ -15430,11 +15427,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<recurrence_pattern>::value, "");
-static_assert(!std::is_copy_constructible<recurrence_pattern>::value, "");
-static_assert(!std::is_copy_assignable<recurrence_pattern>::value, "");
-static_assert(!std::is_move_constructible<recurrence_pattern>::value, "");
-static_assert(!std::is_move_assignable<recurrence_pattern>::value, "");
+static_assert(!std::is_default_constructible<recurrence_pattern>::value);
+static_assert(!std::is_copy_constructible<recurrence_pattern>::value);
+static_assert(!std::is_copy_assignable<recurrence_pattern>::value);
+static_assert(!std::is_move_constructible<recurrence_pattern>::value);
+static_assert(!std::is_move_assignable<recurrence_pattern>::value);
 #endif
 
 //! \brief An event that occurs annually relative to a month, week, and
@@ -15495,14 +15492,12 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<relative_yearly_recurrence>::value,
-              "");
-static_assert(!std::is_copy_constructible<relative_yearly_recurrence>::value,
-              "");
-static_assert(!std::is_copy_assignable<relative_yearly_recurrence>::value, "");
-static_assert(!std::is_move_constructible<relative_yearly_recurrence>::value,
-              "");
-static_assert(!std::is_move_assignable<relative_yearly_recurrence>::value, "");
+static_assert(
+    !std::is_default_constructible<relative_yearly_recurrence>::value);
+static_assert(!std::is_copy_constructible<relative_yearly_recurrence>::value);
+static_assert(!std::is_copy_assignable<relative_yearly_recurrence>::value);
+static_assert(!std::is_move_constructible<relative_yearly_recurrence>::value);
+static_assert(!std::is_move_assignable<relative_yearly_recurrence>::value);
 #endif
 
 //! A yearly recurrence pattern, e.g., a birthday.
@@ -15549,14 +15544,12 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<absolute_yearly_recurrence>::value,
-              "");
-static_assert(!std::is_copy_constructible<absolute_yearly_recurrence>::value,
-              "");
-static_assert(!std::is_copy_assignable<absolute_yearly_recurrence>::value, "");
-static_assert(!std::is_move_constructible<absolute_yearly_recurrence>::value,
-              "");
-static_assert(!std::is_move_assignable<absolute_yearly_recurrence>::value, "");
+static_assert(
+    !std::is_default_constructible<absolute_yearly_recurrence>::value);
+static_assert(!std::is_copy_constructible<absolute_yearly_recurrence>::value);
+static_assert(!std::is_copy_assignable<absolute_yearly_recurrence>::value);
+static_assert(!std::is_move_constructible<absolute_yearly_recurrence>::value);
+static_assert(!std::is_move_assignable<absolute_yearly_recurrence>::value);
 #endif
 
 //! \brief An event that occurs on the same day each month or monthly
@@ -15617,13 +15610,11 @@ private:
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
 static_assert(
-    !std::is_default_constructible<absolute_monthly_recurrence>::value, "");
-static_assert(!std::is_copy_constructible<absolute_monthly_recurrence>::value,
-              "");
-static_assert(!std::is_copy_assignable<absolute_monthly_recurrence>::value, "");
-static_assert(!std::is_move_constructible<absolute_monthly_recurrence>::value,
-              "");
-static_assert(!std::is_move_assignable<absolute_monthly_recurrence>::value, "");
+    !std::is_default_constructible<absolute_monthly_recurrence>::value);
+static_assert(!std::is_copy_constructible<absolute_monthly_recurrence>::value);
+static_assert(!std::is_copy_assignable<absolute_monthly_recurrence>::value);
+static_assert(!std::is_move_constructible<absolute_monthly_recurrence>::value);
+static_assert(!std::is_move_assignable<absolute_monthly_recurrence>::value);
 #endif
 
 //! \brief An event that occurs annually relative to a month, week, and
@@ -15697,13 +15688,11 @@ private:
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
 static_assert(
-    !std::is_default_constructible<relative_monthly_recurrence>::value, "");
-static_assert(!std::is_copy_constructible<relative_monthly_recurrence>::value,
-              "");
-static_assert(!std::is_copy_assignable<relative_monthly_recurrence>::value, "");
-static_assert(!std::is_move_constructible<relative_monthly_recurrence>::value,
-              "");
-static_assert(!std::is_move_assignable<relative_monthly_recurrence>::value, "");
+    !std::is_default_constructible<relative_monthly_recurrence>::value);
+static_assert(!std::is_copy_constructible<relative_monthly_recurrence>::value);
+static_assert(!std::is_copy_assignable<relative_monthly_recurrence>::value);
+static_assert(!std::is_move_constructible<relative_monthly_recurrence>::value);
+static_assert(!std::is_move_assignable<relative_monthly_recurrence>::value);
 #endif
 
 //! \brief A weekly recurrence
@@ -15792,11 +15781,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<weekly_recurrence>::value, "");
-static_assert(!std::is_copy_constructible<weekly_recurrence>::value, "");
-static_assert(!std::is_copy_assignable<weekly_recurrence>::value, "");
-static_assert(!std::is_move_constructible<weekly_recurrence>::value, "");
-static_assert(!std::is_move_assignable<weekly_recurrence>::value, "");
+static_assert(!std::is_default_constructible<weekly_recurrence>::value);
+static_assert(!std::is_copy_constructible<weekly_recurrence>::value);
+static_assert(!std::is_copy_assignable<weekly_recurrence>::value);
+static_assert(!std::is_move_constructible<weekly_recurrence>::value);
+static_assert(!std::is_move_assignable<weekly_recurrence>::value);
 #endif
 
 //! \brief Describes a daily recurring event
@@ -15834,11 +15823,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<daily_recurrence>::value, "");
-static_assert(!std::is_copy_constructible<daily_recurrence>::value, "");
-static_assert(!std::is_copy_assignable<daily_recurrence>::value, "");
-static_assert(!std::is_move_constructible<daily_recurrence>::value, "");
-static_assert(!std::is_move_assignable<daily_recurrence>::value, "");
+static_assert(!std::is_default_constructible<daily_recurrence>::value);
+static_assert(!std::is_copy_constructible<daily_recurrence>::value);
+static_assert(!std::is_copy_assignable<daily_recurrence>::value);
+static_assert(!std::is_move_constructible<daily_recurrence>::value);
+static_assert(!std::is_move_assignable<daily_recurrence>::value);
 #endif
 
 //! Abstract base class for all recurrence ranges.
@@ -15889,11 +15878,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<recurrence_range>::value, "");
-static_assert(!std::is_copy_constructible<recurrence_range>::value, "");
-static_assert(!std::is_copy_assignable<recurrence_range>::value, "");
-static_assert(!std::is_move_constructible<recurrence_range>::value, "");
-static_assert(!std::is_move_assignable<recurrence_range>::value, "");
+static_assert(!std::is_default_constructible<recurrence_range>::value);
+static_assert(!std::is_copy_constructible<recurrence_range>::value);
+static_assert(!std::is_copy_assignable<recurrence_range>::value);
+static_assert(!std::is_move_constructible<recurrence_range>::value);
+static_assert(!std::is_move_assignable<recurrence_range>::value);
 #endif
 
 //! Represents recurrence range with no end date
@@ -15934,12 +15923,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<no_end_recurrence_range>::value,
-              "");
-static_assert(!std::is_copy_constructible<no_end_recurrence_range>::value, "");
-static_assert(!std::is_copy_assignable<no_end_recurrence_range>::value, "");
-static_assert(!std::is_move_constructible<no_end_recurrence_range>::value, "");
-static_assert(!std::is_move_assignable<no_end_recurrence_range>::value, "");
+static_assert(!std::is_default_constructible<no_end_recurrence_range>::value);
+static_assert(!std::is_copy_constructible<no_end_recurrence_range>::value);
+static_assert(!std::is_copy_assignable<no_end_recurrence_range>::value);
+static_assert(!std::is_move_constructible<no_end_recurrence_range>::value);
+static_assert(!std::is_move_assignable<no_end_recurrence_range>::value);
 #endif
 
 //! Represents recurrence range with end date
@@ -15985,14 +15973,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<end_date_recurrence_range>::value,
-              "");
-static_assert(!std::is_copy_constructible<end_date_recurrence_range>::value,
-              "");
-static_assert(!std::is_copy_assignable<end_date_recurrence_range>::value, "");
-static_assert(!std::is_move_constructible<end_date_recurrence_range>::value,
-              "");
-static_assert(!std::is_move_assignable<end_date_recurrence_range>::value, "");
+static_assert(!std::is_default_constructible<end_date_recurrence_range>::value);
+static_assert(!std::is_copy_constructible<end_date_recurrence_range>::value);
+static_assert(!std::is_copy_assignable<end_date_recurrence_range>::value);
+static_assert(!std::is_move_constructible<end_date_recurrence_range>::value);
+static_assert(!std::is_move_assignable<end_date_recurrence_range>::value);
 #endif
 
 //! Represents a numbered recurrence range
@@ -16044,14 +16029,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<numbered_recurrence_range>::value,
-              "");
-static_assert(!std::is_copy_constructible<numbered_recurrence_range>::value,
-              "");
-static_assert(!std::is_copy_assignable<numbered_recurrence_range>::value, "");
-static_assert(!std::is_move_constructible<numbered_recurrence_range>::value,
-              "");
-static_assert(!std::is_move_assignable<numbered_recurrence_range>::value, "");
+static_assert(!std::is_default_constructible<numbered_recurrence_range>::value);
+static_assert(!std::is_copy_constructible<numbered_recurrence_range>::value);
+static_assert(!std::is_copy_assignable<numbered_recurrence_range>::value);
+static_assert(!std::is_move_constructible<numbered_recurrence_range>::value);
+static_assert(!std::is_move_assignable<numbered_recurrence_range>::value);
 #endif
 
 //! Represents a calendar item in the Exchange store
@@ -16656,11 +16638,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<calendar_item>::value, "");
-static_assert(std::is_copy_constructible<calendar_item>::value, "");
-static_assert(std::is_copy_assignable<calendar_item>::value, "");
-static_assert(std::is_move_constructible<calendar_item>::value, "");
-static_assert(std::is_move_assignable<calendar_item>::value, "");
+static_assert(std::is_default_constructible<calendar_item>::value);
+static_assert(std::is_copy_constructible<calendar_item>::value);
+static_assert(std::is_copy_assignable<calendar_item>::value);
+static_assert(std::is_move_constructible<calendar_item>::value);
+static_assert(std::is_move_assignable<calendar_item>::value);
 #endif
 
 //! A message item in the Exchange store
@@ -16899,11 +16881,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<message>::value, "");
-static_assert(std::is_copy_constructible<message>::value, "");
-static_assert(std::is_copy_assignable<message>::value, "");
-static_assert(std::is_move_constructible<message>::value, "");
-static_assert(std::is_move_assignable<message>::value, "");
+static_assert(std::is_default_constructible<message>::value);
+static_assert(std::is_copy_constructible<message>::value);
+static_assert(std::is_copy_assignable<message>::value);
+static_assert(std::is_move_constructible<message>::value);
+static_assert(std::is_move_assignable<message>::value);
 #endif
 
 //! Identifies frequently referenced properties by an URI
@@ -17028,11 +17010,11 @@ inline bool operator==(const property_path& lhs, const property_path& rhs)
 }
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<property_path>::value, "");
-static_assert(std::is_copy_constructible<property_path>::value, "");
-static_assert(std::is_copy_assignable<property_path>::value, "");
-static_assert(std::is_move_constructible<property_path>::value, "");
-static_assert(std::is_move_assignable<property_path>::value, "");
+static_assert(!std::is_default_constructible<property_path>::value);
+static_assert(std::is_copy_constructible<property_path>::value);
+static_assert(std::is_copy_assignable<property_path>::value);
+static_assert(std::is_move_constructible<property_path>::value);
+static_assert(std::is_move_assignable<property_path>::value);
 #endif
 
 //! Identifies individual members of a dictionary property by an URI and index
@@ -17080,11 +17062,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<indexed_property_path>::value, "");
-static_assert(std::is_copy_constructible<indexed_property_path>::value, "");
-static_assert(std::is_copy_assignable<indexed_property_path>::value, "");
-static_assert(std::is_move_constructible<indexed_property_path>::value, "");
-static_assert(std::is_move_assignable<indexed_property_path>::value, "");
+static_assert(!std::is_default_constructible<indexed_property_path>::value);
+static_assert(std::is_copy_constructible<indexed_property_path>::value);
+static_assert(std::is_copy_assignable<indexed_property_path>::value);
+static_assert(std::is_move_constructible<indexed_property_path>::value);
+static_assert(std::is_move_assignable<indexed_property_path>::value);
 #endif
 
 // TODO: extended_property_path missing?
@@ -17657,11 +17639,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<property>::value, "");
-static_assert(std::is_copy_constructible<property>::value, "");
-static_assert(std::is_copy_assignable<property>::value, "");
-static_assert(std::is_move_constructible<property>::value, "");
-static_assert(std::is_move_assignable<property>::value, "");
+static_assert(!std::is_default_constructible<property>::value);
+static_assert(std::is_copy_constructible<property>::value);
+static_assert(std::is_copy_assignable<property>::value);
+static_assert(std::is_move_constructible<property>::value);
+static_assert(std::is_move_assignable<property>::value);
 #endif
 
 //! Renders an \<ItemShape> element
@@ -17812,11 +17794,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<item_shape>::value, "");
-static_assert(std::is_copy_constructible<item_shape>::value, "");
-static_assert(std::is_copy_assignable<item_shape>::value, "");
-static_assert(std::is_move_constructible<item_shape>::value, "");
-static_assert(std::is_move_assignable<item_shape>::value, "");
+static_assert(std::is_default_constructible<item_shape>::value);
+static_assert(std::is_copy_constructible<item_shape>::value);
+static_assert(std::is_copy_assignable<item_shape>::value);
+static_assert(std::is_move_constructible<item_shape>::value);
+static_assert(std::is_move_assignable<item_shape>::value);
 #endif
 
 //! \brief Base-class for all search expressions.
@@ -17942,11 +17924,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<search_expression>::value, "");
-static_assert(std::is_copy_constructible<search_expression>::value, "");
-static_assert(std::is_copy_assignable<search_expression>::value, "");
-static_assert(std::is_move_constructible<search_expression>::value, "");
-static_assert(std::is_move_assignable<search_expression>::value, "");
+static_assert(!std::is_default_constructible<search_expression>::value);
+static_assert(std::is_copy_constructible<search_expression>::value);
+static_assert(std::is_copy_assignable<search_expression>::value);
+static_assert(std::is_move_constructible<search_expression>::value);
+static_assert(std::is_move_assignable<search_expression>::value);
 #endif
 
 //! \brief Compare a property with a constant or another property
@@ -17985,11 +17967,11 @@ public:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<is_equal_to>::value, "");
-static_assert(std::is_copy_constructible<is_equal_to>::value, "");
-static_assert(std::is_copy_assignable<is_equal_to>::value, "");
-static_assert(std::is_move_constructible<is_equal_to>::value, "");
-static_assert(std::is_move_assignable<is_equal_to>::value, "");
+static_assert(!std::is_default_constructible<is_equal_to>::value);
+static_assert(std::is_copy_constructible<is_equal_to>::value);
+static_assert(std::is_copy_assignable<is_equal_to>::value);
+static_assert(std::is_move_constructible<is_equal_to>::value);
+static_assert(std::is_move_assignable<is_equal_to>::value);
 #endif
 
 //! \brief Compare a property with a constant or another property.
@@ -18026,11 +18008,11 @@ public:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<is_not_equal_to>::value, "");
-static_assert(std::is_copy_constructible<is_not_equal_to>::value, "");
-static_assert(std::is_copy_assignable<is_not_equal_to>::value, "");
-static_assert(std::is_move_constructible<is_not_equal_to>::value, "");
-static_assert(std::is_move_assignable<is_not_equal_to>::value, "");
+static_assert(!std::is_default_constructible<is_not_equal_to>::value);
+static_assert(std::is_copy_constructible<is_not_equal_to>::value);
+static_assert(std::is_copy_assignable<is_not_equal_to>::value);
+static_assert(std::is_move_constructible<is_not_equal_to>::value);
+static_assert(std::is_move_assignable<is_not_equal_to>::value);
 #endif
 
 //! \brief Compare a property with a constant or another property
@@ -18064,11 +18046,11 @@ public:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<is_greater_than>::value, "");
-static_assert(std::is_copy_constructible<is_greater_than>::value, "");
-static_assert(std::is_copy_assignable<is_greater_than>::value, "");
-static_assert(std::is_move_constructible<is_greater_than>::value, "");
-static_assert(std::is_move_assignable<is_greater_than>::value, "");
+static_assert(!std::is_default_constructible<is_greater_than>::value);
+static_assert(std::is_copy_constructible<is_greater_than>::value);
+static_assert(std::is_copy_assignable<is_greater_than>::value);
+static_assert(std::is_move_constructible<is_greater_than>::value);
+static_assert(std::is_move_assignable<is_greater_than>::value);
 #endif
 
 //! \brief Compare a property with a constant or another property
@@ -18104,13 +18086,11 @@ public:
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
 static_assert(
-    !std::is_default_constructible<is_greater_than_or_equal_to>::value, "");
-static_assert(std::is_copy_constructible<is_greater_than_or_equal_to>::value,
-              "");
-static_assert(std::is_copy_assignable<is_greater_than_or_equal_to>::value, "");
-static_assert(std::is_move_constructible<is_greater_than_or_equal_to>::value,
-              "");
-static_assert(std::is_move_assignable<is_greater_than_or_equal_to>::value, "");
+    !std::is_default_constructible<is_greater_than_or_equal_to>::value);
+static_assert(std::is_copy_constructible<is_greater_than_or_equal_to>::value);
+static_assert(std::is_copy_assignable<is_greater_than_or_equal_to>::value);
+static_assert(std::is_move_constructible<is_greater_than_or_equal_to>::value);
+static_assert(std::is_move_assignable<is_greater_than_or_equal_to>::value);
 #endif
 
 //! \brief Compare a property with a constant or another property
@@ -18144,11 +18124,11 @@ public:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<is_less_than>::value, "");
-static_assert(std::is_copy_constructible<is_less_than>::value, "");
-static_assert(std::is_copy_assignable<is_less_than>::value, "");
-static_assert(std::is_move_constructible<is_less_than>::value, "");
-static_assert(std::is_move_assignable<is_less_than>::value, "");
+static_assert(!std::is_default_constructible<is_less_than>::value);
+static_assert(std::is_copy_constructible<is_less_than>::value);
+static_assert(std::is_copy_assignable<is_less_than>::value);
+static_assert(std::is_move_constructible<is_less_than>::value);
+static_assert(std::is_move_assignable<is_less_than>::value);
 #endif
 
 //! \brief Compare a property with a constant or another property
@@ -18183,12 +18163,11 @@ public:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<is_less_than_or_equal_to>::value,
-              "");
-static_assert(std::is_copy_constructible<is_less_than_or_equal_to>::value, "");
-static_assert(std::is_copy_assignable<is_less_than_or_equal_to>::value, "");
-static_assert(std::is_move_constructible<is_less_than_or_equal_to>::value, "");
-static_assert(std::is_move_assignable<is_less_than_or_equal_to>::value, "");
+static_assert(!std::is_default_constructible<is_less_than_or_equal_to>::value);
+static_assert(std::is_copy_constructible<is_less_than_or_equal_to>::value);
+static_assert(std::is_copy_assignable<is_less_than_or_equal_to>::value);
+static_assert(std::is_move_constructible<is_less_than_or_equal_to>::value);
+static_assert(std::is_move_assignable<is_less_than_or_equal_to>::value);
 #endif
 
 //! \brief Allows you to express a boolean And operation between two search
@@ -18212,11 +18191,11 @@ public:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<and_>::value, "");
-static_assert(std::is_copy_constructible<and_>::value, "");
-static_assert(std::is_copy_assignable<and_>::value, "");
-static_assert(std::is_move_constructible<and_>::value, "");
-static_assert(std::is_move_assignable<and_>::value, "");
+static_assert(!std::is_default_constructible<and_>::value);
+static_assert(std::is_copy_constructible<and_>::value);
+static_assert(std::is_copy_assignable<and_>::value);
+static_assert(std::is_move_constructible<and_>::value);
+static_assert(std::is_move_assignable<and_>::value);
 #endif
 
 //! \brief Allows you to express a logical Or operation between two search
@@ -18240,11 +18219,11 @@ public:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<or_>::value, "");
-static_assert(std::is_copy_constructible<or_>::value, "");
-static_assert(std::is_copy_assignable<or_>::value, "");
-static_assert(std::is_move_constructible<or_>::value, "");
-static_assert(std::is_move_assignable<or_>::value, "");
+static_assert(!std::is_default_constructible<or_>::value);
+static_assert(std::is_copy_constructible<or_>::value);
+static_assert(std::is_copy_assignable<or_>::value);
+static_assert(std::is_move_constructible<or_>::value);
+static_assert(std::is_move_assignable<or_>::value);
 #endif
 
 //! Negates the boolean value of the search expression it contains
@@ -18266,11 +18245,11 @@ public:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<not_>::value, "");
-static_assert(std::is_copy_constructible<not_>::value, "");
-static_assert(std::is_copy_assignable<not_>::value, "");
-static_assert(std::is_move_constructible<not_>::value, "");
-static_assert(std::is_move_assignable<not_>::value, "");
+static_assert(!std::is_default_constructible<not_>::value);
+static_assert(std::is_copy_constructible<not_>::value);
+static_assert(std::is_copy_assignable<not_>::value);
+static_assert(std::is_move_constructible<not_>::value);
+static_assert(std::is_move_assignable<not_>::value);
 #endif
 
 //! \brief Specifies which parts of a text value are compared to a
@@ -18390,11 +18369,11 @@ public:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<contains>::value, "");
-static_assert(std::is_copy_constructible<contains>::value, "");
-static_assert(std::is_copy_assignable<contains>::value, "");
-static_assert(std::is_move_constructible<contains>::value, "");
-static_assert(std::is_move_assignable<contains>::value, "");
+static_assert(!std::is_default_constructible<contains>::value);
+static_assert(std::is_copy_constructible<contains>::value);
+static_assert(std::is_copy_assignable<contains>::value);
+static_assert(std::is_move_constructible<contains>::value);
+static_assert(std::is_move_assignable<contains>::value);
 #endif
 
 //! \brief A paged view of items in a folder
@@ -18452,11 +18431,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(std::is_default_constructible<paging_view>::value, "");
-static_assert(std::is_copy_constructible<paging_view>::value, "");
-static_assert(std::is_copy_assignable<paging_view>::value, "");
-static_assert(std::is_move_constructible<paging_view>::value, "");
-static_assert(std::is_move_assignable<paging_view>::value, "");
+static_assert(std::is_default_constructible<paging_view>::value);
+static_assert(std::is_copy_constructible<paging_view>::value);
+static_assert(std::is_copy_assignable<paging_view>::value);
+static_assert(std::is_move_constructible<paging_view>::value);
+static_assert(std::is_move_assignable<paging_view>::value);
 #endif
 
 //! \brief A range view of appointments in a calendar.
@@ -18511,11 +18490,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<calendar_view>::value, "");
-static_assert(std::is_copy_constructible<calendar_view>::value, "");
-static_assert(std::is_copy_assignable<calendar_view>::value, "");
-static_assert(std::is_move_constructible<calendar_view>::value, "");
-static_assert(std::is_move_assignable<calendar_view>::value, "");
+static_assert(!std::is_default_constructible<calendar_view>::value);
+static_assert(std::is_copy_constructible<calendar_view>::value);
+static_assert(std::is_copy_assignable<calendar_view>::value);
+static_assert(std::is_move_constructible<calendar_view>::value);
+static_assert(std::is_move_assignable<calendar_view>::value);
 #endif
 
 //! \brief An update to a single property of an item.
@@ -18588,11 +18567,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<update>::value, "");
-static_assert(std::is_copy_constructible<update>::value, "");
-static_assert(std::is_copy_assignable<update>::value, "");
-static_assert(std::is_move_constructible<update>::value, "");
-static_assert(std::is_move_assignable<update>::value, "");
+static_assert(!std::is_default_constructible<update>::value);
+static_assert(std::is_copy_constructible<update>::value);
+static_assert(std::is_copy_assignable<update>::value);
+static_assert(std::is_move_constructible<update>::value);
+static_assert(std::is_move_assignable<update>::value);
 #endif
 
 //! Represents a ConnectingSID element
@@ -18622,11 +18601,11 @@ private:
 };
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<connecting_sid>::value, "");
-static_assert(std::is_copy_constructible<connecting_sid>::value, "");
-static_assert(std::is_copy_assignable<connecting_sid>::value, "");
-static_assert(std::is_move_constructible<connecting_sid>::value, "");
-static_assert(std::is_move_assignable<connecting_sid>::value, "");
+static_assert(!std::is_default_constructible<connecting_sid>::value);
+static_assert(std::is_copy_constructible<connecting_sid>::value);
+static_assert(std::is_copy_assignable<connecting_sid>::value);
+static_assert(std::is_move_constructible<connecting_sid>::value);
+static_assert(std::is_move_assignable<connecting_sid>::value);
 #endif
 
 namespace internal
@@ -20650,11 +20629,11 @@ private:
 typedef basic_service<> service;
 
 #ifdef EWS_HAS_NON_BUGGY_TYPE_TRAITS
-static_assert(!std::is_default_constructible<service>::value, "");
-static_assert(!std::is_copy_constructible<service>::value, "");
-static_assert(!std::is_copy_assignable<service>::value, "");
-static_assert(std::is_move_constructible<service>::value, "");
-static_assert(std::is_move_assignable<service>::value, "");
+static_assert(!std::is_default_constructible<service>::value);
+static_assert(!std::is_copy_constructible<service>::value);
+static_assert(!std::is_copy_assignable<service>::value);
+static_assert(std::is_move_constructible<service>::value);
+static_assert(std::is_move_assignable<service>::value);
 #endif
 
 // Implementations
