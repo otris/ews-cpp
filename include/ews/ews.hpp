@@ -10433,9 +10433,7 @@ namespace internal
                 get_element_by_qname(*doc, "CreateAttachmentResponseMessage",
                                      uri<>::microsoft::messages());
 
-            EWS_ASSERT(
-                elem,
-                "Expected <CreateAttachmentResponseMessage>, got nullptr");
+            EWS_ASSERT(elem, "Expected <CreateAttachmentResponseMessage>");
 
             auto result = parse_response_class_and_code(*elem);
 
@@ -10485,8 +10483,7 @@ namespace internal
                 get_element_by_qname(*doc, "GetAttachmentResponseMessage",
                                      uri<>::microsoft::messages());
 
-            EWS_ASSERT(elem,
-                       "Expected <GetAttachmentResponseMessage>, got nullptr");
+            EWS_ASSERT(elem, "Expected <GetAttachmentResponseMessage>");
 
             auto result = parse_response_class_and_code(*elem);
 
@@ -10530,7 +10527,7 @@ namespace internal
             auto elem = get_element_by_qname(*doc, "SendItemResponseMessage",
                                              uri<>::microsoft::messages());
 
-            EWS_ASSERT(elem, "Expected <SendItemResponseMessage>, got nullptr");
+            EWS_ASSERT(elem, "Expected <SendItemResponseMessage>");
             auto result = parse_response_class_and_code(*elem);
             return send_item_response_message(std::move(result));
         }
@@ -10552,8 +10549,7 @@ namespace internal
                 get_element_by_qname(*doc, "DeleteFolderResponseMessage",
                                      uri<>::microsoft::messages());
             auto result = parse_response_class_and_code(*elem);
-            EWS_ASSERT(elem,
-                       "Expected <DeleteFolderResponseMessage>, got nullptr");
+            EWS_ASSERT(elem, "Expected <DeleteFolderResponseMessage>");
             return delete_folder_response_message(std::move(result));
         }
 
@@ -10572,8 +10568,7 @@ namespace internal
             const auto doc = parse_response(std::move(response));
             auto elem = get_element_by_qname(*doc, "DeleteItemResponseMessage",
                                              uri<>::microsoft::messages());
-            EWS_ASSERT(elem,
-                       "Expected <DeleteItemResponseMessage>, got nullptr");
+            EWS_ASSERT(elem, "Expected <DeleteItemResponseMessage>");
             auto result = parse_response_class_and_code(*elem);
             return delete_item_response_message(std::move(result));
         }
@@ -10597,9 +10592,7 @@ namespace internal
                 get_element_by_qname(*doc, "DeleteAttachmentResponseMessage",
                                      uri<>::microsoft::messages());
 
-            EWS_ASSERT(
-                elem,
-                "Expected <DeleteAttachmentResponseMessage>, got nullptr");
+            EWS_ASSERT(elem, "Expected <DeleteAttachmentResponseMessage>");
             auto result = parse_response_class_and_code(*elem);
 
             auto root_item_id = item_id();
@@ -20720,7 +20713,7 @@ sync_folder_items_result::parse(internal::http_response&& response)
         internal::get_element_by_qname(*doc, "SyncFolderItemsResponseMessage",
                                        internal::uri<>::microsoft::messages());
 
-    EWS_ASSERT(elem, "Expected <SyncFolderItemsResponseMessage>, got nullptr");
+    EWS_ASSERT(elem, "Expected <SyncFolderItemsResponseMessage>");
     auto result = internal::parse_response_class_and_code(*elem);
     if (result.cls == response_class::error)
     {
@@ -20824,7 +20817,7 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "CreateFolderResponseMessage",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem, "Expected <CreateFolderResponseMessage>, got nullptr");
+        EWS_ASSERT(elem, "Expected <CreateFolderResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
         auto item_ids = std::vector<folder_id>();
         auto items_elem =
@@ -20849,7 +20842,7 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "CreateItemResponseMessage",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem, "Expected <CreateItemResponseMessage>, got nullptr");
+        EWS_ASSERT(elem, "Expected <CreateItemResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
         auto item_ids = std::vector<item_id>();
         auto items_elem =
@@ -20873,7 +20866,7 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "FindFolderResponseMessage",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem, "Expected <FindFolderResponseMessage>, got nullptr");
+        EWS_ASSERT(elem, "Expected <FindFolderResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
 
         auto root_folder =
@@ -20888,7 +20881,7 @@ namespace internal
              item_elem = item_elem->next_sibling())
         {
             // TODO: Check that item is 'FolderId'
-            EWS_ASSERT(item_elem, "Expected an element, got nullptr");
+            EWS_ASSERT(item_elem, "Expected an element");
             auto item_id_elem = item_elem->first_node();
             EWS_ASSERT(item_id_elem, "Expected <FolderId> element");
             items.emplace_back(folder_id::from_xml_element(*item_id_elem));
@@ -20904,7 +20897,7 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "FindItemResponseMessage",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem, "Expected <FindItemResponseMessage>, got nullptr");
+        EWS_ASSERT(elem, "Expected <FindItemResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
 
         auto root_folder =
@@ -20918,7 +20911,7 @@ namespace internal
         for (auto item_elem = items_elem->first_node(); item_elem;
              item_elem = item_elem->next_sibling())
         {
-            EWS_ASSERT(item_elem, "Expected an element, got nullptr");
+            EWS_ASSERT(item_elem, "Expected an element");
             auto item_id_elem = item_elem->first_node();
             EWS_ASSERT(item_id_elem, "Expected <ItemId> element");
             items.emplace_back(item_id::from_xml_element(*item_id_elem));
@@ -20933,7 +20926,7 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "FindItemResponseMessage",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem, "Expected <FindItemResponseMessage>, got nullptr");
+        EWS_ASSERT(elem, "Expected <FindItemResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
 
         auto root_folder =
@@ -20959,7 +20952,7 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "UpdateItemResponseMessage",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem, "Expected <UpdateItemResponseMessage>, got nullptr");
+        EWS_ASSERT(elem, "Expected <UpdateItemResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
 
         auto items_elem =
@@ -20970,7 +20963,7 @@ namespace internal
         for (auto item_elem = items_elem->first_node(); item_elem;
              item_elem = item_elem->next_sibling())
         {
-            EWS_ASSERT(item_elem, "Expected an element, got nullptr");
+            EWS_ASSERT(item_elem, "Expected an element");
             auto item_id_elem = item_elem->first_node();
             EWS_ASSERT(item_id_elem, "Expected <ItemId> element");
             items.emplace_back(item_id::from_xml_element(*item_id_elem));
@@ -20985,7 +20978,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto elem = get_element_by_qname(*doc, "GetFolderResponseMessage",
                                          uri<>::microsoft::messages());
-        EWS_ASSERT(elem, "Expected <GetFolderResponseMessage>, got nullptr");
+        EWS_ASSERT(elem, "Expected <GetFolderResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
         auto items_elem =
             elem->first_node_ns(uri<>::microsoft::messages(), "Folders");
@@ -21005,7 +20998,7 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "GetRoomListsResponse",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem, "Expected <GetRoomListsResponse>, got nullptr");
+        EWS_ASSERT(elem, "Expected <GetRoomListsResponse>");
         auto result = parse_response_class_and_code(*elem);
         auto room_lists = std::vector<mailbox>();
         auto items_elem =
@@ -21027,7 +21020,7 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "GetRoomsResponse",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem, "Expected <GetRoomsResponse>, got nullptr");
+        EWS_ASSERT(elem, "Expected <GetRoomsResponse>");
         auto result = parse_response_class_and_code(*elem);
         auto rooms = std::vector<mailbox>();
         auto items_elem =
@@ -21055,8 +21048,7 @@ namespace internal
 
         auto response_messages = get_element_by_qname(
             *doc, "ResponseMessages", uri<>::microsoft::messages());
-        EWS_ASSERT(response_messages,
-                   "Expected <ResponseMessages> node, got nullptr");
+        EWS_ASSERT(response_messages, "Expected <ResponseMessages> node");
 
         std::vector<folder_response_message::response_message> messages;
         for_each_child_node(
@@ -21088,7 +21080,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto elem = get_element_by_qname(*doc, "GetItemResponseMessage",
                                          uri<>::microsoft::messages());
-        EWS_ASSERT(elem, "Expected <GetItemResponseMessage>, got nullptr");
+        EWS_ASSERT(elem, "Expected <GetItemResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
         auto items_elem =
             elem->first_node_ns(uri<>::microsoft::messages(), "Items");
@@ -21109,8 +21101,7 @@ namespace internal
 
         auto response_messages = get_element_by_qname(
             *doc, "ResponseMessages", uri<>::microsoft::messages());
-        EWS_ASSERT(response_messages,
-                   "Expected <ResponseMessages> node, got nullptr");
+        EWS_ASSERT(response_messages, "Expected <ResponseMessages> node");
 
         std::vector<item_response_messages::response_message> messages;
         for_each_child_node(
@@ -21174,8 +21165,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto response_elem = get_element_by_qname(*doc, "AddDelegateResponse",
                                                   uri<>::microsoft::messages());
-        EWS_ASSERT(response_elem,
-                   "Expected <AddDelegateResponse>, got nullptr");
+        EWS_ASSERT(response_elem, "Expected <AddDelegateResponse>");
         auto result = parse_response_class_and_code(*response_elem);
 
         std::vector<delegate_user> delegates;
@@ -21193,8 +21183,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto response_elem = get_element_by_qname(*doc, "GetDelegateResponse",
                                                   uri<>::microsoft::messages());
-        EWS_ASSERT(response_elem,
-                   "Expected <GetDelegateResponse>, got nullptr");
+        EWS_ASSERT(response_elem, "Expected <GetDelegateResponse>");
         auto result = parse_response_class_and_code(*response_elem);
 
         std::vector<delegate_user> delegates;
@@ -21212,7 +21201,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto resp = get_element_by_qname(*doc, "RemoveDelegateResponse",
                                          uri<>::microsoft::messages());
-        EWS_ASSERT(resp, "Expected <RemoveDelegateResponse>, got nullptr");
+        EWS_ASSERT(resp, "Expected <RemoveDelegateResponse>");
 
         auto result = parse_response_class_and_code(*resp);
         if (result.code == response_code::no_error)
@@ -21278,8 +21267,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto response_elem = get_element_by_qname(
             *doc, "ResolveNamesResponseMessage", uri<>::microsoft::messages());
-        EWS_ASSERT(response_elem,
-                   "Expected <ResolveNamesResponseMessage>, got nullptr");
+        EWS_ASSERT(response_elem, "Expected <ResolveNamesResponseMessage>");
         auto result = parse_response_class_and_code(*response_elem);
 
         resolution_set resolutions;
@@ -21387,8 +21375,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto response_elem = get_element_by_qname(
             *doc, "SubscribeResponseMessage", uri<>::microsoft::messages());
-        EWS_ASSERT(response_elem,
-                   "Expected <SubscribeResponseMessage>, got nullptr");
+        EWS_ASSERT(response_elem, "Expected <SubscribeResponseMessage>");
         auto result = parse_response_class_and_code(*response_elem);
 
         std::string id;
@@ -21417,8 +21404,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto response_elem = get_element_by_qname(
             *doc, "UnsubscribeResponseMessage", uri<>::microsoft::messages());
-        EWS_ASSERT(response_elem,
-                   "Expected <UnsubscribeResponseMessage>, got nullptr");
+        EWS_ASSERT(response_elem, "Expected <UnsubscribeResponseMessage>");
         auto result = parse_response_class_and_code(*response_elem);
 
         return unsubscribe_response_message(std::move(result));
@@ -21431,8 +21417,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto response_elem = get_element_by_qname(
             *doc, "GetEventsResponseMessage", uri<>::microsoft::messages());
-        EWS_ASSERT(response_elem,
-                   "Expected <GetEventsResponseMessage>, got nullptr");
+        EWS_ASSERT(response_elem, "Expected <GetEventsResponseMessage>");
         auto result = parse_response_class_and_code(*response_elem);
 
         notification n;
