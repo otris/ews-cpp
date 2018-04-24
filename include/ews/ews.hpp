@@ -10572,9 +10572,9 @@ namespace internal
             const auto doc = parse_response(std::move(response));
             auto elem = get_element_by_qname(*doc, "DeleteItemResponseMessage",
                                              uri<>::microsoft::messages());
-            auto result = parse_response_class_and_code(*elem);
             EWS_ASSERT(elem,
                        "Expected <DeleteItemResponseMessage>, got nullptr");
+            auto result = parse_response_class_and_code(*elem);
             return delete_item_response_message(std::move(result));
         }
 
