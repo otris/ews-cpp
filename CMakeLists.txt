@@ -142,6 +142,11 @@ elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
         # Make Google Test compile with Visual Studio 2012
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_VARIADIC_MAX=10")
     endif()
+
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 18.0)
+        # Explicitly enable C++17 language features on Visual Studio 2017
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+    endif()
 else()
     message(AUTHOR_WARNING
         "Could not determine compiler ID: ${CMAKE_CXX_COMPILER_ID}")
