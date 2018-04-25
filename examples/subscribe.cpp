@@ -22,6 +22,7 @@
 #include <string>
 #include <thread>
 
+// Note: this example still does not compile on Visual Studio 2017
 namespace
 {
 template <class... Ts> struct overloaded : Ts...
