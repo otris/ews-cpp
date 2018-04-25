@@ -57,22 +57,21 @@
 
 #include "ews_fwd.hpp"
 
-// Macro for verifying expressions at run-time. Calls assert() with 'expr'.
-// Allows turning assertions off, even if -DNDEBUG wasn't given at
-// compile-time.  This macro does nothing unless EWS_ENABLE_ASSERTS was defined
-// during compilation.
-#define EWS_ASSERT(expr) ((void)0)
-#ifndef NDEBUG
-#    ifdef EWS_ENABLE_ASSERTS
-#        include <assert.h>
-#        undef EWS_ASSERT
-#        define EWS_ASSERT(expr) assert(expr)
-#    endif
-#endif // !NDEBUG
-
 //! Contains all classes, functions, and enumerations of this library
 namespace ews
 {
+
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
+template <typename ExceptionType = ews::assertion_error>
+inline void check(bool expr, const char* msg)
+{
+    if (!expr)
+    {
+        throw ExceptionType(msg);
+    }
+}
+#endif
+
 namespace internal
 {
     // Scope guard helper.
@@ -111,8 +110,7 @@ namespace internal
                 }
                 catch (std::exception&)
                 {
-                    // Swallow, abort(3) if suitable
-                    EWS_ASSERT(false);
+                    // Swallow
                 }
             }
         }
@@ -379,8 +377,15 @@ class exception : public std::runtime_error
 {
 public:
     explicit exception(const std::string& what) : std::runtime_error(what) {}
-
     explicit exception(const char* what) : std::runtime_error(what) {}
+};
+
+//! Raised when an assertion fails
+class assertion_error final : public exception
+{
+public:
+    explicit assertion_error(const std::string& what) : exception(what) {}
+    explicit assertion_error(const char* what) : exception(what) {}
 };
 
 //! Raised when a response from a server could not be parsed
@@ -478,7 +483,7 @@ private:
 
         const auto start = std::max(at - (columns / 2), static_cast<size_t>(0));
         const auto end = std::min(at + (columns / 2), str.length());
-        EWS_ASSERT(start < end);
+        check((start < end), "Expected start to be before end");
         std::string line;
         std::copy(&str[start], &str[end], std::back_inserter(line));
         const auto line_index = columns / 2;
@@ -6819,7 +6824,7 @@ namespace internal
         http_response(long code, std::vector<char>&& data)
             : data_(std::move(data)), code_(code)
         {
-            EWS_ASSERT(!data_.empty());
+            check(!data_.empty(), "Given data should not be empty");
         }
 
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
@@ -6928,7 +6933,7 @@ namespace internal
                                              const std::string& name)
     {
         auto doc = parent.document();
-        EWS_ASSERT(doc && "parent node needs to be part of a document");
+        check(doc, "Parent node needs to be part of a document");
         auto ptr_to_qname = doc->allocate_string(name.c_str());
         auto new_node = doc->allocate_node(rapidxml::node_element);
         new_node->qname(ptr_to_qname, name.length(), ptr_to_qname + 2);
@@ -6943,7 +6948,7 @@ namespace internal
                                              const std::string& value)
     {
         auto doc = parent.document();
-        EWS_ASSERT(doc && "parent node needs to be part of a document");
+        check(doc, "Parent node needs to be part of a document");
         auto str = doc->allocate_string(value.c_str());
         auto& new_node = create_node(parent, name);
         new_node.value(str);
@@ -6982,10 +6987,10 @@ namespace internal
     // name and namespace but different paths
     inline rapidxml::xml_node<>*
     get_element_by_qname(const rapidxml::xml_node<>& node,
-                         const char* local_name,
-                         const char* namespace_uri) EWS_NOEXCEPT
+                         const char* local_name, const char* namespace_uri)
     {
-        EWS_ASSERT(local_name && namespace_uri);
+        check(local_name, "Expected local_name, got nullptr");
+        check(namespace_uri, "Expected namespace_uri, got nullptr");
 
         rapidxml::xml_node<>* element = nullptr;
         const auto local_name_len = strlen(local_name);
@@ -7557,8 +7562,8 @@ namespace internal
         deep_copy(rapidxml::xml_document<>* target_doc,
                   const rapidxml::xml_node<>* source)
         {
-            EWS_ASSERT(target_doc);
-            EWS_ASSERT(source);
+            check(target_doc, "Expected target_doc, got nullptr");
+            check(source, "Expected source, got nullptr");
 
             auto newnode = target_doc->allocate_node(source->type());
 
@@ -7929,10 +7934,10 @@ public:
     static item_id from_xml_element(const rapidxml::xml_node<>& elem)
     {
         auto id_attr = elem.first_attribute("Id");
-        EWS_ASSERT(id_attr && "Missing attribute Id in <ItemId>");
+        check(id_attr, "Missing attribute Id in <ItemId>");
         auto id = std::string(id_attr->value(), id_attr->value_size());
         auto ckey_attr = elem.first_attribute("ChangeKey");
-        EWS_ASSERT(ckey_attr && "Missing attribute ChangeKey in <ItemId>");
+        check(ckey_attr, "Missing attribute ChangeKey in <ItemId>");
         auto ckey = std::string(ckey_attr->value(), ckey_attr->value_size());
         return item_id(std::move(id), std::move(ckey));
     }
@@ -8022,18 +8027,17 @@ public:
     static occurrence_item_id from_xml_element(const rapidxml::xml_node<>& elem)
     {
         auto id_attr = elem.first_attribute("RecurringMasterId");
-        EWS_ASSERT(id_attr &&
-                   "Missing attribute RecurringMasterId in <OccurrenceItemId>");
+        check(id_attr,
+              "Missing attribute RecurringMasterId in <OccurrenceItemId>");
         auto id = std::string(id_attr->value(), id_attr->value_size());
 
         auto ckey_attr = elem.first_attribute("ChangeKey");
-        EWS_ASSERT(ckey_attr &&
-                   "Missing attribute ChangeKey in <OccurrenceItemId>");
+        check(ckey_attr, "Missing attribute ChangeKey in <OccurrenceItemId>");
         auto ckey = std::string(ckey_attr->value(), ckey_attr->value_size());
 
         auto index_attr = elem.first_attribute("InstanceIndex");
-        EWS_ASSERT(index_attr &&
-                   "Missing attribute InstanceIndex in <OccurrenceItemId>");
+        check(index_attr,
+              "Missing attribute InstanceIndex in <OccurrenceItemId>");
         auto index = std::stoi(
             std::string(index_attr->value(), index_attr->value_size()));
 
@@ -8113,7 +8117,7 @@ public:
     static attachment_id from_xml_element(const rapidxml::xml_node<>& elem)
     {
         auto id_attr = elem.first_attribute("Id");
-        EWS_ASSERT(id_attr && "Missing attribute Id in <AttachmentId>");
+        check(id_attr, "Missing attribute Id in <AttachmentId>");
         auto id = std::string(id_attr->value(), id_attr->value_size());
         auto root_item_id = std::string();
         auto root_item_ckey = std::string();
@@ -8125,8 +8129,8 @@ public:
                                        root_item_id_attr->value_size());
             auto root_item_ckey_attr =
                 elem.first_attribute("RootItemChangeKey");
-            EWS_ASSERT(root_item_ckey_attr &&
-                       "Expected attribute RootItemChangeKey");
+            check(root_item_ckey_attr,
+                  "Expected attribute 'RootItemChangeKey'");
             root_item_ckey = std::string(root_item_ckey_attr->value(),
                                          root_item_ckey_attr->value_size());
         }
@@ -8264,15 +8268,15 @@ public:
     {
         auto doc = parent.document();
 
-        EWS_ASSERT(doc && "parent node needs to be somewhere in a document");
+        check(doc, "Parent node needs to be somewhere in a document");
 
         using namespace internal;
         auto& mailbox_node = create_node(parent, "t:Mailbox");
 
         if (!id_.valid())
         {
-            EWS_ASSERT(!value_.empty() &&
-                       "Neither item_id nor value set in mailbox instance");
+            check(!value_.empty(),
+                  "Neither item_id nor value set in mailbox instance");
 
             create_node(mailbox_node, "t:EmailAddress", value_);
 
@@ -8367,8 +8371,8 @@ public:
 
         if (!id.valid())
         {
-            EWS_ASSERT(!address.empty() &&
-                       "<EmailAddress> element value can't be empty");
+            check(!address.empty(),
+                  "<EmailAddress> element value can't be empty");
 
             return mailbox(std::move(address), std::move(name),
                            std::move(routing_type), std::move(mailbox_type));
@@ -8538,8 +8542,7 @@ public:
     static folder_id from_xml_element(const rapidxml::xml_node<>& elem)
     {
         auto id_attr = elem.first_attribute("Id");
-        EWS_ASSERT(id_attr &&
-                   "Expected <ParentFolderId> to have an Id attribute");
+        check(id_attr, "Expected <ParentFolderId> to have an Id attribute");
         auto id = std::string(id_attr->value(), id_attr->value_size());
 
         std::string change_key;
@@ -9738,9 +9741,8 @@ public:
     {
         const auto elem_name =
             std::string(elem.local_name(), elem.local_name_size());
-        EWS_ASSERT(
-            (elem_name == "FileAttachment" || elem_name == "ItemAttachment") &&
-            "Expected <FileAttachment> or <ItemAttachment>");
+        check((elem_name == "FileAttachment" || elem_name == "ItemAttachment"),
+              "Expected <FileAttachment> or <ItemAttachment>");
         return attachment(elem_name == "FileAttachment" ? type::file
                                                         : type::item,
                           internal::xml_subtree(elem));
@@ -9916,7 +9918,7 @@ namespace internal
         {
             auto response_code_elem = elem.first_node_ns(
                 uri<>::microsoft::messages(), "ResponseCode");
-            EWS_ASSERT(response_code_elem && "Expected <ResponseCode> element");
+            check(response_code_elem, "Expected <ResponseCode> element");
             code = str_to_response_code(response_code_elem->value());
 
             auto message_text_elem =
@@ -10434,15 +10436,13 @@ namespace internal
                 get_element_by_qname(*doc, "CreateAttachmentResponseMessage",
                                      uri<>::microsoft::messages());
 
-            EWS_ASSERT(
-                elem &&
-                "Expected <CreateAttachmentResponseMessage>, got nullptr");
+            check(elem, "Expected <CreateAttachmentResponseMessage>");
 
             auto result = parse_response_class_and_code(*elem);
 
             auto attachments_element = elem->first_node_ns(
                 uri<>::microsoft::messages(), "Attachments");
-            EWS_ASSERT(attachments_element && "Expected <Attachments> element");
+            check(attachments_element, "Expected <Attachments> element");
 
             auto ids = std::vector<attachment_id>();
             for (auto attachment_elem = attachments_element->first_node();
@@ -10451,8 +10451,8 @@ namespace internal
             {
                 auto attachment_id_elem = attachment_elem->first_node_ns(
                     uri<>::microsoft::types(), "AttachmentId");
-                EWS_ASSERT(attachment_id_elem &&
-                           "Expected <AttachmentId> in response");
+                check(attachment_id_elem,
+                      "Expected <AttachmentId> in response");
                 ids.emplace_back(
                     attachment_id::from_xml_element(*attachment_id_elem));
             }
@@ -10486,14 +10486,13 @@ namespace internal
                 get_element_by_qname(*doc, "GetAttachmentResponseMessage",
                                      uri<>::microsoft::messages());
 
-            EWS_ASSERT(elem &&
-                       "Expected <GetAttachmentResponseMessage>, got nullptr");
+            check(elem, "Expected <GetAttachmentResponseMessage>");
 
             auto result = parse_response_class_and_code(*elem);
 
             auto attachments_element = elem->first_node_ns(
                 uri<>::microsoft::messages(), "Attachments");
-            EWS_ASSERT(attachments_element && "Expected <Attachments> element");
+            check(attachments_element, "Expected <Attachments> element");
             auto attachments = std::vector<attachment>();
             for (auto attachment_elem = attachments_element->first_node();
                  attachment_elem;
@@ -10531,8 +10530,7 @@ namespace internal
             auto elem = get_element_by_qname(*doc, "SendItemResponseMessage",
                                              uri<>::microsoft::messages());
 
-            EWS_ASSERT(elem &&
-                       "Expected <SendItemResponseMessage>, got nullptr");
+            check(elem, "Expected <SendItemResponseMessage>");
             auto result = parse_response_class_and_code(*elem);
             return send_item_response_message(std::move(result));
         }
@@ -10554,8 +10552,7 @@ namespace internal
                 get_element_by_qname(*doc, "DeleteFolderResponseMessage",
                                      uri<>::microsoft::messages());
             auto result = parse_response_class_and_code(*elem);
-            EWS_ASSERT(elem &&
-                       "Expected <DeleteFolderResponseMessage>, got nullptr");
+            check(elem, "Expected <DeleteFolderResponseMessage>");
             return delete_folder_response_message(std::move(result));
         }
 
@@ -10574,9 +10571,8 @@ namespace internal
             const auto doc = parse_response(std::move(response));
             auto elem = get_element_by_qname(*doc, "DeleteItemResponseMessage",
                                              uri<>::microsoft::messages());
+            check(elem, "Expected <DeleteItemResponseMessage>");
             auto result = parse_response_class_and_code(*elem);
-            EWS_ASSERT(elem &&
-                       "Expected <DeleteItemResponseMessage>, got nullptr");
             return delete_item_response_message(std::move(result));
         }
 
@@ -10599,9 +10595,7 @@ namespace internal
                 get_element_by_qname(*doc, "DeleteAttachmentResponseMessage",
                                      uri<>::microsoft::messages());
 
-            EWS_ASSERT(
-                elem &&
-                "Expected <DeleteAttachmentResponseMessage>, got nullptr");
+            check(elem, "Expected <DeleteAttachmentResponseMessage>");
             auto result = parse_response_class_and_code(*elem);
 
             auto root_item_id = item_id();
@@ -10610,13 +10604,12 @@ namespace internal
             if (root_item_id_elem)
             {
                 auto id_attr = root_item_id_elem->first_attribute("RootItemId");
-                EWS_ASSERT(id_attr && "Expected RootItemId attribute");
+                check(id_attr, "Expected RootItemId attribute");
                 auto id = std::string(id_attr->value(), id_attr->value_size());
 
                 auto change_key_attr =
                     root_item_id_elem->first_attribute("RootItemChangeKey");
-                EWS_ASSERT(change_key_attr &&
-                           "Expected RootItemChangeKey attribute");
+                check(change_key_attr, "Expected RootItemChangeKey attribute");
                 auto change_key = std::string(change_key_attr->value(),
                                               change_key_attr->value_size());
 
@@ -11209,8 +11202,8 @@ public:
     //! Returns a reference to the newly created element.
     rapidxml::xml_node<>& to_xml_element(rapidxml::xml_node<>& parent) const
     {
-        EWS_ASSERT(parent.document() &&
-                   "parent node needs to be somewhere in a document");
+        check(parent.document(),
+              "Parent node needs to be somewhere in a document");
 
         //  <Attendee>
         //    <Mailbox/>
@@ -11511,9 +11504,9 @@ public:
     {
         using rapidxml::internal::compare;
 
-        EWS_ASSERT(compare(elem.name(), elem.name_size(), "t:ExtendedFieldURI",
-                           strlen("t:ExtendedFieldURI")) &&
-                   "Expected a <ExtendedFieldURI/>, got something else");
+        check(compare(elem.name(), elem.name_size(), "t:ExtendedFieldURI",
+                      strlen("t:ExtendedFieldURI")),
+              "Expected a <ExtendedFieldURI>, got something else");
 
         std::string distinguished_set_id;
         std::string set_id;
@@ -11563,7 +11556,7 @@ public:
             }
         }
 
-        EWS_ASSERT(!type.empty() && "Type attribute missing");
+        check(!type.empty(), "'PropertyType' attribute missing");
 
         if (!distinguished_set_id.empty())
         {
@@ -11807,7 +11800,7 @@ public:
     {
         auto id_node =
             elem.first_node_ns(internal::uri<>::microsoft::types(), "FolderId");
-        EWS_ASSERT(id_node && "Expected <FolderId>");
+        check(id_node, "Expected <FolderId>");
         return folder(folder_id::from_xml_element(*id_node),
                       internal::xml_subtree(elem));
     }
@@ -11869,8 +11862,7 @@ public:
             return mime_content();
         }
         auto charset = node->first_attribute("CharacterSet");
-        EWS_ASSERT(charset &&
-                   "Expected <MimeContent> to have CharacterSet attribute");
+        check(charset, "Expected <MimeContent> to have CharacterSet attribute");
         return mime_content(charset->value(), node->value(),
                             node->value_size());
     }
@@ -11979,8 +11971,7 @@ public:
                     }
                     else
                     {
-                        EWS_ASSERT(false &&
-                                   "Unexpected attribute value for BodyType");
+                        check(false, "Unexpected attribute value for BodyType");
                     }
                 }
                 else if (compare(attr->name(), attr->name_size(), "IsTruncated",
@@ -11992,8 +11983,7 @@ public:
                 }
                 else
                 {
-                    EWS_ASSERT(false &&
-                               "Unexpected attribute in <Body> element");
+                    check(false, "Unexpected attribute in <Body> element");
                 }
             }
 
@@ -13629,7 +13619,7 @@ public:
     {
         auto id_node =
             elem.first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
-        EWS_ASSERT(id_node && "Expected <ItemId>");
+        check(id_node, "Expected <ItemId>");
         return task(item_id::from_xml_element(*id_node),
                     internal::xml_subtree(elem));
     }
@@ -13837,10 +13827,11 @@ email_address::from_xml_element(const rapidxml::xml_node<char>& node)
     //  <Entry Key="EmailAddress3">dragonmaster1999@yahoo.com</Entry>
     // </t:EmailAddresses>
 
-    EWS_ASSERT(compare(node.local_name(), node.local_name_size(), "Entry",
-                       strlen("Entry")));
+    check(compare(node.local_name(), node.local_name_size(), "Entry",
+                  strlen("Entry")),
+          "Expected <Entry> element");
     auto key = node.first_attribute("Key");
-    EWS_ASSERT(key && "Expected attribute Key");
+    check(key, "Expected attribute 'Key'");
     return email_address(
         str_to_email_address_key(std::string(key->value(), key->value_size())),
         std::string(node.value(), node.value_size()));
@@ -13967,8 +13958,9 @@ physical_address::from_xml_element(const rapidxml::xml_node<char>& node)
     using namespace internal;
     using rapidxml::internal::compare;
 
-    EWS_ASSERT(compare(node.local_name(), node.local_name_size(), "Entry",
-                       strlen("Entry")));
+    check(compare(node.local_name(), node.local_name_size(), "Entry",
+                  strlen("Entry")),
+          "Expected <Entry>, got something else");
 
     // <Entry Key="Home">
     //      <Street>
@@ -13979,8 +13971,9 @@ physical_address::from_xml_element(const rapidxml::xml_node<char>& node)
     // </Entry>
 
     auto key_attr = node.first_attribute();
-    EWS_ASSERT(key_attr);
-    EWS_ASSERT(compare(key_attr->name(), key_attr->name_size(), "Key", 3));
+    check(key_attr, "Expected <Entry> to have an attribute");
+    check(compare(key_attr->name(), key_attr->name_size(), "Key", 3),
+          "Expected <Entry> to have an attribute 'Key'");
     const key key = string_to_physical_address_key(key_attr->value());
 
     std::string street;
@@ -14279,10 +14272,11 @@ im_address::from_xml_element(const rapidxml::xml_node<char>& node)
     //  <Entry Key="ImAddress2">xXSwaggerBoiXx</Entry>
     // </t:ImAddresses>
 
-    EWS_ASSERT(compare(node.local_name(), node.local_name_size(), "Entry",
-                       strlen("Entry")));
+    check(compare(node.local_name(), node.local_name_size(), "Entry",
+                  strlen("Entry")),
+          "Expected <Entry>, got something else");
     auto key = node.first_attribute("Key");
-    EWS_ASSERT(key && "Expected attribute Key");
+    check(key, "Expected attribute 'Key'");
     return im_address(
         str_to_im_address_key(std::string(key->value(), key->value_size())),
         std::string(node.value(), node.value_size()));
@@ -14500,10 +14494,11 @@ phone_number::from_xml_element(const rapidxml::xml_node<char>& node)
     //  <Entry Key="BusinessFax">9876543210</Entry>
     // </t:PhoneNumbers>
 
-    EWS_ASSERT(compare(node.local_name(), node.local_name_size(), "Entry",
-                       strlen("Entry")));
+    check(compare(node.local_name(), node.local_name_size(), "Entry",
+                  strlen("Entry")),
+          "Expected <Entry>, got something else");
     auto key = node.first_attribute("Key");
-    EWS_ASSERT(key && "Expected attribute Key");
+    check(key, "Expected attribute 'Key'");
     return phone_number(
         str_to_phone_number_key(std::string(key->value(), key->value_size())),
         std::string(node.value(), node.value_size()));
@@ -14690,9 +14685,10 @@ public:
             for (; entry != nullptr; entry = entry->next_sibling())
             {
                 auto key_attr = entry->first_attribute();
-                EWS_ASSERT(key_attr);
-                EWS_ASSERT(
-                    compare(key_attr->name(), key_attr->name_size(), "Key", 3));
+                check(key_attr, "Expected an attribute");
+                check(
+                    compare(key_attr->name(), key_attr->name_size(), "Key", 3),
+                    "Expected an attribute 'Key'");
                 const auto key = internal::enum_to_str(address.get_key());
                 if (compare(key_attr->value(), key_attr->value_size(),
                             key.c_str(), key.size()))
@@ -14768,9 +14764,10 @@ public:
             for (; entry != nullptr; entry = entry->next_sibling())
             {
                 auto key_attr = entry->first_attribute();
-                EWS_ASSERT(key_attr);
-                EWS_ASSERT(
-                    compare(key_attr->name(), key_attr->name_size(), "Key", 3));
+                check(key_attr, "Expected an attribute");
+                check(
+                    compare(key_attr->name(), key_attr->name_size(), "Key", 3),
+                    "Expected an attribute 'Key'");
                 const auto key = internal::enum_to_str(address.get_key());
                 if (compare(key_attr->value(), key_attr->value_size(),
                             key.c_str(), key.size()))
@@ -14836,9 +14833,10 @@ public:
             for (; entry != nullptr; entry = entry->next_sibling())
             {
                 auto key_attr = entry->first_attribute();
-                EWS_ASSERT(key_attr);
-                EWS_ASSERT(
-                    compare(key_attr->name(), key_attr->name_size(), "Key", 3));
+                check(key_attr, "Expected an attribute");
+                check(
+                    compare(key_attr->name(), key_attr->name_size(), "Key", 3),
+                    "Expected an attribute 'Key'");
                 const auto key = internal::enum_to_str(number.get_key());
                 if (compare(key_attr->value(), key_attr->value_size(),
                             key.c_str(), key.size()))
@@ -14996,9 +14994,10 @@ public:
             for (; entry != nullptr; entry = entry->next_sibling())
             {
                 auto key_attr = entry->first_attribute();
-                EWS_ASSERT(key_attr);
-                EWS_ASSERT(
-                    compare(key_attr->name(), key_attr->name_size(), "Key", 3));
+                check(key_attr, "Expected an attribute");
+                check(
+                    compare(key_attr->name(), key_attr->name_size(), "Key", 3),
+                    "Expected an attribute 'Key'");
                 const auto key = internal::enum_to_str(im_address.get_key());
                 if (compare(key_attr->value(), key_attr->value_size(),
                             key.c_str(), key.size()))
@@ -15165,7 +15164,7 @@ public:
     {
         auto id_node =
             elem.first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
-        EWS_ASSERT(id_node && "Expected <ItemId>");
+        check(id_node, "Expected <ItemId>");
         return contact(item_id::from_xml_element(*id_node),
                        internal::xml_subtree(elem));
     }
@@ -15484,8 +15483,7 @@ private:
     rapidxml::xml_node<>&
     to_xml_element_impl(rapidxml::xml_node<>& parent) const override
     {
-        EWS_ASSERT(parent.document() &&
-                   "parent node needs to be part of a document");
+        check(parent.document(), "Parent node needs to be part of a document");
 
         using namespace internal;
         auto& pattern_node = create_node(parent, "t:RelativeYearlyRecurrence");
@@ -15540,8 +15538,7 @@ private:
     to_xml_element_impl(rapidxml::xml_node<>& parent) const override
     {
         using namespace internal;
-        EWS_ASSERT(parent.document() &&
-                   "parent node needs to be part of a document");
+        check(parent.document(), "Parent node needs to be part of a document");
 
         auto& pattern_node = create_node(parent, "t:AbsoluteYearlyRecurrence");
         create_node(pattern_node, "t:DayOfMonth",
@@ -15608,8 +15605,7 @@ private:
     to_xml_element_impl(rapidxml::xml_node<>& parent) const override
     {
         using internal::create_node;
-        EWS_ASSERT(parent.document() &&
-                   "parent node needs to be part of a document");
+        check(parent.document(), "Parent node needs to be part of a document");
 
         auto& pattern_node = create_node(parent, "t:AbsoluteMonthlyRecurrence");
         create_node(pattern_node, "t:Interval", std::to_string(interval_));
@@ -15778,8 +15774,7 @@ private:
     to_xml_element_impl(rapidxml::xml_node<>& parent) const override
     {
         using namespace internal;
-        EWS_ASSERT(parent.document() &&
-                   "parent node needs to be part of a document");
+        check(parent.document(), "Parent node needs to be part of a document");
 
         auto& pattern_node = create_node(parent, "t:WeeklyRecurrence");
         create_node(pattern_node, "t:Interval", std::to_string(interval_));
@@ -15830,8 +15825,7 @@ private:
     to_xml_element_impl(rapidxml::xml_node<>& parent) const override
     {
         using internal::create_node;
-        EWS_ASSERT(parent.document() &&
-                   "parent node needs to be part of a document");
+        check(parent.document(), "Parent node needs to be part of a document");
 
         auto& pattern_node = create_node(parent, "t:DailyRecurrence");
         create_node(pattern_node, "t:Interval", std::to_string(interval_));
@@ -15931,8 +15925,7 @@ private:
     to_xml_element_impl(rapidxml::xml_node<>& parent) const override
     {
         using namespace internal;
-        EWS_ASSERT(parent.document() &&
-                   "parent node needs to be part of a document");
+        check(parent.document(), "Parent node needs to be part of a document");
 
         auto& pattern_node = create_node(parent, "t:NoEndRecurrence");
         create_node(pattern_node, "t:StartDate", start_date_.to_string());
@@ -15982,8 +15975,7 @@ private:
     to_xml_element_impl(rapidxml::xml_node<>& parent) const override
     {
         using internal::create_node;
-        EWS_ASSERT(parent.document() &&
-                   "parent node needs to be part of a document");
+        check(parent.document(), "Parent node needs to be part of a document");
 
         auto& pattern_node = create_node(parent, "t:EndDateRecurrence");
         create_node(pattern_node, "t:StartDate", start_date_.to_string());
@@ -16041,8 +16033,7 @@ private:
     to_xml_element_impl(rapidxml::xml_node<>& parent) const override
     {
         using namespace internal;
-        EWS_ASSERT(parent.document() &&
-                   "parent node needs to be part of a document");
+        check(parent.document(), "Parent node needs to be part of a document");
 
         auto& pattern_node = create_node(parent, "t:NumberedRecurrence");
         create_node(pattern_node, "t:StartDate", start_date_.to_string());
@@ -16610,7 +16601,7 @@ public:
     {
         auto id_node =
             elem.first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
-        EWS_ASSERT(id_node && "Expected <ItemId>");
+        check(id_node, "Expected <ItemId>");
         return calendar_item(item_id::from_xml_element(*id_node),
                              internal::xml_subtree(elem));
     }
@@ -16856,7 +16847,7 @@ public:
     {
         auto id_node =
             elem.first_node_ns(internal::uri<>::microsoft::types(), "ItemId");
-        EWS_ASSERT(id_node && "Expected <ItemId>");
+        check(id_node, "Expected <ItemId>");
         return message(item_id::from_xml_element(*id_node),
                        internal::xml_subtree(elem));
     }
@@ -16945,7 +16936,7 @@ protected:
     {
         // TODO: we know at compile-time to which class a property belongs
         const auto n = uri_.find(':');
-        EWS_ASSERT(n != std::string::npos);
+        check((n != std::string::npos), "Expected a ':' in URI");
         const auto substr = uri_.substr(0, n);
         if (substr == "folder")
         {
@@ -17024,7 +17015,7 @@ private:
     std::string property_name() const
     {
         const auto n = uri_.rfind(':');
-        EWS_ASSERT(n != std::string::npos);
+        check((n != std::string::npos), "Expected a ':' in URI");
         return uri_.substr(n + 1);
     }
 
@@ -18905,8 +18896,7 @@ public:
         {
             throw exchange_error(response_message.result());
         }
-        EWS_ASSERT(!response_message.items().empty() &&
-                   "Expected at least one item");
+        check(!response_message.items().empty(), "Expected at least one item");
         return response_message.items().front();
     }
 
@@ -18915,7 +18905,7 @@ public:
     get_calendar_items(const std::vector<occurrence_item_id>& ids,
                        const item_shape& shape = item_shape())
     {
-        EWS_ASSERT(!ids.empty());
+        check(!ids.empty(), "Expected at least one item in given vector");
 
         std::stringstream sstr;
         sstr << "<m:GetItem>";
@@ -19709,8 +19699,8 @@ public:
         {
             throw exchange_error(response_message.result());
         }
-        EWS_ASSERT(!response_message.attachment_ids().empty() &&
-                   "Expected at least one attachment");
+        check(!response_message.attachment_ids().empty(),
+              "Expected at least one attachment");
         return response_message.attachment_ids().front();
     }
 
@@ -19729,7 +19719,6 @@ public:
         {
             (void)parent_item;
             (void)attachments;
-            EWS_ASSERT(false);
             return std::vector<attachment_id>();
         }
 #endif // 0
@@ -19756,8 +19745,8 @@ public:
         {
             throw exchange_error(response_message.result());
         }
-        EWS_ASSERT(!response_message.attachments().empty() &&
-                   "Expected at least one attachment to be returned");
+        check(!response_message.attachments().empty(),
+              "Expected at least one attachment to be returned");
         return response_message.attachments().front();
     }
 
@@ -19914,20 +19903,19 @@ private:
                 // Get some more helpful details
                 elem = get_element_by_qname(
                     *doc, "LineNumber", internal::uri<>::microsoft::types());
-                EWS_ASSERT(elem && "Expected <LineNumber> element in response");
+                check(elem, "Expected <LineNumber> element in response");
                 const auto line_number =
                     std::stoul(std::string(elem->value(), elem->value_size()));
 
                 elem = get_element_by_qname(
                     *doc, "LinePosition", internal::uri<>::microsoft::types());
-                EWS_ASSERT(elem &&
-                           "Expected <LinePosition> element in response");
+                check(elem, "Expected <LinePosition> element in response");
                 const auto line_position =
                     std::stoul(std::string(elem->value(), elem->value_size()));
 
                 elem = get_element_by_qname(
                     *doc, "Violation", internal::uri<>::microsoft::types());
-                EWS_ASSERT(elem && "Expected <Violation> element in response");
+                check(elem, "Expected <Violation> element in response");
                 throw schema_validation_error(
                     line_number, line_position,
                     std::string(elem->value(), elem->value_size()));
@@ -19935,8 +19923,7 @@ private:
             else
             {
                 elem = get_element_by_qname(*doc, "faultstring", "");
-                EWS_ASSERT(elem &&
-                           "Expected <faultstring> element in response");
+                check(elem, "Expected <faultstring> element in response");
                 throw soap_fault(elem->value());
             }
         }
@@ -19977,8 +19964,8 @@ private:
         auto response = request(sstr.str());
         const auto response_message =
             sync_folder_items_result::parse(std::move(response));
-        EWS_ASSERT(!response_message.get_sync_state().empty() &&
-                   "Expected at least a sync state");
+        check(!response_message.get_sync_state().empty(),
+              "Expected at least a sync state");
         return response_message;
     }
 
@@ -20002,8 +19989,7 @@ private:
         {
             throw exchange_error(response_message.result());
         }
-        EWS_ASSERT(!response_message.items().empty() &&
-                   "Expected at least one item");
+        check(!response_message.items().empty(), "Expected at least one item");
         return response_message.items().front();
     }
 
@@ -20011,7 +19997,8 @@ private:
     get_folder_impl(const folder_id& id, base_shape shape,
                     const std::vector<property_path>& additional_properties)
     {
-        EWS_ASSERT(!additional_properties.empty());
+        check(!additional_properties.empty(),
+              "Expected at least one element in additional_properties");
 
         std::stringstream sstr;
         sstr << "<m:GetFolder>"
@@ -20044,7 +20031,7 @@ private:
     std::vector<folder> get_folders_impl(const std::vector<folder_id>& ids,
                                          base_shape shape)
     {
-        EWS_ASSERT(!ids.empty());
+        check(!ids.empty(), "Expected at least one element in given vector");
 
         std::stringstream sstr;
         sstr << "<m:GetFolder>"
@@ -20075,8 +20062,9 @@ private:
     get_folders_impl(const std::vector<folder_id>& ids, base_shape shape,
                      const std::vector<property_path>& additional_properties)
     {
-        EWS_ASSERT(!ids.empty());
-        EWS_ASSERT(!additional_properties.empty());
+        check(!ids.empty(), "Expected at least one element in given vector");
+        check(!additional_properties.empty(),
+              "Expected at least one element in additional_properties");
 
         std::stringstream sstr;
         sstr << "<m:GetFolder>"
@@ -20126,8 +20114,7 @@ private:
         {
             throw exchange_error(response_message.result());
         }
-        EWS_ASSERT(!response_message.items().empty() &&
-                   "Expected at least one item");
+        check(!response_message.items().empty(), "Expected at least one item");
         return response_message.items().front();
     }
 
@@ -20136,7 +20123,7 @@ private:
     std::vector<ItemType> get_item_impl(const std::vector<item_id>& ids,
                                         const item_shape& shape)
     {
-        EWS_ASSERT(!ids.empty());
+        check(!ids.empty(), "Expected at least one id in given vector");
 
         std::stringstream sstr;
         sstr << "<m:GetItem>";
@@ -20187,8 +20174,7 @@ private:
         {
             throw exchange_error(response_message.result());
         }
-        EWS_ASSERT(!response_message.items().empty() &&
-                   "Expected at least one item");
+        check(!response_message.items().empty(), "Expected at least one item");
         return response_message.items().front();
     }
 
@@ -20224,8 +20210,7 @@ private:
         {
             throw exchange_error(response_messages.first_error_or_warning());
         }
-        EWS_ASSERT(!response_messages.items().empty() &&
-                   "Expected at least one item");
+        check(!response_messages.items().empty(), "Expected at least one item");
 
         const std::vector<ItemType> res_items = response_messages.items();
         std::vector<item_id> res;
@@ -20268,8 +20253,7 @@ private:
         {
             throw exchange_error(response_message.result());
         }
-        EWS_ASSERT(!response_message.items().empty() &&
-                   "Expected a message item");
+        check(!response_message.items().empty(), "Expected a message item");
         return response_message.items().front();
     }
 
@@ -20306,8 +20290,7 @@ private:
         {
             throw exchange_error(response_messages.first_error_or_warning());
         }
-        EWS_ASSERT(!response_messages.items().empty() &&
-                   "Expected at least one item");
+        check(!response_messages.items().empty(), "Expected at least one item");
 
         const std::vector<calendar_item> res_items = response_messages.items();
         std::vector<item_id> res;
@@ -20322,7 +20305,7 @@ private:
     folder_id create_folder_impl(const folder& new_folder,
                                  const folder_id& parent_folder)
     {
-        EWS_ASSERT(parent_folder.valid());
+        check(parent_folder.valid(), "Given parent_folder is not valid");
 
         std::stringstream sstr;
         sstr << "<m:CreateFolder >"
@@ -20344,8 +20327,7 @@ private:
         {
             throw exchange_error(response_message.result());
         }
-        EWS_ASSERT(!response_message.items().empty() &&
-                   "Expected at least one item");
+        check(!response_message.items().empty(), "Expected at least one item");
         return response_message.items().front();
     }
 
@@ -20353,7 +20335,7 @@ private:
     create_folder_impl(const std::vector<folder>& new_folders,
                        const folder_id& parent_folder)
     {
-        EWS_ASSERT(parent_folder.valid());
+        check(parent_folder.valid(), "Given parent_folder is not valid");
 
         std::stringstream sstr;
         sstr << "<m:CreateFolder >"
@@ -20375,8 +20357,7 @@ private:
         {
             throw exchange_error(response_messages.first_error_or_warning());
         }
-        EWS_ASSERT(!response_messages.items().empty() &&
-                   "Expected at least one item");
+        check(!response_messages.items().empty(), "Expected at least one item");
 
         const std::vector<folder> items = response_messages.items();
         std::vector<folder_id> res;
@@ -20419,8 +20400,7 @@ private:
 
         if (disposition == message_disposition::save_only)
         {
-            EWS_ASSERT(!response_message.items().empty() &&
-                       "Expected a message item");
+            check(!response_message.items().empty(), "Expected a message item");
             return response_message.items().front();
         }
 
@@ -20459,8 +20439,7 @@ private:
         {
             throw exchange_error(response_messages.first_error_or_warning());
         }
-        EWS_ASSERT(!response_messages.items().empty() &&
-                   "Expected at least one item");
+        check(!response_messages.items().empty(), "Expected at least one item");
 
         const std::vector<message> items = response_messages.items();
         std::vector<item_id> res;
@@ -20505,8 +20484,7 @@ private:
         {
             throw exchange_error(response_message.result());
         }
-        EWS_ASSERT(!response_message.items().empty() &&
-                   "Expected at least one item");
+        check(!response_message.items().empty(), "Expected at least one item");
         return response_message.items().front();
     }
 
@@ -20549,8 +20527,7 @@ private:
         {
             throw exchange_error(response_message.result());
         }
-        EWS_ASSERT(!response_message.items().empty() &&
-                   "Expected at least one item");
+        check(!response_message.items().empty(), "Expected at least one item");
         return response_message.items().front();
     }
 
@@ -20684,7 +20661,7 @@ static_assert(std::is_move_assignable<service>::value, "");
 
 inline void basic_credentials::certify(internal::http_request* request) const
 {
-    EWS_ASSERT(request != nullptr);
+    check(request, "Expected request, got nullptr");
 
     std::string login = username_ + ":" + password_;
     request->set_option(CURLOPT_USERPWD, login.c_str());
@@ -20693,7 +20670,7 @@ inline void basic_credentials::certify(internal::http_request* request) const
 
 inline void ntlm_credentials::certify(internal::http_request* request) const
 {
-    EWS_ASSERT(request != nullptr);
+    check(request, "Expected request, got nullptr");
 
     // CURLOPT_USERPWD: domain\username:password
     std::string login =
@@ -20713,8 +20690,7 @@ sync_folder_items_result::parse(internal::http_response&& response)
         internal::get_element_by_qname(*doc, "SyncFolderItemsResponseMessage",
                                        internal::uri<>::microsoft::messages());
 
-    EWS_ASSERT(elem &&
-               "Expected <SyncFolderItemsResponseMessage>, got nullptr");
+    check(elem, "Expected <SyncFolderItemsResponseMessage>");
     auto result = internal::parse_response_class_and_code(*elem);
     if (result.cls == response_class::error)
     {
@@ -20723,21 +20699,21 @@ sync_folder_items_result::parse(internal::http_response&& response)
 
     auto sync_state_elem = elem->first_node_ns(
         internal::uri<>::microsoft::messages(), "SyncState");
-    EWS_ASSERT(sync_state_elem && "Expected <SyncState> element");
+    check(sync_state_elem, "Expected <SyncState> element");
     auto sync_state =
         std::string(sync_state_elem->value(), sync_state_elem->value_size());
 
     auto includes_last_item_in_range_elem = elem->first_node_ns(
         internal::uri<>::microsoft::messages(), "IncludesLastItemInRange");
-    EWS_ASSERT(includes_last_item_in_range_elem &&
-               "Expected <IncludesLastItemInRange> element");
+    check(includes_last_item_in_range_elem,
+          "Expected <IncludesLastItemInRange> element");
     auto includes_last_item_in_range = rapidxml::internal::compare(
         includes_last_item_in_range_elem->value(),
         includes_last_item_in_range_elem->value_size(), "true", strlen("true"));
 
     auto changes_elem =
         elem->first_node_ns(internal::uri<>::microsoft::messages(), "Changes");
-    EWS_ASSERT(changes_elem && "Expected <Changes> element");
+    check(changes_elem, "Expected <Changes> element");
     std::vector<item_id> created_items;
     std::vector<item_id> updated_items;
     std::vector<item_id> deleted_items;
@@ -20751,7 +20727,7 @@ sync_folder_items_result::parse(internal::http_response&& response)
             {
                 const auto item_id_elem = item_elem.first_node()->first_node_ns(
                     internal::uri<>::microsoft::types(), "ItemId");
-                EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
+                check(item_id_elem, "Expected <ItemId> element");
                 const auto item_id = item_id::from_xml_element(*item_id_elem);
                 created_items.emplace_back(item_id);
             }
@@ -20761,7 +20737,7 @@ sync_folder_items_result::parse(internal::http_response&& response)
             {
                 const auto item_id_elem = item_elem.first_node()->first_node_ns(
                     internal::uri<>::microsoft::types(), "ItemId");
-                EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
+                check(item_id_elem, "Expected <ItemId> element");
                 const auto item_id = item_id::from_xml_element(*item_id_elem);
                 updated_items.emplace_back(item_id);
             }
@@ -20771,7 +20747,7 @@ sync_folder_items_result::parse(internal::http_response&& response)
             {
                 const auto item_id_elem = item_elem.first_node_ns(
                     internal::uri<>::microsoft::types(), "ItemId");
-                EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
+                check(item_id_elem, "Expected <ItemId> element");
                 const auto item_id = item_id::from_xml_element(*item_id_elem);
                 deleted_items.emplace_back(item_id);
             }
@@ -20781,11 +20757,11 @@ sync_folder_items_result::parse(internal::http_response&& response)
             {
                 const auto item_id_elem = item_elem.first_node_ns(
                     internal::uri<>::microsoft::types(), "ItemId");
-                EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
+                check(item_id_elem, "Expected <ItemId> element");
 
                 const auto read_elem = item_elem.first_node_ns(
                     internal::uri<>::microsoft::types(), "IsRead");
-                EWS_ASSERT(read_elem && "Expected <IsRead> element");
+                check(read_elem, "Expected <IsRead> element");
 
                 const auto item_id = item_id::from_xml_element(*item_id_elem);
 
@@ -20818,18 +20794,17 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "CreateFolderResponseMessage",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem &&
-                   "Expected <CreateFolderResponseMessage>, got nullptr");
+        check(elem, "Expected <CreateFolderResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
         auto item_ids = std::vector<folder_id>();
         auto items_elem =
             elem->first_node_ns(uri<>::microsoft::messages(), "Folders");
-        EWS_ASSERT(items_elem && "Expected <Folders> element");
+        check(items_elem, "Expected <Folders> element");
 
         for_each_child_node(
             *items_elem, [&item_ids](const rapidxml::xml_node<>& item_elem) {
                 auto item_id_elem = item_elem.first_node();
-                EWS_ASSERT(item_id_elem && "Expected <FolderId> element");
+                check(item_id_elem, "Expected <FolderId> element");
                 item_ids.emplace_back(
                     folder_id::from_xml_element(*item_id_elem));
             });
@@ -20844,17 +20819,17 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "CreateItemResponseMessage",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem && "Expected <CreateItemResponseMessage>, got nullptr");
+        check(elem, "Expected <CreateItemResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
         auto item_ids = std::vector<item_id>();
         auto items_elem =
             elem->first_node_ns(uri<>::microsoft::messages(), "Items");
-        EWS_ASSERT(items_elem && "Expected <Items> element");
+        check(items_elem, "Expected <Items> element");
 
         for_each_child_node(
             *items_elem, [&item_ids](const rapidxml::xml_node<>& item_elem) {
                 auto item_id_elem = item_elem.first_node();
-                EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
+                check(item_id_elem, "Expected <ItemId> element");
                 item_ids.emplace_back(item_id::from_xml_element(*item_id_elem));
             });
         return create_item_response_message(std::move(result),
@@ -20868,7 +20843,7 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "FindFolderResponseMessage",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem && "Expected <FindFolderResponseMessage>, got nullptr");
+        check(elem, "Expected <FindFolderResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
 
         auto root_folder =
@@ -20876,16 +20851,16 @@ namespace internal
 
         auto items_elem =
             root_folder->first_node_ns(uri<>::microsoft::types(), "Folders");
-        EWS_ASSERT(items_elem && "Expected <t:Folders> element");
+        check(items_elem, "Expected <t:Folders> element");
 
         auto items = std::vector<folder_id>();
         for (auto item_elem = items_elem->first_node(); item_elem;
              item_elem = item_elem->next_sibling())
         {
             // TODO: Check that item is 'FolderId'
-            EWS_ASSERT(item_elem && "Expected an element, got nullptr");
+            check(item_elem, "Expected an element");
             auto item_id_elem = item_elem->first_node();
-            EWS_ASSERT(item_id_elem && "Expected <FolderId> element");
+            check(item_id_elem, "Expected <FolderId> element");
             items.emplace_back(folder_id::from_xml_element(*item_id_elem));
         }
         return find_folder_response_message(std::move(result),
@@ -20899,7 +20874,7 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "FindItemResponseMessage",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem && "Expected <FindItemResponseMessage>, got nullptr");
+        check(elem, "Expected <FindItemResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
 
         auto root_folder =
@@ -20907,15 +20882,15 @@ namespace internal
 
         auto items_elem =
             root_folder->first_node_ns(uri<>::microsoft::types(), "Items");
-        EWS_ASSERT(items_elem && "Expected <t:Items> element");
+        check(items_elem, "Expected <t:Items> element");
 
         auto items = std::vector<item_id>();
         for (auto item_elem = items_elem->first_node(); item_elem;
              item_elem = item_elem->next_sibling())
         {
-            EWS_ASSERT(item_elem && "Expected an element, got nullptr");
+            check(item_elem, "Expected an element");
             auto item_id_elem = item_elem->first_node();
-            EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
+            check(item_id_elem, "Expected <ItemId> element");
             items.emplace_back(item_id::from_xml_element(*item_id_elem));
         }
         return find_item_response_message(std::move(result), std::move(items));
@@ -20928,7 +20903,7 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "FindItemResponseMessage",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem && "Expected <FindItemResponseMessage>, got nullptr");
+        check(elem, "Expected <FindItemResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
 
         auto root_folder =
@@ -20936,7 +20911,7 @@ namespace internal
 
         auto items_elem =
             root_folder->first_node_ns(uri<>::microsoft::types(), "Items");
-        EWS_ASSERT(items_elem && "Expected <t:Items> element");
+        check(items_elem, "Expected <t:Items> element");
 
         auto items = std::vector<calendar_item>();
         for_each_child_node(
@@ -20954,20 +20929,20 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "UpdateItemResponseMessage",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem && "Expected <UpdateItemResponseMessage>, got nullptr");
+        check(elem, "Expected <UpdateItemResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
 
         auto items_elem =
             elem->first_node_ns(uri<>::microsoft::messages(), "Items");
-        EWS_ASSERT(items_elem && "Expected <m:Items> element");
+        check(items_elem, "Expected <m:Items> element");
 
         auto items = std::vector<item_id>();
         for (auto item_elem = items_elem->first_node(); item_elem;
              item_elem = item_elem->next_sibling())
         {
-            EWS_ASSERT(item_elem && "Expected an element, got nullptr");
+            check(item_elem, "Expected an element");
             auto item_id_elem = item_elem->first_node();
-            EWS_ASSERT(item_id_elem && "Expected <ItemId> element");
+            check(item_id_elem, "Expected <ItemId> element");
             items.emplace_back(item_id::from_xml_element(*item_id_elem));
         }
         return update_item_response_message(std::move(result),
@@ -20980,11 +20955,11 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto elem = get_element_by_qname(*doc, "GetFolderResponseMessage",
                                          uri<>::microsoft::messages());
-        EWS_ASSERT(elem && "Expected <GetFolderResponseMessage>, got nullptr");
+        check(elem, "Expected <GetFolderResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
         auto items_elem =
             elem->first_node_ns(uri<>::microsoft::messages(), "Folders");
-        EWS_ASSERT(items_elem && "Expected <Folders> element");
+        check(items_elem, "Expected <Folders> element");
         auto items = std::vector<folder>();
         for_each_child_node(
             *items_elem, [&items](const rapidxml::xml_node<>& item_elem) {
@@ -21000,12 +20975,12 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "GetRoomListsResponse",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem && "Expected <GetRoomListsResponse>, got nullptr");
+        check(elem, "Expected <GetRoomListsResponse>");
         auto result = parse_response_class_and_code(*elem);
         auto room_lists = std::vector<mailbox>();
         auto items_elem =
             elem->first_node_ns(uri<>::microsoft::messages(), "RoomLists");
-        EWS_ASSERT(items_elem && "Expected <RoomLists> element");
+        check(items_elem, "Expected <RoomLists> element");
 
         for_each_child_node(
             *items_elem, [&room_lists](const rapidxml::xml_node<>& item_elem) {
@@ -21022,7 +20997,7 @@ namespace internal
         auto elem = get_element_by_qname(*doc, "GetRoomsResponse",
                                          uri<>::microsoft::messages());
 
-        EWS_ASSERT(elem && "Expected <GetRoomsResponse>, got nullptr");
+        check(elem, "Expected <GetRoomsResponse>");
         auto result = parse_response_class_and_code(*elem);
         auto rooms = std::vector<mailbox>();
         auto items_elem =
@@ -21037,7 +21012,7 @@ namespace internal
             *items_elem, [&rooms](const rapidxml::xml_node<>& item_elem) {
                 auto room_elem =
                     item_elem.first_node_ns(uri<>::microsoft::types(), "Id");
-                EWS_ASSERT(room_elem && "Expected <Id> element");
+                check(room_elem, "Expected <Id> element");
                 rooms.emplace_back(mailbox::from_xml_element(*room_elem));
             });
         return get_rooms_response_message(std::move(result), std::move(rooms));
@@ -21050,8 +21025,7 @@ namespace internal
 
         auto response_messages = get_element_by_qname(
             *doc, "ResponseMessages", uri<>::microsoft::messages());
-        EWS_ASSERT(response_messages &&
-                   "Expected <ResponseMessages> node, got nullptr");
+        check(response_messages, "Expected <ResponseMessages> node");
 
         std::vector<folder_response_message::response_message> messages;
         for_each_child_node(
@@ -21060,7 +21034,7 @@ namespace internal
 
                 auto items_elem =
                     node.first_node_ns(uri<>::microsoft::messages(), "Folders");
-                EWS_ASSERT(items_elem && "Expected <Folders> element");
+                check(items_elem, "Expected <Folders> element");
 
                 auto items = std::vector<folder>();
                 for_each_child_node(
@@ -21083,11 +21057,11 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto elem = get_element_by_qname(*doc, "GetItemResponseMessage",
                                          uri<>::microsoft::messages());
-        EWS_ASSERT(elem && "Expected <GetItemResponseMessage>, got nullptr");
+        check(elem, "Expected <GetItemResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
         auto items_elem =
             elem->first_node_ns(uri<>::microsoft::messages(), "Items");
-        EWS_ASSERT(items_elem && "Expected <Items> element");
+        check(items_elem, "Expected <Items> element");
         auto items = std::vector<ItemType>();
         for_each_child_node(
             *items_elem, [&items](const rapidxml::xml_node<>& item_elem) {
@@ -21104,8 +21078,7 @@ namespace internal
 
         auto response_messages = get_element_by_qname(
             *doc, "ResponseMessages", uri<>::microsoft::messages());
-        EWS_ASSERT(response_messages &&
-                   "Expected <ResponseMessages> node, got nullptr");
+        check(response_messages, "Expected <ResponseMessages> node");
 
         std::vector<item_response_messages::response_message> messages;
         for_each_child_node(
@@ -21114,7 +21087,7 @@ namespace internal
 
                 auto items_elem =
                     node.first_node_ns(uri<>::microsoft::messages(), "Items");
-                EWS_ASSERT(items_elem && "Expected <Items> element");
+                check(items_elem, "Expected <Items> element");
 
                 auto items = std::vector<ItemType>();
                 for_each_child_node(
@@ -21169,8 +21142,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto response_elem = get_element_by_qname(*doc, "AddDelegateResponse",
                                                   uri<>::microsoft::messages());
-        EWS_ASSERT(response_elem &&
-                   "Expected <AddDelegateResponse>, got nullptr");
+        check(response_elem, "Expected <AddDelegateResponse>");
         auto result = parse_response_class_and_code(*response_elem);
 
         std::vector<delegate_user> delegates;
@@ -21188,8 +21160,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto response_elem = get_element_by_qname(*doc, "GetDelegateResponse",
                                                   uri<>::microsoft::messages());
-        EWS_ASSERT(response_elem &&
-                   "Expected <GetDelegateResponse>, got nullptr");
+        check(response_elem, "Expected <GetDelegateResponse>");
         auto result = parse_response_class_and_code(*response_elem);
 
         std::vector<delegate_user> delegates;
@@ -21207,7 +21178,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto resp = get_element_by_qname(*doc, "RemoveDelegateResponse",
                                          uri<>::microsoft::messages());
-        EWS_ASSERT(resp && "Expected <RemoveDelegateResponse>, got nullptr");
+        check(resp, "Expected <RemoveDelegateResponse>");
 
         auto result = parse_response_class_and_code(*resp);
         if (result.code == response_code::no_error)
@@ -21239,8 +21210,8 @@ namespace internal
                                 auto rcode_elem = msg.first_node_ns(
                                     uri<>::microsoft::messages(),
                                     "ResponseCode");
-                                EWS_ASSERT(rcode_elem &&
-                                           "Expected <ResponseCode> element");
+                                check(rcode_elem,
+                                      "Expected <ResponseCode> element");
                                 code =
                                     str_to_response_code(rcode_elem->value());
 
@@ -21273,8 +21244,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto response_elem = get_element_by_qname(
             *doc, "ResolveNamesResponseMessage", uri<>::microsoft::messages());
-        EWS_ASSERT(response_elem &&
-                   "Expected <ResolveNamesResponseMessage>, got nullptr");
+        check(response_elem, "Expected <ResolveNamesResponseMessage>");
         auto result = parse_response_class_and_code(*response_elem);
 
         resolution_set resolutions;
@@ -21284,8 +21254,7 @@ namespace internal
         {
             auto resolution_set_element = response_elem->first_node_ns(
                 uri<>::microsoft::messages(), "ResolutionSet");
-            EWS_ASSERT(resolution_set_element &&
-                       "Expected <ResolutionSet> element");
+            check(resolution_set_element, "Expected <ResolutionSet> element");
 
             for (auto attr = resolution_set_element->first_attribute();
                  attr != nullptr; attr = attr->next_attribute())
@@ -21347,7 +21316,7 @@ namespace internal
                      uri<>::microsoft::types(), "Resolution");
                  res; res = res->next_sibling())
             {
-                EWS_ASSERT(res && "Expected <Resolution> element");
+                check(res, "Expected <Resolution> element");
                 resolution r;
 
                 if (compare("Mailbox", strlen("Mailbox"),
@@ -21382,8 +21351,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto response_elem = get_element_by_qname(
             *doc, "SubscribeResponseMessage", uri<>::microsoft::messages());
-        EWS_ASSERT(response_elem &&
-                   "Expected <SubscribeResponseMessage>, got nullptr");
+        check(response_elem, "Expected <SubscribeResponseMessage>");
         auto result = parse_response_class_and_code(*response_elem);
 
         std::string id;
@@ -21412,8 +21380,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto response_elem = get_element_by_qname(
             *doc, "UnsubscribeResponseMessage", uri<>::microsoft::messages());
-        EWS_ASSERT(response_elem &&
-                   "Expected <UnsubscribeResponseMessage>, got nullptr");
+        check(response_elem, "Expected <UnsubscribeResponseMessage>");
         auto result = parse_response_class_and_code(*response_elem);
 
         return unsubscribe_response_message(std::move(result));
@@ -21426,8 +21393,7 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto response_elem = get_element_by_qname(
             *doc, "GetEventsResponseMessage", uri<>::microsoft::messages());
-        EWS_ASSERT(response_elem &&
-                   "Expected <GetEventsResponseMessage>, got nullptr");
+        check(response_elem, "Expected <GetEventsResponseMessage>");
         auto result = parse_response_class_and_code(*response_elem);
 
         notification n;
@@ -21435,8 +21401,7 @@ namespace internal
         {
             auto notification_element = response_elem->first_node_ns(
                 uri<>::microsoft::messages(), "Notification");
-            EWS_ASSERT(notification_element &&
-                       "Expected <Notification> element");
+            check(notification_element, "Expected <Notification> element");
 
             n.subscription_id =
                 notification_element
@@ -21608,7 +21573,7 @@ inline attachment attachment::from_item(const item& the_item,
         if (node)
         {
             auto parent = node->parent();
-            EWS_ASSERT(parent);
+            check(parent, "Expected node to have a parent node");
             parent->remove_node(node);
         }
     }
@@ -21722,8 +21687,9 @@ recurrence_pattern::from_xml_element(const rapidxml::xml_node<>& elem)
     using rapidxml::internal::compare;
     using namespace internal;
 
-    EWS_ASSERT(std::string(elem.local_name()) == "Recurrence" &&
-               "Expected a <Recurrence> element");
+    check(compare(elem.local_name(), elem.local_name_size(), "Recurrence",
+                  strlen("Recurrence")),
+          "Expected a <Recurrence> element");
 
     auto node = elem.first_node_ns(uri<>::microsoft::types(),
                                    "AbsoluteYearlyRecurrence");
@@ -21947,11 +21913,10 @@ recurrence_pattern::from_xml_element(const rapidxml::xml_node<>& elem)
 #endif
     }
 
-    EWS_ASSERT(false &&
-               "Expected one of "
-               "<AbsoluteYearlyRecurrence>, <RelativeYearlyRecurrence>, "
-               "<AbsoluteMonthlyRecurrence>, <RelativeMonthlyRecurrence>, "
-               "<WeeklyRecurrence>, <DailyRecurrence>");
+    check(false, "Expected one of "
+                 "<AbsoluteYearlyRecurrence>, <RelativeYearlyRecurrence>, "
+                 "<AbsoluteMonthlyRecurrence>, <RelativeMonthlyRecurrence>, "
+                 "<WeeklyRecurrence>, <DailyRecurrence>");
     return std::unique_ptr<recurrence_pattern>();
 }
 
@@ -21960,8 +21925,9 @@ recurrence_range::from_xml_element(const rapidxml::xml_node<>& elem)
 {
     using rapidxml::internal::compare;
 
-    EWS_ASSERT(std::string(elem.local_name()) == "Recurrence" &&
-               "Expected a <Recurrence> element");
+    check(compare(elem.local_name(), elem.local_name_size(), "Recurrence",
+                  strlen("Recurrence")),
+          "Expected a <Recurrence> element");
 
     auto node = elem.first_node_ns(internal::uri<>::microsoft::types(),
                                    "NoEndRecurrence");
@@ -22057,9 +22023,9 @@ recurrence_range::from_xml_element(const rapidxml::xml_node<>& elem)
 #endif
     }
 
-    EWS_ASSERT(false &&
-               "Expected one of "
-               "<NoEndRecurrence>, <EndDateRecurrence>, <NumberedRecurrence>");
+    check(false,
+          "Expected one of "
+          "<NoEndRecurrence>, <EndDateRecurrence>, <NumberedRecurrence>");
     return std::unique_ptr<recurrence_range>();
 }
 } // namespace ews

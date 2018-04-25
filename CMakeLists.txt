@@ -10,7 +10,6 @@ message(STATUS "Git SHA-1: ${GIT_SHA1}")
 
 include(CheckCXXCompilerFlag)
 
-option(ENABLE_ASSERTS "Enable run-time checks." OFF)
 option(DISABLE_TLS_CERT_VERIFICATION
     "Turn-off verification of the server's authenticity." OFF)
 if(NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
@@ -168,10 +167,6 @@ set(rapidxml_SOURCES
 # libcurl 7.35 is packed for Ubuntu 14.04 LTS, 7.29 for RHEL7
 find_package(CURL 7.29 REQUIRED)
 include_directories(${ews_INCLUDE_DIR} ${CURL_INCLUDE_DIRS})
-
-if(ENABLE_ASSERTS)
-    add_definitions(-DEWS_ENABLE_ASSERTS)
-endif()
 
 if(DISABLE_TLS_CERT_VERIFICATION)
     add_definitions(-DEWS_DISABLE_TLS_CERT_VERIFICATION)

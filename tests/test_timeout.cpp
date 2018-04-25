@@ -17,7 +17,7 @@ namespace tests
 {
 namespace timeout_test
 {
-    inline void start(std::string dir)
+    inline void start(const std::string& dir)
     {
         static bool server_started = false;
         if (!server_started)

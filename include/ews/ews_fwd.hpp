@@ -29,6 +29,7 @@
 namespace ews
 {
 class and_;
+class assertion_error;
 class attachment;
 class attachment_id;
 class attendee;
