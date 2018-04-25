@@ -62,7 +62,12 @@ namespace ews
 {
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
-template <typename ExceptionType = ews::assertion_error>
+
+#    ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
+template <typename ExceptionType = assertion_error>
+#    else
+template <typename ExceptionType>
+#    endif
 inline void check(bool expr, const char* msg)
 {
     if (!expr)
@@ -70,7 +75,16 @@ inline void check(bool expr, const char* msg)
         throw ExceptionType(msg);
     }
 }
-#endif
+
+#    ifndef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
+// Add overload so template argument deduction won't fail on VS 2012
+inline void check(bool expr, const char* msg)
+{
+    chec<assertion_error>(expr, msg);
+}
+#    endif
+
+#endif // EWS_DOXYGEN_SHOULD_SKIP_THIS
 
 namespace internal
 {
