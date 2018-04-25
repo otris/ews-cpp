@@ -9,7 +9,7 @@
 ::   - 7z.exe in PATH
 
 @setlocal
-@set curl_version=7.57.0
+@set curl_version=7.59.0
 @set curl_download_url="https://curl.haxx.se/download/curl-%curl_version%.zip"
 
 @if exist "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat" (
