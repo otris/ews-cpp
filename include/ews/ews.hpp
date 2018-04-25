@@ -80,7 +80,7 @@ inline void check(bool expr, const char* msg)
 // Add overload so template argument deduction won't fail on VS 2012
 inline void check(bool expr, const char* msg)
 {
-    chec<assertion_error>(expr, msg);
+    check<assertion_error>(expr, msg);
 }
 #    endif
 
