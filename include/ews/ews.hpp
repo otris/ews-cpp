@@ -20844,7 +20844,7 @@ namespace internal
 
         auto items_elem =
             root_folder->first_node_ns(uri<>::microsoft::types(), "Folders");
-        check(items_elem, "Expected <t:Folders> element");
+        check(items_elem, "Expected <Folders> element");
 
         auto items = std::vector<folder_id>();
         for (auto item_elem = items_elem->first_node(); item_elem;
@@ -20875,7 +20875,7 @@ namespace internal
 
         auto items_elem =
             root_folder->first_node_ns(uri<>::microsoft::types(), "Items");
-        check(items_elem, "Expected <t:Items> element");
+        check(items_elem, "Expected <Items> element");
 
         auto items = std::vector<item_id>();
         for (auto item_elem = items_elem->first_node(); item_elem;
@@ -20904,7 +20904,7 @@ namespace internal
 
         auto items_elem =
             root_folder->first_node_ns(uri<>::microsoft::types(), "Items");
-        check(items_elem, "Expected <t:Items> element");
+        check(items_elem, "Expected <Items> element");
 
         auto items = std::vector<calendar_item>();
         for_each_child_node(
@@ -20927,7 +20927,7 @@ namespace internal
 
         auto items_elem =
             elem->first_node_ns(uri<>::microsoft::messages(), "Items");
-        check(items_elem, "Expected <m:Items> element");
+        check(items_elem, "Expected <Items> element");
 
         auto items = std::vector<item_id>();
         for (auto item_elem = items_elem->first_node(); item_elem;
