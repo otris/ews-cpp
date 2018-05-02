@@ -271,6 +271,15 @@ if(HAS_NON_BUGGY_TYPE_TRAITS)
     add_definitions(-DEWS_HAS_NON_BUGGY_TYPE_TRAITS)
 endif()
 
+# Message in static_assert can be omitted - negative GCC 5 on Ubuntu 16.04
+CHECK_CXX_SOURCE_COMPILES("
+static_assert(true);
+int main() { }
+" HAS_CXX17_STATIC_ASSERT)
+if(HAS_CXX17_STATIC_ASSERT)
+    add_definitions(-DEWS_HAS_CXX17_STATIC_ASSERT)
+endif()
+
 # N3671 - negative: _MSC_VER <= 1800, libstdc++ prior 4.9.0
 CHECK_CXX_SOURCE_COMPILES("
 #include <algorithm>
