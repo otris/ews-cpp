@@ -11868,7 +11868,22 @@ static_assert(std::is_move_constructible<folder>::value);
 static_assert(std::is_move_assignable<folder>::value);
 #endif
 
-//! Represents a generic <tt>\<Item></tt> in the Exchange store
+//! \brief Represents a generic <tt>\<Item></tt> in the Exchange store.
+//!
+//! Items are, along folders, the fundamental entity that is stored in
+//! an Exchange store. An item can represent a mail message, an appointment, or
+//! a colleague's contact data. Most of the times, you deal with those
+//! specialized item types when working with the EWS API. In some cases though,
+//! it is easier to use the more general item class directly.
+//!
+//! The item base-class contains all properties that are common among all
+//! concrete sub-classes, most notably the `<Subject>`, `<Body>`, and
+//! `<ItemId>` properties.
+//!
+//! Like folders, each item that exists in an Exchange store has a unique
+//! identifier attached to it. This is represented by the \ref item_id class and
+//! you'd use and item's \ref get_item_id member-function to obtain a reference
+//! to it.
 class item
 {
 public:
@@ -18715,22 +18730,57 @@ connecting_sid::connecting_sid(connecting_sid::type t, const std::string& id)
            "></t:ConnectingSID>";
 }
 
-//! \brief Contains the methods to perform operations on an Exchange server
+//! \brief Allows you to perform operations on an Exchange server.
 //!
-//! The service class contains all methods that can be performed on an
-//! Exchange server.
+//! A service object is used to establish a connection to an Exchange server,
+//! authenticate against it, and make one, or more likely, multiple API calls to
+//! it, called operations. The basic_service class provides all operations that
+//! can be performed on an Exchange server as public member-functions, e.g.,
 //!
-//! Will get a *huge* public interface over time, e.g.,
+//! - create_item (\<CreateItem>)
+//! - delete_item (\<DeleteItem>)
+//! - find_item (\<FindItem>)
+//! - send_item (\<SendItem>)
+//! - update_item (\<UpdateItem>)
+//! - delete_calendar_item (\<DeleteItem>)
+//! - delete_contact (\<DeleteItem>)
+//! - delete_message (\<DeleteItem>)
+//! - delete_task (\<DeleteItem>)
+//! - get_calendar_item (\<GetItem>)
+//! - get_contact (\<GetItem>)
+//! - get_message (\<GetItem>)
+//! - get_task (\<GetItem>)
+//! - add_delegate (\<AddDelegate>)
+//! - get_delegate (\<GetDelegate>)
+//! - create_attachment (\<CreateAttachment>)
+//! - delete_attachment (\<DeleteAttachment>)
+//! - get_attachment (\<GetAttachment>)
+//! - create_folder (\<CreateFolder>)
+//! - delete_folder (\<DeleteFolder>)
+//! - find_folder (\<FindFolder>)
+//! - get_folder (\<GetFolder>)
 //!
-//! - create_item
-//! - find_conversation
-//! - find_folder
-//! - find_item
-//! - find_people
-//! - get_contact
-//! - get_task
+//! to name a few.
 //!
-//! and so on and so on.
+//! ## General Usage
+//! Usually you want to create one service instance and keep it alive as long
+//! as you need a connection to the Exchange server. A TCP connection is
+//! established as soon as you make the first call to the server. That TCP
+//! connection is kept alive as long as the instance is around. Upon
+//! destruction, the TCP connection is closed.
+//!
+//! While you _can_ create a new service object for each call to, lets say
+//! create_item, it is not encouraged to do so because with every new service
+//! instance you construct you'd create a new TCP connection and authenticate to
+//! the server again which would imply a great deal of overhead for just a
+//! single API call. Instead, try to re-use a service object for as many calls
+//! to the API as possible.
+//!
+//! ## Thread Safety
+//! Instances of this class are re-entrant but not thread safe. This means that
+//! you should not share references to service instances across threads without
+//! providing synchronization but it is totally safe to have multiple distinct
+//! service instances in different threads.
 template <typename RequestHandler = internal::http_request>
 class basic_service final
 {
