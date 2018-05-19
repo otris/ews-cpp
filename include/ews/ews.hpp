@@ -135,7 +135,8 @@ namespace internal
         std::function<void(void)> func_;
     };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
     static_assert(!std::is_copy_constructible<on_scope_exit>::value);
     static_assert(!std::is_copy_assignable<on_scope_exit>::value);
     static_assert(!std::is_move_constructible<on_scope_exit>::value);
@@ -6699,7 +6700,8 @@ namespace internal
         CURL* handle_;
     };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
     static_assert(std::is_default_constructible<curl_ptr>::value);
     static_assert(!std::is_copy_constructible<curl_ptr>::value);
     static_assert(!std::is_copy_assignable<curl_ptr>::value);
@@ -6753,7 +6755,8 @@ namespace internal
         curl_slist* slist_;
     };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
     static_assert(std::is_default_constructible<curl_string_list>::value);
     static_assert(!std::is_copy_constructible<curl_string_list>::value);
     static_assert(!std::is_copy_assignable<curl_string_list>::value);
@@ -7298,7 +7301,8 @@ namespace internal
         curl_string_list headers_;
     };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
     static_assert(!std::is_default_constructible<http_request>::value);
     static_assert(!std::is_copy_constructible<http_request>::value);
     static_assert(!std::is_copy_assignable<http_request>::value);
@@ -7607,7 +7611,8 @@ namespace internal
         }
     };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
     static_assert(std::is_default_constructible<xml_subtree>::value);
     static_assert(std::is_copy_constructible<xml_subtree>::value);
     static_assert(std::is_copy_assignable<xml_subtree>::value);
@@ -7963,7 +7968,8 @@ private:
     std::string change_key_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<item_id>::value);
 static_assert(std::is_copy_constructible<item_id>::value);
 static_assert(std::is_copy_assignable<item_id>::value);
@@ -8066,7 +8072,8 @@ private:
     int instance_index_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<occurrence_item_id>::value);
 static_assert(std::is_copy_constructible<occurrence_item_id>::value);
 static_assert(std::is_copy_assignable<occurrence_item_id>::value);
@@ -8161,7 +8168,8 @@ private:
     item_id root_item_id_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<attachment_id>::value);
 static_assert(std::is_copy_constructible<attachment_id>::value);
 static_assert(std::is_copy_assignable<attachment_id>::value);
@@ -8403,7 +8411,8 @@ private:
     std::string mailbox_type_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<mailbox>::value);
 static_assert(std::is_copy_constructible<mailbox>::value);
 static_assert(std::is_copy_assignable<mailbox>::value);
@@ -8426,7 +8435,8 @@ private:
     std::string id_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<directory_id>::value);
 static_assert(std::is_copy_constructible<directory_id>::value);
 static_assert(std::is_copy_assignable<directory_id>::value);
@@ -8440,7 +8450,8 @@ struct resolution final
     ews::directory_id directory_id;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<resolution>::value);
 static_assert(std::is_copy_constructible<resolution>::value);
 static_assert(std::is_copy_assignable<resolution>::value);
@@ -8474,7 +8485,8 @@ public:
     std::vector<resolution> resolutions;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<resolution_set>::value);
 static_assert(std::is_copy_constructible<resolution_set>::value);
 static_assert(std::is_copy_assignable<resolution_set>::value);
@@ -8508,7 +8520,8 @@ private:
     std::string watermark_;
 };
 
-#    if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#    if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                              \
+        defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<subscription_information>::value);
 static_assert(std::is_copy_constructible<subscription_information>::value);
 static_assert(std::is_copy_assignable<subscription_information>::value);
@@ -8588,7 +8601,8 @@ private:
     std::string change_key_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<folder_id>::value);
 static_assert(std::is_copy_constructible<folder_id>::value);
 static_assert(std::is_copy_assignable<folder_id>::value);
@@ -9018,7 +9032,8 @@ private:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<distinguished_folder_id>::value);
 static_assert(std::is_copy_constructible<distinguished_folder_id>::value);
 static_assert(std::is_copy_assignable<distinguished_folder_id>::value);
@@ -9891,7 +9906,8 @@ private:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<attachment>::value);
 static_assert(std::is_copy_constructible<attachment>::value);
 static_assert(std::is_copy_assignable<attachment>::value);
@@ -10701,7 +10717,8 @@ private:
     bool includes_last_item_in_range_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<sync_folder_items_result>::value,
               "");
 static_assert(std::is_copy_constructible<sync_folder_items_result>::value);
@@ -10942,7 +10959,8 @@ inline bool operator==(const date_time& lhs, const date_time& rhs)
     return lhs.val_ == rhs.val_;
 }
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<date_time>::value);
 static_assert(std::is_copy_constructible<date_time>::value);
 static_assert(std::is_copy_assignable<date_time>::value);
@@ -11000,7 +11018,8 @@ inline bool operator==(const duration& lhs, const duration& rhs)
     return lhs.val_ == rhs.val_;
 }
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<duration>::value);
 static_assert(std::is_copy_constructible<duration>::value);
 static_assert(std::is_copy_assignable<duration>::value);
@@ -11099,7 +11118,8 @@ private:
     bool is_truncated_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<body>::value);
 static_assert(std::is_copy_constructible<body>::value);
 static_assert(std::is_copy_assignable<body>::value);
@@ -11147,7 +11167,8 @@ private:
     std::vector<char> bytearray_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<mime_content>::value);
 static_assert(std::is_copy_constructible<mime_content>::value);
 static_assert(std::is_copy_assignable<mime_content>::value);
@@ -11285,7 +11306,8 @@ private:
     date_time last_response_time_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<attendee>::value);
 static_assert(std::is_copy_constructible<attendee>::value);
 static_assert(std::is_copy_assignable<attendee>::value);
@@ -11333,7 +11355,8 @@ private:
     std::string header_value_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<internet_message_header>::value);
 static_assert(std::is_copy_constructible<internet_message_header>::value);
 static_assert(std::is_copy_assignable<internet_message_header>::value);
@@ -11361,7 +11384,8 @@ namespace internal
         std::string value_;
     };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
     static_assert(std::is_default_constructible<str_wrapper<0>>::value);
     static_assert(std::is_copy_constructible<str_wrapper<0>>::value);
     static_assert(std::is_copy_assignable<str_wrapper<0>>::value);
@@ -11690,7 +11714,8 @@ private:
     property_type type_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<extended_field_uri>::value);
 static_assert(std::is_copy_constructible<extended_field_uri>::value);
 static_assert(std::is_copy_assignable<extended_field_uri>::value);
@@ -11745,7 +11770,8 @@ private:
     std::vector<std::string> values_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<extended_property>::value);
 static_assert(std::is_copy_constructible<extended_property>::value);
 static_assert(std::is_copy_assignable<extended_property>::value);
@@ -11833,7 +11859,8 @@ private:
     internal::xml_subtree xml_subtree_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<folder>::value);
 static_assert(std::is_copy_constructible<folder>::value);
 static_assert(std::is_copy_assignable<folder>::value);
@@ -12442,7 +12469,8 @@ private:
     internal::xml_subtree xml_subtree_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<item>::value);
 static_assert(std::is_copy_constructible<item>::value);
 static_assert(std::is_copy_assignable<item>::value);
@@ -12641,7 +12669,8 @@ private:
                                   // if set
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<user_id>::value);
 static_assert(std::is_copy_constructible<user_id>::value);
 static_assert(std::is_copy_assignable<user_id>::value);
@@ -12806,7 +12835,8 @@ private:
     bool view_private_items_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<delegate_user>::value);
 static_assert(std::is_copy_constructible<delegate_user>::value);
 static_assert(std::is_copy_assignable<delegate_user>::value);
@@ -13645,7 +13675,8 @@ private:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<task>::value);
 static_assert(std::is_copy_constructible<task>::value);
 static_assert(std::is_copy_assignable<task>::value);
@@ -15287,7 +15318,8 @@ private:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<contact>::value);
 static_assert(std::is_copy_constructible<contact>::value);
 static_assert(std::is_copy_assignable<contact>::value);
@@ -15383,7 +15415,8 @@ private:
     date_time original_start_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<occurrence_info>::value);
 static_assert(std::is_copy_constructible<occurrence_info>::value);
 static_assert(std::is_copy_assignable<occurrence_info>::value);
@@ -15440,7 +15473,8 @@ private:
     to_xml_element_impl(rapidxml::xml_node<>&) const = 0;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<recurrence_pattern>::value);
 static_assert(!std::is_copy_constructible<recurrence_pattern>::value);
 static_assert(!std::is_copy_assignable<recurrence_pattern>::value);
@@ -15505,7 +15539,8 @@ private:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(
     !std::is_default_constructible<relative_yearly_recurrence>::value);
 static_assert(!std::is_copy_constructible<relative_yearly_recurrence>::value);
@@ -15557,7 +15592,8 @@ private:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(
     !std::is_default_constructible<absolute_yearly_recurrence>::value);
 static_assert(!std::is_copy_constructible<absolute_yearly_recurrence>::value);
@@ -15622,7 +15658,8 @@ private:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(
     !std::is_default_constructible<absolute_monthly_recurrence>::value);
 static_assert(!std::is_copy_constructible<absolute_monthly_recurrence>::value);
@@ -15700,7 +15737,8 @@ private:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(
     !std::is_default_constructible<relative_monthly_recurrence>::value);
 static_assert(!std::is_copy_constructible<relative_monthly_recurrence>::value);
@@ -15794,7 +15832,8 @@ private:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<weekly_recurrence>::value);
 static_assert(!std::is_copy_constructible<weekly_recurrence>::value);
 static_assert(!std::is_copy_assignable<weekly_recurrence>::value);
@@ -15836,7 +15875,8 @@ private:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<daily_recurrence>::value);
 static_assert(!std::is_copy_constructible<daily_recurrence>::value);
 static_assert(!std::is_copy_assignable<daily_recurrence>::value);
@@ -15891,7 +15931,8 @@ private:
     to_xml_element_impl(rapidxml::xml_node<>&) const = 0;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<recurrence_range>::value);
 static_assert(!std::is_copy_constructible<recurrence_range>::value);
 static_assert(!std::is_copy_assignable<recurrence_range>::value);
@@ -15936,7 +15977,8 @@ private:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<no_end_recurrence_range>::value);
 static_assert(!std::is_copy_constructible<no_end_recurrence_range>::value);
 static_assert(!std::is_copy_assignable<no_end_recurrence_range>::value);
@@ -15986,7 +16028,8 @@ private:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<end_date_recurrence_range>::value);
 static_assert(!std::is_copy_constructible<end_date_recurrence_range>::value);
 static_assert(!std::is_copy_assignable<end_date_recurrence_range>::value);
@@ -16042,7 +16085,8 @@ private:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<numbered_recurrence_range>::value);
 static_assert(!std::is_copy_constructible<numbered_recurrence_range>::value);
 static_assert(!std::is_copy_assignable<numbered_recurrence_range>::value);
@@ -16651,7 +16695,8 @@ private:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<calendar_item>::value);
 static_assert(std::is_copy_constructible<calendar_item>::value);
 static_assert(std::is_copy_assignable<calendar_item>::value);
@@ -16894,7 +16939,8 @@ private:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<message>::value);
 static_assert(std::is_copy_constructible<message>::value);
 static_assert(std::is_copy_assignable<message>::value);
@@ -17023,7 +17069,8 @@ inline bool operator==(const property_path& lhs, const property_path& rhs)
     return lhs.field_uri() == rhs.field_uri();
 }
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<property_path>::value);
 static_assert(std::is_copy_constructible<property_path>::value);
 static_assert(std::is_copy_assignable<property_path>::value);
@@ -17075,7 +17122,8 @@ private:
     std::string index_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<indexed_property_path>::value);
 static_assert(std::is_copy_constructible<indexed_property_path>::value);
 static_assert(std::is_copy_assignable<indexed_property_path>::value);
@@ -17652,7 +17700,8 @@ private:
     std::string value_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<property>::value);
 static_assert(std::is_copy_constructible<property>::value);
 static_assert(std::is_copy_assignable<property>::value);
@@ -17807,7 +17856,8 @@ private:
     bool convert_html_code_page_to_utf8_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<item_shape>::value);
 static_assert(std::is_copy_constructible<item_shape>::value);
 static_assert(std::is_copy_assignable<item_shape>::value);
@@ -17937,7 +17987,8 @@ private:
     std::function<std::string()> func_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<search_expression>::value);
 static_assert(std::is_copy_constructible<search_expression>::value);
 static_assert(std::is_copy_assignable<search_expression>::value);
@@ -17980,7 +18031,8 @@ public:
     // TODO: is_equal_to(property_path, property_path) {}
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<is_equal_to>::value);
 static_assert(std::is_copy_constructible<is_equal_to>::value);
 static_assert(std::is_copy_assignable<is_equal_to>::value);
@@ -18021,7 +18073,8 @@ public:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<is_not_equal_to>::value);
 static_assert(std::is_copy_constructible<is_not_equal_to>::value);
 static_assert(std::is_copy_assignable<is_not_equal_to>::value);
@@ -18059,7 +18112,8 @@ public:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<is_greater_than>::value);
 static_assert(std::is_copy_constructible<is_greater_than>::value);
 static_assert(std::is_copy_assignable<is_greater_than>::value);
@@ -18098,7 +18152,8 @@ public:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(
     !std::is_default_constructible<is_greater_than_or_equal_to>::value);
 static_assert(std::is_copy_constructible<is_greater_than_or_equal_to>::value);
@@ -18137,7 +18192,8 @@ public:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<is_less_than>::value);
 static_assert(std::is_copy_constructible<is_less_than>::value);
 static_assert(std::is_copy_assignable<is_less_than>::value);
@@ -18176,7 +18232,8 @@ public:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<is_less_than_or_equal_to>::value);
 static_assert(std::is_copy_constructible<is_less_than_or_equal_to>::value);
 static_assert(std::is_copy_assignable<is_less_than_or_equal_to>::value);
@@ -18204,7 +18261,8 @@ public:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<and_>::value);
 static_assert(std::is_copy_constructible<and_>::value);
 static_assert(std::is_copy_assignable<and_>::value);
@@ -18232,7 +18290,8 @@ public:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<or_>::value);
 static_assert(std::is_copy_constructible<or_>::value);
 static_assert(std::is_copy_assignable<or_>::value);
@@ -18258,7 +18317,8 @@ public:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<not_>::value);
 static_assert(std::is_copy_constructible<not_>::value);
 static_assert(std::is_copy_assignable<not_>::value);
@@ -18382,7 +18442,8 @@ public:
     }
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<contains>::value);
 static_assert(std::is_copy_constructible<contains>::value);
 static_assert(std::is_copy_assignable<contains>::value);
@@ -18444,7 +18505,8 @@ private:
     paging_base_point base_point_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(std::is_default_constructible<paging_view>::value);
 static_assert(std::is_copy_constructible<paging_view>::value);
 static_assert(std::is_copy_assignable<paging_view>::value);
@@ -18503,7 +18565,8 @@ private:
     bool max_entries_set_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<calendar_view>::value);
 static_assert(std::is_copy_constructible<calendar_view>::value);
 static_assert(std::is_copy_assignable<calendar_view>::value);
@@ -18580,7 +18643,8 @@ private:
     update::operation op_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<update>::value);
 static_assert(std::is_copy_constructible<update>::value);
 static_assert(std::is_copy_assignable<update>::value);
@@ -18614,7 +18678,8 @@ private:
     std::string xml_;
 };
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<connecting_sid>::value);
 static_assert(std::is_copy_constructible<connecting_sid>::value);
 static_assert(std::is_copy_assignable<connecting_sid>::value);
@@ -20642,7 +20707,8 @@ private:
 };
 typedef basic_service<> service;
 
-#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) && defined(EWS_HAS_CXX17_STATIC_ASSERT)
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
 static_assert(!std::is_default_constructible<service>::value);
 static_assert(!std::is_copy_constructible<service>::value);
 static_assert(!std::is_copy_assignable<service>::value);
