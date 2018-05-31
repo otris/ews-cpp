@@ -71,6 +71,33 @@ const std::string contact_card =
     "    </s:Body>\n"
     "</s:Envelope>";
 
+const std::string appointment =
+    "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n"
+    "    <s:Body xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+    "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n"
+    "        <m:GetItemResponse "
+    "xmlns:m=\"http://schemas.microsoft.com/exchange/services/2006/"
+    "messages\" "
+    "xmlns:t=\"http://schemas.microsoft.com/exchange/services/2006/"
+    "types\">\n"
+    "            <m:ResponseMessages>\n"
+    "                <m:GetItemResponseMessage ResponseClass=\"Success\">\n"
+    "                    <m:ResponseCode>NoError</m:ResponseCode>\n"
+    "                    <m:Items>\n"
+    "                        <t:CalendarItem>\n"
+    "                            <t:ItemId Id=\"xyz\" ChangeKey=\"zyx\" />\n"
+    "                            <t:Subject>Customer X Installation "
+    "Prod.-System</t:Subject>\n"
+    "                            <t:Start>2017-09-07T15:00:00Z</t:Start>\n"
+    "                            <t:End>2017-09-07T16:30:00Z</t:End>\n"
+    "                        </t:CalendarItem>\n"
+    "                    </m:Items>\n"
+    "                </m:GetItemResponseMessage>\n"
+    "            </m:ResponseMessages>\n"
+    "        </m:GetItemResponse>\n"
+    "    </s:Body>\n"
+    "</s:Envelope>";
+
 const std::string malformed_xml_1 = "<html>\n"
                                     "  <head>\n"
                                     "  </head>\n"
@@ -343,6 +370,30 @@ TEST(InternalTest, UpdateSubTreeElement)
                  "<t:Culture>en-US</t:Culture>"
                  "</t:Contact>",
                  cont.to_string().c_str());
+}
+
+TEST(InternalTest, UpdateElementAttribute)
+{
+    using namespace ews::internal;
+
+    rapidxml::xml_document<> doc;
+    auto str = doc.allocate_string(appointment.c_str());
+    doc.parse<0>(str);
+    auto calitem =
+        get_element_by_qname(doc, "CalendarItem", uri<>::microsoft::types());
+    auto cont = xml_subtree(*calitem);
+
+    cont.set_or_update(
+        "StartTimeZone",
+        {{"Id", "W. Europe Standard Time"},
+         {"Name",
+          "(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna"}});
+
+    const auto node = cont.get_node("StartTimeZone");
+    auto count = 0;
+    for_each_attribute(*node,
+                       [&](const rapidxml::xml_attribute<>&) { count++; });
+    EXPECT_EQ(count, 2);
 }
 
 TEST(InternalTest, AppendSubTreeToExistingXMLDocument)

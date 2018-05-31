@@ -7400,6 +7400,12 @@ namespace internal
     class xml_subtree final
     {
     public:
+        struct attribute
+        {
+            std::string name;
+            std::string value;
+        };
+
         // Default constructible because item class (and it's descendants)
         // need to be
         xml_subtree() : rawdata_(), doc_(new rapidxml::xml_document<char>) {}
@@ -7471,8 +7477,11 @@ namespace internal
             return node ? std::string(node->value(), node->value_size()) : "";
         }
 
-        void set_or_update(const std::string& node_name,
-                           const std::string& node_value)
+        // Update an existing node with a new value. If the node does not exist
+        // it is created. Note that any extisting attribute will get removed
+        // from an existing node.
+        rapidxml::xml_node<char>& set_or_update(const std::string& node_name,
+                                                const std::string& node_value)
         {
             using rapidxml::internal::compare;
 
@@ -7482,16 +7491,12 @@ namespace internal
                                    oldnode->value(), oldnode->value_size()))
             {
                 // Nothing to do
-                return;
+                return *oldnode;
             }
 
-            auto node_qname = "t:" + node_name;
-            auto ptr_to_qname = doc_->allocate_string(node_qname.c_str());
-            auto ptr_to_value = doc_->allocate_string(node_value.c_str());
-
-            // Strong exception-safety guarantee? Memory isn't leaked, OTOH
-            // it is not freed until document (or the item that owns it) is
-            // destructed either
+            const auto node_qname = "t:" + node_name;
+            const auto ptr_to_qname = doc_->allocate_string(node_qname.c_str());
+            const auto ptr_to_value = doc_->allocate_string(node_value.c_str());
 
             auto newnode = doc_->allocate_node(rapidxml::node_element);
             newnode->qname(ptr_to_qname, node_qname.length(), ptr_to_qname + 2);
@@ -7503,11 +7508,51 @@ namespace internal
                 auto parent = oldnode->parent();
                 parent->insert_node(oldnode, newnode);
                 parent->remove_node(oldnode);
+                return *oldnode;
             }
-            else
+
+            doc_->append_node(newnode);
+            return *newnode;
+        }
+
+        // Update an existing node with a set of attributes. If
+        // the node does not exist it is created. Note that if the node already
+        // exists, all extisting attributes will get removed and replaced by the
+        // given set.
+        rapidxml::xml_node<char>&
+        set_or_update(const std::string& node_name,
+                      const std::vector<attribute>& attributes)
+        {
+            using rapidxml::internal::compare;
+
+            auto oldnode = get_element_by_qname(*doc_, node_name.c_str(),
+                                                uri<>::microsoft::types());
+            const auto node_qname = "t:" + node_name;
+            const auto ptr_to_qname = doc_->allocate_string(node_qname.c_str());
+
+            auto newnode = doc_->allocate_node(rapidxml::node_element);
+            newnode->qname(ptr_to_qname, node_qname.length(), ptr_to_qname + 2);
+            newnode->namespace_uri(uri<>::microsoft::types(),
+                                   uri<>::microsoft::types_size);
+
+            for (auto& attrib : attributes)
             {
-                doc_->append_node(newnode);
+                const auto name = doc_->allocate_string(attrib.name.c_str());
+                const auto value = doc_->allocate_string(attrib.value.c_str());
+                auto attribute = doc_->allocate_attribute(name, value);
+                newnode->append_attribute(attribute);
             }
+
+            if (oldnode)
+            {
+                auto parent = oldnode->parent();
+                parent->insert_node(oldnode, newnode);
+                parent->remove_node(oldnode);
+                return *oldnode;
+            }
+
+            doc_->append_node(newnode);
+            return *newnode;
         }
 
         std::string to_string() const
@@ -9977,6 +10022,16 @@ namespace internal
              child = child->next_sibling())
         {
             func(*child);
+        }
+    }
+
+    template <typename Func>
+    inline void for_each_attribute(const rapidxml::xml_node<>& node, Func func)
+    {
+        for (auto attrib = node.first_attribute(); attrib;
+             attrib = attrib->next_attribute())
+        {
+            func(*attrib);
         }
     }
 
