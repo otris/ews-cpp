@@ -2007,7 +2007,7 @@ enum class response_code
 
     //! This error indicates that MAPI properties in the custom range,
     //! 0x8000 and greater, cannot be referenced by property tags. You must
-    //! use the EWS Managed API PropertySetIdproperty or the EWS
+    //! use the EWS Managed API PropertySetId property or the EWS
     //! ExtendedFieldURI element with the PropertySetId attribute.
     error_no_property_tag_for_custom_properties,
 
@@ -14323,11 +14323,6 @@ im_address::from_xml_element(const rapidxml::xml_node<char>& node)
 {
     using namespace internal;
     using rapidxml::internal::compare;
-
-    // <t:ImAddresses>
-    //  <Entry Key="ImAddress1">WOWMLGPRO</Entry>
-    //  <Entry Key="ImAddress2">xXSwaggerBoiXx</Entry>
-    // </t:ImAddresses>
 
     check(compare(node.local_name(), node.local_name_size(), "Entry",
                   strlen("Entry")),

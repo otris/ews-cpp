@@ -803,7 +803,7 @@ namespace rapidxml
 
         //! Allocates a char array of given size from the pool, and optionally
         //! copies a given string to it.
-        //! If the allocation request cannot be accomodated, this function will
+        //! If the allocation request cannot be accommodated, this function will
         //! throw <code>std::bad_alloc</code>.
         //! If exceptions are disabled by defining RAPIDXML_NO_EXCEPTIONS, this
         //! function
