@@ -5562,6 +5562,985 @@ namespace internal
     }
 } // namespace internal
 
+
+//! \brief Represents the unique identifiers of the time zones.
+//! These IDs are specific to windows and differ from the ISO
+//! time zone names.
+enum class time_zone
+{
+   none,
+   dateline_standard_time,
+   utc_minus_11,
+   aleutian_standard_time,
+   hawaiian_standard_time,
+   marquesas_standard_time,
+   alaskan_standard_time,
+   utc_minus_09,
+   pacific_standard_time_mexico,
+   utc_minus_08,
+   pacific_standard_time,
+   us_mountain_standard_time,
+   mountain_standard_time_mexico,
+   mountain_standard_time,
+   central_america_standard_time,
+   central_standard_time,
+   easter_island_standard_time,
+   central_standard_time_mexico,
+   canada_central_standard_time,
+   sa_pacific_standard_time,
+   eastern_standard_time_mexico,
+   eastern_standard_time,
+   haiti_standard_time,
+   cuba_standard_time,
+   us_eastern_standard_time,
+   turks_and_caicos_standard_time,
+   paraguay_standard_time,
+   atlantic_standard_time,
+   venezuela_standard_time,
+   central_brazilian_standard_time,
+   sa_western_standard_time,
+   pacific_sa_standard_time,
+   newfoundland_standard_time,
+   tocantins_standard_time,
+   e_south_america_standard_time,
+   sa_eastern_standard_time,
+   argentina_standard_time,
+   greenland_standard_time,
+   montevideo_standard_time,
+   magallanes_standard_time,
+   saint_pierre_standard_time,
+   bahia_standard_time,
+   utc_minus_02,
+   mid_minus_atlantic_standard_time,
+   azores_standard_time,
+   cape_verde_standard_time,
+   utc,
+   morocco_standard_time,
+   gmt_standard_time,
+   greenwich_standard_time,
+   w_europe_standard_time,
+   central_europe_standard_time,
+   romance_standard_time,
+   central_european_standard_time,
+   w_central_africa_standard_time,
+   jordan_standard_time,
+   gtb_standard_time,
+   middle_east_standard_time,
+   egypt_standard_time,
+   e_europe_standard_time,
+   syria_standard_time,
+   west_bank_standard_time,
+   south_africa_standard_time,
+   fle_standard_time,
+   israel_standard_time,
+   kaliningrad_standard_time,
+   sudan_standard_time,
+   libya_standard_time,
+   namibia_standard_time,
+   arabic_standard_time,
+   turkey_standard_time,
+   arab_standard_time,
+   belarus_standard_time,
+   russian_standard_time,
+   e_africa_standard_time,
+   iran_standard_time,
+   arabian_standard_time,
+   astrakhan_standard_time,
+   azerbaijan_standard_time,
+   russia_time_zone_3,
+   mauritius_standard_time,
+   saratov_standard_time,
+   georgian_standard_time,
+   caucasus_standard_time,
+   afghanistan_standard_time,
+   west_asia_standard_time,
+   ekaterinburg_standard_time,
+   pakistan_standard_time,
+   india_standard_time,
+   sri_lanka_standard_time,
+   nepal_standard_time,
+   central_asia_standard_time,
+   bangladesh_standard_time,
+   omsk_standard_time,
+   myanmar_standard_time,
+   se_asia_standard_time,
+   altai_standard_time,
+   w_mongolia_standard_time,
+   north_asia_standard_time,
+   n_central_asia_standard_time,
+   tomsk_standard_time,
+   china_standard_time,
+   north_asia_east_standard_time,
+   singapore_standard_time,
+   w_australia_standard_time,
+   taipei_standard_time,
+   ulaanbaatar_standard_time,
+   north_korea_standard_time,
+   aus_central_w_standard_time,
+   transbaikal_standard_time,
+   tokyo_standard_time,
+   korea_standard_time,
+   yakutsk_standard_time,
+   cen_australia_standard_time,
+   aus_central_standard_time,
+   e_australia_standard_time,
+   aus_eastern_standard_time,
+   west_pacific_standard_time,
+   tasmania_standard_time,
+   vladivostok_standard_time,
+   lord_howe_standard_time,
+   bougainville_standard_time,
+   russia_time_zone_10,
+   magadan_standard_time,
+   norfolk_standard_time,
+   sakhalin_standard_time,
+   central_pacific_standard_time,
+   russia_time_zone_11,
+   new_zealand_standard_time,
+   utc_plus_12,
+   fiji_standard_time,
+   kamchatka_standard_time,
+   chatham_islands_standard_time,
+   utc_plus_13,
+   tonga_standard_time,
+   samoa_standard_time,
+   line_islands_standard_time,
+};
+
+namespace internal
+{
+   inline std::string enum_to_str(time_zone tz)
+   {
+      switch (tz)
+      {
+      case time_zone::dateline_standard_time:
+         return "Dateline Standard Time";
+      case time_zone::utc_minus_11:
+         return "UTC-11";
+      case time_zone::aleutian_standard_time:
+         return "Aleutian Standard Time";
+      case time_zone::hawaiian_standard_time:
+         return "Hawaiian Standard Time";
+      case time_zone::marquesas_standard_time:
+         return "Marquesas Standard Time";
+      case time_zone::alaskan_standard_time:
+         return "Alaskan Standard Time";
+      case time_zone::utc_minus_09:
+         return "UTC-09";
+      case time_zone::pacific_standard_time_mexico:
+         return "Pacific Standard Time (Mexico)";
+      case time_zone::utc_minus_08:
+         return "UTC-08";
+      case time_zone::pacific_standard_time:
+         return "Pacific Standard Time";
+      case time_zone::us_mountain_standard_time:
+         return "US Mountain Standard Time";
+      case time_zone::mountain_standard_time_mexico:
+         return "Mountain Standard Time (Mexico)";
+      case time_zone::mountain_standard_time:
+         return "Mountain Standard Time";
+      case time_zone::central_america_standard_time:
+         return "Central America Standard Time";
+      case time_zone::central_standard_time:
+         return "Central Standard Time";
+      case time_zone::easter_island_standard_time:
+         return "Easter Island Standard Time";
+      case time_zone::central_standard_time_mexico:
+         return "Central Standard Time (Mexico)";
+      case time_zone::canada_central_standard_time:
+         return "Canada Central Standard Time";
+      case time_zone::sa_pacific_standard_time:
+         return "SA Pacific Standard Time";
+      case time_zone::eastern_standard_time_mexico:
+         return "Eastern Standard Time (Mexico)";
+      case time_zone::eastern_standard_time:
+         return "Eastern Standard Time";
+      case time_zone::haiti_standard_time:
+         return "Haiti Standard Time";
+      case time_zone::cuba_standard_time:
+         return "Cuba Standard Time";
+      case time_zone::us_eastern_standard_time:
+         return "US Eastern Standard Time";
+      case time_zone::turks_and_caicos_standard_time:
+         return "Turks And Caicos Standard Time";
+      case time_zone::paraguay_standard_time:
+         return "Paraguay Standard Time";
+      case time_zone::atlantic_standard_time:
+         return "Atlantic Standard Time";
+      case time_zone::venezuela_standard_time:
+         return "Venezuela Standard Time";
+      case time_zone::central_brazilian_standard_time:
+         return "Central Brazilian Standard Time";
+      case time_zone::sa_western_standard_time:
+         return "SA Western Standard Time";
+      case time_zone::pacific_sa_standard_time:
+         return "Pacific SA Standard Time";
+      case time_zone::newfoundland_standard_time:
+         return "Newfoundland Standard Time";
+      case time_zone::tocantins_standard_time:
+         return "Tocantins Standard Time";
+      case time_zone::e_south_america_standard_time:
+         return "E. South America Standard Time";
+      case time_zone::sa_eastern_standard_time:
+         return "SA Eastern Standard Time";
+      case time_zone::argentina_standard_time:
+         return "Argentina Standard Time";
+      case time_zone::greenland_standard_time:
+         return "Greenland Standard Time";
+      case time_zone::montevideo_standard_time:
+         return "Montevideo Standard Time";
+      case time_zone::magallanes_standard_time:
+         return "Magallanes Standard Time";
+      case time_zone::saint_pierre_standard_time:
+         return "Saint Pierre Standard Time";
+      case time_zone::bahia_standard_time:
+         return "Bahia Standard Time";
+      case time_zone::utc_minus_02:
+         return "UTC-02";
+      case time_zone::mid_minus_atlantic_standard_time:
+         return "Mid-Atlantic Standard Time";
+      case time_zone::azores_standard_time:
+         return "Azores Standard Time";
+      case time_zone::cape_verde_standard_time:
+         return "Cape Verde Standard Time";
+      case time_zone::utc:
+         return "UTC";
+      case time_zone::morocco_standard_time:
+         return "Morocco Standard Time";
+      case time_zone::gmt_standard_time:
+         return "GMT Standard Time";
+      case time_zone::greenwich_standard_time:
+         return "Greenwich Standard Time";
+      case time_zone::w_europe_standard_time:
+         return "W. Europe Standard Time";
+      case time_zone::central_europe_standard_time:
+         return "Central Europe Standard Time";
+      case time_zone::romance_standard_time:
+         return "Romance Standard Time";
+      case time_zone::central_european_standard_time:
+         return "Central European Standard Time";
+      case time_zone::w_central_africa_standard_time:
+         return "W. Central Africa Standard Time";
+      case time_zone::jordan_standard_time:
+         return "Jordan Standard Time";
+      case time_zone::gtb_standard_time:
+         return "GTB Standard Time";
+      case time_zone::middle_east_standard_time:
+         return "Middle East Standard Time";
+      case time_zone::egypt_standard_time:
+         return "Egypt Standard Time";
+      case time_zone::e_europe_standard_time:
+         return "E. Europe Standard Time";
+      case time_zone::syria_standard_time:
+         return "Syria Standard Time";
+      case time_zone::west_bank_standard_time:
+         return "West Bank Standard Time";
+      case time_zone::south_africa_standard_time:
+         return "South Africa Standard Time";
+      case time_zone::fle_standard_time:
+         return "FLE Standard Time";
+      case time_zone::israel_standard_time:
+         return "Israel Standard Time";
+      case time_zone::kaliningrad_standard_time:
+         return "Kaliningrad Standard Time";
+      case time_zone::sudan_standard_time:
+         return "Sudan Standard Time";
+      case time_zone::libya_standard_time:
+         return "Libya Standard Time";
+      case time_zone::namibia_standard_time:
+         return "Namibia Standard Time";
+      case time_zone::arabic_standard_time:
+         return "Arabic Standard Time";
+      case time_zone::turkey_standard_time:
+         return "Turkey Standard Time";
+      case time_zone::arab_standard_time:
+         return "Arab Standard Time";
+      case time_zone::belarus_standard_time:
+         return "Belarus Standard Time";
+      case time_zone::russian_standard_time:
+         return "Russian Standard Time";
+      case time_zone::e_africa_standard_time:
+         return "E. Africa Standard Time";
+      case time_zone::iran_standard_time:
+         return "Iran Standard Time";
+      case time_zone::arabian_standard_time:
+         return "Arabian Standard Time";
+      case time_zone::astrakhan_standard_time:
+         return "Astrakhan Standard Time";
+      case time_zone::azerbaijan_standard_time:
+         return "Azerbaijan Standard Time";
+      case time_zone::russia_time_zone_3:
+         return "Russia Time Zone 3";
+      case time_zone::mauritius_standard_time:
+         return "Mauritius Standard Time";
+      case time_zone::saratov_standard_time:
+         return "Saratov Standard Time";
+      case time_zone::georgian_standard_time:
+         return "Georgian Standard Time";
+      case time_zone::caucasus_standard_time:
+         return "Caucasus Standard Time";
+      case time_zone::afghanistan_standard_time:
+         return "Afghanistan Standard Time";
+      case time_zone::west_asia_standard_time:
+         return "West Asia Standard Time";
+      case time_zone::ekaterinburg_standard_time:
+         return "Ekaterinburg Standard Time";
+      case time_zone::pakistan_standard_time:
+         return "Pakistan Standard Time";
+      case time_zone::india_standard_time:
+         return "India Standard Time";
+      case time_zone::sri_lanka_standard_time:
+         return "Sri Lanka Standard Time";
+      case time_zone::nepal_standard_time:
+         return "Nepal Standard Time";
+      case time_zone::central_asia_standard_time:
+         return "Central Asia Standard Time";
+      case time_zone::bangladesh_standard_time:
+         return "Bangladesh Standard Time";
+      case time_zone::omsk_standard_time:
+         return "Omsk Standard Time";
+      case time_zone::myanmar_standard_time:
+         return "Myanmar Standard Time";
+      case time_zone::se_asia_standard_time:
+         return "SE Asia Standard Time";
+      case time_zone::altai_standard_time:
+         return "Altai Standard Time";
+      case time_zone::w_mongolia_standard_time:
+         return "W. Mongolia Standard Time";
+      case time_zone::north_asia_standard_time:
+         return "North Asia Standard Time";
+      case time_zone::n_central_asia_standard_time:
+         return "N. Central Asia Standard Time";
+      case time_zone::tomsk_standard_time:
+         return "Tomsk Standard Time";
+      case time_zone::china_standard_time:
+         return "China Standard Time";
+      case time_zone::north_asia_east_standard_time:
+         return "North Asia East Standard Time";
+      case time_zone::singapore_standard_time:
+         return "Singapore Standard Time";
+      case time_zone::w_australia_standard_time:
+         return "W. Australia Standard Time";
+      case time_zone::taipei_standard_time:
+         return "Taipei Standard Time";
+      case time_zone::ulaanbaatar_standard_time:
+         return "Ulaanbaatar Standard Time";
+      case time_zone::north_korea_standard_time:
+         return "North Korea Standard Time";
+      case time_zone::aus_central_w_standard_time:
+         return "Aus Central W. Standard Time";
+      case time_zone::transbaikal_standard_time:
+         return "Transbaikal Standard Time";
+      case time_zone::tokyo_standard_time:
+         return "Tokyo Standard Time";
+      case time_zone::korea_standard_time:
+         return "Korea Standard Time";
+      case time_zone::yakutsk_standard_time:
+         return "Yakutsk Standard Time";
+      case time_zone::cen_australia_standard_time:
+         return "Cen. Australia Standard Time";
+      case time_zone::aus_central_standard_time:
+         return "AUS Central Standard Time";
+      case time_zone::e_australia_standard_time:
+         return "E. Australia Standard Time";
+      case time_zone::aus_eastern_standard_time:
+         return "AUS Eastern Standard Time";
+      case time_zone::west_pacific_standard_time:
+         return "West Pacific Standard Time";
+      case time_zone::tasmania_standard_time:
+         return "Tasmania Standard Time";
+      case time_zone::vladivostok_standard_time:
+         return "Vladivostok Standard Time";
+      case time_zone::lord_howe_standard_time:
+         return "Lord Howe Standard Time";
+      case time_zone::bougainville_standard_time:
+         return "Bougainville Standard Time";
+      case time_zone::russia_time_zone_10:
+         return "Russia Time Zone 10";
+      case time_zone::magadan_standard_time:
+         return "Magadan Standard Time";
+      case time_zone::norfolk_standard_time:
+         return "Norfolk Standard Time";
+      case time_zone::sakhalin_standard_time:
+         return "Sakhalin Standard Time";
+      case time_zone::central_pacific_standard_time:
+         return "Central Pacific Standard Time";
+      case time_zone::russia_time_zone_11:
+         return "Russia Time Zone 11";
+      case time_zone::new_zealand_standard_time:
+         return "New Zealand Standard Time";
+      case time_zone::utc_plus_12:
+         return "UTC+12";
+      case time_zone::fiji_standard_time:
+         return "Fiji Standard Time";
+      case time_zone::kamchatka_standard_time:
+         return "Kamchatka Standard Time";
+      case time_zone::chatham_islands_standard_time:
+         return "Chatham Islands Standard Time";
+      case time_zone::utc_plus_13:
+         return "UTC+13";
+      case time_zone::tonga_standard_time:
+         return "Tonga Standard Time";
+      case time_zone::samoa_standard_time:
+         return "Samoa Standard Time";
+      case time_zone::line_islands_standard_time:
+         return "Line Islands Standard Time";
+      default:
+         throw exception("Bad enum value");
+      }
+   }
+
+   inline time_zone str_to_time_zone(const std::string& str)
+   {
+      if (str == "Dateline Standard Time")
+      {
+         return time_zone::dateline_standard_time;
+      }
+      if (str == "UTC-11")
+      {
+         return time_zone::utc_minus_11;
+      }
+      if (str == "Aleutian Standard Time")
+      {
+         return time_zone::aleutian_standard_time;
+      }
+      if (str == "Hawaiian Standard Time")
+      {
+         return time_zone::hawaiian_standard_time;
+      }
+      if (str == "Marquesas Standard Time")
+      {
+         return time_zone::marquesas_standard_time;
+      }
+      if (str == "Alaskan Standard Time")
+      {
+         return time_zone::alaskan_standard_time;
+      }
+      if (str == "UTC-09")
+      {
+         return time_zone::utc_minus_09;
+      }
+      if (str == "Pacific Standard Time (Mexico)")
+      {
+         return time_zone::pacific_standard_time_mexico;
+      }
+      if (str == "UTC-08")
+      {
+         return time_zone::utc_minus_08;
+      }
+      if (str == "Pacific Standard Time")
+      {
+         return time_zone::pacific_standard_time;
+      }
+      if (str == "US Mountain Standard Time")
+      {
+         return time_zone::us_mountain_standard_time;
+      }
+      if (str == "Mountain Standard Time (Mexico)")
+      {
+         return time_zone::mountain_standard_time_mexico;
+      }
+      if (str == "Mountain Standard Time")
+      {
+         return time_zone::mountain_standard_time;
+      }
+      if (str == "Central America Standard Time")
+      {
+         return time_zone::central_america_standard_time;
+      }
+      if (str == "Central Standard Time")
+      {
+         return time_zone::central_standard_time;
+      }
+      if (str == "Easter Island Standard Time")
+      {
+         return time_zone::easter_island_standard_time;
+      }
+      if (str == "Central Standard Time (Mexico)")
+      {
+         return time_zone::central_standard_time_mexico;
+      }
+      if (str == "Canada Central Standard Time")
+      {
+         return time_zone::canada_central_standard_time;
+      }
+      if (str == "SA Pacific Standard Time")
+      {
+         return time_zone::sa_pacific_standard_time;
+      }
+      if (str == "Eastern Standard Time (Mexico)")
+      {
+         return time_zone::eastern_standard_time_mexico;
+      }
+      if (str == "Eastern Standard Time")
+      {
+         return time_zone::eastern_standard_time;
+      }
+      if (str == "Haiti Standard Time")
+      {
+         return time_zone::haiti_standard_time;
+      }
+      if (str == "Cuba Standard Time")
+      {
+         return time_zone::cuba_standard_time;
+      }
+      if (str == "US Eastern Standard Time")
+      {
+         return time_zone::us_eastern_standard_time;
+      }
+      if (str == "Turks And Caicos Standard Time")
+      {
+         return time_zone::turks_and_caicos_standard_time;
+      }
+      if (str == "Paraguay Standard Time")
+      {
+         return time_zone::paraguay_standard_time;
+      }
+      if (str == "Atlantic Standard Time")
+      {
+         return time_zone::atlantic_standard_time;
+      }
+      if (str == "Venezuela Standard Time")
+      {
+         return time_zone::venezuela_standard_time;
+      }
+      if (str == "Central Brazilian Standard Time")
+      {
+         return time_zone::central_brazilian_standard_time;
+      }
+      if (str == "SA Western Standard Time")
+      {
+         return time_zone::sa_western_standard_time;
+      }
+      if (str == "Pacific SA Standard Time")
+      {
+         return time_zone::pacific_sa_standard_time;
+      }
+      if (str == "Newfoundland Standard Time")
+      {
+         return time_zone::newfoundland_standard_time;
+      }
+      if (str == "Tocantins Standard Time")
+      {
+         return time_zone::tocantins_standard_time;
+      }
+      if (str == "E. South America Standard Time")
+      {
+         return time_zone::e_south_america_standard_time;
+      }
+      if (str == "SA Eastern Standard Time")
+      {
+         return time_zone::sa_eastern_standard_time;
+      }
+      if (str == "Argentina Standard Time")
+      {
+         return time_zone::argentina_standard_time;
+      }
+      if (str == "Greenland Standard Time")
+      {
+         return time_zone::greenland_standard_time;
+      }
+      if (str == "Montevideo Standard Time")
+      {
+         return time_zone::montevideo_standard_time;
+      }
+      if (str == "Magallanes Standard Time")
+      {
+         return time_zone::magallanes_standard_time;
+      }
+      if (str == "Saint Pierre Standard Time")
+      {
+         return time_zone::saint_pierre_standard_time;
+      }
+      if (str == "Bahia Standard Time")
+      {
+         return time_zone::bahia_standard_time;
+      }
+      if (str == "UTC-02")
+      {
+         return time_zone::utc_minus_02;
+      }
+      if (str == "Mid-Atlantic Standard Time")
+      {
+         return time_zone::mid_minus_atlantic_standard_time;
+      }
+      if (str == "Azores Standard Time")
+      {
+         return time_zone::azores_standard_time;
+      }
+      if (str == "Cape Verde Standard Time")
+      {
+         return time_zone::cape_verde_standard_time;
+      }
+      if (str == "UTC")
+      {
+         return time_zone::utc;
+      }
+      if (str == "Morocco Standard Time")
+      {
+         return time_zone::morocco_standard_time;
+      }
+      if (str == "GMT Standard Time")
+      {
+         return time_zone::gmt_standard_time;
+      }
+      if (str == "Greenwich Standard Time")
+      {
+         return time_zone::greenwich_standard_time;
+      }
+      if (str == "W. Europe Standard Time")
+      {
+         return time_zone::w_europe_standard_time;
+      }
+      if (str == "Central Europe Standard Time")
+      {
+         return time_zone::central_europe_standard_time;
+      }
+      if (str == "Romance Standard Time")
+      {
+         return time_zone::romance_standard_time;
+      }
+      if (str == "Central European Standard Time")
+      {
+         return time_zone::central_european_standard_time;
+      }
+      if (str == "W. Central Africa Standard Time")
+      {
+         return time_zone::w_central_africa_standard_time;
+      }
+      if (str == "Jordan Standard Time")
+      {
+         return time_zone::jordan_standard_time;
+      }
+      if (str == "GTB Standard Time")
+      {
+         return time_zone::gtb_standard_time;
+      }
+      if (str == "Middle East Standard Time")
+      {
+         return time_zone::middle_east_standard_time;
+      }
+      if (str == "Egypt Standard Time")
+      {
+         return time_zone::egypt_standard_time;
+      }
+      if (str == "E. Europe Standard Time")
+      {
+         return time_zone::e_europe_standard_time;
+      }
+      if (str == "Syria Standard Time")
+      {
+         return time_zone::syria_standard_time;
+      }
+      if (str == "West Bank Standard Time")
+      {
+         return time_zone::west_bank_standard_time;
+      }
+      if (str == "South Africa Standard Time")
+      {
+         return time_zone::south_africa_standard_time;
+      }
+      if (str == "FLE Standard Time")
+      {
+         return time_zone::fle_standard_time;
+      }
+      if (str == "Israel Standard Time")
+      {
+         return time_zone::israel_standard_time;
+      }
+      if (str == "Kaliningrad Standard Time")
+      {
+         return time_zone::kaliningrad_standard_time;
+      }
+      if (str == "Sudan Standard Time")
+      {
+         return time_zone::sudan_standard_time;
+      }
+      if (str == "Libya Standard Time")
+      {
+         return time_zone::libya_standard_time;
+      }
+      if (str == "Namibia Standard Time")
+      {
+         return time_zone::namibia_standard_time;
+      }
+      if (str == "Arabic Standard Time")
+      {
+         return time_zone::arabic_standard_time;
+      }
+      if (str == "Turkey Standard Time")
+      {
+         return time_zone::turkey_standard_time;
+      }
+      if (str == "Arab Standard Time")
+      {
+         return time_zone::arab_standard_time;
+      }
+      if (str == "Belarus Standard Time")
+      {
+         return time_zone::belarus_standard_time;
+      }
+      if (str == "Russian Standard Time")
+      {
+         return time_zone::russian_standard_time;
+      }
+      if (str == "E. Africa Standard Time")
+      {
+         return time_zone::e_africa_standard_time;
+      }
+      if (str == "Iran Standard Time")
+      {
+         return time_zone::iran_standard_time;
+      }
+      if (str == "Arabian Standard Time")
+      {
+         return time_zone::arabian_standard_time;
+      }
+      if (str == "Astrakhan Standard Time")
+      {
+         return time_zone::astrakhan_standard_time;
+      }
+      if (str == "Azerbaijan Standard Time")
+      {
+         return time_zone::azerbaijan_standard_time;
+      }
+      if (str == "Russia Time Zone 3")
+      {
+         return time_zone::russia_time_zone_3;
+      }
+      if (str == "Mauritius Standard Time")
+      {
+         return time_zone::mauritius_standard_time;
+      }
+      if (str == "Saratov Standard Time")
+      {
+         return time_zone::saratov_standard_time;
+      }
+      if (str == "Georgian Standard Time")
+      {
+         return time_zone::georgian_standard_time;
+      }
+      if (str == "Caucasus Standard Time")
+      {
+         return time_zone::caucasus_standard_time;
+      }
+      if (str == "Afghanistan Standard Time")
+      {
+         return time_zone::afghanistan_standard_time;
+      }
+      if (str == "West Asia Standard Time")
+      {
+         return time_zone::west_asia_standard_time;
+      }
+      if (str == "Ekaterinburg Standard Time")
+      {
+         return time_zone::ekaterinburg_standard_time;
+      }
+      if (str == "Pakistan Standard Time")
+      {
+         return time_zone::pakistan_standard_time;
+      }
+      if (str == "India Standard Time")
+      {
+         return time_zone::india_standard_time;
+      }
+      if (str == "Sri Lanka Standard Time")
+      {
+         return time_zone::sri_lanka_standard_time;
+      }
+      if (str == "Nepal Standard Time")
+      {
+         return time_zone::nepal_standard_time;
+      }
+      if (str == "Central Asia Standard Time")
+      {
+         return time_zone::central_asia_standard_time;
+      }
+      if (str == "Bangladesh Standard Time")
+      {
+         return time_zone::bangladesh_standard_time;
+      }
+      if (str == "Omsk Standard Time")
+      {
+         return time_zone::omsk_standard_time;
+      }
+      if (str == "Myanmar Standard Time")
+      {
+         return time_zone::myanmar_standard_time;
+      }
+      if (str == "SE Asia Standard Time")
+      {
+         return time_zone::se_asia_standard_time;
+      }
+      if (str == "Altai Standard Time")
+      {
+         return time_zone::altai_standard_time;
+      }
+      if (str == "W. Mongolia Standard Time")
+      {
+         return time_zone::w_mongolia_standard_time;
+      }
+      if (str == "North Asia Standard Time")
+      {
+         return time_zone::north_asia_standard_time;
+      }
+      if (str == "N. Central Asia Standard Time")
+      {
+         return time_zone::n_central_asia_standard_time;
+      }
+      if (str == "Tomsk Standard Time")
+      {
+         return time_zone::tomsk_standard_time;
+      }
+      if (str == "China Standard Time")
+      {
+         return time_zone::china_standard_time;
+      }
+      if (str == "North Asia East Standard Time")
+      {
+         return time_zone::north_asia_east_standard_time;
+      }
+      if (str == "Singapore Standard Time")
+      {
+         return time_zone::singapore_standard_time;
+      }
+      if (str == "W. Australia Standard Time")
+      {
+         return time_zone::w_australia_standard_time;
+      }
+      if (str == "Taipei Standard Time")
+      {
+         return time_zone::taipei_standard_time;
+      }
+      if (str == "Ulaanbaatar Standard Time")
+      {
+         return time_zone::ulaanbaatar_standard_time;
+      }
+      if (str == "North Korea Standard Time")
+      {
+         return time_zone::north_korea_standard_time;
+      }
+      if (str == "Aus Central W. Standard Time")
+      {
+         return time_zone::aus_central_w_standard_time;
+      }
+      if (str == "Transbaikal Standard Time")
+      {
+         return time_zone::transbaikal_standard_time;
+      }
+      if (str == "Tokyo Standard Time")
+      {
+         return time_zone::tokyo_standard_time;
+      }
+      if (str == "Korea Standard Time")
+      {
+         return time_zone::korea_standard_time;
+      }
+      if (str == "Yakutsk Standard Time")
+      {
+         return time_zone::yakutsk_standard_time;
+      }
+      if (str == "Cen. Australia Standard Time")
+      {
+         return time_zone::cen_australia_standard_time;
+      }
+      if (str == "AUS Central Standard Time")
+      {
+         return time_zone::aus_central_standard_time;
+      }
+      if (str == "E. Australia Standard Time")
+      {
+         return time_zone::e_australia_standard_time;
+      }
+      if (str == "AUS Eastern Standard Time")
+      {
+         return time_zone::aus_eastern_standard_time;
+      }
+      if (str == "West Pacific Standard Time")
+      {
+         return time_zone::west_pacific_standard_time;
+      }
+      if (str == "Tasmania Standard Time")
+      {
+         return time_zone::tasmania_standard_time;
+      }
+      if (str == "Vladivostok Standard Time")
+      {
+         return time_zone::vladivostok_standard_time;
+      }
+      if (str == "Lord Howe Standard Time")
+      {
+         return time_zone::lord_howe_standard_time;
+      }
+      if (str == "Bougainville Standard Time")
+      {
+         return time_zone::bougainville_standard_time;
+      }
+      if (str == "Russia Time Zone 10")
+      {
+         return time_zone::russia_time_zone_10;
+      }
+      if (str == "Magadan Standard Time")
+      {
+         return time_zone::magadan_standard_time;
+      }
+      if (str == "Norfolk Standard Time")
+      {
+         return time_zone::norfolk_standard_time;
+      }
+      if (str == "Sakhalin Standard Time")
+      {
+         return time_zone::sakhalin_standard_time;
+      }
+      if (str == "Central Pacific Standard Time")
+      {
+         return time_zone::central_pacific_standard_time;
+      }
+      if (str == "Russia Time Zone 11")
+      {
+         return time_zone::russia_time_zone_11;
+      }
+      if (str == "New Zealand Standard Time")
+      {
+         return time_zone::new_zealand_standard_time;
+      }
+      if (str == "UTC+12")
+      {
+         return time_zone::utc_plus_12;
+      }
+      if (str == "Fiji Standard Time")
+      {
+         return time_zone::fiji_standard_time;
+      }
+      if (str == "Kamchatka Standard Time")
+      {
+         return time_zone::kamchatka_standard_time;
+      }
+      if (str == "Chatham Islands Standard Time")
+      {
+         return time_zone::chatham_islands_standard_time;
+      }
+      if (str == "UTC+13")
+      {
+         return time_zone::utc_plus_13;
+      }
+      if (str == "Tonga Standard Time")
+      {
+         return time_zone::tonga_standard_time;
+      }
+      if (str == "Samoa Standard Time")
+      {
+         return time_zone::samoa_standard_time;
+      }
+      if (str == "Line Islands Standard Time")
+      {
+         return time_zone::line_islands_standard_time;
+      }
+
+      throw exception("Unrecognized <TimeZone>");
+   }
+} // namespace internal
+
 //! \brief Defines the different values for the
 //! <tt>\<RequestServerVersion\></tt> element.
 enum class server_version
@@ -16607,10 +17586,32 @@ public:
         return occurrences;
     }
 
-    // TODO: issue #23
-    // <MeetingTimeZone/>
-    // <StartTimeZone/>
-    // <EndTimeZone/>
+    void set_start_time_zone(time_zone tz)
+    {
+       internal::xml_subtree::attribute id_attribute =
+         { "Id", internal::enum_to_str(tz) };
+       std::vector<internal::xml_subtree::attribute> attributes;
+       attributes.emplace_back(id_attribute);
+       xml().set_or_update("StartTimeZone", attributes);
+    }
+
+    void set_end_time_zone(time_zone tz)
+    {
+       internal::xml_subtree::attribute id_attribute =
+         { "Id", internal::enum_to_str(tz) };
+       std::vector<internal::xml_subtree::attribute> attributes;
+       attributes.emplace_back(id_attribute);
+       xml().set_or_update("EndTimeZone", attributes);
+    }
+
+    void set_meeting_time_zone(time_zone tz)
+    {
+       internal::xml_subtree::attribute id_attribute =
+         { "Id", internal::enum_to_str(tz) };
+       std::vector<internal::xml_subtree::attribute> attributes;
+       attributes.emplace_back(id_attribute);
+       xml().set_or_update("MeetingTimeZone", attributes);
+    }
 
     //! \brief Returns the type of conferencing that is performed with this
     //! calendar item.
@@ -18846,7 +19847,7 @@ public:
     basic_service(const std::string& server_uri, const std::string& domain,
                   const std::string& username, const std::string& password)
         : request_handler_(server_uri), server_version_("Exchange2013_SP1"),
-          impersonation_()
+          impersonation_(), time_zone_(time_zone::none)
     {
         request_handler_.set_method(RequestHandler::method::POST);
         request_handler_.set_content_type("text/xml; charset=utf-8");
@@ -18859,7 +19860,7 @@ public:
     basic_service(const std::string& server_uri,
                   const internal::credentials& creds)
         : request_handler_(server_uri), server_version_("Exchange2013_SP1"),
-          impersonation_()
+          impersonation_(), time_zone_(time_zone::none)
     {
         request_handler_.set_method(RequestHandler::method::POST);
         request_handler_.set_content_type("text/xml; charset=utf-8");
@@ -18871,6 +19872,20 @@ public:
     void set_request_server_version(server_version vers)
     {
         server_version_ = internal::enum_to_str(vers);
+    }
+
+    //! \brief Sets the time zone ID used in the header of the request
+    //! made by this service
+    void set_time_zone(const time_zone time_zone)
+    {
+       time_zone_ = time_zone;
+    }
+
+    //! \brief Returns the time zone ID currently used for the header
+    //! of the request made by this service
+    time_zone get_time_zone()
+    {
+       return time_zone_;
     }
 
     //! \brief Sets maximum time the request is allowed to take.
@@ -20008,6 +21023,7 @@ private:
     RequestHandler request_handler_;
     std::string server_version_;
     std::string impersonation_;
+    time_zone time_zone_;
 
     // Helper for doing requests. Adds the right headers, credentials, and
     // checks the response for faults.
@@ -20024,6 +21040,13 @@ private:
             soap_headers.emplace_back("<t:ExchangeImpersonation>" +
                                       impersonation_ +
                                       "</t:ExchangeImpersonation>");
+        }
+        if (time_zone_ != time_zone::none)
+        {
+           soap_headers.emplace_back("<t:TimeZoneContext>"
+                                     "<t:TimeZoneDefinition Id=\"" +
+                                     internal::enum_to_str(time_zone_) +
+                                     "\"/></t:TimeZoneContext>");
         }
 
         auto response = internal::make_raw_soap_request(
