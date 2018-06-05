@@ -946,7 +946,7 @@ TEST_F(CalendarItemTest, GetDurationProperty)
 TEST(OfflineCalendarItemTest, TimeZonePropertyInitialValue)
 {
     auto cal = ews::calendar_item();
-    EXPECT_TRUE(cal.get_timezone().empty());
+    EXPECT_TRUE(cal.get_time_zone().empty());
 }
 
 // <AppointmentReplyTime/>
