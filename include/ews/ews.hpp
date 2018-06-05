@@ -17586,7 +17586,7 @@ public:
         return occurrences;
     }
 
-	 //! Sets the time zone for the starting date and time
+    //! Sets the time zone for the starting date and time
     void set_start_time_zone(time_zone tz)
     {
        internal::xml_subtree::attribute id_attribute =
@@ -17596,16 +17596,20 @@ public:
        xml().set_or_update("StartTimeZone", attributes);
     }
 
-	 //! Returns the time zone for the starting date and time
+    //! Returns the time zone for the starting date and time
     time_zone get_start_time_zone()
     {
-       auto node = xml().get_node("StartTimeZone");
-       auto att = node->first_attribute("Id");
+       const auto val = xml().get_value_as_string("StartTimeZoneId");
+       if (!val.empty()) return internal::str_to_time_zone(val);
+
+       const auto node = xml().get_node("StartTimeZone");
+       if (!node) return time_zone::none;
+       const auto att = node->first_attribute("Id");
        if (!att) return time_zone::none;
        return internal::str_to_time_zone(att->value());
     }
 
-	 //! Sets the time zone of the ending date and time
+    //! Sets the time zone of the ending date and time
     void set_end_time_zone(time_zone tz)
     {
        internal::xml_subtree::attribute id_attribute =
@@ -17615,16 +17619,20 @@ public:
        xml().set_or_update("EndTimeZone", attributes);
     }
 
-	 //! Returns the time zone for the ending date and time
+    //! Returns the time zone for the ending date and time
     time_zone get_end_time_zone()
     {
-       auto node = xml().get_node("EndeTimeZone");
-       auto att = node->first_attribute("Id");
+       const auto val = xml().get_value_as_string("EndTimeZoneId");
+       if (!val.empty()) return internal::str_to_time_zone(val);
+       
+       const auto node = xml().get_node("EndTimeZone");
+       if (!node) return time_zone::none;
+       const auto att = node->first_attribute("Id");
        if (!att) return time_zone::none;
        return internal::str_to_time_zone(att->value());
     }
 
-	 //! Sets the time zone for the meeting date and time
+    //! Sets the time zone for the meeting date and time
     void set_meeting_time_zone(time_zone tz)
     {
        internal::xml_subtree::attribute id_attribute =
@@ -17634,11 +17642,15 @@ public:
        xml().set_or_update("MeetingTimeZone", attributes);
     }
 
-	 //! Returns the time zone for the meeting date and time
+    //! Returns the time zone for the meeting date and time
     time_zone get_meeting_time_zone()
     {
-       auto node = xml().get_node("MeetingTimeZone");
-       auto att = node->first_attribute("Id");
+       const auto val = xml().get_value_as_string("MeetingTimeZoneId");
+       if (!val.empty()) return internal::str_to_time_zone(val);
+
+       const auto node = xml().get_node("MeetingTimeZone");
+       if (!node) return time_zone::none;
+       const auto att = node->first_attribute("Id");
        if (!att) return time_zone::none;
        return internal::str_to_time_zone(att->value());
     }
