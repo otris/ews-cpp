@@ -11771,7 +11771,7 @@ static_assert(std::is_move_assignable<sync_folder_items_result>::value);
 //!
 //!     [-]CCYY-MM-DDThh:mm:ss[Z|(+|-)hh:mm]
 //!
-//! whereas the last part represents the timezone (as offset to UTC). The Z
+//! whereas the last part represents the time zone (as offset to UTC). The Z
 //! means Zulu time which is a fancy way of meaning UTC. Two examples of date
 //! strings are:
 //!
@@ -17444,8 +17444,8 @@ public:
     //! is fetched with EWS that were also created with EWS will always
     //! have an empty \<TimeZone/> property.
     //!
-    //! \sa get_meeting_timezone, set_meeting_timezone
-    std::string get_timezone() const
+    //! \sa get_meeting_time_zone, set_meeting_time_zone
+    std::string get_time_zone() const
     {
         return xml().get_value_as_string("TimeZone");
     }
