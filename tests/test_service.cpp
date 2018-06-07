@@ -222,6 +222,22 @@ TEST_F(SoapHeader, DefaultServerVersionIs2013_SP1)
               ews::server_version::exchange_2013_sp1);
 }
 
+TEST_F(SoapHeader, SpecifyTimeZone)
+{
+   auto& serv = service();
+   serv.set_time_zone(ews::time_zone::w_european_standard_time);
+   auto task = ews::task();
+   task.set_subject("Get some milk from the store");
+   serv.create_item(task);
+   auto request = get_last_request();
+   EXPECT_TRUE(request.header_contains(
+      "<t:TimeZoneContext>"
+      "<t:TimeZoneDefinition Id=\"W.Europe Standard Time\"/>"
+      "</t:TimeZoneContext>"));
+   EXPECT_EQ(serv.get_time_zone(),
+             ews::time_zone::w_european_standard_time);
+}
+
 TEST_F(SoapHeader, ImpersonateAsAnotherUser)
 {
     const auto someone = ews::connecting_sid(
