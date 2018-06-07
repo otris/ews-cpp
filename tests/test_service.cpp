@@ -225,7 +225,7 @@ TEST_F(SoapHeader, DefaultServerVersionIs2013_SP1)
 TEST_F(SoapHeader, SpecifyTimeZone)
 {
    auto& serv = service();
-   serv.set_time_zone(ews::time_zone::w_european_standard_time);
+   serv.set_time_zone(ews::time_zone::w_europe_standard_time);
    auto task = ews::task();
    task.set_subject("Get some milk from the store");
    serv.create_item(task);
@@ -235,7 +235,7 @@ TEST_F(SoapHeader, SpecifyTimeZone)
       "<t:TimeZoneDefinition Id=\"W.Europe Standard Time\"/>"
       "</t:TimeZoneContext>"));
    EXPECT_EQ(serv.get_time_zone(),
-             ews::time_zone::w_european_standard_time);
+             ews::time_zone::w_europe_standard_time);
 }
 
 TEST_F(SoapHeader, ImpersonateAsAnotherUser)
