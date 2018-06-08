@@ -232,7 +232,7 @@ TEST_F(SoapHeader, SpecifyTimeZone)
    auto request = get_last_request();
    EXPECT_TRUE(request.header_contains(
       "<t:TimeZoneContext>"
-      "<t:TimeZoneDefinition Id=\"W.Europe Standard Time\"/>"
+      "<t:TimeZoneDefinition Id=\"W. Europe Standard Time\"/>"
       "</t:TimeZoneContext>"));
    EXPECT_EQ(serv.get_time_zone(),
              ews::time_zone::w_europe_standard_time);
