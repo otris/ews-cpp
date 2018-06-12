@@ -8517,8 +8517,8 @@ namespace internal
             {
                 const auto name = doc_->allocate_string(attrib.name.c_str());
                 const auto value = doc_->allocate_string(attrib.value.c_str());
-                auto attribute = doc_->allocate_attribute(name, value);
-                newnode->append_attribute(attribute);
+                auto attr = doc_->allocate_attribute(name, value);
+                newnode->append_attribute(attr);
             }
 
             if (oldnode)
