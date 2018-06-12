@@ -18273,7 +18273,7 @@ namespace item_property_path
     static const property_path parent_folder_id = "item:ParentFolderId";
     static const property_path item_class = "item:ItemClass";
     static const property_path mime_content = "item:MimeContent";
-    static const property_path attachment = "item:Attachments";
+    static const property_path attachments = "item:Attachments";
     static const property_path subject = "item:Subject";
     static const property_path date_time_received = "item:DateTimeReceived";
     static const property_path size = "item:Size";
