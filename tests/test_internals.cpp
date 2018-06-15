@@ -383,11 +383,14 @@ TEST(InternalTest, UpdateElementAttribute)
         get_element_by_qname(doc, "CalendarItem", uri<>::microsoft::types());
     auto cont = xml_subtree(*calitem);
 
-    cont.set_or_update(
-        "StartTimeZone",
-        {{"Id", "W. Europe Standard Time"},
-         {"Name",
-          "(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna"}});
+    std::vector<xml_subtree::attribute> attrs;
+    xml_subtree::attribute a = {"Id", "W. Europe Standard Time"};
+    attrs.push_back(a);
+    a = {"Name",
+         "(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna"};
+    attrs.push_back(a);
+
+    cont.set_or_update("StartTimeZone", attrs);
 
     const auto node = cont.get_node("StartTimeZone");
     auto count = 0;
