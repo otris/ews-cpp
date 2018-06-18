@@ -384,11 +384,11 @@ TEST(InternalTest, UpdateElementAttribute)
     auto cont = xml_subtree(*calitem);
 
     std::vector<xml_subtree::attribute> attrs;
-    xml_subtree::attribute a = {"Id", "W. Europe Standard Time"};
-    attrs.push_back(a);
-    a = {"Name",
+    xml_subtree::attribute attr1 = {"Id", "W. Europe Standard Time"};
+    attrs.push_back(attr1);
+    xml_subtree::attribute attr2 = {"Name",
          "(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna"};
-    attrs.push_back(a);
+    attrs.push_back(attr2);
 
     cont.set_or_update("StartTimeZone", attrs);
 
