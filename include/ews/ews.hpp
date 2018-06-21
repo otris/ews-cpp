@@ -6841,7 +6841,7 @@ enum class free_busy_status
     //! The time slot is potentially filled
     tentative,
 
-    //! the time slot is filled and attempts by others to schedule a
+    //! The time slot is filled and attempts by others to schedule a
     //! meeting for this time period should be avoided by an application
     busy,
 
@@ -6851,7 +6851,13 @@ enum class free_busy_status
 
     //! Status is undetermined. You should not explicitly set this.
     //! However the Exchange store might return this value
-    no_data
+    no_data,
+
+    //! The time slot associated with the appointment appears as
+    //! working elsewhere. The WorkingElsewhere field is applicable for clients
+    //! that target Exchange Online and versions of Exchange starting with
+    //! Exchange Server 2013.
+    working_elsewhere
 };
 
 namespace internal
@@ -6870,6 +6876,8 @@ namespace internal
             return "OOF";
         case free_busy_status::no_data:
             return "NoData";
+        case free_busy_status::working_elsewhere:
+            return "WorkingElsewhere";
         default:
             throw exception("Bad enum value");
         }
@@ -17225,6 +17233,10 @@ public:
         if (val == "NoData")
         {
             return free_busy_status::no_data;
+        }
+        if (val == "WorkingElsewhere")
+        {
+            return free_busy_status::working_elsewhere;
         }
         throw exception("Unexpected <LegacyFreeBusyStatus>");
     }
