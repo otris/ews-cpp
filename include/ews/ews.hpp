@@ -8035,8 +8035,9 @@ namespace internal
 //! provide some form of transport layer security.
 //!
 //! However, basic authentication can be the correct choice for your
-//! application in some circumstances, e.g., for debugging purposes, if your
-//! application communicates via TLS encrypted HTTP.
+//! application in some circumstances, e.g., for debugging purposes or if you
+//! have a proxy in between that does not support NTLM, if your application
+//! communicates via TLS encrypted HTTP.
 class basic_credentials final : public internal::credentials
 {
 public:
