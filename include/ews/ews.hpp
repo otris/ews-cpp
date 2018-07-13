@@ -13169,6 +13169,12 @@ public:
         return categories;
     }
 
+    //! Sets the importance of the item
+    void set_importance(importance i)
+    {
+        xml().set_or_update("Importance", internal::enum_to_str(i));
+    }
+
     //! Returns the importance of this item
     importance get_importance() const
     {
