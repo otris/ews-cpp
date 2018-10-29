@@ -6722,6 +6722,55 @@ namespace internal
     }
 } // namespace internal
 
+//! Describes how attendees will be updated when a meeting changes
+enum class send_meeting_invitations_or_cancellations
+{
+    //! The calendar item is updated but updates are not sent to attendee
+    send_to_none,
+
+    //! The calendar item is updated and the meeting update is sent to all
+    //! attendees but is not saved in the Sent Items folder
+    send_only_to_all,
+
+    //! The calendar item is updated and the meeting update is sent only to
+    //! attendees that are affected by the change in the meeting
+    send_only_to_changed,
+
+    //! The calendar item is updated, the meeting update is sent to all
+    //! attendees, and a copy is saved in the Sent Items folder
+    send_to_all_and_save_copy,
+
+    //! The calendar item is updated, the meeting update is sent to all
+    //! attendees that are affected by the change in the meeting, and a copy is
+    //! saved in the Sent Items folder
+    send_to_changed_and_save_copy
+};
+
+namespace internal
+{
+    inline std::string
+    enum_to_str(send_meeting_invitations_or_cancellations val)
+    {
+        switch (val)
+        {
+        case send_meeting_invitations_or_cancellations::send_to_none:
+            return "SendToNone";
+        case send_meeting_invitations_or_cancellations::send_only_to_all:
+            return "SendOnlyToAll";
+        case send_meeting_invitations_or_cancellations::send_only_to_changed:
+            return "SendOnlyToChanged";
+        case send_meeting_invitations_or_cancellations::
+            send_to_all_and_save_copy:
+            return "SendToAllAndSaveCopy";
+        case send_meeting_invitations_or_cancellations::
+            send_to_changed_and_save_copy:
+            return "SendToChangedAndSaveCopy";
+        default:
+            throw exception("Bad enum value");
+        }
+    }
+} // namespace internal
+
 //! Describes how a meeting will be canceled
 enum class send_meeting_cancellations
 {
@@ -20756,19 +20805,19 @@ public:
     //! \param change The update to the item.
     //! \param resolution The conflict resolution mode during the update;
     //! normally AutoResolve.
-    //! \param cancellations Specifies how meeting updates are communicated to
-    //! other participants. Only meaningful (and mandatory) if the item is a
-    //! calendar item.
+    //! \param invitations_or_cancellations Specifies how meeting updates are
+    //! communicated to other participants. Only meaningful (and mandatory) if
+    //! the item is a calendar item.
     //!
     //! \return The updated item's new id and change_key upon success.
     item_id update_item(
         item_id id, update change,
         conflict_resolution resolution = conflict_resolution::auto_resolve,
-        send_meeting_cancellations cancellations =
-            send_meeting_cancellations::send_to_none)
+        send_meeting_invitations_or_cancellations invitations_or_cancellations =
+            send_meeting_invitations_or_cancellations::send_to_none)
     {
         return update_item_impl(std::move(id), std::move(change), resolution,
-                                cancellations, folder_id());
+                                invitations_or_cancellations, folder_id());
     }
 
     //! \brief Update an existing item's property in the specified folder.
@@ -20781,21 +20830,20 @@ public:
     //! \param change The update to the item.
     //! \param resolution The conflict resolution mode during the update;
     //! normally AutoResolve.
-    //! \param cancellations Specifies how meeting updates are communicated to
-    //! other participants. Only meaningful (and mandatory) if the item is a
-    //! calendar item.
-    //! \param folder Specified the target folder for this operation. This is
-    //! useful if you want to gain implicit delegate access to another user's
-    //! items.
+    //! \param invitations_or_cancellations Specifies how meeting updates are
+    //! communicated to other participants. Only meaningful (and mandatory) if
+    //! the item is a calendar item. \param folder Specified the target folder
+    //! for this operation. This is useful if you want to gain implicit delegate
+    //! access to another user's items.
     //!
     //! \return The updated item's new id and change_key upon success.
-    item_id update_item(item_id id, update change,
-                        conflict_resolution resolution,
-                        send_meeting_cancellations cancellations,
-                        const folder_id& folder)
+    item_id update_item(
+        item_id id, update change, conflict_resolution resolution,
+        send_meeting_invitations_or_cancellations invitations_or_cancellations,
+        const folder_id& folder)
     {
         return update_item_impl(std::move(id), std::move(change), resolution,
-                                cancellations, folder);
+                                invitations_or_cancellations, folder);
     }
 
     //! \brief Update multiple properties of an existing item.
@@ -20807,18 +20855,19 @@ public:
     //! \param changes A list of updates to the item.
     //! \param resolution The conflict resolution mode during the update;
     //! normally AutoResolve.
-    //! \param cancellations Specifies how meeting updates are communicated to
-    //! other participants. Only meaningful if the item is a calendar item.
+    //! \param invitations_or_cancellations Specifies how meeting updates are
+    //! communicated to other participants. Only meaningful if the item is a
+    //! calendar item.
     //!
     //! \return The updated item's new id and change_key upon success.
     item_id update_item(
         item_id id, const std::vector<update>& changes,
         conflict_resolution resolution = conflict_resolution::auto_resolve,
-        send_meeting_cancellations cancellations =
-            send_meeting_cancellations::send_to_none)
+        send_meeting_invitations_or_cancellations invitations_or_cancellations =
+            send_meeting_invitations_or_cancellations::send_to_none)
     {
         return update_item_impl(std::move(id), changes, resolution,
-                                cancellations, folder_id());
+                                invitations_or_cancellations, folder_id());
     }
 
     //! \brief Update multiple properties of an existing item in the specified
@@ -20831,20 +20880,21 @@ public:
     //! \param changes A list of updates to the item.
     //! \param resolution The conflict resolution mode during the update;
     //! normally AutoResolve.
-    //! \param cancellations Specifies how meeting updates are communicated to
-    //! other participants. Only meaningful if the item is a calendar item.
-    //! \param folder Specified the target folder for this operation. This is
-    //! useful if you want to gain implicit delegate access to another user's
-    //! items.
+    //! \param invitations_or_cancellations Specifies how meeting updates are
+    //! communicated to other participants. Only meaningful if the item is a
+    //! calendar item. \param folder Specified the target folder for this
+    //! operation. This is useful if you want to gain implicit delegate access
+    //! to another user's items.
     //!
     //! \return The updated item's new id and change_key upon success.
-    item_id update_item(item_id id, const std::vector<update>& changes,
-                        conflict_resolution resolution,
-                        send_meeting_cancellations cancellations,
-                        const folder_id& folder)
+    item_id update_item(
+        item_id id, const std::vector<update>& changes,
+        conflict_resolution resolution,
+        send_meeting_invitations_or_cancellations invitations_or_cancellations,
+        const folder_id& folder)
     {
         return update_item_impl(std::move(id), changes, resolution,
-                                cancellations, folder);
+                                invitations_or_cancellations, folder);
     }
 
     //! \brief Add new delegates to given mailbox
@@ -21703,10 +21753,10 @@ private:
         return res;
     }
 
-    item_id update_item_impl(item_id id, update change,
-                             conflict_resolution resolution,
-                             send_meeting_cancellations cancellations,
-                             const folder_id& folder)
+    item_id update_item_impl(
+        item_id id, update change, conflict_resolution resolution,
+        send_meeting_invitations_or_cancellations invitations_or_cancellations,
+        const folder_id& folder)
     {
         std::stringstream sstr;
         sstr << "<m:UpdateItem "
@@ -21714,7 +21764,7 @@ private:
                 "ConflictResolution=\""
              << internal::enum_to_str(resolution)
              << "\" SendMeetingInvitationsOrCancellations=\""
-             << internal::enum_to_str(cancellations) + "\">";
+             << internal::enum_to_str(invitations_or_cancellations) + "\">";
 
         if (folder.valid())
         {
@@ -21741,10 +21791,11 @@ private:
         return response_message.items().front();
     }
 
-    item_id update_item_impl(item_id id, const std::vector<update>& changes,
-                             conflict_resolution resolution,
-                             send_meeting_cancellations cancellations,
-                             const folder_id& folder)
+    item_id
+    update_item_impl(item_id id, const std::vector<update>& changes,
+                     conflict_resolution resolution,
+                     send_meeting_invitations_or_cancellations cancellations,
+                     const folder_id& folder)
     {
         std::stringstream sstr;
         sstr << "<m:UpdateItem "
