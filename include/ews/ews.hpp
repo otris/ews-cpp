@@ -21243,8 +21243,10 @@ private:
         std::stringstream sstr;
         sstr << "<m:SyncFolderItems>"
                 "<m:ItemShape>"
-             << internal::enum_to_str(ews::base_shape::id_only)
-             << "</m:ItemShape>"
+                "<t:BaseShape>"
+             << internal::enum_to_str(base_shape::id_only)
+             << "</t:BaseShape>"
+                "</m:ItemShape>"
                 "<m:SyncFolderId>"
              << folder_id.to_xml() << "</m:SyncFolderId>";
         if (!sync_state.empty())
