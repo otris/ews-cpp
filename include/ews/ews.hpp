@@ -11753,6 +11753,65 @@ namespace internal
     };
 } // namespace internal
 
+class sync_folder_hierarchy_result final
+    : public internal::response_message_base
+{
+public:
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
+    // implemented below
+    static sync_folder_hierarchy_result parse(internal::http_response&&);
+#endif
+
+    const std::string& get_sync_state() const EWS_NOEXCEPT
+    {
+        return sync_state_;
+    }
+
+    const std::vector<folder>& get_created_folders() const EWS_NOEXCEPT
+    {
+        return created_folders_;
+    }
+
+    const std::vector<folder>& get_updated_folders() const EWS_NOEXCEPT
+    {
+        return updated_folders_;
+    }
+
+    const std::vector<folder>& get_deleted_folders() const EWS_NOEXCEPT
+    {
+        return deleted_folders_;
+    }
+
+    bool get_includes_last_folder_in_range() const EWS_NOEXCEPT
+    {
+        return includes_last_folder_in_range_;
+    }
+
+private:
+    explicit sync_folder_hierarchy_result(internal::response_result&& res)
+        : response_message_base(std::move(res)), sync_state_(),
+          created_folders_(), updated_folders_(), deleted_folders_(),
+          includes_last_folder_in_range_(false)
+    {
+    }
+
+    std::string sync_state_;
+    std::vector<folder> created_folders_;
+    std::vector<folder> updated_folders_;
+    std::vector<folder> deleted_folders_;
+    bool includes_last_folder_in_range_;
+};
+
+#if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
+    defined(EWS_HAS_CXX17_STATIC_ASSERT)
+static_assert(
+    !std::is_default_constructible<sync_folder_hierarchy_result>::value, "");
+static_assert(std::is_copy_constructible<sync_folder_hierarchy_result>::value);
+static_assert(std::is_copy_assignable<sync_folder_hierarchy_result>::value);
+static_assert(std::is_move_constructible<sync_folder_hierarchy_result>::value);
+static_assert(std::is_move_assignable<sync_folder_hierarchy_result>::value);
+#endif
+
 class sync_folder_items_result final : public internal::response_message_base
 {
 public:
@@ -20077,6 +20136,20 @@ public:
         return response_message.items();
     }
 
+    //! Synchronizes the folder hierarchy in the Exchange store.
+    sync_folder_hierarchy_result
+    sync_folder_hierarchy(const folder_id& folder_id)
+    {
+        return sync_folder_hierarchy(folder_id, "");
+    }
+
+    sync_folder_hierarchy_result
+    sync_folder_hierarchy(const folder_id& folder_id,
+                          const std::string& sync_state)
+    {
+        return sync_folder_hierarchy_impl(folder_id, sync_state);
+    }
+
     //! Synchronizes a folder in the Exchange store.
     sync_folder_items_result sync_folder_items(const folder_id& folder_id,
                                                int max_changes_returned = 512)
@@ -21236,6 +21309,33 @@ private:
         }
     }
 
+    sync_folder_hierarchy_result
+    sync_folder_hierarchy_impl(const folder_id& folder_id,
+                               const std::string& sync_state)
+    {
+        std::stringstream sstr;
+        sstr << "<m:SyncFolderHierarchy>"
+                "<m:FolderShape>"
+                "<t:BaseShape>"
+             << internal::enum_to_str(base_shape::default_shape)
+             << "</t:BaseShape>"
+                "</m:FolderShape>"
+                "<m:SyncFolderId>"
+             << folder_id.to_xml() << "</m:SyncFolderId>";
+        if (!sync_state.empty())
+        {
+            sstr << "<m:SyncState>" << sync_state << "</m:SyncState>";
+        }
+        sstr << "</m:SyncFolderHierarchy>";
+
+        auto response = request(sstr.str());
+        const auto response_message =
+            sync_folder_hierarchy_result::parse(std::move(response));
+        check(!response_message.get_sync_state().empty(),
+              "Expected at least a sync state");
+        return response_message;
+    }
+
     sync_folder_items_result sync_folder_items_impl(
         const folder_id& folder_id, const std::string& sync_state,
         std::vector<item_id> ignored_items, int max_changes_returned = 512)
@@ -21983,6 +22083,91 @@ inline void ntlm_credentials::certify(internal::http_request* request) const
     request->set_option(CURLOPT_USERPWD, login.c_str());
     request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
 }
+
+#ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
+inline sync_folder_hierarchy_result
+sync_folder_hierarchy_result::parse(internal::http_response&& response)
+{
+    using rapidxml::internal::compare;
+
+    const auto doc = parse_response(std::move(response));
+    auto elem = internal::get_element_by_qname(
+        *doc, "SyncFolderHierarchyResponseMessage",
+        internal::uri<>::microsoft::messages());
+
+    check(elem, "Expected <SyncFolderHierarchyResponseMessage>");
+    auto result = internal::parse_response_class_and_code(*elem);
+    if (result.cls == response_class::error)
+    {
+        throw exchange_error(result);
+    }
+
+    auto sync_state_elem = elem->first_node_ns(
+        internal::uri<>::microsoft::messages(), "SyncState");
+    check(sync_state_elem, "Expected <SyncState> element");
+    auto sync_state =
+        std::string(sync_state_elem->value(), sync_state_elem->value_size());
+
+    auto includes_last_folder_in_range_elem = elem->first_node_ns(
+        internal::uri<>::microsoft::messages(), "IncludesLastFolderInRange");
+    check(includes_last_folder_in_range_elem,
+          "Expected <IncludesLastFolderInRange> element");
+    auto includes_last_folder_in_range = rapidxml::internal::compare(
+        includes_last_folder_in_range_elem->value(),
+        includes_last_folder_in_range_elem->value_size(), "true",
+        strlen("true"));
+
+    auto changes_elem =
+        elem->first_node_ns(internal::uri<>::microsoft::messages(), "Changes");
+    check(changes_elem, "Expected <Changes> element");
+    std::vector<folder> created_folders;
+    std::vector<folder> updated_folders;
+    std::vector<folder> deleted_folders;
+    internal::for_each_child_node(
+        *changes_elem, [&created_folders, &updated_folders, &deleted_folders](
+                           const rapidxml::xml_node<>& item_elem) {
+            if (compare(item_elem.local_name(), item_elem.local_name_size(),
+                        "Create", strlen("Create")))
+            {
+                const auto item_id_elem = item_elem.first_node_ns(
+                    internal::uri<>::microsoft::types(), "Folder");
+                check(item_id_elem, "Expected <Folder> element");
+                const auto folder = folder::from_xml_element(*item_id_elem);
+                created_folders.emplace_back(folder);
+            }
+
+            if (compare(item_elem.local_name(), item_elem.local_name_size(),
+                        "Update", strlen("Update")))
+            {
+                const auto item_id_elem = item_elem.first_node_ns(
+                    internal::uri<>::microsoft::types(), "Folder");
+                check(item_id_elem, "Expected <Folder> element");
+                const auto folder = folder::from_xml_element(*item_id_elem);
+                updated_folders.emplace_back(folder);
+            }
+
+            if (compare(item_elem.local_name(), item_elem.local_name_size(),
+                        "Delete", strlen("Delete")))
+            {
+                const auto item_id_elem = item_elem.first_node_ns(
+                    internal::uri<>::microsoft::types(), "FolderId");
+                check(item_id_elem, "Expected <Folder> element");
+                const auto folder = folder_id::from_xml_element(*item_id_elem);
+                deleted_folders.emplace_back(folder);
+            }
+        });
+
+    sync_folder_hierarchy_result response_message(std::move(result));
+    response_message.sync_state_ = std::move(sync_state);
+    response_message.created_folders_ = std::move(created_folders);
+    response_message.updated_folders_ = std::move(updated_folders);
+    response_message.deleted_folders_ = std::move(deleted_folders);
+    response_message.includes_last_folder_in_range_ =
+        includes_last_folder_in_range;
+
+    return response_message;
+}
+#endif
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
 inline sync_folder_items_result
