@@ -11777,9 +11777,9 @@ public:
         return updated_folders_;
     }
 
-    const std::vector<folder>& get_deleted_folders() const EWS_NOEXCEPT
+    const std::vector<folder_id>& get_deleted_folder_ids() const EWS_NOEXCEPT
     {
-        return deleted_folders_;
+        return deleted_folder_ids_;
     }
 
     bool get_includes_last_folder_in_range() const EWS_NOEXCEPT
@@ -11790,7 +11790,7 @@ public:
 private:
     explicit sync_folder_hierarchy_result(internal::response_result&& res)
         : response_message_base(std::move(res)), sync_state_(),
-          created_folders_(), updated_folders_(), deleted_folders_(),
+          created_folders_(), updated_folders_(), deleted_folder_ids_(),
           includes_last_folder_in_range_(false)
     {
     }
@@ -11798,7 +11798,7 @@ private:
     std::string sync_state_;
     std::vector<folder> created_folders_;
     std::vector<folder> updated_folders_;
-    std::vector<folder> deleted_folders_;
+    std::vector<folder_id> deleted_folder_ids_;
     bool includes_last_folder_in_range_;
 };
 
@@ -22122,38 +22122,40 @@ sync_folder_hierarchy_result::parse(internal::http_response&& response)
     check(changes_elem, "Expected <Changes> element");
     std::vector<folder> created_folders;
     std::vector<folder> updated_folders;
-    std::vector<folder> deleted_folders;
+    std::vector<folder_id> deleted_folder_ids;
     internal::for_each_child_node(
-        *changes_elem, [&created_folders, &updated_folders, &deleted_folders](
-                           const rapidxml::xml_node<>& item_elem) {
+        *changes_elem,
+        [&created_folders, &updated_folders,
+         &deleted_folder_ids](const rapidxml::xml_node<>& item_elem) {
             if (compare(item_elem.local_name(), item_elem.local_name_size(),
                         "Create", strlen("Create")))
             {
-                const auto item_id_elem = item_elem.first_node_ns(
+                const auto folder_elem = item_elem.first_node_ns(
                     internal::uri<>::microsoft::types(), "Folder");
-                check(item_id_elem, "Expected <Folder> element");
-                const auto folder = folder::from_xml_element(*item_id_elem);
+                check(folder_elem, "Expected <Folder> element");
+                const auto folder = folder::from_xml_element(*folder_elem);
                 created_folders.emplace_back(folder);
             }
 
             if (compare(item_elem.local_name(), item_elem.local_name_size(),
                         "Update", strlen("Update")))
             {
-                const auto item_id_elem = item_elem.first_node_ns(
+                const auto folder_elem = item_elem.first_node_ns(
                     internal::uri<>::microsoft::types(), "Folder");
-                check(item_id_elem, "Expected <Folder> element");
-                const auto folder = folder::from_xml_element(*item_id_elem);
+                check(folder_elem, "Expected <Folder> element");
+                const auto folder = folder::from_xml_element(*folder_elem);
                 updated_folders.emplace_back(folder);
             }
 
             if (compare(item_elem.local_name(), item_elem.local_name_size(),
                         "Delete", strlen("Delete")))
             {
-                const auto item_id_elem = item_elem.first_node_ns(
+                const auto folder_id_elem = item_elem.first_node_ns(
                     internal::uri<>::microsoft::types(), "FolderId");
-                check(item_id_elem, "Expected <Folder> element");
-                const auto folder = folder_id::from_xml_element(*item_id_elem);
-                deleted_folders.emplace_back(folder);
+                check(folder_id_elem, "Expected <Folder> element");
+                const auto folder =
+                    folder_id::from_xml_element(*folder_id_elem);
+                deleted_folder_ids.emplace_back(folder);
             }
         });
 
@@ -22161,7 +22163,7 @@ sync_folder_hierarchy_result::parse(internal::http_response&& response)
     response_message.sync_state_ = std::move(sync_state);
     response_message.created_folders_ = std::move(created_folders);
     response_message.updated_folders_ = std::move(updated_folders);
-    response_message.deleted_folders_ = std::move(deleted_folders);
+    response_message.deleted_folder_ids_ = std::move(deleted_folder_ids);
     response_message.includes_last_folder_in_range_ =
         includes_last_folder_in_range;
 
