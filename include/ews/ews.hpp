@@ -21432,13 +21432,14 @@ private:
                 "</m:GetFolder>";
 
         auto response = request(sstr.str());
-        const auto response_messages =
+        const auto response_message =
             internal::folder_response_message::parse(std::move(response));
-        if (!response_messages.success())
+        if (!response_message.success())
         {
-            throw exchange_error(response_messages.first_error_or_warning());
+            throw exchange_error(response_message.first_error_or_warning());
         }
-        return response_messages.items();
+        check(!response_message.items().empty(), "Expected at least one item");
+        return response_message.items().front();
     }
 
     std::vector<folder> get_folders_impl(const std::vector<folder_id>& ids,
