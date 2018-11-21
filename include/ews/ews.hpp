@@ -12976,6 +12976,14 @@ public:
         return std::stoi(xml().get_value_as_string("ChildFolderCount"));
     }
 
+    //! Returns the id of the parent folder
+    folder_id get_parent_folder_id() const
+    {
+        auto parent_id_node = xml().get_node("ParentFolderId");
+        check(parent_id_node, "Expected <ParentFolderId>");
+        return folder_id::from_xml_element(*parent_id_node);
+    }
+
     //! Returns the number of unread items in this folder
     int get_unread_count() const
     {
