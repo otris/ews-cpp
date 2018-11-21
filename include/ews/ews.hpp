@@ -20193,7 +20193,7 @@ public:
     folder get_folder(const folder_id& id,
                       const std::vector<property_path>& additional_properties)
     {
-        return get_folder_impl(id, base_shape::default_shape,
+        return get_folder_impl(id, base_shape::all_properties,
                                additional_properties);
     }
 
