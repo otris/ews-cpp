@@ -9649,7 +9649,7 @@ public:
     static folder_id from_xml_element(const rapidxml::xml_node<>& elem)
     {
         auto id_attr = elem.first_attribute("Id");
-        check(id_attr, "Expected <ParentFolderId> to have an Id attribute");
+        check(id_attr, "Expected <Id> to have an Id attribute");
         auto id = std::string(id_attr->value(), id_attr->value_size());
 
         std::string change_key;
