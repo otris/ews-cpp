@@ -21024,7 +21024,7 @@ public:
     //! \return The updated folder's new id and change_key upon success.
     folder_id update_folder(folder_id folder_id, update change)
     {
-        return update_item_impl(std::move(folder_id), std::move(change));
+        return update_folder_impl(std::move(folder_id), std::move(change));
     }
 
     //! \brief Update multiple properties of an existing folder.
