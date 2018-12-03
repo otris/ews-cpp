@@ -11360,6 +11360,63 @@ namespace internal
         }
     };
 
+    class response_message_with_item_ids final
+    {
+    public:
+        typedef std::tuple<response_class, response_code, std::vector<item_id>>
+            response_message;
+
+        std::vector<item_id> items() const
+        {
+            std::vector<item_id> items;
+            items.reserve(messages_.size()); // Seems like there is always one
+                                             // item per message
+            for (const auto& msg : messages_)
+            {
+                const auto& msg_items = std::get<2>(msg);
+                std::copy(begin(msg_items), end(msg_items),
+                          std::back_inserter(items));
+            }
+            return items;
+        }
+
+        bool success() const
+        {
+            // Consequently, this means we're aborting here because of a
+            // warning. Is this desired? Don't think so. At least it is
+            // consistent with response_message_base::success().
+
+            return std::all_of(begin(messages_), end(messages_),
+                               [](const response_message& msg) {
+                                   return std::get<0>(msg) ==
+                                          response_class::success;
+                               });
+        }
+
+        response_code first_error_or_warning() const
+        {
+            auto it = std::find_if_not(begin(messages_), end(messages_),
+                                       [](const response_message& msg) {
+                                           return std::get<0>(msg) ==
+                                                  response_class::success;
+                                       });
+            return it == end(messages_) ? response_code::no_error
+                                        : std::get<1>(*it);
+        }
+
+        // implemented below
+        static response_message_with_item_ids parse(http_response&&);
+
+    private:
+        explicit response_message_with_item_ids(
+            std::vector<response_message>&& messages)
+            : messages_(std::move(messages))
+        {
+        }
+
+        std::vector<response_message> messages_;
+    };
+
     template <typename ItemType> class item_response_messages final
     {
     public:
@@ -21042,6 +21099,29 @@ public:
         return update_folder_impl(std::move(folder_id), changes);
     }
 
+    //! \brief Moves one items to a folder.
+    //!
+    //! \param item The id of the item you want to move.
+    //! \param folder_id The id of the target folder.
+    //!
+    //! \return The new item_id of the item that has been moved.
+    item_id move_item(item_id item, const folder_id& folder)
+    {
+        return move_item_impl(std::move(item), folder);
+    }
+
+    //! \brief Moves one or more items to a folder.
+    //!
+    //! \param items A list of item_ids that shall be moved.
+    //! \param folder_id The id of the target folder.
+    //!
+    //! \return A vector of new item_ids of the items that have been moved.
+    std::vector<item_id> move_item(const std::vector<item_id>& items,
+                                   const folder_id& folder)
+    {
+        return move_item_impl(items, folder);
+    }
+
     //! \brief Add new delegates to given mailbox
     std::vector<delegate_user>
     add_delegate(const mailbox& mailbox,
@@ -22067,6 +22147,61 @@ private:
         return response_message.items().front();
     }
 
+    item_id move_item_impl(item_id item, const folder_id& folder)
+    {
+        std::stringstream sstr;
+        sstr << "<m:MoveItem>"
+                "<m:ToFolderId>"
+             << folder.to_xml()
+             << "</m:ToFolderId>"
+                "<m:ItemIds>"
+             << item.to_xml()
+             << "</m:ItemIds>"
+                "</m:MoveItem>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::response_message_with_item_ids::parse(
+                std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        check(!response_messages.items().empty(), "Expected at least one item");
+        return response_messages.items().front();
+    }
+
+    std::vector<item_id> move_item_impl(const std::vector<item_id>& items,
+                                        const folder_id& folder)
+    {
+        std::stringstream sstr;
+        sstr << "<m:MoveItem>"
+                "<m:ToFolderId>"
+             << folder.to_xml()
+             << "</m:ToFolderId>"
+                "<m:ItemIds>";
+
+        for (const auto& item : items)
+        {
+            sstr << item.to_xml();
+        }
+
+        sstr << "</m:ItemIds>"
+                "</m:MoveItem>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::response_message_with_item_ids::parse(
+                std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        check(!response_messages.items().empty(), "Expected at least one item");
+
+        return response_messages.items();
+    }
+
     resolution_set
     resolve_names_impl(const std::string& name,
                        const std::vector<folder_id>& parent_folder_ids,
@@ -22719,6 +22854,43 @@ namespace internal
                 items.emplace_back(ItemType::from_xml_element(item_elem));
             });
         return get_item_response_message(std::move(result), std::move(items));
+    }
+
+    inline response_message_with_item_ids
+    response_message_with_item_ids::parse(http_response&& response)
+    {
+        const auto doc = parse_response(std::move(response));
+
+        auto response_messages = get_element_by_qname(
+            *doc, "ResponseMessages", uri<>::microsoft::messages());
+        check(response_messages, "Expected <ResponseMessages> node");
+
+        std::vector<response_message_with_item_ids::response_message> messages;
+        for_each_child_node(
+            *response_messages, [&](const rapidxml::xml_node<>& node) {
+                auto result = parse_response_class_and_code(node);
+
+                auto items_elem =
+                    node.first_node_ns(uri<>::microsoft::messages(), "Items");
+                check(items_elem, "Expected <Items> element");
+
+                auto items = std::vector<item_id>();
+                for_each_child_node(
+                    *items_elem,
+                    [&items](const rapidxml::xml_node<>& item_elem) {
+                        for_each_child_node(
+                            item_elem,
+                            [&items](const rapidxml::xml_node<>& item_id) {
+                                items.emplace_back(
+                                    item_id::from_xml_element(item_id));
+                            });
+                    });
+
+                messages.emplace_back(
+                    std::make_tuple(result.cls, result.code, std::move(items)));
+            });
+
+        return response_message_with_item_ids(std::move(messages));
     }
 
     template <typename ItemType>
