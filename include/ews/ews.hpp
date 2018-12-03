@@ -21099,12 +21099,12 @@ public:
         return update_folder_impl(std::move(folder_id), changes);
     }
 
-    //! \brief Moves one items to a folder.
+    //! \brief Moves one item to a folder.
     //!
     //! \param item The id of the item you want to move.
-    //! \param folder_id The id of the target folder.
+    //! \param folder The id of the target folder.
     //!
-    //! \return The new item_id of the item that has been moved.
+    //! \return The new id of the item that has been moved.
     item_id move_item(item_id item, const folder_id& folder)
     {
         return move_item_impl(std::move(item), folder);
@@ -21112,10 +21112,10 @@ public:
 
     //! \brief Moves one or more items to a folder.
     //!
-    //! \param items A list of item_ids that shall be moved.
-    //! \param folder_id The id of the target folder.
+    //! \param items A list of ids of items that shall be moved.
+    //! \param folder The id of the target folder.
     //!
-    //! \return A vector of new item_ids of the items that have been moved.
+    //! \return A vector of new ids of the items that have been moved.
     std::vector<item_id> move_item(const std::vector<item_id>& items,
                                    const folder_id& folder)
     {
