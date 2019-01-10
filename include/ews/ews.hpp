@@ -11222,6 +11222,22 @@ namespace internal
         }
     };
 
+    class update_folder_response_message final
+        : public response_message_with_items<folder_id>
+    {
+    public:
+        // implemented below
+        static update_folder_response_message parse(http_response&&);
+
+    private:
+        update_folder_response_message(response_result&& res,
+                                       std::vector<folder_id>&& items)
+            : response_message_with_items<folder_id>(std::move(res),
+                                                     std::move(items))
+        {
+        }
+    };
+
     class get_folder_response_message final
         : public response_message_with_items<folder>
     {
@@ -11340,6 +11356,89 @@ namespace internal
                                   std::vector<ItemType>&& items)
             : response_message_with_items<ItemType>(std::move(res),
                                                     std::move(items))
+        {
+        }
+    };
+
+    template <typename IdType> class response_message_with_ids
+    {
+    public:
+        typedef IdType id_type;
+        typedef std::tuple<response_class, response_code, std::vector<id_type>>
+            response_message;
+
+        explicit response_message_with_ids(
+            std::vector<response_message>&& messages)
+            : messages_(std::move(messages))
+        {
+        }
+
+        std::vector<id_type> items() const
+        {
+            std::vector<id_type> items;
+            items.reserve(messages_.size()); // Seems like there is always one
+                                             // item per message
+            for (const auto& msg : messages_)
+            {
+                const auto& msg_items = std::get<2>(msg);
+                std::copy(begin(msg_items), end(msg_items),
+                          std::back_inserter(items));
+            }
+            return items;
+        }
+
+        bool success() const
+        {
+            // Consequently, this means we're aborting here because of a
+            // warning. Is this desired? Don't think so. At least it is
+            // consistent with response_message_base::success().
+
+            return std::all_of(begin(messages_), end(messages_),
+                               [](const response_message& msg) {
+                                   return std::get<0>(msg) ==
+                                          response_class::success;
+                               });
+        }
+
+        response_code first_error_or_warning() const
+        {
+            auto it = std::find_if_not(begin(messages_), end(messages_),
+                                       [](const response_message& msg) {
+                                           return std::get<0>(msg) ==
+                                                  response_class::success;
+                                       });
+            return it == end(messages_) ? response_code::no_error
+                                        : std::get<1>(*it);
+        }
+
+    private:
+        std::vector<response_message> messages_;
+    };
+
+    class move_item_response_message final
+        : public response_message_with_ids<item_id>
+    {
+    public:
+        // implemented below
+        static move_item_response_message parse(http_response&&);
+
+    private:
+        move_item_response_message(std::vector<response_message>&& items)
+            : response_message_with_ids<item_id>(std::move(items))
+        {
+        }
+    };
+
+    class move_folder_response_message final
+        : public response_message_with_ids<folder_id>
+    {
+    public:
+        // implemented below
+        static move_folder_response_message parse(http_response&&);
+
+    private:
+        move_folder_response_message(std::vector<response_message>&& items)
+            : response_message_with_ids<folder_id>(std::move(items))
         {
         }
     };
@@ -19879,8 +19978,8 @@ public:
     {
     }
 
-    //! Serializes this update instance to an XML string
-    std::string to_xml() const
+    //! Serializes this update instance to an XML string for item operations
+    std::string to_item_xml() const
     {
         std::string action = "SetItemField";
         if (op_ == operation::append_to_item_field)
@@ -19890,6 +19989,25 @@ public:
         else if (op_ == operation::delete_item_field)
         {
             action = "DeleteItemField";
+        }
+        std::stringstream sstr;
+        sstr << "<t:" << action << ">";
+        sstr << prop_.to_xml();
+        sstr << "</t:" << action << ">";
+        return sstr.str();
+    }
+
+    //! Serializes this update instance to an XML string for folder operations
+    std::string to_folder_xml() const
+    {
+        std::string action = "SetFolderField";
+        if (op_ == operation::append_to_item_field)
+        {
+            action = "AppendToFolderField";
+        }
+        else if (op_ == operation::delete_item_field)
+        {
+            action = "DeleteFolderField";
         }
         std::stringstream sstr;
         sstr << "<t:" << action << ">";
@@ -20978,6 +21096,81 @@ public:
                                 invitations_or_cancellations, folder);
     }
 
+    //! \brief Update an existing folder's property.
+    //!
+    //! Sends an \<UpdateFolder> request to the server. Allows you to change
+    //! properties of existing items in the Exchange store.
+    //!
+    //! \param folder_id The id of the folder you want to change.
+    //! \param change The update to the folder.
+    //!
+    //! \return The updated folder's new id and change_key upon success.
+    folder_id update_folder(folder_id folder_id, update change)
+    {
+        return update_folder_impl(std::move(folder_id), std::move(change));
+    }
+
+    //! \brief Update multiple properties of an existing folder.
+    //!
+    //! Sends an \<UpdateFolder> request to the server. Allows you to change
+    //! multiple properties at once.
+    //!
+    //! \param folder_id The id of the folder you want to change.
+    //! \param changes A list of updates to the folder.
+    //!
+    //! \return The updated folder's new id and change_key upon success.
+    folder_id update_folder(folder_id folder_id,
+                            const std::vector<update>& changes)
+    {
+        return update_folder_impl(std::move(folder_id), changes);
+    }
+
+    //! \brief Moves one item to a folder.
+    //!
+    //! \param item The id of the item you want to move.
+    //! \param folder The id of the target folder.
+    //!
+    //! \return The new id of the item that has been moved.
+    item_id move_item(item_id item, const folder_id& folder)
+    {
+        return move_item_impl(std::move(item), folder);
+    }
+
+    //! \brief Moves one or more items to a folder.
+    //!
+    //! \param items A list of ids of items that shall be moved.
+    //! \param folder The id of the target folder.
+    //!
+    //! \return A vector of new ids of the items that have been moved.
+    std::vector<item_id> move_item(const std::vector<item_id>& items,
+                                   const folder_id& folder)
+    {
+        return move_item_impl(items, folder);
+    }
+
+    //! \brief Moves one folder to a folder.
+    //!
+    //! \param folder The id of the folder you want to move.
+    //! \param target The id of the target folder.
+    //!
+    //! \return The new item_id of the folder that has been moved.
+    folder_id move_folder(folder_id folder, const folder_id& target)
+    {
+        return move_folder_impl(std::move(folder), target);
+    }
+
+    //! \brief Moves one or more folders to a target folder.
+    //!
+    //! \param folders A list of ids of folders that shall be moved.
+    //! \param target The id of the target folder.
+    //!
+    //! \return A vector of new ids of the folders that have been moved.
+    std::vector<folder_id> move_folder(const std::vector<folder_id>& folders,
+                                       const folder_id& target)
+    {
+        return move_folder_impl(folders, target);
+    }
+
     //! \brief Add new delegates to given mailbox
     std::vector<delegate_user>
     add_delegate(const mailbox& mailbox,
@@ -21885,7 +22078,7 @@ private:
 
         sstr << "<m:ItemChanges>"
                 "<t:ItemChange>"
-             << id.to_xml() << "<t:Updates>" << change.to_xml()
+             << id.to_xml() << "<t:Updates>" << change.to_item_xml()
              << "</t:Updates>"
                 "</t:ItemChange>"
                 "</m:ItemChanges>"
@@ -21927,7 +22120,7 @@ private:
 
         for (const auto& change : changes)
         {
-            sstr << change.to_xml();
+            sstr << change.to_item_xml();
         }
 
         sstr << "</t:Updates>"
@@ -21944,6 +22137,170 @@ private:
         }
         check(!response_message.items().empty(), "Expected at least one item");
         return response_message.items().front();
+    }
+
+    folder_id update_folder_impl(folder_id id, update change)
+    {
+        std::stringstream sstr;
+        sstr << "<m:UpdateFolder>"
+                "<m:FolderChanges>"
+                "<t:FolderChange>"
+             << id.to_xml() << "<t:Updates>" << change.to_folder_xml()
+             << "</t:Updates>"
+                "</t:FolderChange>"
+                "</m:FolderChanges>"
+                "</m:UpdateFolder>";
+
+        auto response = request(sstr.str());
+        const auto response_message =
+            internal::update_folder_response_message::parse(
+                std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+        check(!response_message.items().empty(),
+              "Expected at least one folder");
+        return response_message.items().front();
+    }
+
+    folder_id update_folder_impl(folder_id id,
+                                 const std::vector<update>& changes)
+    {
+        std::stringstream sstr;
+        sstr << "<m:UpdateFolder>"
+                "<m:FolderChanges>"
+                "<t:FolderChange>"
+             << id.to_xml() << "<t:Updates>";
+
+        for (const auto& change : changes)
+        {
+            sstr << change.to_folder_xml();
+        }
+
+        sstr << "</t:Updates>"
+                "</t:FolderChange>"
+                "</m:FolderChanges>"
+                "</m:UpdateFolder>";
+
+        auto response = request(sstr.str());
+        const auto response_message =
+            internal::update_folder_response_message::parse(
+                std::move(response));
+        if (!response_message.success())
+        {
+            throw exchange_error(response_message.result());
+        }
+        check(!response_message.items().empty(),
+              "Expected at least one folder");
+        return response_message.items().front();
+    }
+
+    item_id move_item_impl(item_id item, const folder_id& folder)
+    {
+        std::stringstream sstr;
+        sstr << "<m:MoveItem>"
+                "<m:ToFolderId>"
+             << folder.to_xml()
+             << "</m:ToFolderId>"
+                "<m:ItemIds>"
+             << item.to_xml()
+             << "</m:ItemIds>"
+                "</m:MoveItem>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::move_item_response_message::parse(std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        check(!response_messages.items().empty(), "Expected at least one item");
+        return response_messages.items().front();
+    }
+
+    std::vector<item_id> move_item_impl(const std::vector<item_id>& items,
+                                        const folder_id& folder)
+    {
+        std::stringstream sstr;
+        sstr << "<m:MoveItem>"
+                "<m:ToFolderId>"
+             << folder.to_xml()
+             << "</m:ToFolderId>"
+                "<m:ItemIds>";
+
+        for (const auto& item : items)
+        {
+            sstr << item.to_xml();
+        }
+
+        sstr << "</m:ItemIds>"
+                "</m:MoveItem>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::move_item_response_message::parse(std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        check(!response_messages.items().empty(), "Expected at least one item");
+
+        return response_messages.items();
+    }
+
+    folder_id move_folder_impl(folder_id folder, const folder_id& target)
+    {
+        std::stringstream sstr;
+        sstr << "<m:MoveFolder>"
+                "<m:ToFolderId>"
+             << target.to_xml()
+             << "</m:ToFolderId>"
+                "<m:FolderIds>"
+             << folder.to_xml()
+             << "</m:FolderIds>"
+                "</m:MoveFolder>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::move_folder_response_message::parse(std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        check(!response_messages.items().empty(), "Expected at least one item");
+        return response_messages.items().front();
+    }
+
+    std::vector<folder_id>
+    move_folder_impl(const std::vector<folder_id>& folders,
+                     const folder_id& target)
+    {
+        std::stringstream sstr;
+        sstr << "<m:MoveFolder>"
+                "<m:ToFolderId>"
+             << target.to_xml()
+             << "</m:ToFolderId>"
+                "<m:FolderIds>";
+
+        for (const auto& folder : folders)
+        {
+            sstr << folder.to_xml();
+        }
+
+        sstr << "</m:FolderIds>"
+                "</m:MoveFolder>";
+
+        auto response = request(sstr.str());
+        const auto response_messages =
+            internal::move_folder_response_message::parse(std::move(response));
+        if (!response_messages.success())
+        {
+            throw exchange_error(response_messages.first_error_or_warning());
+        }
+        check(!response_messages.items().empty(), "Expected at least one item");
+
+        return response_messages.items();
     }
 
     resolution_set
@@ -22452,6 +22809,33 @@ namespace internal
                                             std::move(items));
     }
 
+    inline update_folder_response_message
+    update_folder_response_message::parse(http_response&& response)
+    {
+        const auto doc = parse_response(std::move(response));
+        auto elem = get_element_by_qname(*doc, "UpdateFolderResponseMessage",
+                                         uri<>::microsoft::messages());
+
+        check(elem, "Expected <UpdateFolderResponseMessage>");
+        auto result = parse_response_class_and_code(*elem);
+
+        auto folders_elem =
+            elem->first_node_ns(uri<>::microsoft::messages(), "Folders");
+        check(folders_elem, "Expected <Folders> element");
+
+        auto folders = std::vector<folder_id>();
+        for (auto folder_elem = folders_elem->first_node(); folder_elem;
+             folder_elem = folder_elem->next_sibling())
+        {
+            check(folder_elem, "Expected an element");
+            auto folder_id_elem = folder_elem->first_node();
+            check(folder_id_elem, "Expected <FolderId> element");
+            folders.emplace_back(folder_id::from_xml_element(*folder_id_elem));
+        }
+        return update_folder_response_message(std::move(result),
+                                              std::move(folders));
+    }
+
     inline get_folder_response_message
     get_folder_response_message::parse(http_response&& response)
     {
@@ -22571,6 +22955,91 @@ namespace internal
                 items.emplace_back(ItemType::from_xml_element(item_elem));
             });
         return get_item_response_message(std::move(result), std::move(items));
+    }
+
+    inline move_item_response_message
+    move_item_response_message::parse(http_response&& response)
+    {
+        const auto doc = parse_response(std::move(response));
+
+        auto response_messages = get_element_by_qname(
+            *doc, "ResponseMessages", uri<>::microsoft::messages());
+        check(response_messages, "Expected <ResponseMessages> node");
+
+        using rapidxml::internal::compare;
+
+        std::vector<response_message_with_ids::response_message> messages;
+        for_each_child_node(
+            *response_messages, [&](const rapidxml::xml_node<>& node) {
+                check(compare(node.local_name(), node.local_name_size(),
+                              "MoveItemResponseMessage",
+                              strlen("MoveItemResponseMessage")),
+                      "Expected <MoveItemResponseMessage> element");
+
+                auto result = parse_response_class_and_code(node);
+
+                auto items_elem =
+                    node.first_node_ns(uri<>::microsoft::messages(), "Items");
+                check(items_elem, "Expected <Items> element");
+
+                auto items = std::vector<item_id>();
+                for_each_child_node(
+                    *items_elem,
+                    [&items](const rapidxml::xml_node<>& item_elem) {
+                        auto item_id = item_elem.first_node_ns(
+                            uri<>::microsoft::types(), "ItemId");
+                        check(item_id, "Expected <ItemId> element");
+                        items.emplace_back(item_id::from_xml_element(*item_id));
+                    });
+
+                messages.emplace_back(
+                    std::make_tuple(result.cls, result.code, std::move(items)));
+            });
+
+        return move_item_response_message(std::move(messages));
+    }
+
+    inline move_folder_response_message
+    move_folder_response_message::parse(http_response&& response)
+    {
+        const auto doc = parse_response(std::move(response));
+
+        auto response_messages = get_element_by_qname(
+            *doc, "ResponseMessages", uri<>::microsoft::messages());
+        check(response_messages, "Expected <ResponseMessages> node");
+
+        using rapidxml::internal::compare;
+
+        std::vector<response_message_with_ids::response_message> messages;
+        for_each_child_node(
+            *response_messages, [&](const rapidxml::xml_node<>& node) {
+                check(compare(node.local_name(), node.local_name_size(),
+                              "MoveFolderResponseMessage",
+                              strlen("MoveFolderResponseMessage")),
+                      "Expected <MoveFolderResponseMessage> element");
+
+                auto result = parse_response_class_and_code(node);
+
+                auto folders_elem =
+                    node.first_node_ns(uri<>::microsoft::messages(), "Folders");
+                check(folders_elem, "Expected <Folders> element");
+
+                auto folders = std::vector<folder_id>();
+                for_each_child_node(
+                    *folders_elem,
+                    [&folders](const rapidxml::xml_node<>& folder_elem) {
+                        auto folder_id = folder_elem.first_node_ns(
+                            uri<>::microsoft::types(), "FolderId");
+                        check(folder_id, "Expected <FolderId> element");
+                        folders.emplace_back(
+                            folder_id::from_xml_element(*folder_id));
+                    });
+
+                messages.emplace_back(std::make_tuple(result.cls, result.code,
+                                                      std::move(folders)));
+            });
+
+        return move_folder_response_message(std::move(messages));
     }
 
     template <typename ItemType>
