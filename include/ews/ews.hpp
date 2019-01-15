@@ -22625,9 +22625,9 @@ sync_folder_items_result::parse(internal::http_response&& response)
 
                 const auto item_id = item_id::from_xml_element(*item_id_elem);
 
-                const bool read = compare(read_elem->local_name(),
-                                          read_elem->local_name_size(), "true",
-                                          strlen("true"));
+                const bool read =
+                    compare(read_elem->value(), read_elem->value_size(), "true",
+                            strlen("true"));
 
                 read_flag_changed.emplace_back(std::make_pair(item_id, read));
             }
