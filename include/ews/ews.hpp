@@ -22861,9 +22861,14 @@ namespace internal
         const auto doc = parse_response(std::move(response));
         auto elem = get_element_by_qname(*doc, "GetRoomListsResponse",
                                          uri<>::microsoft::messages());
-
         check(elem, "Expected <GetRoomListsResponse>");
+
         auto result = parse_response_class_and_code(*elem);
+        if (result.cls == response_class::error)
+        {
+            throw exchange_error(result);
+        }
+
         auto room_lists = std::vector<mailbox>();
         auto items_elem =
             elem->first_node_ns(uri<>::microsoft::messages(), "RoomLists");
