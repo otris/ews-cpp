@@ -9427,11 +9427,6 @@ public:
         //      <MailboxType/>
         //      <ItemId/>
         //  </Mailbox>
-        //
-        // <EmailAddress> child element is required except when dealing
-        // with a private distribution list or a contact from a user's
-        // contacts folder, in which case the <ItemId> child element is
-        // used instead
 
         std::string name;
         std::string address;
@@ -9474,9 +9469,6 @@ public:
 
         if (!id.valid())
         {
-            check(!address.empty(),
-                  "<EmailAddress> element value can't be empty");
-
             return mailbox(std::move(address), std::move(name),
                            std::move(routing_type), std::move(mailbox_type));
         }
