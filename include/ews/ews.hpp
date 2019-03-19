@@ -18770,12 +18770,44 @@ namespace contact_property_path
 
     namespace phone_number
     {
-        static const indexed_property_path home_phone("contacts:PhoneNumber",
-                                                      "HomePhone");
-        static const indexed_property_path pager("contacts:PhoneNumber",
-                                                 "Pager");
+        static const indexed_property_path
+            assistant_phone("contacts:PhoneNumber", "AssistantPhone");
+        static const indexed_property_path business_fax("contacts:PhoneNumber",
+                                                        "BusinessFax");
         static const indexed_property_path
             business_phone("contacts:PhoneNumber", "BusinessPhone");
+        static const indexed_property_path
+            business_phone_2("contacts:PhoneNumber", "BusinessPhone2");
+        static const indexed_property_path callback("contacts:PhoneNumber",
+                                                    "Callback");
+        static const indexed_property_path car_phone("contacts:PhoneNumber",
+                                                     "CarPhone");
+        static const indexed_property_path
+            company_main_phone("contacts:PhoneNumber", "CompanyMainPhone");
+        static const indexed_property_path home_fax("contacts:PhoneNumber",
+                                                    "HomeFax");
+        static const indexed_property_path home_phone("contacts:PhoneNumber",
+                                                      "HomePhone");
+        static const indexed_property_path home_phone_2("contacts:PhoneNumber",
+                                                        "HomePhone2");
+        static const indexed_property_path isdn("contacts:PhoneNumber", "Isdn");
+
+        static const indexed_property_path mobile_phone("contacts:PhoneNumber",
+                                                        "MobilePhone");
+        static const indexed_property_path other_fax("contacts:PhoneNumber",
+                                                     "OtherFax");
+        static const indexed_property_path
+            other_telephone("contacts:PhoneNumber", "OtherTelephone");
+        static const indexed_property_path pager("contacts:PhoneNumber",
+                                                 "Pager");
+        static const indexed_property_path primary_phone("contacts:PhoneNumber",
+                                                         "PrimaryPhone");
+        static const indexed_property_path radio_phone("contacts:PhoneNumber",
+                                                       "RadioPhone");
+        static const indexed_property_path telex("contacts:PhoneNumber",
+                                                 "Telex");
+        static const indexed_property_path tty_tdd_phone("contacts:PhoneNumber",
+                                                         "TtyTddPhone");
     } // namespace phone_number
 
     static const property_path phonetic_full_name = "contacts:PhoneticFullName";
