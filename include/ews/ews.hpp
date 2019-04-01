@@ -18820,17 +18820,49 @@ namespace contact_property_path
 
     namespace physical_address
     {
-        static const indexed_property_path street("contacts:PhysicalAddress",
-                                                  "Street");
-        static const indexed_property_path city("contacts:PhysicalAddress:City",
-                                                "Home");
-        static const indexed_property_path state("contacts:PhysicalAddress",
-                                                 "State");
-        static const indexed_property_path
-            country_or_region("contacts:PhysicalAddress", "CountryOrRegion");
-        static const indexed_property_path
-            postal_code("contacts:PhysicalAddress", "PostalCode");
-    } // namespace physical_address
+        namespace business
+        {
+            static const indexed_property_path
+                street("contacts:PhysicalAddress:Street", "Business");
+            static const indexed_property_path
+                city("contacts:PhysicalAddress:City", "Business");
+            static const indexed_property_path
+                state("contacts:PhysicalAddress:State", "Business");
+            static const indexed_property_path
+                country_or_region("contacts:PhysicalAddress:CountryOrRegion",
+                                  "Business");
+            static const indexed_property_path
+                postal_code("contacts:PhysicalAddress:PostalCode", "Business");
+        } // namespace business
+        namespace home
+        {
+            static const indexed_property_path
+                street("contacts:PhysicalAddress:Street", "Home");
+            static const indexed_property_path
+                city("contacts:PhysicalAddress:City", "Home");
+            static const indexed_property_path
+                state("contacts:PhysicalAddress:State", "Home");
+            static const indexed_property_path
+                country_or_region("contacts:PhysicalAddress:CountryOrRegion",
+                                  "Home");
+            static const indexed_property_path
+                postal_code("contacts:PhysicalAddress:PostalCode", "Home");
+        } // namespace home
+        namespace other
+        {
+            static const indexed_property_path
+                street("contacts:PhysicalAddress:Street", "Other");
+            static const indexed_property_path
+                city("contacts:PhysicalAddress:City", "Other");
+            static const indexed_property_path
+                state("contacts:PhysicalAddress:State", "Other");
+            static const indexed_property_path
+                country_or_region("contacts:PhysicalAddress:CountryOrRegion",
+                                  "Other");
+            static const indexed_property_path
+                postal_code("contacts:PhysicalAddress:PostalCode", "Other");
+        } // namespace other
+    }     // namespace physical_address
 
     static const property_path postal_address_index =
         "contacts:PostalAddressIndex";
