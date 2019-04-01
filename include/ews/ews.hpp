@@ -18960,6 +18960,10 @@ public:
     //! Use this constructor if you want to delete a property from an item
     explicit property(property_path path) : value_(path.to_xml()) {}
 
+    //! Use this constructor if you want to delete an indexed property from an
+    //! item
+    explicit property(indexed_property_path path) : value_(path.to_xml()) {}
+
     // Use this constructor (and following overloads) whenever you want to
     // set or update an item's property
     property(property_path path, const std::string& value)
