@@ -60,10 +60,10 @@ int main()
             
             ews::physical_address street(ews::physical_address::key::business,
                 "SuperStreet", "", "", "", "");
-            auto business_city_property = ews::property(
+            auto business_street_property = ews::property(
                 ews::contact_property_path::physical_address::business::street,
                 street);
-            update_list.emplace_back(business_city_property);
+            update_list.emplace_back(business_street_property);
                 
             auto new_id = service.update_item(id, update_list);
             (void)new_id;
