@@ -51,14 +51,14 @@ int main()
                 ews::contact_property_path::job_title, "Superhero");
             update_list.emplace_back(job_title_property);
             
-            ews::physical_address city(ews::physical_address:key::business,
-               "", "Metropolis", "", "", "")
+            ews::physical_address city(ews::physical_address::key::business,
+               "", "Metropolis", "", "", "");
             auto business_city_property = ews::property(
                 ews::contact_property_path::physical_address::business::city,
                 city);
             update_list.emplace_back(business_city_property);
             
-            ews::physical_address street(ews::physical_address:key::business,
+            ews::physical_address street(ews::physical_address::key::business,
                 "SuperStreet", "", "", "", "");
             auto business_city_property = ews::property(
                 ews::contact_property_path::physical_address::business::street,
