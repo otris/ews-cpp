@@ -10806,6 +10806,30 @@ public:
         return size.empty() ? 0U : std::stoul(size);
     }
 
+    //! \brief Returns the attachement's content ID
+    //!
+    //! If this is an inlined attachment, returns the content ID that is used
+    //! to reference the attachment in the HTML code of the parent item.
+    //! Otherwise returns an empty string.
+    std::string content_id() const
+    {
+        const auto node = get_node("ContentId");
+        return node ? std::string(node->value(), node->value_size()) : "";
+    }
+
+    //! Returns true if the attachment is inlined
+    bool is_inline() const
+    {
+        const auto node = get_node("IsInline");
+        if (!node)
+        {
+            return false;
+        }
+        using rapidxml::internal::compare;
+        return compare(node->value(), node->value_size(), "true",
+                       strlen("true"));
+    }
+
     //! Returns either type::file or type::item
     type get_type() const EWS_NOEXCEPT { return type_; }
 
