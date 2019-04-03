@@ -651,7 +651,7 @@ TEST_F(ContactTest, UpdatePhysicalAddressesValues)
     auto address = ews::physical_address(ews::physical_address::key::home, "",
                                          "Duckburg", "", "", "");
     auto prop = ews::property(
-        ews::contact_property_path::physical_address::city, address);
+        ews::contact_property_path::physical_address::business::city, address);
     auto new_id = service().update_item(minnie.get_item_id(), prop);
     minnie = service().get_contact(new_id);
     ASSERT_FALSE(minnie.get_physical_addresses().empty());
