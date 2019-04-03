@@ -44,9 +44,28 @@ int main()
         for (const auto& id : item_ids)
         {
             auto contact = service.get_contact(id);
+            
+            std::vector<ews::update> update_list;
+            
             auto job_title_property = ews::property(
                 ews::contact_property_path::job_title, "Superhero");
-            auto new_id = service.update_item(id, job_title_property);
+            update_list.emplace_back(job_title_property);
+            
+            ews::physical_address city(ews::physical_address:key::business,
+               "", "Metropolis", "", "", "")
+            auto business_city_property = ews::property(
+                ews::contact_property_path::physical_address::business::city,
+                city);
+            update_list.emplace_back(business_city_property);
+            
+            ews::physical_address street(ews::physical_address:key::business,
+                "SuperStreet", "", "", "", "");
+            auto business_city_property = ews::property(
+                ews::contact_property_path::physical_address::business::street,
+                street);
+            update_list.emplace_back(business_city_property);
+                
+            auto new_id = service.update_item(id, update_list);
             (void)new_id;
 
 // TODO: check this!
