@@ -229,6 +229,15 @@ Once you've build the project, you can execute the tests with:
 ./tests --assets=/path/to/source/tests/assets
 ```
 
+If you do not have any Exchange server available for testing you can run a
+subset of the tests that do not require a running server like this:
+
+```bash
+EWS_TEST_DOMAIN="" EWS_TEST_USERNAME="" EWS_TEST_PASSWORD="" EWS_TEST_URI="" ./tests \
+    --assets=$HOME/src/ews-cpp/tests/assets \
+    --gtest_filter=Offline\*.\*
+```
+
 ## Design Notes
 ews-cpp is written in a "modern C++" way:
 
