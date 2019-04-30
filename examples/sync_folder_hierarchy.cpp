@@ -52,9 +52,9 @@ int main()
         const auto sync_state = result.get_sync_state();
 
         // Output all existing folders
-        for (const auto& folder : result.get_created_folders())
+        for (const auto& f : result.get_created_folders())
         {
-            std::cout << folder.get_display_name() << "\n";
+            std::cout << f.get_display_name() << "\n";
         }
 
         // Create test folder
@@ -66,9 +66,9 @@ int main()
         result = service.sync_folder_hierarchy(folder, sync_state);
 
         // Output all newly created folders
-        for (const auto& folder : result.get_created_folders())
+        for (const auto& f : result.get_created_folders())
         {
-            std::cout << folder.get_display_name() << "\n";
+            std::cout << f.get_display_name() << "\n";
         }
 
         // Delete test item
@@ -78,9 +78,9 @@ int main()
         result = service.sync_folder_hierarchy(folder, sync_state);
 
         // Output all deleted folders
-        for (const auto& folder : result.get_deleted_folder_ids())
+        for (const auto& f : result.get_deleted_folder_ids())
         {
-            std::cout << folder.id() << "\n";
+            std::cout << f.id() << "\n";
         }
     }
     catch (std::exception& exc)
