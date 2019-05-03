@@ -648,7 +648,7 @@ TEST(OfflineContactTest, SetPhysicalAddressesValues)
 TEST_F(ContactTest, UpdatePhysicalAddressesValues)
 {
     auto minnie = test_contact();
-    auto address = ews::physical_address(ews::physical_address::key::home, "",
+    auto address = ews::physical_address(ews::physical_address::key::business, "",
                                          "Duckburg", "", "", "");
     auto prop = ews::property(
         ews::contact_property_path::physical_address::business::city, address);
