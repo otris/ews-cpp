@@ -20069,9 +20069,15 @@ public:
 
     // intentionally not explicit
     update(property prop, operation action = operation::set_item_field)
-        : prop_(std::move(prop)), op_(std::move(action))
+        : prop_(std::move(prop.to_xml())), op_(std::move(action))
     {
     }
+
+    update(extended_property prop, operation action = operation::set_item_field)
+        : prop_(std::move(prop.to_xml())), op_(std::move(action))
+    {
+    }
+
 
     //! Serializes this update instance to an XML string for item operations
     std::string to_item_xml() const
@@ -20087,7 +20093,7 @@ public:
         }
         std::stringstream sstr;
         sstr << "<t:" << action << ">";
-        sstr << prop_.to_xml();
+        sstr << prop_;
         sstr << "</t:" << action << ">";
         return sstr.str();
     }
@@ -20106,13 +20112,13 @@ public:
         }
         std::stringstream sstr;
         sstr << "<t:" << action << ">";
-        sstr << prop_.to_xml();
+        sstr << prop_;
         sstr << "</t:" << action << ">";
         return sstr.str();
     }
 
 private:
-    property prop_;
+    std::string prop_;
     update::operation op_;
 };
 
