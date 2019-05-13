@@ -13018,6 +13018,7 @@ public:
 
     static extended_property
     from_xml_element(const rapidxml::xml_node<char>& node); // defined below
+    std::string to_xml() const;
 
     //! Returns the the extended_field_uri element of this
     //! extended_property.
@@ -13046,6 +13047,26 @@ static_assert(std::is_copy_assignable<extended_property>::value);
 static_assert(std::is_move_constructible<extended_property>::value);
 static_assert(std::is_move_assignable<extended_property>::value);
 #endif
+
+inline std::string extended_property::to_xml() const
+{
+    std::stringstream sstr;
+
+    auto values = get_values();
+    auto efu = get_extended_field_uri();
+    for (auto&& v : values) {
+        sstr << efu.to_xml();
+        sstr << "<t:Message>";
+        sstr << "<t:ExtendedProperty>"
+             << efu.to_xml();
+        sstr << "<t:Value>"
+             << v
+             << "</t:Value>";
+        sstr << "</t:ExtendedProperty>";
+        sstr << "</t:Message>";
+    }
+    return sstr.str();
+}
 
 inline extended_property
 extended_property::from_xml_element(const rapidxml::xml_node<char>& top_node)
