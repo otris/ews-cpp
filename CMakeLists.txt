@@ -366,6 +366,7 @@ if(HAS_VARIANT AND NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
     add_example(subscribe)
 endif()
 add_example(update_contact)
+add_example(update_extended_property)
 add_example(update_folder)
 
 # Python is optional as it is only used by TimeoutTest
