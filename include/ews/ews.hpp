@@ -7662,29 +7662,46 @@ private:
     unsigned long line_no_;
 };
 
+//! \brief Exception for libcurl related runtime errors
+class curl_error final : public exception
+{
+public:
+    explicit curl_error(const std::string& what,
+                        const std::string& error_details = "")
+        : exception(what), error_details_(error_details)
+    {
+    }
+    explicit curl_error(const char* what, const std::string& error_details = "")
+        : exception(what), error_details_(error_details)
+    {
+    }
+
+    //! More detailed information about the error
+    const std::string& error_details() const EWS_NOEXCEPT
+    {
+        return error_details_;
+    }
+
+private:
+    std::string error_details_;
+};
+
 namespace internal
 {
-    // Exception for libcurl related runtime errors
-    class curl_error final : public exception
-    {
-    public:
-        explicit curl_error(const std::string& what) : exception(what) {}
-        explicit curl_error(const char* what) : exception(what) {}
-    };
-
     // Helper function; constructs an exception with a meaningful error
     // message from the given result code for the most recent cURL API call.
     //
     // msg: A string that prepends the actual cURL error message.
     // rescode: The result code of a failed cURL operation.
-    inline curl_error make_curl_error(const std::string& msg, CURLcode rescode)
+    inline curl_error make_curl_error(const std::string& msg, CURLcode rescode,
+                                      const std::string& error_details = "")
     {
         auto reason = std::string(curl_easy_strerror(rescode));
 #ifdef NDEBUG
         (void)msg;
-        return curl_error(reason);
+        return curl_error(reason, error_details);
 #else
-        return curl_error(msg + ": \'" + reason + "\'");
+        return curl_error(msg + ": \'" + reason + "\'", error_details);
 #endif
     }
 
@@ -7698,6 +7715,8 @@ namespace internal
             {
                 throw curl_error("Could not start libcurl session");
             }
+
+            curl_easy_setopt(handle_, CURLOPT_ERRORBUFFER, error_details_);
         }
 
         ~curl_ptr() { curl_easy_cleanup(handle_); }
@@ -7717,6 +7736,7 @@ namespace internal
         curl_ptr(curl_ptr&& other) : handle_(std::move(other.handle_))
         {
             other.handle_ = nullptr;
+            curl_easy_setopt(handle_, CURLOPT_ERRORBUFFER, error_details_);
         }
 
         curl_ptr& operator=(curl_ptr&& rhs)
@@ -7725,14 +7745,21 @@ namespace internal
             {
                 handle_ = std::move(rhs.handle_);
                 rhs.handle_ = nullptr;
+                curl_easy_setopt(handle_, CURLOPT_ERRORBUFFER, error_details_);
             }
             return *this;
         }
 
         CURL* get() const EWS_NOEXCEPT { return handle_; }
 
+        const char* get_error_details() const EWS_NOEXCEPT
+        {
+            return error_details_;
+        }
+
     private:
         CURL* handle_;
+        char error_details_[CURL_ERROR_SIZE];
     };
 
 #if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
@@ -8322,7 +8349,8 @@ namespace internal
             auto retcode = curl_easy_perform(handle_.get());
             if (retcode != 0)
             {
-                throw make_curl_error("curl_easy_perform", retcode);
+                throw make_curl_error("curl_easy_perform", retcode,
+                                      handle_.get_error_details());
             }
             long response_code = 0U;
             curl_easy_getinfo(handle_.get(), CURLINFO_RESPONSE_CODE,
