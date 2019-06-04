@@ -13016,6 +13016,10 @@ public:
     {
     }
 
+    static extended_property
+    from_xml_element(const rapidxml::xml_node<char>& node); // defined below
+    std::string to_xml() const;
+
     //! Returns the the extended_field_uri element of this
     //! extended_property.
     const extended_field_uri& get_extended_field_uri() const EWS_NOEXCEPT
@@ -13043,6 +13047,61 @@ static_assert(std::is_copy_assignable<extended_property>::value);
 static_assert(std::is_move_constructible<extended_property>::value);
 static_assert(std::is_move_assignable<extended_property>::value);
 #endif
+
+inline std::string extended_property::to_xml() const
+{
+    std::stringstream sstr;
+
+    auto values = get_values();
+    auto efu = get_extended_field_uri();
+    for (auto&& v : values) {
+        sstr << efu.to_xml();
+        sstr << "<t:Message>";
+        sstr << "<t:ExtendedProperty>"
+             << efu.to_xml();
+        sstr << "<t:Value>"
+             << v
+             << "</t:Value>";
+        sstr << "</t:ExtendedProperty>";
+        sstr << "</t:Message>";
+    }
+    return sstr.str();
+}
+
+inline extended_property
+extended_property::from_xml_element(const rapidxml::xml_node<char>& top_node)
+{
+    using namespace internal;
+    using rapidxml::internal::compare;
+
+    check(compare(top_node.name(), top_node.name_size(), "t:ExtendedProperty",
+                  strlen("t:ExtendedProperty")),
+          "Expected a <ExtendedProperty>, got something else");
+
+    auto node = top_node.first_node();
+    auto ext_field_uri =
+        extended_field_uri::from_xml_element(*node);
+    std::vector<std::string> values;
+    node = node->next_sibling();
+
+    if (compare(node->name(), node->name_size(), "t:Value",
+                strlen("t:Value")))
+    {
+        values.emplace_back(
+            std::string(node->value(), node->value_size()));
+    }
+    else if (compare(node->name(), node->name_size(), "t:Values",
+                     strlen("t:Values")))
+    {
+        for (auto child = node->first_node(); child != nullptr;
+             child = child->next_sibling())
+        {
+            values.emplace_back(
+                std::string(child->value(), child->value_size()));
+        }
+    }
+    return extended_property(std::move(ext_field_uri), std::move(values));
+}
 
 //! Represents a generic <tt>\<Folder></tt> in the Exchange store
 class folder final
@@ -13605,35 +13664,8 @@ public:
                 continue;
             }
 
-            for (auto node = top_node->first_node(); node != nullptr;
-                 node = node->next_sibling())
-            {
-                auto ext_field_uri =
-                    extended_field_uri::from_xml_element(*node);
-
-                std::vector<std::string> values;
-                node = node->next_sibling(); // go to value(es)
-
-                if (compare(node->name(), node->name_size(), "t:Value",
-                            strlen("t:Value")))
-                {
-                    values.emplace_back(
-                        std::string(node->value(), node->value_size()));
-                }
-                else if (compare(node->name(), node->name_size(), "t:Values",
-                                 strlen("t:Values")))
-                {
-                    for (auto child = node->first_node(); child != nullptr;
-                         child = child->next_sibling())
-                    {
-                        values.emplace_back(
-                            std::string(child->value(), child->value_size()));
-                    }
-                }
-
-                properties.emplace_back(extended_property(
-                    std::move(ext_field_uri), std::move(values)));
-            }
+            auto ext_prop = extended_property::from_xml_element(*top_node);
+            properties.emplace_back(ext_prop);
         }
 
         return properties;
@@ -20058,9 +20090,15 @@ public:
 
     // intentionally not explicit
     update(property prop, operation action = operation::set_item_field)
-        : prop_(std::move(prop)), op_(std::move(action))
+        : prop_(std::move(prop.to_xml())), op_(std::move(action))
     {
     }
+
+    update(extended_property prop, operation action = operation::set_item_field)
+        : prop_(std::move(prop.to_xml())), op_(std::move(action))
+    {
+    }
+
 
     //! Serializes this update instance to an XML string for item operations
     std::string to_item_xml() const
@@ -20076,7 +20114,7 @@ public:
         }
         std::stringstream sstr;
         sstr << "<t:" << action << ">";
-        sstr << prop_.to_xml();
+        sstr << prop_;
         sstr << "</t:" << action << ">";
         return sstr.str();
     }
@@ -20095,13 +20133,13 @@ public:
         }
         std::stringstream sstr;
         sstr << "<t:" << action << ">";
-        sstr << prop_.to_xml();
+        sstr << prop_;
         sstr << "</t:" << action << ">";
         return sstr.str();
     }
 
 private:
-    property prop_;
+    std::string prop_;
     update::operation op_;
 };
 
