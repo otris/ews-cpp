@@ -20123,10 +20123,9 @@ public:
     }
 
     update(extended_property prop, operation action = operation::set_item_field)
-        : prop_(std::move(prop.to_xml())), op_(std::move(action))
+        : prop_(prop.to_xml()), op_(std::move(action))
     {
     }
-
 
     //! Serializes this update instance to an XML string for item operations
     std::string to_item_xml() const
