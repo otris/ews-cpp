@@ -648,8 +648,8 @@ TEST(OfflineContactTest, SetPhysicalAddressesValues)
 TEST_F(ContactTest, UpdatePhysicalAddressesValues)
 {
     auto minnie = test_contact();
-    auto address = ews::physical_address(ews::physical_address::key::business, "",
-                                         "Duckburg", "", "", "");
+    auto address = ews::physical_address(ews::physical_address::key::business,
+                                         "", "Duckburg", "", "", "");
     auto prop = ews::property(
         ews::contact_property_path::physical_address::business::city, address);
     auto new_id = service().update_item(minnie.get_item_id(), prop);

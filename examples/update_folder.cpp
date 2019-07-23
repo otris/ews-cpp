@@ -41,8 +41,8 @@ int main()
             auto folder = service.get_folder(folder_ids.front());
             auto name = folder.get_display_name();
 
-				// Add suffix to folders display
-				// or remove suffix if already exists
+            // Add suffix to folders display
+            // or remove suffix if already exists
             auto pos = name.find("_updated");
             if (pos == std::string::npos)
             {
@@ -54,8 +54,8 @@ int main()
             }
 
             // Create property and update
-            auto prop = ews::property(
-                ews::folder_property_path::display_name, name);
+            auto prop =
+                ews::property(ews::folder_property_path::display_name, name);
             auto new_id = service.update_folder(folder.get_folder_id(), prop);
         }
     }

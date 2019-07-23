@@ -92,9 +92,8 @@ namespace internal
     class on_scope_exit final
     {
     public:
-        template <typename Function>
-        on_scope_exit(Function destructor_function) try
-            : func_(std::move(destructor_function))
+        template <typename Function> on_scope_exit(Function destructor_function)
+        try : func_(std::move(destructor_function))
         {
         }
         catch (std::exception&)
@@ -437,20 +436,21 @@ public:
                 auto doc = std::string(start, xml.size());
                 auto lineno = 1U;
                 auto charno = 0U;
-                std::replace_if(begin(doc), end(doc),
-                                [&](char c) -> bool {
-                                    charno++;
-                                    if (c == '\n')
-                                    {
-                                        if (charno < idx)
-                                        {
-                                            lineno++;
-                                        }
-                                        return true;
-                                    }
-                                    return false;
-                                },
-                                ' ');
+                std::replace_if(
+                    begin(doc), end(doc),
+                    [&](char c) -> bool {
+                        charno++;
+                        if (c == '\n')
+                        {
+                            if (charno < idx)
+                            {
+                                lineno++;
+                            }
+                            return true;
+                        }
+                        return false;
+                    },
+                    ' ');
 
                 // 0-termini probably got replaced by xml_document::parse
                 std::replace(begin(doc), end(doc), '\0', '>');
@@ -13082,14 +13082,12 @@ inline std::string extended_property::to_xml() const
 
     auto values = get_values();
     auto efu = get_extended_field_uri();
-    for (auto&& v : values) {
+    for (auto&& v : values)
+    {
         sstr << efu.to_xml();
         sstr << "<t:Message>";
-        sstr << "<t:ExtendedProperty>"
-             << efu.to_xml();
-        sstr << "<t:Value>"
-             << v
-             << "</t:Value>";
+        sstr << "<t:ExtendedProperty>" << efu.to_xml();
+        sstr << "<t:Value>" << v << "</t:Value>";
         sstr << "</t:ExtendedProperty>";
         sstr << "</t:Message>";
     }
@@ -13107,16 +13105,13 @@ extended_property::from_xml_element(const rapidxml::xml_node<char>& top_node)
           "Expected a <ExtendedProperty>, got something else");
 
     auto node = top_node.first_node();
-    auto ext_field_uri =
-        extended_field_uri::from_xml_element(*node);
+    auto ext_field_uri = extended_field_uri::from_xml_element(*node);
     std::vector<std::string> values;
     node = node->next_sibling();
 
-    if (compare(node->name(), node->name_size(), "t:Value",
-                strlen("t:Value")))
+    if (compare(node->name(), node->name_size(), "t:Value", strlen("t:Value")))
     {
-        values.emplace_back(
-            std::string(node->value(), node->value_size()));
+        values.emplace_back(std::string(node->value(), node->value_size()));
     }
     else if (compare(node->name(), node->name_size(), "t:Values",
                      strlen("t:Values")))

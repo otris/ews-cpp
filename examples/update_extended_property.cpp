@@ -47,8 +47,10 @@ int main()
 
             ews::extended_field_uri::property_type title_prop_type("String");
             ews::extended_field_uri::property_tag title_prop_id("14917");
-            ews::extended_field_uri title_prop_uri(title_prop_id, title_prop_type);
-            ews::extended_property title_prop(title_prop_uri, { "el presidente" });
+            ews::extended_field_uri title_prop_uri(title_prop_id,
+                                                   title_prop_type);
+            ews::extended_property title_prop(title_prop_uri,
+                                              {"el presidente"});
             ews::update update(title_prop);
 
             auto new_id = service.update_item(id, update);
