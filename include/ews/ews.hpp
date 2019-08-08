@@ -8158,6 +8158,29 @@ private:
     std::string domain_;
 };
 
+class oauth2_client_credentials final : public internal::credentials
+{
+    public:
+        oauth2_client_credentials(std::string tenant, std::string client_id, std::string client_secret) 
+        : tenant_(std::move(tenant)), client_id_(std::move(client_id)), client_secret_(std::move(client_secret))
+        {
+        }
+
+    private:
+        void certify(internal::http_request*) const override;
+        std::string tenant_;
+        std::string client_id_;
+        std::string client_secret_;
+        std::string auth_token;
+
+        void authenticate() {
+            internal::http_request req ("https://login.microsoftonline.com/" + tenant_ + "/oauth2/v2.0/token");
+            req.set_content_type("application/x-www-form-urlencoded");
+
+        }
+        void renew_token();
+};
+
 namespace internal
 {
     class http_request final
@@ -22594,6 +22617,12 @@ inline void ntlm_credentials::certify(internal::http_request* request) const
         (domain_.empty() ? "" : domain_ + "\\") + username_ + ":" + password_;
     request->set_option(CURLOPT_USERPWD, login.c_str());
     request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
+}
+
+inline void oauth2_client_credentials::certify(internal::http_request* request) const
+{
+    check(request, "Expected request, got nullptr");
+    request->set_option(CURLOPT_XOAUTH2_BEARER, auth_token);
 }
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
