@@ -8175,6 +8175,7 @@ class oauth2_client_credentials final : public internal::credentials
         std::string client_secret_;
         std::string scope_ = "https://graph.microsoft.com/.default";
         std::string access_token;
+        std::chrono::steady_clock::time_point expiration;
 
         void authenticate() {
             // curl handle to url-encode the data
@@ -8213,12 +8214,24 @@ class oauth2_client_credentials final : public internal::credentials
                     std::string errmsg = "OAuth2 Error: " + json_content["error_description"];
                     throw exception(errmsg);
                 }
-                throw exception("OAuth2 Error");
+                throw exception("OAuth2 Error: no access token in response");
+            }
+
+            if (json_content.find("expires_in") == json_content.end()) {
+                if (json_content.find("error_description") != json_content.end()) {
+                    std::string errmsg = "OAuth2 Error: " + json_content["error_description"];
+                    throw exception(errmsg);
+                }
+                throw exception("OAuth2 Error: no expiration time in response");
             }
             
             access_token = json_content["access_token"];
+            expiration = std::chrono::steady_clock::now() + std::chrono::seconds(json_content["expires_in"]);
         }
-        void renew_token();
+
+        bool expired() {
+            return (std::chrono::steady_clock::now() > expiration);
+        }
 };
 
 namespace internal
@@ -22662,6 +22675,8 @@ inline void ntlm_credentials::certify(internal::http_request* request) const
 inline void oauth2_client_credentials::certify(internal::http_request* request) const
 {
     check(request, "Expected request, got nullptr");
+    // FIXME: we should test expiration here and get another token if the previous one expired,
+    // but we can't change the credentials as they are passed const here.
     request->set_option(CURLOPT_XOAUTH2_BEARER, access_token);
 }
 
