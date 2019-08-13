@@ -8170,68 +8170,14 @@ class oauth2_client_credentials final : public internal::credentials
 
     private:
         void certify(internal::http_request*) const override;
+        void authenticate();
+        bool expired();
         std::string tenant_;
         std::string client_id_;
         std::string client_secret_;
         std::string scope_ = "https://graph.microsoft.com/.default";
         std::string access_token;
         std::chrono::steady_clock::time_point expiration;
-
-        void authenticate() {
-            // curl handle to url-encode the data
-            internal::curl_ptr *handle_ = new(internal::curl_ptr);
-            CURL *c = handle_->get();
-
-            char *escaped_client_id = curl_easy_escape(c, client_id_.c_str(), client_id_.length());
-            char *escaped_client_secret = curl_easy_escape(c, client_secret_.c_str(), client_secret_.length());
-            char *escaped_scope = curl_easy_escape(c, scope_.c_str(), scope_.length());
-
-            std::string url = "https://login.microsoftonline.com/" + tenant_ + "/oauth2/v2.0/token";
-            std::string data;
-
-            data.append("client_id=");
-            data.append(escaped_client_id);
-            data.append("&client_secret=");
-            data.append(escaped_client_secret);
-            data.append("&scope=");
-            data.append(escaped_scope);
-            data.append("&grant_type=client_credentials");
-            
-            curl_free(escaped_client_id);
-            curl_free(escaped_client_secret);
-            curl_free(escaped_scope);
-
-            delete handle_;
-
-            // perform the real request to get the authentication token
-            internal::http_request req(url);
-            internal::http_response res = req.send(data);
-
-            std::vector<char> content = res.content();
-            nlohmann::json json_content = nlohmann::json::parse(content);
-            if (json_content.find("access_token") == json_content.end()) {
-                if (json_content.find("error_description") != json_content.end()) {
-                    std::string errmsg = "OAuth2 Error: " + json_content["error_description"];
-                    throw exception(errmsg);
-                }
-                throw exception("OAuth2 Error: no access token in response");
-            }
-
-            if (json_content.find("expires_in") == json_content.end()) {
-                if (json_content.find("error_description") != json_content.end()) {
-                    std::string errmsg = "OAuth2 Error: " + json_content["error_description"];
-                    throw exception(errmsg);
-                }
-                throw exception("OAuth2 Error: no expiration time in response");
-            }
-            
-            access_token = json_content["access_token"];
-            expiration = std::chrono::steady_clock::now() + std::chrono::seconds(json_content["expires_in"]);
-        }
-
-        bool expired() {
-            return (std::chrono::steady_clock::now() > expiration);
-        }
 };
 
 namespace internal
@@ -22678,6 +22624,64 @@ inline void oauth2_client_credentials::certify(internal::http_request* request) 
     // FIXME: we should test expiration here and get another token if the previous one expired,
     // but we can't change the credentials as they are passed const here.
     request->set_option(CURLOPT_XOAUTH2_BEARER, access_token);
+}
+
+inline void oauth2_client_credentials::authenticate() 
+{
+            // curl handle to url-encode the data
+            internal::curl_ptr *handle_ = new(internal::curl_ptr);
+            CURL *c = handle_->get();
+
+            char *escaped_client_id = curl_easy_escape(c, client_id_.c_str(), client_id_.length());
+            char *escaped_client_secret = curl_easy_escape(c, client_secret_.c_str(), client_secret_.length());
+            char *escaped_scope = curl_easy_escape(c, scope_.c_str(), scope_.length());
+
+            std::string url = "https://login.microsoftonline.com/" + tenant_ + "/oauth2/v2.0/token";
+            std::string data;
+
+            data.append("client_id=");
+            data.append(escaped_client_id);
+            data.append("&client_secret=");
+            data.append(escaped_client_secret);
+            data.append("&scope=");
+            data.append(escaped_scope);
+            data.append("&grant_type=client_credentials");
+            
+            curl_free(escaped_client_id);
+            curl_free(escaped_client_secret);
+            curl_free(escaped_scope);
+
+            delete handle_;
+
+            // perform the real request to get the authentication token
+            internal::http_request req = internal::http_request(url);
+            internal::http_response res = req.send(data);
+
+            std::vector<char> content = res.content();
+            nlohmann::json json_content = nlohmann::json::parse(content);
+            if (json_content.find("access_token") == json_content.end()) {
+                if (json_content.find("error_description") != json_content.end()) {
+                    std::string errmsg = std::string("OAuth2 Error: ") + json_content["error_description"].dump();
+                    throw exception(errmsg);
+                }
+                throw exception("OAuth2 Error: no access token in response");
+            }
+
+            if (json_content.find("expires_in") == json_content.end()) {
+                if (json_content.find("error_description") != json_content.end()) {
+                    std::string errmsg = std::string("OAuth2 Error: ") + json_content["error_description"].dump();
+                    throw exception(errmsg);
+                }
+                throw exception("OAuth2 Error: no expiration time in response");
+            }
+            
+            access_token = json_content["access_token"];
+            expiration = std::chrono::steady_clock::now() + std::chrono::seconds(json_content["expires_in"]);
+}
+
+inline bool oauth2_client_credentials::expired()
+{
+            return (std::chrono::steady_clock::now() > expiration);
 }
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
