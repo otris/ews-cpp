@@ -6,6 +6,7 @@ branches:
 matrix:
   include:
     - os: linux
+      dist: trusty
       addons:
         apt:
           sources:
@@ -23,6 +24,7 @@ matrix:
         - EWS_TEST_USERNAME=""
 
     - os: linux
+      dist: trusty
       addons:
         apt:
           sources:
