@@ -8170,8 +8170,8 @@ class oauth2_client_credentials final : public internal::credentials
 
     private:
         void certify(internal::http_request*) const override;
-        void authenticate();
-        bool expired();
+        void authenticate() const;
+        bool expired() const;
         std::string tenant_;
         std::string client_id_;
         std::string client_secret_;
@@ -22623,10 +22623,14 @@ inline void oauth2_client_credentials::certify(internal::http_request* request) 
     check(request, "Expected request, got nullptr");
     // FIXME: we should test expiration here and get another token if the previous one expired,
     // but we can't change the credentials as they are passed const here.
+    if (access_token.empty() || expired()) {
+        authenticate();
+    }
+
     request->set_option(CURLOPT_XOAUTH2_BEARER, access_token);
 }
 
-inline void oauth2_client_credentials::authenticate() 
+inline void oauth2_client_credentials::authenticate() const
 {
             // curl handle to url-encode the data
             internal::curl_ptr *handle_ = new(internal::curl_ptr);
@@ -22679,7 +22683,7 @@ inline void oauth2_client_credentials::authenticate()
             expiration = std::chrono::steady_clock::now() + std::chrono::seconds(json_content["expires_in"]);
 }
 
-inline bool oauth2_client_credentials::expired()
+inline bool oauth2_client_credentials::expired() const
 {
             return (std::chrono::steady_clock::now() > expiration);
 }
