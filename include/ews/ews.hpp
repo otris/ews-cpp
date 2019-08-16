@@ -8176,8 +8176,8 @@ class oauth2_client_credentials final : public internal::credentials
         std::string client_id_;
         std::string client_secret_;
         std::string scope_ = "https://graph.microsoft.com/.default";
-        std::string access_token;
-        std::chrono::steady_clock::time_point expiration;
+        mutable std::string access_token;
+        mutable std::chrono::steady_clock::time_point expiration;
 };
 
 namespace internal
