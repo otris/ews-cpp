@@ -24,6 +24,22 @@ matrix:
         - EWS_TEST_USERNAME=""
 
     - os: linux
+      dist: xenial
+      compiler: gcc
+      addons:
+        apt:
+          packages:
+            - doxygen
+            - graphviz
+            - libcurl4-gnutls-dev
+      env:
+        - MATRIX_EVAL=""
+        - EWS_TEST_DOMAIN=""
+        - EWS_TEST_PASSWORD=""
+        - EWS_TEST_URI=""
+        - EWS_TEST_USERNAME=""
+
+    - os: linux
       dist: trusty
       addons:
         apt:
@@ -36,6 +52,22 @@ matrix:
             - libcurl4-gnutls-dev
       env:
         - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+        - EWS_TEST_DOMAIN=""
+        - EWS_TEST_PASSWORD=""
+        - EWS_TEST_URI=""
+        - EWS_TEST_USERNAME=""
+
+    - os: linux
+      dist: xenial
+      compiler: clang
+      addons:
+        apt:
+          packages:
+            - doxygen
+            - graphviz
+            - libcurl4-gnutls-dev
+      env:
+        - MATRIX_EVAL=""
         - EWS_TEST_DOMAIN=""
         - EWS_TEST_PASSWORD=""
         - EWS_TEST_URI=""
