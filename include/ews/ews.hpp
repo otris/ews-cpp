@@ -46,7 +46,7 @@
 #include "rapidxml/rapidxml.hpp"
 #include "rapidxml/rapidxml_print.hpp"
 
-#include "json/json_stringview.hpp"
+#include "rapidjson/document.h"
 
 #include <curl/curl.h>
 #include <vector>
@@ -8163,8 +8163,8 @@ private:
 class oauth2_client_credentials final : public internal::credentials
 {
     public:
-        oauth2_client_credentials(std::string tenant, std::string client_id, std::string client_secret) 
-        : tenant_(std::move(tenant)), client_id_(std::move(client_id)), client_secret_(std::move(client_secret))
+        oauth2_client_credentials(std::string tenant, std::string client_id, std::string client_secret, std::string resource) 
+        : tenant_(std::move(tenant)), client_id_(std::move(client_id)), client_secret_(std::move(client_secret)), resource_(std::move(resource))
         {
         }
 
@@ -8175,7 +8175,7 @@ class oauth2_client_credentials final : public internal::credentials
         std::string tenant_;
         std::string client_id_;
         std::string client_secret_;
-        std::string scope_ = "https://graph.microsoft.com/.default";
+        std::string resource_;
         mutable std::string access_token;
         mutable std::chrono::steady_clock::time_point expiration;
 };
@@ -22638,7 +22638,7 @@ inline void oauth2_client_credentials::authenticate() const
 
             char *escaped_client_id = curl_easy_escape(c, client_id_.c_str(), client_id_.length());
             char *escaped_client_secret = curl_easy_escape(c, client_secret_.c_str(), client_secret_.length());
-            char *escaped_scope = curl_easy_escape(c, scope_.c_str(), scope_.length());
+            char *escaped_resource = curl_easy_escape(c, resource_.c_str(), resource_.length());
 
             std::string url = "https://login.microsoftonline.com/" + tenant_ + "/oauth2/v2.0/token";
             std::string data;
@@ -22647,40 +22647,44 @@ inline void oauth2_client_credentials::authenticate() const
             data.append(escaped_client_id);
             data.append("&client_secret=");
             data.append(escaped_client_secret);
-            data.append("&scope=");
-            data.append(escaped_scope);
+            data.append("&resource=");
+            data.append(escaped_resource);
             data.append("&grant_type=client_credentials");
             
             curl_free(escaped_client_id);
             curl_free(escaped_client_secret);
-            curl_free(escaped_scope);
+            curl_free(escaped_resource);
 
             delete handle_;
 
             // perform the real request to get the authentication token
             internal::http_request req = internal::http_request(url);
             internal::http_response res = req.send(data);
+            std::vector<char> x = res.content();
+            std::string content(x.begin(), x.end());
 
-            std::vector<char> content = res.content();
-            nlohmann::json json_content = nlohmann::json::parse(content);
-            if (json_content.find("access_token") == json_content.end()) {
-                if (json_content.find("error_description") != json_content.end()) {
-                    std::string errmsg = std::string("OAuth2 Error: ") + json_content["error_description"].dump();
-                    throw exception(errmsg);
-                }
-                throw exception("OAuth2 Error: no access token in response");
+            rapidjson::Document document;
+            document.Parse(content.c_str());
+
+            // test for expected JSON contents
+            if (document.HasParseError()) {
+                throw exception("OAuth2 Error: JSON Parse Error");
             }
 
-            if (json_content.find("expires_in") == json_content.end()) {
-                if (json_content.find("error_description") != json_content.end()) {
-                    std::string errmsg = std::string("OAuth2 Error: ") + json_content["error_description"].dump();
-                    throw exception(errmsg);
-                }
+            if (!document.IsObject()) {
+                throw exception("OAuth2 Error: Response is no JSON Object");
+            }
+
+            if (!document.HasMember("access_token") || !document["access_token"].IsString()) {
+                throw exception("OAuth2 Error: no access_token in response");
+            }
+
+            if (!document.HasMember("expires_on") || !document["expires_on"].IsString()) {
                 throw exception("OAuth2 Error: no expiration time in response");
             }
-            
-            access_token = json_content["access_token"];
-            expiration = std::chrono::steady_clock::now() + std::chrono::seconds(json_content["expires_in"]);
+
+            access_token = document["access_token"].GetString();
+            expiration = std::chrono::steady_clock::time_point(std::chrono::seconds(std::stoll(document["expires_on"].GetString())));
 }
 
 inline bool oauth2_client_credentials::expired() const
