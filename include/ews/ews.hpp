@@ -22627,7 +22627,7 @@ inline void oauth2_client_credentials::certify(internal::http_request* request) 
         authenticate();
     }
 
-    request->set_option(CURLOPT_XOAUTH2_BEARER, access_token);
+    request->set_option(CURLOPT_XOAUTH2_BEARER, access_token.c_str());
 }
 
 inline void oauth2_client_credentials::authenticate() const
