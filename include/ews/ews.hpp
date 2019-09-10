@@ -46,7 +46,7 @@
 #include "rapidxml/rapidxml.hpp"
 #include "rapidxml/rapidxml_print.hpp"
 
-#include "json/json.hpp"
+#include "json/json_stringview.hpp"
 
 #include <curl/curl.h>
 #include <vector>
