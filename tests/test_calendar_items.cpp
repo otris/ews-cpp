@@ -1272,4 +1272,25 @@ TEST_F(CalendarItemTest, FindCalendarItemsWithCalendarViews)
     result = service().find_item(view3, calendar_folder);
     ASSERT_EQ(3U, result.size());
 }
+
+TEST_F(CalendarItemTest, FindCalendarItemsWithErrorCalendarViewRangeTooBig)
+{
+    const ews::distinguished_folder_id calendar_folder =
+        ews::standard_folder::calendar;
+
+    auto view1 = ews::calendar_view(ews::date_time("2016-01-12T11:00:00Z"),
+                                    ews::date_time("2020-01-12T12:00:00Z"));
+    EXPECT_THROW({
+       try
+       {
+           auto result = service().find_item(view1, calendar_folder);
+       }
+       catch (const std::exception& e)
+       {
+           std::string message = e.what();
+           EXPECT_TRUE(message.find("ErrorCalendarViewRangeTooBig") != std::string::npos);
+           throw;
+       }
+    }, std::exception);
+}
 } // namespace tests

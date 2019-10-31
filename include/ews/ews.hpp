@@ -11115,6 +11115,42 @@ namespace internal
         }
     }
 
+    //! Utility function for checking response messages, if they
+    //! are an error. Throws an exception in this case.
+    //! \param element XML node containing the response message
+    inline void check_response_message_for_error(const rapidxml::xml_node<>& element)
+    {
+        using rapidxml::internal::compare;
+
+        auto response_class_attr = element.first_attribute("ResponseClass");
+
+        if (compare(response_class_attr->value(),
+            response_class_attr->value_size(), "Error", 5))
+        {
+            auto code = response_code::no_error;
+
+            auto rcode_elem = element.first_node_ns(
+                uri<>::microsoft::messages(),
+                "ResponseCode");
+            check(rcode_elem, "Expected <ResponseCode> element");
+
+            code = str_to_response_code(rcode_elem->value());
+            auto message_text = element.first_node_ns(
+                uri<>::microsoft::messages(),
+                "MessageText");
+
+            if (message_text)
+            {
+                throw exchange_error(
+                    code, std::string(
+                        message_text->value(),
+                        message_text->value_size()));
+            }
+
+            throw exchange_error(code);
+        }
+    }
+
     // Base-class for all response messages
     class response_message_base
     {
@@ -22910,8 +22946,11 @@ namespace internal
         check(elem, "Expected <FindItemResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
 
+        check_response_message_for_error(*elem);
+
         auto root_folder =
             elem->first_node_ns(uri<>::microsoft::messages(), "RootFolder");
+        check(root_folder, "Expected <RootFolder> element");
 
         auto items_elem =
             root_folder->first_node_ns(uri<>::microsoft::types(), "Items");
