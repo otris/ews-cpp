@@ -22642,9 +22642,7 @@ sync_folder_hierarchy_result::parse(internal::http_response&& response)
             if (compare(item_elem.local_name(), item_elem.local_name_size(),
                         "Create", strlen("Create")))
             {
-                const auto folder_elem = item_elem.first_node_ns(
-                    internal::uri<>::microsoft::types(), "Folder");
-                check(folder_elem, "Expected <Folder> element");
+                const auto folder_elem = item_elem.first_node();
                 const auto folder = folder::from_xml_element(*folder_elem);
                 created_folders.emplace_back(folder);
             }
@@ -22652,9 +22650,7 @@ sync_folder_hierarchy_result::parse(internal::http_response&& response)
             if (compare(item_elem.local_name(), item_elem.local_name_size(),
                         "Update", strlen("Update")))
             {
-                const auto folder_elem = item_elem.first_node_ns(
-                    internal::uri<>::microsoft::types(), "Folder");
-                check(folder_elem, "Expected <Folder> element");
+                const auto folder_elem = item_elem.first_node();
                 const auto folder = folder::from_xml_element(*folder_elem);
                 updated_folders.emplace_back(folder);
             }
