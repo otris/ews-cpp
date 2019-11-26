@@ -8223,6 +8223,12 @@ namespace internal
             headers_.append(str.c_str());
         }
 
+        void set_authorization(const std::string& authorization)
+        {
+            const std::string str = "Authorization: " + authorization;
+            headers_.append(str.c_str());
+        }
+
         // Set credentials for authentication.
         void set_credentials(const credentials& creds) { creds.certify(this); }
 
@@ -22669,7 +22675,7 @@ inline void oauth2_client_credentials::certify(internal::http_request* request) 
         authenticate();
     }
 
-    request->set_option(CURLOPT_XOAUTH2_BEARER, access_token.c_str());
+    request->set_authorization("Bearer " + access_token);
 }
 
 inline void oauth2_client_credentials::authenticate() const
