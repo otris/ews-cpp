@@ -8163,8 +8163,12 @@ private:
 class oauth2_client_credentials final : public internal::credentials
 {
     public:
-        oauth2_client_credentials(std::string tenant, std::string client_id, std::string client_secret, std::string resource) 
-        : tenant_(std::move(tenant)), client_id_(std::move(client_id)), client_secret_(std::move(client_secret)), resource_(std::move(resource))
+        oauth2_client_credentials(std::string tenant, std::string client_id,
+                                  std::string client_secret,
+                                  std::string resource, std::string scope)
+        : tenant_(std::move(tenant)), client_id_(std::move(client_id)),
+          client_secret_(std::move(client_secret)),
+          resource_(std::move(resource)), scope_(std::move(scope))
         {
         }
 
@@ -8176,6 +8180,7 @@ class oauth2_client_credentials final : public internal::credentials
         std::string client_id_;
         std::string client_secret_;
         std::string resource_;
+        std::string scope_;
         mutable std::string access_token;
         mutable std::chrono::steady_clock::time_point expiration;
 };
@@ -22687,10 +22692,18 @@ inline void oauth2_client_credentials::authenticate() const
     data.append("&resource=");
     data.append(escaped_resource);
     data.append("&grant_type=client_credentials");
-    
+
     curl_free(escaped_client_id);
     curl_free(escaped_client_secret);
     curl_free(escaped_resource);
+
+    if (!scope_.empty())
+    {
+        char* escaped_scope = curl_easy_escape(c, scope_.c_str(), scope_.length());
+        data.append("&scope=");
+        data.append(escaped_scope);
+        curl_free(escaped_scope);
+    }
 
     delete handle_;
 
