@@ -23487,9 +23487,14 @@ namespace internal
                             res->last_node()->local_name_size()))
                 {
                     auto contact_elem = res->last_node("t:Contact");
-                    directory_id id(
-                        contact_elem->first_node("t:DirectoryId")->value());
-                    r.directory_id = id;
+                    auto directory_id_elem = contact_elem
+                        ->first_node("t:Directory");
+
+                    if (directory_id_elem)
+                    {
+                        directory_id id(directory_id_elem->value());
+                        r.directory_id = id;
+                    }
                 }
 
                 resolutions.resolutions.emplace_back(r);
