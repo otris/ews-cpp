@@ -22695,7 +22695,7 @@ inline void oauth2_client_credentials::authenticate() const
     data.append(escaped_client_id);
     data.append("&client_secret=");
     data.append(escaped_client_secret);
-    data.append("&resource=");
+    data.append("&ressource=");
     data.append(escaped_resource);
     data.append("&grant_type=client_credentials");
 
