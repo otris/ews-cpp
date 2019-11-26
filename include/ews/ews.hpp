@@ -22719,12 +22719,13 @@ inline void oauth2_client_credentials::authenticate() const
         throw exception("OAuth2 Error: no access_token in response");
     }
 
-    if (!document.HasMember("expires_on") || !document["expires_on"].IsString()) {
+    if (!document.HasMember("expires_in") || !document["expires_in"].IsNumber())
+    {
         throw exception("OAuth2 Error: no expiration time in response");
     }
 
     access_token = document["access_token"].GetString();
-    expiration = std::chrono::steady_clock::time_point(std::chrono::seconds(std::stoll(document["expires_on"].GetString())));
+    expiration = std::chrono::steady_clock::time_point(std::chrono::seconds(document["expires_in"].GetUint64()));
 }
 
 inline bool oauth2_client_credentials::expired() const
