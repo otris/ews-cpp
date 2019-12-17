@@ -8163,8 +8163,12 @@ private:
 class oauth2_client_credentials final : public internal::credentials
 {
     public:
-        oauth2_client_credentials(std::string tenant, std::string client_id, std::string client_secret, std::string resource) 
-        : tenant_(std::move(tenant)), client_id_(std::move(client_id)), client_secret_(std::move(client_secret)), resource_(std::move(resource))
+        oauth2_client_credentials(std::string tenant, std::string client_id,
+                                  std::string client_secret,
+                                  std::string resource, std::string scope)
+        : tenant_(std::move(tenant)), client_id_(std::move(client_id)),
+          client_secret_(std::move(client_secret)),
+          resource_(std::move(resource)), scope_(std::move(scope))
         {
         }
 
@@ -8176,6 +8180,7 @@ class oauth2_client_credentials final : public internal::credentials
         std::string client_id_;
         std::string client_secret_;
         std::string resource_;
+        std::string scope_;
         mutable std::string access_token;
         mutable std::chrono::steady_clock::time_point expiration;
 };
@@ -8215,6 +8220,12 @@ namespace internal
         {
             const std::string str =
                 "Content-Length: " + std::to_string(content_length);
+            headers_.append(str.c_str());
+        }
+
+        void set_authorization(const std::string& authorization)
+        {
+            const std::string str = "Authorization: " + authorization;
             headers_.append(str.c_str());
         }
 
@@ -22659,73 +22670,86 @@ inline void oauth2_client_credentials::certify(internal::http_request* request) 
     check(request, "Expected request, got nullptr");
     // FIXME: we should test expiration here and get another token if the previous one expired,
     // but we can't change the credentials as they are passed const here.
-    if (access_token.empty() || expired()) {
+    if (access_token.empty() || expired())
+    {
         authenticate();
     }
 
-    request->set_option(CURLOPT_XOAUTH2_BEARER, access_token.c_str());
+    request->set_authorization("Bearer " + access_token);
 }
 
 inline void oauth2_client_credentials::authenticate() const
 {
-            // curl handle to url-encode the data
-            internal::curl_ptr *handle_ = new(internal::curl_ptr);
-            CURL *c = handle_->get();
+    // curl handle to url-encode the data
+    internal::curl_ptr* handle_ = new(internal::curl_ptr);
+    CURL* c = handle_->get();
 
-            char *escaped_client_id = curl_easy_escape(c, client_id_.c_str(), client_id_.length());
-            char *escaped_client_secret = curl_easy_escape(c, client_secret_.c_str(), client_secret_.length());
-            char *escaped_resource = curl_easy_escape(c, resource_.c_str(), resource_.length());
+    char* escaped_client_id = curl_easy_escape(c, client_id_.c_str(), client_id_.length());
+    char* escaped_client_secret = curl_easy_escape(c, client_secret_.c_str(), client_secret_.length());
+    char* escaped_resource = curl_easy_escape(c, resource_.c_str(), resource_.length());
 
-            std::string url = "https://login.microsoftonline.com/" + tenant_ + "/oauth2/v2.0/token";
-            std::string data;
+    std::string url = "https://login.microsoftonline.com/" + tenant_ + "/oauth2/v2.0/token";
+    std::string data;
 
-            data.append("client_id=");
-            data.append(escaped_client_id);
-            data.append("&client_secret=");
-            data.append(escaped_client_secret);
-            data.append("&resource=");
-            data.append(escaped_resource);
-            data.append("&grant_type=client_credentials");
-            
-            curl_free(escaped_client_id);
-            curl_free(escaped_client_secret);
-            curl_free(escaped_resource);
+    data.append("client_id=");
+    data.append(escaped_client_id);
+    data.append("&client_secret=");
+    data.append(escaped_client_secret);
+    data.append("&ressource=");
+    data.append(escaped_resource);
+    data.append("&grant_type=client_credentials");
 
-            delete handle_;
+    curl_free(escaped_client_id);
+    curl_free(escaped_client_secret);
+    curl_free(escaped_resource);
 
-            // perform the real request to get the authentication token
-            internal::http_request req = internal::http_request(url);
-            internal::http_response res = req.send(data);
-            std::vector<char> x = res.content();
-            std::string content(x.begin(), x.end());
+    if (!scope_.empty())
+    {
+        char* escaped_scope = curl_easy_escape(c, scope_.c_str(), scope_.length());
+        data.append("&scope=");
+        data.append(escaped_scope);
+        curl_free(escaped_scope);
+    }
 
-            rapidjson::Document document;
-            document.Parse(content.c_str());
+    delete handle_;
 
-            // test for expected JSON contents
-            if (document.HasParseError()) {
-                throw exception("OAuth2 Error: JSON Parse Error");
-            }
+    // perform the real request to get the authentication token
+    internal::http_request req = internal::http_request(url);
+    internal::http_response res = req.send(data);
+    std::vector<char> content_vector = res.content();
+    std::string content(content_vector.begin(), content_vector.end());
 
-            if (!document.IsObject()) {
-                throw exception("OAuth2 Error: Response is no JSON Object");
-            }
+    rapidjson::Document document;
+    document.Parse(content.c_str());
 
-            if (!document.HasMember("access_token") || !document["access_token"].IsString()) {
-                throw exception("OAuth2 Error: no access_token in response");
-            }
+    // test for expected JSON contents
+    if (document.HasParseError())
+    {
+        throw exception("OAuth2 Error: JSON Parse Error");
+    }
 
-            if (!document.HasMember("expires_on") || !document["expires_on"].IsString()) {
-                throw exception("OAuth2 Error: no expiration time in response");
-            }
+    if (!document.IsObject())
+    {
+        throw exception("OAuth2 Error: Response is no JSON Object");
+    }
 
-            access_token = document["access_token"].GetString();
-            expiration = std::chrono::steady_clock::time_point(std::chrono::seconds(std::stoll(document["expires_on"].GetString())));
+    if (!document.HasMember("access_token") || !document["access_token"].IsString()) 
+    {
+        throw exception("OAuth2 Error: no access_token in response");
+    }
+
+    if (!document.HasMember("expires_in") || !document["expires_in"].IsNumber())
+    {
+        throw exception("OAuth2 Error: no expiration time in response");
+    }
+
+    access_token = document["access_token"].GetString();
+    expiration = std::chrono::steady_clock::time_point(std::chrono::seconds(document["expires_in"].GetUint64()));
 }
 
 inline bool oauth2_client_credentials::expired() const
 {
-            return (std::chrono::steady_clock::now() > expiration);
+    return (std::chrono::steady_clock::now() > expiration);
 }
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
