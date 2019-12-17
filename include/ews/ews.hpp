@@ -22716,8 +22716,8 @@ inline void oauth2_client_credentials::authenticate() const
     // perform the real request to get the authentication token
     internal::http_request req = internal::http_request(url);
     internal::http_response res = req.send(data);
-    std::vector<char> x = res.content();
-    std::string content(x.begin(), x.end());
+    std::vector<char> content_vector = res.content();
+    std::string content(content_vector.begin(), content_vector.end());
 
     rapidjson::Document document;
     document.Parse(content.c_str());
