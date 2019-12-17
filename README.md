@@ -111,8 +111,15 @@ C++ application.
 
 * HTTP basic auth
 * NTLM
+* OAuth2 (Client credentials flow)
 
 Note: Kerberos is currently not supported but its on the TODO list.
+
+### OAuth2 
+
+* For using OAuth2 (client credentials flow), the client needs to be registered
+  in the Azure tenant and granted the application permission "FullAccess".
+* For an example see the file [office365_oauth2.cpp](example/office365_oauth2.cpp).
 
 ## Supported Compilers
 
