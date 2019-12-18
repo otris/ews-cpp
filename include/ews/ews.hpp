@@ -8103,6 +8103,47 @@ namespace internal
 #endif
         virtual void certify(http_request*) const = 0;
     };
+
+    //! \brief This class a basic implementation for OAuth2 grant types.
+    class oauth2_basic : public credentials
+    {
+        public:
+            oauth2_basic(std::string tenant, std::string client_id,
+                         std::string resource, std::string scope)
+            : tenant_(std::move(tenant)), client_id_(std::move(client_id)),
+              resource_(std::move(resource)), scope_(std::move(scope))
+            {
+            }
+
+#ifdef EWS_HAS_DEFAULT_AND_DELETE
+            virtual ~oauth2_basic() = default;
+            oauth2_basic& operator=(const oauth2_basic&) = default;
+#else
+            virtual ~oauth2_basic() {}
+#endif
+
+            void certify(internal::http_request*) const override;
+
+            bool expired() const
+            {
+                return (std::chrono::steady_clock::now() > expiration);
+            }
+
+        protected:
+
+            virtual void authenticate() const;
+
+            virtual void append_url(CURL* c, std::string& data) const = 0;
+
+        private:
+            std::string tenant_;
+            std::string client_id_;
+            std::string resource_;
+            std::string scope_;
+            mutable std::string access_token;
+            mutable std::chrono::steady_clock::time_point expiration;
+    };
+
 } // namespace internal
 
 //! \brief This class allows HTTP basic authentication.
@@ -8160,29 +8201,24 @@ private:
     std::string domain_;
 };
 
-class oauth2_client_credentials final : public internal::credentials
+//! \brief This class allows OAuth2 authentification using the client credentials grant type.
+//!  
+class oauth2_client_credentials final : public internal::oauth2_basic
 {
     public:
         oauth2_client_credentials(std::string tenant, std::string client_id,
                                   std::string client_secret,
                                   std::string resource, std::string scope)
-        : tenant_(std::move(tenant)), client_id_(std::move(client_id)),
-          client_secret_(std::move(client_secret)),
-          resource_(std::move(resource)), scope_(std::move(scope))
+        : oauth2_basic(tenant, client_id, resource, scope),
+          client_secret_(std::move(client_secret))
         {
         }
 
     private:
-        void certify(internal::http_request*) const override;
-        void authenticate() const;
-        bool expired() const;
-        std::string tenant_;
-        std::string client_id_;
-        std::string client_secret_;
-        std::string resource_;
-        std::string scope_;
-        mutable std::string access_token;
-        mutable std::chrono::steady_clock::time_point expiration;
+        
+        void append_url(CURL *c, std::string& data) const override;
+
+        const std::string client_secret_;
 };
 
 namespace internal
@@ -22665,7 +22701,7 @@ inline void ntlm_credentials::certify(internal::http_request* request) const
     request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
 }
 
-inline void oauth2_client_credentials::certify(internal::http_request* request) const
+inline void internal::oauth2_basic::certify(internal::http_request* request) const
 {
     check(request, "Expected request, got nullptr");
     // FIXME: we should test expiration here and get another token if the previous one expired,
@@ -22678,14 +22714,13 @@ inline void oauth2_client_credentials::certify(internal::http_request* request) 
     request->set_authorization("Bearer " + access_token);
 }
 
-inline void oauth2_client_credentials::authenticate() const
+inline void internal::oauth2_basic::authenticate() const
 {
     // curl handle to url-encode the data
     internal::curl_ptr* handle_ = new(internal::curl_ptr);
     CURL* c = handle_->get();
 
     char* escaped_client_id = curl_easy_escape(c, client_id_.c_str(), client_id_.length());
-    char* escaped_client_secret = curl_easy_escape(c, client_secret_.c_str(), client_secret_.length());
     char* escaped_resource = curl_easy_escape(c, resource_.c_str(), resource_.length());
 
     std::string url = "https://login.microsoftonline.com/" + tenant_ + "/oauth2/v2.0/token";
@@ -22693,14 +22728,10 @@ inline void oauth2_client_credentials::authenticate() const
 
     data.append("client_id=");
     data.append(escaped_client_id);
-    data.append("&client_secret=");
-    data.append(escaped_client_secret);
     data.append("&ressource=");
     data.append(escaped_resource);
-    data.append("&grant_type=client_credentials");
 
     curl_free(escaped_client_id);
-    curl_free(escaped_client_secret);
     curl_free(escaped_resource);
 
     if (!scope_.empty())
@@ -22710,6 +22741,8 @@ inline void oauth2_client_credentials::authenticate() const
         data.append(escaped_scope);
         curl_free(escaped_scope);
     }
+
+    append_url(c, data);
 
     delete handle_;
 
@@ -22747,9 +22780,15 @@ inline void oauth2_client_credentials::authenticate() const
     expiration = std::chrono::steady_clock::time_point(std::chrono::seconds(document["expires_in"].GetUint64()));
 }
 
-inline bool oauth2_client_credentials::expired() const
+inline void oauth2_client_credentials::append_url(CURL* c, std::string& data) const
 {
-    return (std::chrono::steady_clock::now() > expiration);
+    char* escaped_client_secret = curl_easy_escape(c, client_secret_.c_str(), client_secret_.length());
+
+    data.append("&client_secret=");
+    data.append(escaped_client_secret);
+    data.append("&grant_type=client_credentials");
+
+    curl_free(escaped_client_secret);
 }
 
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
