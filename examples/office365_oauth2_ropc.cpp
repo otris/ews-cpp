@@ -33,7 +33,7 @@ int main()
     try
     {
         // URL of the Outlook instance
-        const std::string outlookUrl = "https://outlook.office365.com";
+        const std::string outlookUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
 
         // The name of your tenant
         const std::string tenant = "example.onmicrosoft.com";
@@ -44,20 +44,18 @@ int main()
         // The client secret as provided by Office 365.
         const std::string client_secret = "<do-not-commit-a-client-secret>";
 
-        // URL of the ressource access by the client.
-        const std::string ressource = "https://outlook.office365.com";
-
         // URL of the scope granted to the client
-        const std::string scope = "https://outlook.office365.com/.default";
+        const std::string scope = "https://outlook.office.com/EWS.AccessAsUser.All user.read profile openid email offline_access";
 
-        const ews::oauth2_client_credentials credentials(
-            tenant, client_id, client_secret, ressource, scope);
+        // Username of the user the client schould use for login; usually the
+        // e-mail address in the Office 365 tenant
+	const std::string username = "someone@mail.invalid";
 
-        // Connecting via OAuth2 and client credentials requires impersonation
-        // with in EWS. So we use a SMTP address of an user the client should
-        // act for.
-        const auto someone = ews::connecting_sid(
-            ews::connecting_sid::type::smtp_address, "someone@mail.invalid");
+        // The user's password
+	const std::string password = "<do-not-commit-passwords>";
+
+        const ews::oauth2_resource_owner_password_credentials credentials(
+            tenant, client_id, client_secret, scope, username, password);
 
         // Next we create a new ews::service instance in order to connect to
         // Office 365.
@@ -74,14 +72,13 @@ int main()
         std::string end_date("2017-03-31T23:59:59-07:00");
 
         const auto found_items =
-            service.impersonate(someone).find_item(ews::calendar_view(start_date, end_date),
+            service.find_item(ews::calendar_view(start_date, end_date),
                               calendar_folder, ews::base_shape::id_only);
         std::cout << "# calender items found: " << found_items.size()
                   << std::endl;
 
         if (!found_items.empty())
         {
-
             std::vector<ews::item_id> ids;
             ids.reserve(found_items.size());
             std::transform(begin(found_items), end(found_items),
