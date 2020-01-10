@@ -16,6 +16,7 @@
                 <t:MailboxType>Mailbox</t:MailboxType>
               </t:Mailbox>
               <t:Contact>
+                <t:DisplayName>User Number Two</t:DisplayName>
                 <t:ContactSource>ActiveDirectory</t:ContactSource>
                 <t:DirectoryId>&lt;GUID=abc-123-foo-bar&gt;</t:DirectoryId>
               </t:Contact>

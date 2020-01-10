@@ -40,9 +40,11 @@ TEST_F(ResolveNamesTest, UserFound)
         service().resolve_names("name", ews::search_scope::active_directory);
     auto resolution_mailbox = response.resolutions[0].mailbox;
     auto resolution_id = response.resolutions[0].directory_id;
+    auto resolution_contact = response.resolutions[0].contact;
     EXPECT_EQ(resolution_mailbox.name(), "User2");
     EXPECT_EQ(resolution_mailbox.value(), "User2@example.com");
     EXPECT_EQ(resolution_id.get_id(), "<GUID=abc-123-foo-bar>");
+    EXPECT_EQ(resolution_contact.get_display_name(), "User Number Two");
 }
 
 TEST_F(ResolveNamesTest, SendCorrectRequest)

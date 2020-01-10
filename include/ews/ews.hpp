@@ -62,6 +62,8 @@
 namespace ews
 {
 
+class contact;
+
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
 
 #    ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
@@ -9643,6 +9645,7 @@ struct resolution final
 {
     ews::mailbox mailbox;
     ews::directory_id directory_id;
+    std::shared_ptr<ews::contact> contact;
 };
 
 #if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
@@ -16683,6 +16686,15 @@ public:
                        internal::xml_subtree(elem));
     }
 
+    //! Makes a contact instance from a \<Contact> XML element that has no
+    //! ItemId. Is the case in resolution sets.
+    static contact from_xml_element_without_item_id(
+        const rapidxml::xml_node<>& elem)
+    {
+        item_id id;
+        return contact(std::move(id), internal::xml_subtree(elem));
+    }
+
 private:
     template <typename U> friend class basic_service;
 
@@ -23711,6 +23723,10 @@ namespace internal
                         directory_id id(directory_id_elem->value());
                         r.directory_id = id;
                     }
+
+                    r.contact = std::make_shared<ews::contact>(
+                        contact::from_xml_element_without_item_id(
+				*contact_elem));
                 }
 
                 resolutions.resolutions.emplace_back(r);
