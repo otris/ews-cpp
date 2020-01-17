@@ -10888,6 +10888,39 @@ public:
         return node ? std::string(node->value(), node->value_size()) : "";
     }
 
+    //! \brief Returns the attachment's mime content
+    //!
+    //! If this is a <tt>\<ItemAttachment></tt> and the mime content was
+    //! requested, returns the Base64-encoded mime content of the attachment. If
+    //! this is an \<FileAttachment> or the mime content was not requested,
+    //! returns an empty string.
+    std::string get_mime_content() const
+    {
+        using rapidxml::internal::compare;
+
+        const auto attachment_node = xml_.root();
+        if (!attachment_node)
+        {
+            return nullptr;
+        }
+
+        rapidxml::xml_node<>* node = nullptr;
+        for (auto child = attachment_node->first_node(); child != nullptr;
+             child = child->next_sibling())
+        {
+            for (auto inner = child->first_node(); inner != nullptr;
+                 inner = inner->next_sibling())
+            {
+                if (compare(inner->local_name(), inner->local_name_size(),
+                            "MimeContent", strlen("MimeContent")))
+                {
+                    return std::string(inner->value(), inner->value_size());
+                }
+            }
+        }
+        return "";
+    }
+
     //! Returns the attachment's content type
     std::string content_type() const
     {
@@ -21568,19 +21601,21 @@ public:
 #endif // 0
 
     //! Retrieves an attachment from the Exchange store
-    attachment get_attachment(const attachment_id& id)
+    attachment get_attachment(const attachment_id& id,
+                              bool include_mime_content = false)
     {
-        auto response = request("<m:GetAttachment>"
-                                "<m:AttachmentShape>"
-                                "<m:IncludeMimeContent/>"
-                                "<m:BodyType/>"
-                                "<m:FilterHtmlContent/>"
-                                "<m:AdditionalProperties/>"
-                                "</m:AttachmentShape>"
-                                "<m:AttachmentIds>" +
-                                id.to_xml() +
-                                "</m:AttachmentIds>"
-                                "</m:GetAttachment>");
+        std::stringstream sstr;
+        sstr << "<m:GetAttachment>"
+                "<m:AttachmentShape>"
+                "<t:IncludeMimeContent>"
+             << (include_mime_content ? "true" : "false")
+             << "</t:IncludeMimeContent>"
+                "</m:AttachmentShape>"
+                "<m:AttachmentIds>"
+             << id.to_xml()
+             << "</m:AttachmentIds>"
+                "</m:GetAttachment>";
+        auto response = request(sstr.str());
 
         const auto response_message =
             internal::get_attachment_response_message::parse(
