@@ -43,10 +43,9 @@
 #ifdef EWS_HAS_VARIANT
 #    include <variant>
 #endif
+#include "rapidjson/document.h"
 #include "rapidxml/rapidxml.hpp"
 #include "rapidxml/rapidxml_print.hpp"
-
-#include "rapidjson/document.h"
 
 #include <curl/curl.h>
 #include <vector>
@@ -8107,40 +8106,39 @@ namespace internal
     //! \brief This class a basic implementation for OAuth2 grant types.
     class oauth2_basic : public credentials
     {
-        public:
-            oauth2_basic(std::string tenant, std::string client_id,
-                         std::string scope)
+    public:
+        oauth2_basic(std::string tenant, std::string client_id,
+                     std::string scope)
             : tenant_(std::move(tenant)), client_id_(std::move(client_id)),
               scope_(std::move(scope))
-            {
-            }
+        {
+        }
 
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
-            virtual ~oauth2_basic() = default;
-            oauth2_basic& operator=(const oauth2_basic&) = default;
+        virtual ~oauth2_basic() = default;
+        oauth2_basic& operator=(const oauth2_basic&) = default;
 #else
-            virtual ~oauth2_basic() {}
+        virtual ~oauth2_basic() {}
 #endif
 
-            void certify(internal::http_request*) const override;
+        void certify(internal::http_request*) const override;
 
-            bool expired() const
-            {
-                return (std::chrono::steady_clock::now() > expiration);
-            }
+        bool expired() const
+        {
+            return (std::chrono::steady_clock::now() > expiration);
+        }
 
-        protected:
+    protected:
+        virtual void authenticate() const;
 
-            virtual void authenticate() const;
+        virtual void append_url(CURL* c, std::string& data) const = 0;
 
-            virtual void append_url(CURL* c, std::string& data) const = 0;
-
-        private:
-            std::string tenant_;
-            std::string client_id_;
-            std::string scope_;
-            mutable std::string access_token;
-            mutable std::chrono::steady_clock::time_point expiration;
+    private:
+        std::string tenant_;
+        std::string client_id_;
+        std::string scope_;
+        mutable std::string access_token;
+        mutable std::chrono::steady_clock::time_point expiration;
     };
 
 } // namespace internal
@@ -8200,51 +8198,52 @@ private:
     std::string domain_;
 };
 
-//! \brief This class allows OAuth2 authentification using the client credentials grant type.
-//!  
+//! \brief This class allows OAuth2 authentification using the client
+//! credentials grant type.
+//!
 class oauth2_client_credentials final : public internal::oauth2_basic
 {
-    public:
-        oauth2_client_credentials(std::string tenant, std::string client_id,
-                                  std::string client_secret, std::string scope,
-                                  std::string resource)
-        : oauth2_basic(std::move(tenant), std::move(client_id), std::move(scope)),
-          client_secret_(std::move(client_secret)), resource_(std::move(resource))
-        {
-        }
+public:
+    oauth2_client_credentials(std::string tenant, std::string client_id,
+                              std::string client_secret, std::string scope,
+                              std::string resource)
+        : oauth2_basic(std::move(tenant), std::move(client_id),
+                       std::move(scope)),
+          client_secret_(std::move(client_secret)),
+          resource_(std::move(resource))
+    {
+    }
 
-    private:
-        
-        void append_url(CURL* c, std::string& data) const override;
+private:
+    void append_url(CURL* c, std::string& data) const override;
 
-        const std::string client_secret_;
-        const std::string resource_;
+    const std::string client_secret_;
+    const std::string resource_;
 };
 
-//! \brief This class allows OAuth2 authentification using the Ressource Owner Password
+//! \brief This class allows OAuth2 authentification using the Ressource Owner
+//! Password
 //!        Credentials grant.
-class oauth2_resource_owner_password_credentials final : public internal::oauth2_basic
+class oauth2_resource_owner_password_credentials final
+    : public internal::oauth2_basic
 {
-    public:
-        oauth2_resource_owner_password_credentials(std::string tenant,
-                                                   std::string client_id,
-                                                   std::string client_secret,
-                                                   std::string scope,
-                                                   std::string username,
-                                                   std::string password)
-        : oauth2_basic(std::move(tenant), std::move(client_id), std::move(scope)),
+public:
+    oauth2_resource_owner_password_credentials(
+        std::string tenant, std::string client_id, std::string client_secret,
+        std::string scope, std::string username, std::string password)
+        : oauth2_basic(std::move(tenant), std::move(client_id),
+                       std::move(scope)),
           username_(std::move(username)), password_(std::move(password)),
           client_secret_(std::move(client_secret))
-        {
-        }
+    {
+    }
 
-    private:
+private:
+    void append_url(CURL* c, std::string& data) const override;
 
-        void append_url(CURL* c, std::string& data) const override;
-
-        const std::string username_;
-        const std::string password_;
-        const std::string client_secret_;
+    const std::string username_;
+    const std::string password_;
+    const std::string client_secret_;
 };
 
 namespace internal
@@ -11213,33 +11212,31 @@ namespace internal
     //! Utility function for checking response messages, if they
     //! are an error. Throws an exception in this case.
     //! \param element XML node containing the response message
-    inline void check_response_message_for_error(const rapidxml::xml_node<>& element)
+    inline void
+    check_response_message_for_error(const rapidxml::xml_node<>& element)
     {
         using rapidxml::internal::compare;
 
         auto response_class_attr = element.first_attribute("ResponseClass");
 
         if (compare(response_class_attr->value(),
-            response_class_attr->value_size(), "Error", 5))
+                    response_class_attr->value_size(), "Error", 5))
         {
             auto code = response_code::no_error;
 
             auto rcode_elem = element.first_node_ns(
-                uri<>::microsoft::messages(),
-                "ResponseCode");
+                uri<>::microsoft::messages(), "ResponseCode");
             check(rcode_elem, "Expected <ResponseCode> element");
 
             code = str_to_response_code(rcode_elem->value());
             auto message_text = element.first_node_ns(
-                uri<>::microsoft::messages(),
-                "MessageText");
+                uri<>::microsoft::messages(), "MessageText");
 
             if (message_text)
             {
-                throw exchange_error(
-                    code, std::string(
-                        message_text->value(),
-                        message_text->value_size()));
+                throw exchange_error(code,
+                                     std::string(message_text->value(),
+                                                 message_text->value_size()));
             }
 
             throw exchange_error(code);
@@ -22727,11 +22724,13 @@ inline void ntlm_credentials::certify(internal::http_request* request) const
     request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_NTLM);
 }
 
-inline void internal::oauth2_basic::certify(internal::http_request* request) const
+inline void
+internal::oauth2_basic::certify(internal::http_request* request) const
 {
     check(request, "Expected request, got nullptr");
-    // FIXME: we should test expiration here and get another token if the previous one expired,
-    // but we can't change the credentials as they are passed const here.
+    // FIXME: we should test expiration here and get another token if the
+    // previous one expired, but we can't change the credentials as they are
+    // passed const here.
     if (access_token.empty() || expired())
     {
         authenticate();
@@ -22743,12 +22742,14 @@ inline void internal::oauth2_basic::certify(internal::http_request* request) con
 inline void internal::oauth2_basic::authenticate() const
 {
     // curl handle to url-encode the data
-    internal::curl_ptr* handle_ = new(internal::curl_ptr);
+    internal::curl_ptr* handle_ = new (internal::curl_ptr);
     CURL* c = handle_->get();
 
-    char* escaped_client_id = curl_easy_escape(c, client_id_.c_str(), client_id_.length());
+    char* escaped_client_id =
+        curl_easy_escape(c, client_id_.c_str(), client_id_.length());
 
-    std::string url = "https://login.microsoftonline.com/" + tenant_ + "/oauth2/v2.0/token";
+    std::string url =
+        "https://login.microsoftonline.com/" + tenant_ + "/oauth2/v2.0/token";
     std::string data;
 
     data.append("client_id=");
@@ -22758,7 +22759,8 @@ inline void internal::oauth2_basic::authenticate() const
 
     if (!scope_.empty())
     {
-        char* escaped_scope = curl_easy_escape(c, scope_.c_str(), scope_.length());
+        char* escaped_scope =
+            curl_easy_escape(c, scope_.c_str(), scope_.length());
         data.append("&scope=");
         data.append(escaped_scope);
         curl_free(escaped_scope);
@@ -22788,7 +22790,8 @@ inline void internal::oauth2_basic::authenticate() const
         throw exception("OAuth2 Error: Response is no JSON Object");
     }
 
-    if (!document.HasMember("access_token") || !document["access_token"].IsString()) 
+    if (!document.HasMember("access_token") ||
+        !document["access_token"].IsString())
     {
         throw exception("OAuth2 Error: no access_token in response");
     }
@@ -22799,19 +22802,25 @@ inline void internal::oauth2_basic::authenticate() const
     }
 
     access_token = document["access_token"].GetString();
-    expiration = std::chrono::steady_clock::time_point(std::chrono::seconds(document["expires_in"].GetUint64()));
+    expiration = std::chrono::steady_clock::time_point(
+        std::chrono::seconds(document["expires_in"].GetUint64()));
 }
 
-inline void oauth2_resource_owner_password_credentials::append_url(CURL* c, std::string& data) const
+inline void
+oauth2_resource_owner_password_credentials::append_url(CURL* c,
+                                                       std::string& data) const
 {
-    char* escaped_client_secret = curl_easy_escape(c, client_secret_.c_str(), client_secret_.length());
-    char* escaped_username = curl_easy_escape(c, username_.c_str(), username_.length());
-    char* escaped_password = curl_easy_escape(c, password_.c_str(), password_.length());
+    char* escaped_client_secret =
+        curl_easy_escape(c, client_secret_.c_str(), client_secret_.length());
+    char* escaped_username =
+        curl_easy_escape(c, username_.c_str(), username_.length());
+    char* escaped_password =
+        curl_easy_escape(c, password_.c_str(), password_.length());
 
     data.append("&client_secret=");
     data.append(escaped_client_secret);
     data.append("&username=");
-    data.append(escaped_username );
+    data.append(escaped_username);
     data.append("&password=");
     data.append(escaped_password);
     data.append("&grant_type=password");
@@ -22821,10 +22830,13 @@ inline void oauth2_resource_owner_password_credentials::append_url(CURL* c, std:
     curl_free(escaped_password);
 }
 
-inline void oauth2_client_credentials::append_url(CURL* c, std::string& data) const
+inline void oauth2_client_credentials::append_url(CURL* c,
+                                                  std::string& data) const
 {
-    char* escaped_client_secret = curl_easy_escape(c, client_secret_.c_str(), client_secret_.length());
-    char* escaped_resource = curl_easy_escape(c, resource_.c_str(), resource_.length());
+    char* escaped_client_secret =
+        curl_easy_escape(c, client_secret_.c_str(), client_secret_.length());
+    char* escaped_resource =
+        curl_easy_escape(c, resource_.c_str(), resource_.length());
 
     data.append("&client_secret=");
     data.append(escaped_client_secret);
@@ -23691,8 +23703,8 @@ namespace internal
                             res->last_node()->local_name_size()))
                 {
                     auto contact_elem = res->last_node("t:Contact");
-                    auto directory_id_elem = contact_elem
-                        ->first_node("t:Directory");
+                    auto directory_id_elem =
+                        contact_elem->first_node("t:Directory");
 
                     if (directory_id_elem)
                     {
