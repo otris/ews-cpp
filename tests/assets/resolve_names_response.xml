@@ -18,7 +18,10 @@
               <t:Contact>
                 <t:DisplayName>User Number Two</t:DisplayName>
                 <t:ContactSource>ActiveDirectory</t:ContactSource>
-                <t:DirectoryId>&lt;GUID=abc-123-foo-bar&gt;</t:DirectoryId>
+		<t:DirectoryId>&lt;GUID=abc-123-foo-bar&gt;</t:DirectoryId>
+		<t:UserSMIMECertificate>
+		  <t:Base64Binary>DEADBEEF</Base64Binary>
+		</t:UserSMIMECertificate>
               </t:Contact>
             </t:Resolution>
           </m:ResolutionSet>

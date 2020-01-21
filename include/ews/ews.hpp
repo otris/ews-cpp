@@ -16676,6 +16676,26 @@ public:
     // manager_mailbox
     // direct_reports
 
+    std::string get_user_smime_certificate() const
+    {
+	const auto node = xml().get_node("UserSMIMECertificate");
+	if (!node) {
+		return "";
+	}
+	auto base64binary = node->first_node("Base64Binary");
+	return base64binary ? std::string(base64binary->value(), base64binary->value_size()) : "";
+    }
+
+    std::string get_msexchange_certificate() const
+    {
+	const auto node = xml().get_node("MSExchangeCertificate");
+	if (!node) {
+		return "";
+	}
+	auto base64binary = node->first_node("Base64Binary");
+	return base64binary ? std::string(base64binary->value(), base64binary->value_size()) : "";
+    }
+
     //! Makes a contact instance from a \<Contact> XML element
     static contact from_xml_element(const rapidxml::xml_node<>& elem)
     {
