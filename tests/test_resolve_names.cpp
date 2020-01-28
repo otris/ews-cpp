@@ -44,7 +44,9 @@ TEST_F(ResolveNamesTest, UserFound)
     EXPECT_EQ(resolution_mailbox.name(), "User2");
     EXPECT_EQ(resolution_mailbox.value(), "User2@example.com");
     EXPECT_EQ(resolution_id.get_id(), "<GUID=abc-123-foo-bar>");
-    EXPECT_EQ(resolution_contact.get_display_name(), "User Number Two");
+    EXPECT_EQ(resolution_contact->get_display_name(), "User Number Two");
+    EXPECT_EQ(resolution_contact->get_user_smime_certificate(), "U01JTUVDZXJ0aWZpY2F0ZQ==");
+    EXPECT_EQ(resolution_contact->get_msexchange_certificate(), "RXhjaGFuZ2VDZXJ0aWZpY2F0ZQ==");
 }
 
 TEST_F(ResolveNamesTest, SendCorrectRequest)
