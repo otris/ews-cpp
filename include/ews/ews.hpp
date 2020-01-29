@@ -16682,7 +16682,7 @@ public:
 	if (!node) {
 		return "";
 	}
-	auto base64binary = node->first_node("Base64Binary");
+	auto base64binary = node->first_node_ns(internal::uri<>::microsoft::types(), "Base64Binary");
 	return base64binary ? std::string(base64binary->value(), base64binary->value_size()) : "";
     }
 
@@ -16692,7 +16692,7 @@ public:
 	if (!node) {
 		return "";
 	}
-	auto base64binary = node->first_node("Base64Binary");
+	auto base64binary = node->first_node_ns(internal::uri<>::microsoft::types(), "Base64Binary");
 	return base64binary ? std::string(base64binary->value(), base64binary->value_size()) : "";
     }
 
@@ -23735,8 +23735,8 @@ namespace internal
                             res->last_node()->local_name_size()))
                 {
                     auto contact_elem = res->last_node("t:Contact");
-                    auto directory_id_elem =
-                        contact_elem->first_node("t:Directory");
+                    auto directory_id_elem = contact_elem
+                        ->first_node_ns(internal::uri<>::microsoft::types(), "DirectoryId");
 
                     if (directory_id_elem)
                     {
