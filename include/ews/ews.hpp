@@ -62,6 +62,8 @@
 namespace ews
 {
 
+class contact;
+
 #ifndef EWS_DOXYGEN_SHOULD_SKIP_THIS
 
 #    ifdef EWS_HAS_DEFAULT_TEMPLATE_ARGS_FOR_FUNCTIONS
@@ -9643,6 +9645,7 @@ struct resolution final
 {
     ews::mailbox mailbox;
     ews::directory_id directory_id;
+    std::shared_ptr<ews::contact> contact;
 };
 
 #if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
@@ -16673,6 +16676,26 @@ public:
     // manager_mailbox
     // direct_reports
 
+    std::string get_user_smime_certificate() const
+    {
+	const auto node = xml().get_node("UserSMIMECertificate");
+	if (!node) {
+		return "";
+	}
+	auto base64binary = node->first_node_ns(internal::uri<>::microsoft::types(), "Base64Binary");
+	return base64binary ? std::string(base64binary->value(), base64binary->value_size()) : "";
+    }
+
+    std::string get_msexchange_certificate() const
+    {
+	const auto node = xml().get_node("MSExchangeCertificate");
+	if (!node) {
+		return "";
+	}
+	auto base64binary = node->first_node_ns(internal::uri<>::microsoft::types(), "Base64Binary");
+	return base64binary ? std::string(base64binary->value(), base64binary->value_size()) : "";
+    }
+
     //! Makes a contact instance from a \<Contact> XML element
     static contact from_xml_element(const rapidxml::xml_node<>& elem)
     {
@@ -16681,6 +16704,15 @@ public:
         check(id_node, "Expected <ItemId>");
         return contact(item_id::from_xml_element(*id_node),
                        internal::xml_subtree(elem));
+    }
+
+    //! Makes a contact instance from a \<Contact> XML element that has no
+    //! ItemId. Is the case in resolution sets.
+    static contact from_xml_element_without_item_id(
+        const rapidxml::xml_node<>& elem)
+    {
+        item_id id;
+        return contact(std::move(id), internal::xml_subtree(elem));
     }
 
 private:
@@ -23703,14 +23735,18 @@ namespace internal
                             res->last_node()->local_name_size()))
                 {
                     auto contact_elem = res->last_node("t:Contact");
-                    auto directory_id_elem =
-                        contact_elem->first_node("t:Directory");
+                    auto directory_id_elem = contact_elem
+                        ->first_node_ns(internal::uri<>::microsoft::types(), "DirectoryId");
 
                     if (directory_id_elem)
                     {
                         directory_id id(directory_id_elem->value());
                         r.directory_id = id;
                     }
+
+                    r.contact = std::make_shared<ews::contact>(
+                        contact::from_xml_element_without_item_id(
+				*contact_elem));
                 }
 
                 resolutions.resolutions.emplace_back(r);

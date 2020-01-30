@@ -16,8 +16,15 @@
                 <t:MailboxType>Mailbox</t:MailboxType>
               </t:Mailbox>
               <t:Contact>
+                <t:DisplayName>User Number Two</t:DisplayName>
                 <t:ContactSource>ActiveDirectory</t:ContactSource>
-                <t:DirectoryId>&lt;GUID=abc-123-foo-bar&gt;</t:DirectoryId>
+		<t:DirectoryId>&lt;GUID=abc-123-foo-bar&gt;</t:DirectoryId>
+		<t:UserSMIMECertificate>
+		  <t:Base64Binary>U01JTUVDZXJ0aWZpY2F0ZQ==</Base64Binary>
+		</t:UserSMIMECertificate>
+		<t:MSExchangeCertificate>
+		  <t:Base64Binary>RXhjaGFuZ2VDZXJ0aWZpY2F0ZQ==</Base64Binary>
+		</t:MSExchangeCertificate>
               </t:Contact>
             </t:Resolution>
           </m:ResolutionSet>
