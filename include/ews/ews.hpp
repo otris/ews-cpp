@@ -7414,6 +7414,8 @@ namespace internal
             return "DeletedEvent";
         case event_type::modified_event:
             return "ModifiedEvent";
+        case event_type::moved_event:
+            return "MovedEvent";
         case event_type::new_mail_event:
             return "NewMailEvent";
         case event_type::status_event:
@@ -7442,6 +7444,10 @@ namespace internal
         else if (str == "ModifiedEvent")
         {
             return event_type::modified_event;
+        }
+        else if (str == "MovedEvent")
+        {
+            return event_type::moved_event;
         }
         else if (str == "NewMailEvent")
         {
