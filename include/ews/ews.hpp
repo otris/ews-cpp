@@ -12676,12 +12676,12 @@ public:
              << "</t:ResponseType>";
         sstr << "<t:LastResponseTime>" << last_response_time_.to_string()
              << "</t:LastResponseTime>";
-        if (proposed_start_.to_string().empty())
+        if (!proposed_start_.to_string().empty())
         {
             sstr << "<t:ProposedStart>" << proposed_start_.to_string()
                  << "</t:ProposedStart>";
         }
-        if (proposed_end_.to_string().empty())
+        if (!proposed_end_.to_string().empty())
         {
             sstr << "<t:ProposedEnd>" << proposed_end_.to_string()
                  << "</t:ProposedEnd>";
@@ -12717,12 +12717,12 @@ public:
         create_node(attendee_node, "t:LastResponseTime",
                     last_response_time_.to_string());
 
-        if (proposed_start_.to_string().empty())
+        if (!proposed_start_.to_string().empty())
         {
             create_node(attendee_node, "t:ProposedStart",
                         proposed_start_.to_string());
         }
-        if (proposed_end_.to_string().empty())
+        if (!proposed_end_.to_string().empty())
         {
             create_node(attendee_node, "t:ProposedEnd",
                         proposed_end_.to_string());
