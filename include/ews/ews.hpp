@@ -10901,7 +10901,7 @@ public:
         const auto attachment_node = xml_.root();
         if (!attachment_node)
         {
-            return nullptr;
+            return "";
         }
 
         rapidxml::xml_node<>* node = nullptr;
