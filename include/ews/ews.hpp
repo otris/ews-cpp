@@ -12744,7 +12744,7 @@ public:
         //    <ProposedEnd/>
         //  </Attendee>
 
-        auto mailbox_node = elem.first_node("t:Mailbox");
+        auto mailbox_node = elem.first_node_ns(internal::uri<>::microsoft::types(), "Mailbox");
         check(mailbox_node, "Expected <Mailbox>");
 
         attendee attendee(mailbox::from_xml_element(*mailbox_node));
