@@ -12639,11 +12639,38 @@ public:
         return response_type_;
     }
 
+    //! Sets the atteendee's response
+    void set_response_type(response_type type) { response_type_ = type; }
+
     //! Returns the date and time of the latest response that was received
     const date_time& get_last_response_time() const EWS_NOEXCEPT
     {
         return last_response_time_;
     }
+
+    //! Sets the date and time fo the latest response that was received
+    void set_last_response_time(const date_time& time)
+    {
+        last_response_time_ = time;
+    }
+
+    //! Returns the date and time that was proposed as the start by the attendee
+    const date_time& get_proposed_start() const EWS_NOEXCEPT
+    {
+        return proposed_start_;
+    }
+
+    //! Sets the start date and time that was proposed by the attendee
+    void set_proposed_start(const date_time& start) { proposed_start_ = start; }
+
+    //! Returns the date and time that was proposed as the end by the attendee
+    const date_time& get_proposed_end() const EWS_NOEXCEPT
+    {
+        return proposed_end_;
+    }
+
+    //! Sets the end date and time that was proposed by the attendee
+    void set_proposed_end(const date_time& end) { proposed_end_ = end; }
 
     //! Returns the XML serialized version of this attendee instance
     std::string to_xml() const
@@ -12655,6 +12682,16 @@ public:
              << "</t:ResponseType>";
         sstr << "<t:LastResponseTime>" << last_response_time_.to_string()
              << "</t:LastResponseTime>";
+        if (!proposed_start_.to_string().empty())
+        {
+            sstr << "<t:ProposedStart>" << proposed_start_.to_string()
+                 << "</t:ProposedStart>";
+        }
+        if (!proposed_end_.to_string().empty())
+        {
+            sstr << "<t:ProposedEnd>" << proposed_end_.to_string()
+                 << "</t:ProposedEnd>";
+        }
         sstr << "</t:Attendee>";
         return sstr.str();
     }
@@ -12672,6 +12709,8 @@ public:
         //    <Mailbox/>
         //    <ResponseType/>
         //    <LastResponseTime/>
+        //    <ProposedStart/>
+        //    <ProposedEnd/>
         //  </Attendee>
 
         using namespace internal;
@@ -12683,6 +12722,17 @@ public:
                     enum_to_str(response_type_));
         create_node(attendee_node, "t:LastResponseTime",
                     last_response_time_.to_string());
+
+        if (!proposed_start_.to_string().empty())
+        {
+            create_node(attendee_node, "t:ProposedStart",
+                        proposed_start_.to_string());
+        }
+        if (!proposed_end_.to_string().empty())
+        {
+            create_node(attendee_node, "t:ProposedEnd",
+                        proposed_end_.to_string());
+        }
 
         return attendee_node;
     }
@@ -12696,44 +12746,52 @@ public:
         //    <Mailbox/>
         //    <ResponseType/>
         //    <LastResponseTime/>
+        //    <ProposedStart/>
+        //    <ProposedEnd/>
         //  </Attendee>
 
-        mailbox addr;
-        auto resp_type = response_type::unknown;
-        date_time last_resp_time("");
+        auto mailbox_node = elem.first_node_ns(internal::uri<>::microsoft::types(), "Mailbox");
+        check(mailbox_node, "Expected <Mailbox>");
 
+        attendee attendee(mailbox::from_xml_element(*mailbox_node));
+        
         for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
-            if (compare(node->local_name(), node->local_name_size(), "Mailbox",
-                        strlen("Mailbox")))
+            if (compare(node->local_name(), node->local_name_size(),
+                        "ResponseType", strlen("ResponseType")))
             {
-                addr = mailbox::from_xml_element(*node);
-            }
-            else if (compare(node->local_name(), node->local_name_size(),
-                             "ResponseType", strlen("ResponseType")))
-            {
-                resp_type = internal::str_to_response_type(
-                    std::string(node->value(), node->value_size()));
+                attendee.set_response_type(internal::str_to_response_type(
+                    std::string(node->value(), node->value_size())));
             }
             else if (compare(node->local_name(), node->local_name_size(),
                              "LastResponseTime", strlen("LastResponseTime")))
             {
-                last_resp_time =
-                    date_time(std::string(node->value(), node->value_size()));
+                attendee.set_last_response_time(
+                    date_time(std::string(node->value(), node->value_size())));
             }
-            else
+            else if (compare(node->local_name(), node->local_name_size(),
+                             "ProposedStart", strlen("ProposedStart")))
             {
-                throw exception("Unexpected child element in <Attendee>");
+                attendee.set_proposed_start(
+                    date_time(std::string(node->value(), node->value_size())));
+            }
+            else if (compare(node->local_name(), node->local_name_size(),
+                             "ProposedEnd", strlen("ProposedEnd")))
+            {
+                attendee.set_proposed_end(
+                    date_time(std::string(node->value(), node->value_size())));
             }
         }
 
-        return attendee(addr, resp_type, last_resp_time);
+        return attendee;
     }
 
 private:
     mailbox mailbox_;
     response_type response_type_;
     date_time last_response_time_;
+    date_time proposed_start_;
+    date_time proposed_end_;
 };
 
 #if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
