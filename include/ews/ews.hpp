@@ -10912,7 +10912,6 @@ public:
             return "";
         }
 
-        rapidxml::xml_node<>* node = nullptr;
         for (auto child = attachment_node->first_node(); child != nullptr;
              child = child->next_sibling())
         {
