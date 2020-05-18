@@ -35,6 +35,7 @@ namespace test
         std::string server_uri;
         std::string autodiscover_smtp_address;
         std::string autodiscover_password;
+        std::string proxy_uri;
 
         environment()
             : domain(getenv_or_throw("EWS_TEST_DOMAIN")),
@@ -44,7 +45,8 @@ namespace test
               autodiscover_smtp_address(
                   getenv_or_empty_string("EWS_TEST_AUTODISCOVER_SMTP_ADDRESS")),
               autodiscover_password(
-                  getenv_or_empty_string("EWS_TEST_AUTODISCOVER_PASSWORD"))
+                  getenv_or_empty_string("EWS_TEST_AUTODISCOVER_PASSWORD")),
+              proxy_uri(getenv_or_empty_string("EWS_TEST_PROXY_URI"))
         {
         }
 
