@@ -95,8 +95,9 @@ namespace internal
     class on_scope_exit final
     {
     public:
-        template <typename Function> on_scope_exit(Function destructor_function)
-        try : func_(std::move(destructor_function))
+        template <typename Function>
+        on_scope_exit(Function destructor_function) try
+            : func_(std::move(destructor_function))
         {
         }
         catch (std::exception&)
@@ -439,21 +440,20 @@ public:
                 auto doc = std::string(start, xml.size());
                 auto lineno = 1U;
                 auto charno = 0U;
-                std::replace_if(
-                    begin(doc), end(doc),
-                    [&](char c) -> bool {
-                        charno++;
-                        if (c == '\n')
-                        {
-                            if (charno < idx)
-                            {
-                                lineno++;
-                            }
-                            return true;
-                        }
-                        return false;
-                    },
-                    ' ');
+                std::replace_if(begin(doc), end(doc),
+                                [&](char c) -> bool {
+                                    charno++;
+                                    if (c == '\n')
+                                    {
+                                        if (charno < idx)
+                                        {
+                                            lineno++;
+                                        }
+                                        return true;
+                                    }
+                                    return false;
+                                },
+                                ' ');
 
                 // 0-termini probably got replaced by xml_document::parse
                 std::replace(begin(doc), end(doc), '\0', '>');
@@ -12783,11 +12783,12 @@ public:
         //    <ProposedEnd/>
         //  </Attendee>
 
-        auto mailbox_node = elem.first_node_ns(internal::uri<>::microsoft::types(), "Mailbox");
+        auto mailbox_node =
+            elem.first_node_ns(internal::uri<>::microsoft::types(), "Mailbox");
         check(mailbox_node, "Expected <Mailbox>");
 
         attendee attendee(mailbox::from_xml_element(*mailbox_node));
-        
+
         for (auto node = elem.first_node(); node; node = node->next_sibling())
         {
             if (compare(node->local_name(), node->local_name_size(),
@@ -16775,22 +16776,30 @@ public:
 
     std::string get_user_smime_certificate() const
     {
-	const auto node = xml().get_node("UserSMIMECertificate");
-	if (!node) {
-		return "";
-	}
-	auto base64binary = node->first_node_ns(internal::uri<>::microsoft::types(), "Base64Binary");
-	return base64binary ? std::string(base64binary->value(), base64binary->value_size()) : "";
+        const auto node = xml().get_node("UserSMIMECertificate");
+        if (!node)
+        {
+            return "";
+        }
+        auto base64binary = node->first_node_ns(
+            internal::uri<>::microsoft::types(), "Base64Binary");
+        return base64binary ? std::string(base64binary->value(),
+                                          base64binary->value_size())
+                            : "";
     }
 
     std::string get_msexchange_certificate() const
     {
-	const auto node = xml().get_node("MSExchangeCertificate");
-	if (!node) {
-		return "";
-	}
-	auto base64binary = node->first_node_ns(internal::uri<>::microsoft::types(), "Base64Binary");
-	return base64binary ? std::string(base64binary->value(), base64binary->value_size()) : "";
+        const auto node = xml().get_node("MSExchangeCertificate");
+        if (!node)
+        {
+            return "";
+        }
+        auto base64binary = node->first_node_ns(
+            internal::uri<>::microsoft::types(), "Base64Binary");
+        return base64binary ? std::string(base64binary->value(),
+                                          base64binary->value_size())
+                            : "";
     }
 
     //! Makes a contact instance from a \<Contact> XML element
@@ -16805,8 +16814,8 @@ public:
 
     //! Makes a contact instance from a \<Contact> XML element that has no
     //! ItemId. Is the case in resolution sets.
-    static contact from_xml_element_without_item_id(
-        const rapidxml::xml_node<>& elem)
+    static contact
+    from_xml_element_without_item_id(const rapidxml::xml_node<>& elem)
     {
         item_id id;
         return contact(std::move(id), internal::xml_subtree(elem));
@@ -23859,8 +23868,8 @@ namespace internal
                             res->last_node()->local_name_size()))
                 {
                     auto contact_elem = res->last_node("t:Contact");
-                    auto directory_id_elem = contact_elem
-                        ->first_node_ns(internal::uri<>::microsoft::types(), "DirectoryId");
+                    auto directory_id_elem = contact_elem->first_node_ns(
+                        internal::uri<>::microsoft::types(), "DirectoryId");
 
                     if (directory_id_elem)
                     {
@@ -23870,7 +23879,7 @@ namespace internal
 
                     r.contact = std::make_shared<ews::contact>(
                         contact::from_xml_element_without_item_id(
-				*contact_elem));
+                            *contact_elem));
                 }
 
                 resolutions.resolutions.emplace_back(r);
