@@ -416,6 +416,23 @@ private:
     ews::message message_;
 };
 
+class ProxyTest : public BaseFixture, public ServiceMixin
+{
+public:
+    void SetUp()
+    {
+        BaseFixture::SetUp();
+
+        const auto& env = ews::test::global_data::instance().env;
+        proxy_uri_ = env.proxy_uri;
+    }
+
+    const std::string& get_proxy_uri() { return proxy_uri_; }
+
+private:
+    std::string proxy_uri_;
+};
+
 #ifdef EWS_HAS_FILESYSTEM_HEADER
 class ResolveNamesTest : public FakeServiceFixture
 {

@@ -20607,6 +20607,31 @@ public:
         request_handler_.set_timeout(d);
     }
 
+    //! \brief Sets the URL of the proxy which should be used for connecting
+    //! to the EWS service
+    void set_proxy(const std::string& url)
+    {
+        request_handler_.set_option(CURLOPT_PROXY, url.c_str());
+    }
+
+    //! \brief Activate or deactivates HTTP proxy tunneling.
+    void set_http_proxy_tunnel(const bool value)
+    {
+        request_handler_.set_option(CURLOPT_HTTPPROXYTUNNEL, (value ? 1L : 0L));
+    }
+
+    //! \brief Sets the path to file holding certificates.
+    void set_cainfo(const std::string& path)
+    {
+        request_handler_.set_option(CURLOPT_CAINFO, path.c_str());
+    }
+
+    //! \brief Sets the path to the certificates directory.
+    void set_capath(const std::string& path)
+    {
+        request_handler_.set_option(CURLOPT_CAPATH, path.c_str());
+    }
+
     //! \brief Returns the schema version that is used in requests by this
     //! service
     server_version get_request_server_version() const
