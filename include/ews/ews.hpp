@@ -8446,6 +8446,8 @@ namespace internal
             set_option(CURLOPT_SSL_VERIFYPEER, 0L);
             set_option(CURLOPT_SSL_VERIFYHOST, 0L);
 
+            set_option(CURLOPT_PROXY_SSL_VERIFYPEER, 0L);
+            set_option(CURLOPT_PROXY_SSL_VERIFYHOST, 0L);
 #endif
 
             auto retcode = curl_easy_perform(handle_.get());
