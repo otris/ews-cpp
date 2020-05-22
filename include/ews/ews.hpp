@@ -8446,8 +8446,11 @@ namespace internal
             set_option(CURLOPT_SSL_VERIFYPEER, 0L);
             set_option(CURLOPT_SSL_VERIFYHOST, 0L);
 
+#   if LIBCURL_VERSION_NUM >= 0x073400
             set_option(CURLOPT_PROXY_SSL_VERIFYPEER, 0L);
             set_option(CURLOPT_PROXY_SSL_VERIFYHOST, 0L);
+#   endif
+
 #endif
 
             auto retcode = curl_easy_perform(handle_.get());
