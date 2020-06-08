@@ -442,6 +442,7 @@ set(ews_TESTS
     tests/test_autodiscover.cpp
     tests/test_calendar_items.cpp
     tests/test_contacts.cpp
+    tests/test_debug_callback.cpp
     tests/test_folders.cpp
     tests/test_internals.cpp
     tests/test_items.cpp
