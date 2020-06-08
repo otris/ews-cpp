@@ -8460,10 +8460,10 @@ namespace internal
             set_option(CURLOPT_SSL_VERIFYPEER, 0L);
             set_option(CURLOPT_SSL_VERIFYHOST, 0L);
 
-#   if LIBCURL_VERSION_NUM >= 0x073400
+#    if LIBCURL_VERSION_NUM >= 0x073400
             set_option(CURLOPT_PROXY_SSL_VERIFYPEER, 0L);
             set_option(CURLOPT_PROXY_SSL_VERIFYHOST, 0L);
-#   endif
+#    endif
 
 #endif
 
@@ -20653,14 +20653,14 @@ public:
 #if LIBCURL_VERSION_NUM >= 0x073400
     //! Sets the path to proxy Certificate Authority (CA) bundle.
     //! Only available, if libcurl 7.52 or later is used.
-    void set_proxy_cainfo(const std::string &path)
+    void set_proxy_cainfo(const std::string& path)
     {
         request_handler_.set_option(CURLOPT_PROXY_CAINFO, path.c_str());
     }
 
     //! Sets the path to the directory holding proxy CA certificates.
     //! Only available, if libcurl 7.52 or later is used.
-    void set_proxy_capath(const std::string &path)
+    void set_proxy_capath(const std::string& path)
     {
         request_handler_.set_option(CURLOPT_PROXY_CAPATH, path.c_str());
     }
