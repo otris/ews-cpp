@@ -58,6 +58,20 @@
 
 #include "ews_fwd.hpp"
 
+#ifdef __GNUC__
+#    ifdef __clang__
+#        ifdef __has_attribute(maybe_unused)
+#            define EWS_MAYBE_UNUSED [[maybe_unused]]
+#        else
+#            define EWS_MAYBE_UNUSED
+#        endif
+#    else
+#        define EWS_MAYBE_UNUSED [[maybe_unused]]
+#    endif
+#else
+#    define EWS_MAYBE_UNUSED
+#endif
+
 //! Contains all classes, functions, and enumerations of this library
 namespace ews
 {
@@ -8446,10 +8460,10 @@ namespace internal
             set_option(CURLOPT_SSL_VERIFYPEER, 0L);
             set_option(CURLOPT_SSL_VERIFYHOST, 0L);
 
-#   if LIBCURL_VERSION_NUM >= 0x073400
+#    if LIBCURL_VERSION_NUM >= 0x073400
             set_option(CURLOPT_PROXY_SSL_VERIFYPEER, 0L);
             set_option(CURLOPT_PROXY_SSL_VERIFYHOST, 0L);
-#   endif
+#    endif
 
 #endif
 
@@ -20562,6 +20576,9 @@ template <typename RequestHandler = internal::http_request>
 class basic_service final
 {
 public:
+    //! \brief Callback for debug messages
+    typedef std::function<void(const std::string&)> debug_callback;
+
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
     basic_service() = delete;
 #endif
@@ -20636,14 +20653,14 @@ public:
 #if LIBCURL_VERSION_NUM >= 0x073400
     //! Sets the path to proxy Certificate Authority (CA) bundle.
     //! Only available, if libcurl 7.52 or later is used.
-    void set_proxy_cainfo(const std::string &path)
+    void set_proxy_cainfo(const std::string& path)
     {
         request_handler_.set_option(CURLOPT_PROXY_CAINFO, path.c_str());
     }
 
     //! Sets the path to the directory holding proxy CA certificates.
     //! Only available, if libcurl 7.52 or later is used.
-    void set_proxy_capath(const std::string &path)
+    void set_proxy_capath(const std::string& path)
     {
         request_handler_.set_option(CURLOPT_PROXY_CAPATH, path.c_str());
     }
@@ -20661,6 +20678,73 @@ public:
         request_handler_.set_option(CURLOPT_CAPATH, path.c_str());
     }
 
+    //! \brief Sets the callback for debug messages.
+    void set_debug_callback(const debug_callback& callback)
+    {
+        debug_callback_ = callback;
+        if (callback)
+        {
+            request_handler_.set_option(CURLOPT_VERBOSE, 1L);
+            request_handler_.set_option(CURLOPT_DEBUGFUNCTION,
+                                        curl_debug_callback);
+            request_handler_.set_option(CURLOPT_DEBUGDATA, &debug_callback_);
+        }
+        else
+        {
+            request_handler_.set_option(CURLOPT_VERBOSE, 0L);
+            request_handler_.set_option(CURLOPT_DEBUGFUNCTION, nullptr);
+            request_handler_.set_option(CURLOPT_DEBUGDATA, nullptr);
+        }
+    }
+
+private:
+    //! \brief CURL callback for forwarding debug output
+    static int curl_debug_callback(EWS_MAYBE_UNUSED CURL* handle,
+                                   curl_infotype type, char* data, size_t size,
+                                   void* user_ptr)
+    {
+        std::stringstream output;
+
+        switch (type)
+        {
+        case CURLINFO_TEXT:
+            output << "== Info: ";
+            output.write(data, size);
+            break;
+        case CURLINFO_HEADER_OUT:
+            output << "=> Send header ";
+            output.write(data, size);
+            break;
+        case CURLINFO_DATA_OUT:
+            output << "=> Send data" << std::endl;
+            break;
+        case CURLINFO_SSL_DATA_OUT:
+            output << "=> Send SSL data" << std::endl;
+            break;
+        case CURLINFO_HEADER_IN:
+            output << "<= Recv header ";
+            output.write(data, size);
+            break;
+        case CURLINFO_DATA_IN:
+            output << "<= Recv data" << std::endl;
+            break;
+        case CURLINFO_SSL_DATA_IN:
+            output << "<= Recv SSL data" << std::endl;
+            break;
+        default:
+            output << "-- Unknown info type" << std::endl;
+            break;
+        }
+
+        if (user_ptr)
+        {
+            (*reinterpret_cast<debug_callback*>(user_ptr))(output.str());
+        }
+
+        return 0;
+    }
+
+public:
     //! \brief Returns the schema version that is used in requests by this
     //! service
     server_version get_request_server_version() const
@@ -21874,6 +21958,7 @@ public:
 #endif
 private:
     RequestHandler request_handler_;
+    debug_callback debug_callback_;
     std::string server_version_;
     std::string impersonation_;
     time_zone time_zone_;

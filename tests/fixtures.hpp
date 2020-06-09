@@ -433,6 +433,20 @@ private:
     std::string proxy_uri_;
 };
 
+class CallbackTest : public BaseFixture, public ServiceMixin
+{
+public:
+    void SetUp() { BaseFixture::SetUp(); }
+
+    const std::string& get_callback_output() const { return output_; }
+
+protected:
+    void test_callback(const std::string& output) { output_ += output; }
+
+private:
+    std::string output_;
+};
+
 #ifdef EWS_HAS_FILESYSTEM_HEADER
 class ResolveNamesTest : public FakeServiceFixture
 {
