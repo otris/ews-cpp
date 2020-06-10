@@ -7742,15 +7742,23 @@ namespace internal
             curl_easy_setopt(handle_, CURLOPT_ERRORBUFFER, error_details_);
         }
 
+        curl_ptr(const curl_ptr& other)
+            : handle_(curl_easy_duphandle(other.handle_))
+        {
+            if (!handle_)
+            {
+                throw curl_error("Could not dup curl handle");
+            }
+
+            curl_easy_setopt(handle_, CURLOPT_ERRORBUFFER, error_details_);
+        }
+
         ~curl_ptr() { curl_easy_cleanup(handle_); }
 
-// Could use curl_easy_duphandle for copying
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
-        curl_ptr(const curl_ptr&) = delete;
         curl_ptr& operator=(const curl_ptr&) = delete;
 #else
     private:
-        curl_ptr(const curl_ptr&);            // Never defined
         curl_ptr& operator=(const curl_ptr&); // Never defined
 
     public:
@@ -7788,7 +7796,7 @@ namespace internal
 #if defined(EWS_HAS_NON_BUGGY_TYPE_TRAITS) &&                                  \
     defined(EWS_HAS_CXX17_STATIC_ASSERT)
     static_assert(std::is_default_constructible<curl_ptr>::value);
-    static_assert(!std::is_copy_constructible<curl_ptr>::value);
+    static_assert(std::is_copy_constructible<curl_ptr>::value);
     static_assert(!std::is_copy_assignable<curl_ptr>::value);
     static_assert(std::is_move_constructible<curl_ptr>::value);
     static_assert(std::is_move_assignable<curl_ptr>::value);
@@ -8151,7 +8159,9 @@ namespace internal
         }
 
     protected:
-        virtual void authenticate() const;
+        //! \brief Adds authentication information to the request
+        //! \param request The request that should be authenticated
+        virtual void authenticate(internal::http_request* request) const;
 
         virtual void append_url(CURL* c, std::string& data) const = 0;
 
@@ -8283,6 +8293,15 @@ namespace internal
         {
             set_option(CURLOPT_URL, url.c_str());
         }
+
+        //! \param handle Handle whose settings should be used
+        explicit http_request(const curl_ptr& handle) : handle_(handle)
+        {
+            // empty
+        }
+
+        //! \return The internal handle
+        const curl_ptr& get_handle() const { return handle_; }
 
         // Set the HTTP method (only POST supported).
         void set_method(method)
@@ -20610,6 +20629,27 @@ public:
         request_handler_.set_credentials(creds);
     }
 
+    //! \brief Constructs a new service with given credentials to a server
+    //! specified by \p server_uri
+    basic_service(const std::string& server_uri,
+                  const internal::credentials& creds, const std::string& cainfo,
+                  const std::string& capath, const std::string& proxy_uri,
+                  const bool is_http_proxy_tunneling,
+                  const debug_callback& callback)
+        : request_handler_(server_uri), server_version_("Exchange2013_SP1"),
+          impersonation_(), time_zone_(time_zone::none)
+    {
+        set_cainfo(cainfo);
+        set_capath(capath);
+        set_proxy(proxy_uri);
+        set_http_proxy_tunnel(is_http_proxy_tunneling);
+        set_debug_callback(callback);
+
+        request_handler_.set_method(RequestHandler::method::POST);
+        request_handler_.set_content_type("text/xml; charset=utf-8");
+        request_handler_.set_credentials(creds);
+    }
+
     //! \brief Sets the schema version that will be used in requests made
     //! by this service
     void set_request_server_version(server_version vers)
@@ -23003,17 +23043,20 @@ internal::oauth2_basic::certify(internal::http_request* request) const
     // passed const here.
     if (access_token.empty() || expired())
     {
-        authenticate();
+        authenticate(request);
     }
 
     request->set_authorization("Bearer " + access_token);
 }
 
-inline void internal::oauth2_basic::authenticate() const
+inline void
+internal::oauth2_basic::authenticate(internal::http_request* request) const
 {
+    // Request with the same internal settings of the original one
+    internal::http_request req(request->get_handle());
+
     // curl handle to url-encode the data
-    internal::curl_ptr* handle_ = new (internal::curl_ptr);
-    CURL* c = handle_->get();
+    CURL* c = req.get_handle().get();
 
     char* escaped_client_id =
         curl_easy_escape(c, client_id_.c_str(), client_id_.length());
@@ -23038,11 +23081,11 @@ inline void internal::oauth2_basic::authenticate() const
 
     append_url(c, data);
 
-    delete handle_;
-
-    // perform the real request to get the authentication token
-    internal::http_request req = internal::http_request(url);
+    // perform a request to get the authentication token
+    req.set_option(CURLOPT_URL, url.c_str());
+    req.set_option(CURLOPT_HTTPGET, 1L);
     internal::http_response res = req.send(data);
+
     std::vector<char> content_vector = res.content();
     std::string content(content_vector.begin(), content_vector.end());
 
