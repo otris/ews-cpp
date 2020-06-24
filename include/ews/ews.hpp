@@ -20639,11 +20639,30 @@ public:
         : request_handler_(server_uri), server_version_("Exchange2013_SP1"),
           impersonation_(), time_zone_(time_zone::none)
     {
-        set_cainfo(cainfo);
-        set_capath(capath);
-        set_proxy(proxy_uri);
-        set_http_proxy_tunnel(is_http_proxy_tunneling);
-        set_debug_callback(callback);
+        if (!cainfo.empty())
+        {
+            set_cainfo(cainfo);
+        }
+
+        if (!capath.empty())
+        {
+            set_capath(capath);
+        }
+
+        if (!proxy_uri.empty())
+        {
+            set_proxy(proxy_uri);
+        }
+
+        if (is_http_proxy_tunneling)
+        {
+            set_http_proxy_tunnel(is_http_proxy_tunneling);
+        }
+
+        if (callback)
+        {
+            set_debug_callback(callback);
+        }
 
         request_handler_.set_method(RequestHandler::method::POST);
         request_handler_.set_content_type("text/xml; charset=utf-8");
