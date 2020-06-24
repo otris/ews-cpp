@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 2.8.12)
+
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
+  CACHE STRING "Vcpkg toolchain file")
+
 project(ews CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -210,7 +214,7 @@ set(rapidxml_SOURCES
     ${ews_INCLUDE_DIR}/ews/rapidxml/rapidxml_utils.hpp)
 
 # libcurl 7.35 is packed for Ubuntu 14.04 LTS, 7.29 for RHEL7
-find_package(CURL 7.29 REQUIRED)
+find_package(CURL CONFIG REQUIRED)
 include_directories(${ews_INCLUDE_DIR} ${CURL_INCLUDE_DIRS})
 
 if(DISABLE_TLS_CERT_VERIFICATION)
@@ -368,7 +372,7 @@ function(add_example EXAMPLE_NAME)
             ${ews_SOURCES}
             ${rapidxml_SOURCES}
             examples/${EXAMPLE_NAME}.cpp)
-        target_link_libraries(${EXAMPLE_NAME} ${CURL_LIBRARIES})
+        target_link_libraries(${EXAMPLE_NAME} PRIVATE CURL::libcurl)
         set_target_properties(${EXAMPLE_NAME} PROPERTIES
             LINKER_LANGUAGE CXX
             COMPILE_FLAGS "${SANITIZE_CXXFLAGS}"
@@ -465,7 +469,7 @@ add_executable(tests
     ${rapidxml_SOURCES}
     ${ews_TESTS})
 
-set(_libs ${GTEST_LIBRARIES} ${CURL_LIBRARIES})
+set(_libs ${GTEST_LIBRARIES} CURL::libcurl)
 if(HAS_FILESYSTEM_HEADER AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(_libs ${_libs} stdc++fs)
 endif()
