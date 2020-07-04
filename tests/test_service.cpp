@@ -382,4 +382,102 @@ TEST_F(ServiceTest, SendItem)
     msg = service().get_message(item_id);
     EXPECT_NO_THROW({ service().send_item(msg.get_item_id()); });
 }
+TEST_F(ServiceTest, SslOptions)
+{
+    EXPECT_NO_THROW({
+        service().set_ssl_options(ews::ssl_options::allow_beast);
+    });
+}
+
+class OfflineServiceTest : public testing::Test
+{
+};
+
+TEST_F(OfflineServiceTest, SslOptionsValues)
+{
+    typedef std::underlying_type<ews::ssl_options>::type underlying_type;
+    ASSERT_EQ(static_cast<underlying_type>(ews::ssl_options::none), 0L);
+    ASSERT_EQ(static_cast<underlying_type>(ews::ssl_options::allow_beast),
+              CURLSSLOPT_ALLOW_BEAST);
+#if LIBCURL_VERSION_NUM >= 0x072C00
+    ASSERT_EQ(static_cast<underlying_type>(ews::ssl_options::no_revoke),
+              CURLSSLOPT_NO_REVOKE);
+#endif
+#if LIBCURL_VERSION_NUM >= 0x074400
+    ASSERT_EQ(static_cast<underlying_type>(ews::ssl_options::no_partialchain),
+              CURLSSLOPT_NO_PARTIALCHAIN);
+#endif
+}
+
+TEST_F(OfflineServiceTest, SslOptionsOrOperator)
+{
+    typedef std::underlying_type<ews::ssl_options>::type underlying_type;
+#if LIBCURL_VERSION_NUM >= 0x072C00
+    ASSERT_EQ(static_cast<underlying_type>(ews::ssl_options::no_revoke |
+                                           ews::ssl_options::allow_beast),
+              CURLSSLOPT_NO_REVOKE | CURLSSLOPT_ALLOW_BEAST);
+#endif
+#if LIBCURL_VERSION_NUM >= 0x074400
+    ASSERT_EQ(static_cast<underlying_type>(ews::ssl_options::no_revoke |
+                                           ews::ssl_options::no_partialchain),
+              CURLSSLOPT_NO_REVOKE | CURLSSLOPT_NO_PARTIALCHAIN);
+    ASSERT_EQ(static_cast<underlying_type>(ews::ssl_options::no_revoke |
+                                           ews::ssl_options::allow_beast |
+                                           ews::ssl_options::no_partialchain),
+              CURLSSLOPT_NO_REVOKE | CURLSSLOPT_ALLOW_BEAST |
+                  CURLSSLOPT_NO_PARTIALCHAIN);
+#endif
+}
+
+TEST_F(OfflineServiceTest, SslOptionsEqualOperator)
+{
+    EXPECT_TRUE(ews::ssl_options::allow_beast == ews::ssl_options::allow_beast);
+    EXPECT_TRUE(ews::ssl_options::none == ews::ssl_options::none);
+    EXPECT_FALSE(ews::ssl_options::allow_beast == ews::ssl_options::none);
+#if LIBCURL_VERSION_NUM >= 0x072C00
+    EXPECT_TRUE(ews::ssl_options::no_revoke == ews::ssl_options::no_revoke);
+#endif
+#if LIBCURL_VERSION_NUM >= 0x074400
+    EXPECT_TRUE(ews::ssl_options::no_partialchain ==
+                ews::ssl_options::no_partialchain);
+    EXPECT_TRUE(
+        (ews::ssl_options::allow_beast | ews::ssl_options::no_partialchain) ==
+        (ews::ssl_options::allow_beast | ews::ssl_options::no_partialchain));
+    EXPECT_FALSE(ews::ssl_options::no_revoke ==
+                 ews::ssl_options::no_partialchain);
+    EXPECT_FALSE(ews::ssl_options::allow_beast ==
+                 ews::ssl_options::no_partialchain);
+    EXPECT_FALSE(ews::ssl_options::allow_beast == ews::ssl_options::no_revoke);
+    EXPECT_FALSE(
+        (ews::ssl_options::no_revoke | ews::ssl_options::no_partialchain) ==
+        (ews::ssl_options::allow_beast | ews::ssl_options::no_partialchain));
+#endif
+}
+
+TEST_F(OfflineServiceTest, SslOptionsNotEqualOperator)
+{
+
+    EXPECT_FALSE(ews::ssl_options::allow_beast !=
+                 ews::ssl_options::allow_beast);
+    EXPECT_TRUE(ews::ssl_options::allow_beast != ews::ssl_options::none);
+#if LIBCURL_VERSION_NUM >= 0x072C00
+    EXPECT_FALSE(ews::ssl_options::no_revoke != ews::ssl_options::no_revoke);
+    EXPECT_TRUE(ews::ssl_options::allow_beast != ews::ssl_options::no_revoke);
+#endif
+#if LIBCURL_VERSION_NUM >= 0x074400
+    EXPECT_FALSE(ews::ssl_options::no_partialchain !=
+                 ews::ssl_options::no_partialchain);
+    EXPECT_FALSE(
+        (ews::ssl_options::allow_beast | ews::ssl_options::no_partialchain) !=
+        (ews::ssl_options::allow_beast | ews::ssl_options::no_partialchain));
+    EXPECT_TRUE(ews::ssl_options::no_revoke !=
+                ews::ssl_options::no_partialchain);
+    EXPECT_TRUE(ews::ssl_options::allow_beast !=
+                ews::ssl_options::no_partialchain);
+    EXPECT_TRUE(
+        (ews::ssl_options::no_revoke | ews::ssl_options::no_partialchain) !=
+        (ews::ssl_options::allow_beast | ews::ssl_options::no_partialchain));
+#endif
+}
+
 } // namespace tests

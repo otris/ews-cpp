@@ -109,9 +109,8 @@ namespace internal
     class on_scope_exit final
     {
     public:
-        template <typename Function>
-        on_scope_exit(Function destructor_function) try
-            : func_(std::move(destructor_function))
+        template <typename Function> on_scope_exit(Function destructor_function)
+        try : func_(std::move(destructor_function))
         {
         }
         catch (std::exception&)
@@ -454,20 +453,21 @@ public:
                 auto doc = std::string(start, xml.size());
                 auto lineno = 1U;
                 auto charno = 0U;
-                std::replace_if(begin(doc), end(doc),
-                                [&](char c) -> bool {
-                                    charno++;
-                                    if (c == '\n')
-                                    {
-                                        if (charno < idx)
-                                        {
-                                            lineno++;
-                                        }
-                                        return true;
-                                    }
-                                    return false;
-                                },
-                                ' ');
+                std::replace_if(
+                    begin(doc), end(doc),
+                    [&](char c) -> bool {
+                        charno++;
+                        if (c == '\n')
+                        {
+                            if (charno < idx)
+                            {
+                                lineno++;
+                            }
+                            return true;
+                        }
+                        return false;
+                    },
+                    ' ');
 
                 // 0-termini probably got replaced by xml_document::parse
                 std::replace(begin(doc), end(doc), '\0', '>');
@@ -20540,6 +20540,49 @@ connecting_sid::connecting_sid(connecting_sid::type t, const std::string& id)
            "></t:ConnectingSID>";
 }
 
+//! Available SSL optons.
+//! See https://curl.haxx.se/libcurl/c/CURLOPT_SSL_OPTIONS.html
+enum class ssl_options : long
+{
+    none = 0L,
+    allow_beast = CURLSSLOPT_ALLOW_BEAST
+#if LIBCURL_VERSION_NUM >= 0x072C00
+    ,
+    no_revoke = CURLSSLOPT_NO_REVOKE
+#endif
+#if LIBCURL_VERSION_NUM >= 0x074400
+    ,
+    no_partialchain = CURLSSLOPT_NO_PARTIALCHAIN
+#endif
+#if LIBCURL_VERSION_NUM >= 0x074600
+    ,
+    revoke_best_effort = CURLSSLOPT_REVOKE_BEST_EFFORT
+#endif
+#if LIBCURL_VERSION_NUM >= 0x074700
+    ,
+    native_ca = CURLSSLOPT_NATIVE_CA
+#endif
+};
+
+inline ssl_options operator|(const ssl_options lhs, const ssl_options rhs)
+{
+    return static_cast<ssl_options>(
+        static_cast<std::underlying_type<ssl_options>::type>(lhs) |
+        static_cast<std::underlying_type<ssl_options>::type>(rhs));
+}
+
+inline bool operator==(const ssl_options lhs, const ssl_options rhs)
+{
+    return static_cast<std::underlying_type<ssl_options>::type>(lhs) ==
+           static_cast<std::underlying_type<ssl_options>::type>(rhs);
+}
+
+inline bool operator!=(const ssl_options lhs, const ssl_options rhs)
+{
+    return static_cast<std::underlying_type<ssl_options>::type>(lhs) !=
+           static_cast<std::underlying_type<ssl_options>::type>(rhs);
+}
+
 //! \brief Allows you to perform operations on an Exchange server.
 //!
 //! A service object is used to establish a connection to an Exchange server,
@@ -20635,7 +20678,8 @@ public:
                   const internal::credentials& creds, const std::string& cainfo,
                   const std::string& capath, const std::string& proxy_uri,
                   const bool is_http_proxy_tunneling,
-                  const debug_callback& callback)
+                  const debug_callback& callback,
+                  const ssl_options ssl_opts = ssl_options::none)
         : request_handler_(server_uri), server_version_("Exchange2013_SP1"),
           impersonation_(), time_zone_(time_zone::none)
     {
@@ -20662,6 +20706,11 @@ public:
         if (callback)
         {
             set_debug_callback(callback);
+        }
+
+        if (ssl_opts != ssl_options::none)
+        {
+            set_ssl_options(ssl_opts);
         }
 
         request_handler_.set_method(RequestHandler::method::POST);
@@ -20735,6 +20784,12 @@ public:
     void set_capath(const std::string& path)
     {
         request_handler_.set_option(CURLOPT_CAPATH, path.c_str());
+    }
+
+    //! \brief Sets the SSL options.
+    void set_ssl_options(const ssl_options value)
+    {
+        request_handler_.set_option(CURLOPT_SSL_OPTIONS, value);
     }
 
     //! \brief Sets the callback for debug messages.
