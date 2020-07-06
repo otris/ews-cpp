@@ -20708,7 +20708,13 @@ public:
             set_debug_callback(callback);
         }
 
-        if (ssl_opts != ssl_options::none)
+        if (
+#if _MSC_VER == 1700
+            static_cast<long>(ssl_opts) != static_cast<long>(ssl_options::none)
+#else
+            ssl_opts != ssl_options::none
+#endif
+        )
         {
             set_ssl_options(ssl_opts);
         }
