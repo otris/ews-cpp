@@ -20709,7 +20709,7 @@ public:
         }
 
         if (
-#if _MSC_VER == 1700 || _MSC_VER == 1800
+#if defined _WIN32 && (_MSC_VER == 1700 || _MSC_VER == 1800)
             static_cast<long>(ssl_opts) != static_cast<long>(ssl_options::none)
 #else
             ssl_opts != ssl_options::none
