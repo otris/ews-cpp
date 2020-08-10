@@ -23180,18 +23180,22 @@ internal::oauth2_basic::authenticate(internal::http_request* request) const
 
     if (!document.IsObject())
     {
-        throw exception("OAuth2 Error: Response is no JSON Object");
+        throw exception("OAuth2 Error: Response is not a JSON Object");
     }
 
     if (!document.HasMember("access_token") ||
         !document["access_token"].IsString())
     {
-        throw exception("OAuth2 Error: no access_token in response");
+        throw exception("OAuth2 Error: no access_token in response\n"
+                        "Response: " +
+                        content);
     }
 
     if (!document.HasMember("expires_in") || !document["expires_in"].IsNumber())
     {
-        throw exception("OAuth2 Error: no expiration time in response");
+        throw exception("OAuth2 Error: no expiration time in response\n"
+                        "Response: " +
+                        content);
     }
 
     access_token = document["access_token"].GetString();
