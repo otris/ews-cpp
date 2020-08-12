@@ -17,6 +17,11 @@
 
 #pragma once
 
+// RapidJSON derives from std::iterator causing the corresponding warnings
+#if _MSC_VER >= 1910
+#    define _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
+#endif
+
 #include <algorithm>
 #include <chrono>
 #include <ctype.h>
@@ -25,6 +30,7 @@
 #include <functional>
 #include <ios>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <stddef.h>
 #include <stdint.h>
@@ -39,6 +45,7 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <typeinfo>
 #include <utility>
 #ifdef EWS_HAS_VARIANT
 #    include <variant>
@@ -105,6 +112,20 @@ inline void check(bool expr, const char* msg)
 
 namespace internal
 {
+    //! Helper function for casts for positive values of
+    //! an unsigned type to a signed type.
+    template <typename TargetType, typename SourceType>
+    TargetType numeric_cast(SourceType value)
+    {
+        if (value >
+            static_cast<SourceType>(std::numeric_limits<TargetType>::max()))
+        {
+            throw std::overflow_error("Cannot convert ");
+        }
+
+        return static_cast<TargetType>(value);
+    }
+
     // Scope guard helper.
     class on_scope_exit final
     {
@@ -11142,7 +11163,9 @@ public:
 
         // Allocate buffer
         auto buffer = std::vector<unsigned char>();
-        buffer.reserve(file_size);
+        buffer.reserve(
+            internal::numeric_cast<std::vector<unsigned char>::size_type>(
+                file_size));
 
         // Read
         buffer.insert(begin(buffer),
@@ -12302,8 +12325,13 @@ public:
         tzh = tzm = 0;
         float s;
         char tzo;
+#if _MSC_VER == 1700 || _MSC_VER == 1800
+        auto res = sscanf_s(val_.c_str(), "%d-%d-%dT%d:%d:%f%c%d:%d", &y, &M,
+                            &d, &h, &m, &s, &tzo, 1, &tzh, &tzm);
+#else
         auto res = sscanf(val_.c_str(), "%d-%d-%dT%d:%d:%f%c%d:%d", &y, &M, &d,
                           &h, &m, &s, &tzo, &tzh, &tzm);
+#endif
         if (res == EOF)
         {
             throw exception("sscanf failed");
@@ -12399,7 +12427,9 @@ public:
     static date_time from_epoch(time_t epoch)
     {
 #ifdef _WIN32
-        auto t = gmtime(&epoch);
+        tm result;
+        gmtime_s(&result, &epoch);
+        tm* t = &result;
 #else
         tm result;
         auto t = gmtime_r(&epoch, &result);
@@ -12431,7 +12461,13 @@ private:
         }
 
 #ifdef _WIN32
-        auto utc_time = gmtime(&now);
+        tm gmtime_result;
+        auto gmtime_error = gmtime_s(&gmtime_result, &now);
+        if (gmtime_error)
+        {
+            throw std::runtime_error("Invalid argument to gmtime_s");
+        }
+        tm* utc_time = &gmtime_result;
 #else
         tm result;
         auto utc_time = gmtime_r(&now, &result);
@@ -12440,7 +12476,13 @@ private:
         const auto utc_epoch = mktime(utc_time);
 
 #ifdef _WIN32
-        auto local_time = localtime(&now);
+        tm localtime_result;
+        auto localtime_error = localtime_s(&localtime_result, &now);
+        if (localtime_error)
+        {
+            throw std::runtime_error("Invalid argument to localtime_s");
+        }
+        tm* local_time = &localtime_result;
 #else
         auto local_time = localtime_r(&now, &result);
 #endif
@@ -23139,7 +23181,8 @@ internal::oauth2_basic::authenticate(internal::http_request* request) const
     CURL* c = req.get_handle().get();
 
     char* escaped_client_id =
-        curl_easy_escape(c, client_id_.c_str(), client_id_.length());
+        curl_easy_escape(c, client_id_.c_str(),
+                         internal::numeric_cast<int>(client_id_.length()));
 
     std::string url =
         "https://login.microsoftonline.com/" + tenant_ + "/oauth2/v2.0/token";
@@ -23152,8 +23195,8 @@ internal::oauth2_basic::authenticate(internal::http_request* request) const
 
     if (!scope_.empty())
     {
-        char* escaped_scope =
-            curl_easy_escape(c, scope_.c_str(), scope_.length());
+        char* escaped_scope = curl_easy_escape(
+            c, scope_.c_str(), internal::numeric_cast<int>(scope_.length()));
         data.append("&scope=");
         data.append(escaped_scope);
         curl_free(escaped_scope);
@@ -23208,11 +23251,12 @@ oauth2_resource_owner_password_credentials::append_url(CURL* c,
                                                        std::string& data) const
 {
     char* escaped_client_secret =
-        curl_easy_escape(c, client_secret_.c_str(), client_secret_.length());
-    char* escaped_username =
-        curl_easy_escape(c, username_.c_str(), username_.length());
-    char* escaped_password =
-        curl_easy_escape(c, password_.c_str(), password_.length());
+        curl_easy_escape(c, client_secret_.c_str(),
+                         internal::numeric_cast<int>(client_secret_.length()));
+    char* escaped_username = curl_easy_escape(
+        c, username_.c_str(), internal::numeric_cast<int>(username_.length()));
+    char* escaped_password = curl_easy_escape(
+        c, password_.c_str(), internal::numeric_cast<int>(password_.length()));
 
     data.append("&client_secret=");
     data.append(escaped_client_secret);
@@ -23231,9 +23275,10 @@ inline void oauth2_client_credentials::append_url(CURL* c,
                                                   std::string& data) const
 {
     char* escaped_client_secret =
-        curl_easy_escape(c, client_secret_.c_str(), client_secret_.length());
-    char* escaped_resource =
-        curl_easy_escape(c, resource_.c_str(), resource_.length());
+        curl_easy_escape(c, client_secret_.c_str(),
+                         internal::numeric_cast<int>(client_secret_.length()));
+    char* escaped_resource = curl_easy_escape(
+        c, resource_.c_str(), internal::numeric_cast<int>(resource_.length()));
 
     data.append("&client_secret=");
     data.append(escaped_client_secret);
