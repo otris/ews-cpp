@@ -3,6 +3,13 @@ branches:
   only:
     - master
 
+.build-linux: &build_linux
+  before_install:
+    - eval "${MATRIX_EVAL}"
+  script:
+    - cd ews-cpp
+    - cmake -DCMAKE_BUILD_TYPE=Release .. && make && make doc && ./tests --assets=../tests/assets --gtest_filter=Offline*.*
+
 matrix:
   include:
     - os: linux
@@ -38,6 +45,7 @@ matrix:
         - EWS_TEST_PASSWORD=""
         - EWS_TEST_URI=""
         - EWS_TEST_USERNAME=""
+      <<: *build_linux
 
     - os: linux
       dist: focal
@@ -54,6 +62,7 @@ matrix:
         - EWS_TEST_PASSWORD=""
         - EWS_TEST_URI=""
         - EWS_TEST_USERNAME=""
+      <<: *build_linux
 
     - os: linux
       dist: trusty
@@ -72,6 +81,7 @@ matrix:
         - EWS_TEST_PASSWORD=""
         - EWS_TEST_URI=""
         - EWS_TEST_USERNAME=""
+      <<: *build_linux
 
     - os: linux
       dist: xenial
@@ -88,15 +98,22 @@ matrix:
         - EWS_TEST_PASSWORD=""
         - EWS_TEST_URI=""
         - EWS_TEST_USERNAME=""
+      <<: *build_linux
 
-before_install:
-  - eval "${MATRIX_EVAL}"
-
-before_script:
-  - mkdir build && cd build
-
-script:
-  - cmake -DCMAKE_BUILD_TYPE=Release .. && make && make doc && ./tests --assets=../tests/assets --gtest_filter=Offline*.*
+    - os: windows
+      compiler: cl
+      language: cpp
+      env:
+        - MATRIX_EVAL=""
+        - EWS_TEST_DOMAIN=""
+        - EWS_TEST_PASSWORD=""
+        - EWS_TEST_URI=""
+        - EWS_TEST_USERNAME=""
+      before_install:
+        - eval "${MATRIX_EVAL}"
+      script:
+        - cd ews-cpp
+        - .travis/start-win.bat
 
 deploy:
   provider: pages

@@ -13,6 +13,8 @@ core
 .#*
 .DS_Store
 .clang_complete
+*.exe
+*.dll
 
 # Directories to ignore
 doc/html
@@ -57,3 +59,15 @@ cscope.out
 
 # CLion
 .idea/
+
+# CMake
+CMakeFiles/**
+CMakeCache.txt
+cmake_install.cmake
+CMakeDoxyFile.in
+CMakeDoxyGenDefaults.cmake
+Makefile
+Doxyfile
+
+# VCPKG
+vcpkg/**
