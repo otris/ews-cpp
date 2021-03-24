@@ -17117,6 +17117,7 @@ static_assert(std::is_move_assignable<occurrence_info>::value);
 class recurrence_pattern
 {
 public:
+virtual std::string get_occurence_name() { return "recurrence_pattern"; }
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
     virtual ~recurrence_pattern() = default;
 
@@ -17185,6 +17186,11 @@ public:
     {
     }
 
+    std::string get_occurence_name() override
+    {
+        return "relative_yearly_recurrence";
+    }
+
     day_of_week get_days_of_week() const EWS_NOEXCEPT { return days_of_week_; }
 
     day_of_week_index get_day_of_week_index() const EWS_NOEXCEPT
@@ -17245,6 +17251,11 @@ public:
     absolute_yearly_recurrence(uint32_t day_of_month, month m)
         : day_of_month_(day_of_month), month_(m)
     {
+    }
+
+    std::string get_occurence_name() override
+    {
+        return "absolute_yearly_recurrence";
     }
 
     uint32_t get_day_of_month() const EWS_NOEXCEPT { return day_of_month_; }
@@ -17311,6 +17322,11 @@ public:
     absolute_monthly_recurrence(uint32_t interval, uint32_t day_of_month)
         : interval_(interval), day_of_month_(day_of_month)
     {
+    }
+
+    std::string get_occurence_name() override
+    {
+        return "absolute_monthly_recurrence";
     }
 
     uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
@@ -17381,6 +17397,11 @@ public:
                                 day_of_week_index index)
         : interval_(interval), days_of_week_(days_of_week), index_(index)
     {
+    }
+
+    std::string get_occurence_name() override
+    {
+        return "relative_monthly_recurrence";
     }
 
     uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
@@ -17463,6 +17484,8 @@ public:
     {
     }
 
+    std::string get_occurence_name() override { return "weekly_recurrence"; }
+
     uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
 
     const std::vector<day_of_week>& get_days_of_week() const EWS_NOEXCEPT
@@ -17535,6 +17558,8 @@ class daily_recurrence final : public recurrence_pattern
 {
 public:
     explicit daily_recurrence(uint32_t interval) : interval_(interval) {}
+
+     std::string get_occurence_name() override { return "daily_recurrence"; }
 
     uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
 
