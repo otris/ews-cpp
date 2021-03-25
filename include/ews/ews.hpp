@@ -17602,6 +17602,7 @@ static_assert(!std::is_move_assignable<daily_recurrence>::value);
 class recurrence_range
 {
 public:
+    virtual std::string get_reccurence_range_name() { return "recurrence_range"; }
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
     virtual ~recurrence_range() = default;
 
@@ -17663,6 +17664,8 @@ public:
     {
     }
 
+    std::string get_reccurence_range_name() override { return "no_end_recurrence_range"; }
+
     const date_time& get_start_date() const EWS_NOEXCEPT { return start_date_; }
 
 private:
@@ -17708,6 +17711,8 @@ public:
         : start_date_(std::move(start_date)), end_date_(std::move(end_date))
     {
     }
+
+    std::string get_reccurence_range_name() override { return "end_date_recurrence_range"; }
 
     const date_time& get_start_date() const EWS_NOEXCEPT { return start_date_; }
 
@@ -17760,6 +17765,8 @@ public:
           no_of_occurrences_(no_of_occurrences)
     {
     }
+
+    std::string get_reccurence_range_name() override { return "numbered_recurrence_range"; }
 
     const date_time& get_start_date() const EWS_NOEXCEPT { return start_date_; }
 
