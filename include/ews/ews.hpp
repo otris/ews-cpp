@@ -117,8 +117,8 @@ namespace internal
     template <typename TargetType, typename SourceType>
     TargetType numeric_cast(SourceType value)
     {
-        if (value >
-            static_cast<SourceType>(std::numeric_limits<TargetType>::max()))
+        if (static_cast<TargetType>(value) >
+            std::numeric_limits<TargetType>::max())
         {
             throw std::overflow_error("Cannot convert ");
         }
