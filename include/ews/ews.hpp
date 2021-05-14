@@ -22782,7 +22782,7 @@ private:
         {
             throw exchange_error(response_messages.first_error_or_warning());
         }
-        if(disposition == message_disposition::send_only)
+        if(disposition == message_disposition::save_only)
         {
             check(!response_messages.items().empty(), "Expected at least one item");
         }
