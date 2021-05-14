@@ -1,0 +1,24 @@
+var searchData=
+[
+  ['sat',['sat',['../namespaceews.html#a278549fb796ba83ac0eb6ec31bc05a4ea53e8254b3222a33f42b5a6b3d156056c',1,'ews']]],
+  ['save_5fonly',['save_only',['../namespaceews.html#a0655e3b004ea81e191e1c42beeee946fa417b6d7ce81eb5ba30811960c50d6e00',1,'ews']]],
+  ['search_5ffolders',['search_folders',['../namespaceews.html#a6377a9a6d9ba197695a8a360842b6987a19b1edbad71509cb7995db0181377b3b',1,'ews']]],
+  ['second',['second',['../namespaceews.html#aeee8dd63b8b319d86573a510d48ff325aa9f0e61a137d86aa9db53465e0801612',1,'ews']]],
+  ['send_5fand_5fsave_5fcopy',['send_and_save_copy',['../namespaceews.html#a0655e3b004ea81e191e1c42beeee946fafa98cc27838486cd19d8be214a26240a',1,'ews']]],
+  ['send_5fonly',['send_only',['../namespaceews.html#a0655e3b004ea81e191e1c42beeee946faba7bd85753e7d2c5e79563bb0859471a',1,'ews']]],
+  ['send_5fonly_5fto_5fall',['send_only_to_all',['../namespaceews.html#ae18fb2e3d3b1ed0c1e568690af11ca7aab9f1d232117e6fdd6f49250388ad28b2',1,'ews::send_only_to_all()'],['../namespaceews.html#a650dc7229b7127b67cd4a18bf2aa3aa3ab9f1d232117e6fdd6f49250388ad28b2',1,'ews::send_only_to_all()']]],
+  ['send_5fonly_5fto_5fchanged',['send_only_to_changed',['../namespaceews.html#ae18fb2e3d3b1ed0c1e568690af11ca7aa162afd605ab26b06a51e1bcf81cd4bb5',1,'ews']]],
+  ['send_5fto_5fall_5fand_5fsave_5fcopy',['send_to_all_and_save_copy',['../namespaceews.html#ae18fb2e3d3b1ed0c1e568690af11ca7aa60d3671008987309aef3a7e5dafaa1ed',1,'ews::send_to_all_and_save_copy()'],['../namespaceews.html#a650dc7229b7127b67cd4a18bf2aa3aa3a60d3671008987309aef3a7e5dafaa1ed',1,'ews::send_to_all_and_save_copy()']]],
+  ['send_5fto_5fchanged_5fand_5fsave_5fcopy',['send_to_changed_and_save_copy',['../namespaceews.html#ae18fb2e3d3b1ed0c1e568690af11ca7aa8b2e750a790ae0a393031c2172da2719',1,'ews']]],
+  ['send_5fto_5fnone',['send_to_none',['../namespaceews.html#ae18fb2e3d3b1ed0c1e568690af11ca7aaad9f8d3ce4f16475b23c5c2de210c40e',1,'ews::send_to_none()'],['../namespaceews.html#a650dc7229b7127b67cd4a18bf2aa3aa3aad9f8d3ce4f16475b23c5c2de210c40e',1,'ews::send_to_none()']]],
+  ['sent_5fitems',['sent_items',['../namespaceews.html#a6377a9a6d9ba197695a8a360842b6987a041cf08f478d73175b4bfbc414ef975b',1,'ews']]],
+  ['sept',['sept',['../namespaceews.html#a5d53fc3af1b7334b7f634fe2fe67420faabd0df592de9de127051ccdddbfe63d8',1,'ews']]],
+  ['server_5ffailures',['server_failures',['../namespaceews.html#a6377a9a6d9ba197695a8a360842b6987a1bef8d4bbdd9b53387500b2909f1f1fb',1,'ews']]],
+  ['set_5fitem_5ffield',['set_item_field',['../classews_1_1update.html#a09c4bf3931c2ee9b515ddda7b8c542dca03bebd5af307ac06427144ff1fa34412',1,'ews::update']]],
+  ['single',['single',['../namespaceews.html#a8e40f3e7c6a20e7199d180712660a1bcadd5c07036f2975ff4bce568b6511d3bc',1,'ews']]],
+  ['specified_5foccurrence_5fonly',['specified_occurrence_only',['../namespaceews.html#a049f73c4e7798671f5f77b262d466008a310741aa60a5fac27505bc0161079e2e',1,'ews']]],
+  ['substring',['substring',['../namespaceews.html#a926b813073ebc865a22fb90eedeb7616ae83aed3ddf4667dec0daaacb2bb3be0b',1,'ews']]],
+  ['success',['success',['../namespaceews.html#af0375322a5c8e2e735242e00e5ac8ae8a260ca9dd8a4577fc00b7bd5810298076',1,'ews']]],
+  ['sun',['sun',['../namespaceews.html#a278549fb796ba83ac0eb6ec31bc05a4eaebd556e6dfc99dbed29675ce1c6c68e5',1,'ews']]],
+  ['sync_5fissues',['sync_issues',['../namespaceews.html#a6377a9a6d9ba197695a8a360842b6987a3f687eafc8f3072fa3faedd2b98253c0',1,'ews']]]
+];
