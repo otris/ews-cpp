@@ -22782,7 +22782,10 @@ private:
         {
             throw exchange_error(response_messages.first_error_or_warning());
         }
-        check(!response_messages.items().empty(), "Expected at least one item");
+        if(disposition == message_disposition::send_only)
+        {
+            check(!response_messages.items().empty(), "Expected at least one item");
+        }
 
         const std::vector<message> items = response_messages.items();
         std::vector<item_id> res;
