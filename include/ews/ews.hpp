@@ -8152,6 +8152,8 @@ namespace internal
         virtual ~credentials() {}
 #endif
         virtual void certify(http_request*) const = 0;
+
+        virtual std::unique_ptr<credentials> clone() const = 0;
     };
 
     //! \brief This class a basic implementation for OAuth2 grant types.
@@ -8215,6 +8217,15 @@ public:
     {
     }
 
+    std::unique_ptr<internal::credentials> clone() const override
+    {
+#ifdef EWS_HAS_MAKE_UNIQUE
+        return std::make_unique<basic_credentials>(*this);
+#else
+        return std::unique_ptr<basic_credentials>(new basic_credentials(*this));
+#endif
+    }
+
 private:
     // Implemented below
     void certify(internal::http_request*) const override;
@@ -8242,6 +8253,15 @@ public:
     {
     }
 
+    std::unique_ptr<internal::credentials> clone() const override
+    {
+#ifdef EWS_HAS_MAKE_UNIQUE
+        return std::make_unique<ntlm_credentials>(*this);
+#else
+        return std::unique_ptr<ntlm_credentials>(new ntlm_credentials(*this));
+#endif
+    }
+
 private:
     // Implemented below
     void certify(internal::http_request*) const override;
@@ -8267,6 +8287,16 @@ public:
     {
     }
 
+    std::unique_ptr<internal::credentials> clone() const override
+    {
+#ifdef EWS_HAS_MAKE_UNIQUE
+        return std::make_unique<oauth2_client_credentials>(*this);
+#else
+        return std::unique_ptr<oauth2_client_credentials>(
+            new oauth2_client_credentials(*this));
+#endif
+    }
+
 private:
     void append_url(CURL* c, std::string& data) const override;
 
@@ -8289,6 +8319,17 @@ public:
           username_(std::move(username)), password_(std::move(password)),
           client_secret_(std::move(client_secret))
     {
+    }
+
+    std::unique_ptr<internal::credentials> clone() const override
+    {
+#ifdef EWS_HAS_MAKE_UNIQUE
+        return std::make_unique<oauth2_resource_owner_password_credentials>(
+            *this);
+#else
+        return std::unique_ptr<oauth2_resource_owner_password_credentials>(
+            new oauth2_resource_owner_password_credentials(*this));
+#endif
     }
 
 private:
