@@ -8152,6 +8152,8 @@ namespace internal
         virtual ~credentials() {}
 #endif
         virtual void certify(http_request*) const = 0;
+
+        virtual std::unique_ptr<credentials> clone() const = 0;
     };
 
     //! \brief This class a basic implementation for OAuth2 grant types.
@@ -8215,6 +8217,15 @@ public:
     {
     }
 
+    std::unique_ptr<internal::credentials> clone() const override
+    {
+#ifdef EWS_HAS_MAKE_UNIQUE
+        return std::make_unique<basic_credentials>(*this);
+#else
+        return std::unique_ptr<basic_credentials>(new basic_credentials(*this));
+#endif
+    }
+
 private:
     // Implemented below
     void certify(internal::http_request*) const override;
@@ -8242,6 +8253,15 @@ public:
     {
     }
 
+    std::unique_ptr<internal::credentials> clone() const override
+    {
+#ifdef EWS_HAS_MAKE_UNIQUE
+        return std::make_unique<ntlm_credentials>(*this);
+#else
+        return std::unique_ptr<ntlm_credentials>(new ntlm_credentials(*this));
+#endif
+    }
+
 private:
     // Implemented below
     void certify(internal::http_request*) const override;
@@ -8267,6 +8287,16 @@ public:
     {
     }
 
+    std::unique_ptr<internal::credentials> clone() const override
+    {
+#ifdef EWS_HAS_MAKE_UNIQUE
+        return std::make_unique<oauth2_client_credentials>(*this);
+#else
+        return std::unique_ptr<oauth2_client_credentials>(
+            new oauth2_client_credentials(*this));
+#endif
+    }
+
 private:
     void append_url(CURL* c, std::string& data) const override;
 
@@ -8289,6 +8319,17 @@ public:
           username_(std::move(username)), password_(std::move(password)),
           client_secret_(std::move(client_secret))
     {
+    }
+
+    std::unique_ptr<internal::credentials> clone() const override
+    {
+#ifdef EWS_HAS_MAKE_UNIQUE
+        return std::make_unique<oauth2_resource_owner_password_credentials>(
+            *this);
+#else
+        return std::unique_ptr<oauth2_resource_owner_password_credentials>(
+            new oauth2_resource_owner_password_credentials(*this));
+#endif
     }
 
 private:
@@ -17117,7 +17158,7 @@ static_assert(std::is_move_assignable<occurrence_info>::value);
 class recurrence_pattern
 {
 public:
-virtual std::string get_occurence_name() { return "recurrence_pattern"; }
+    virtual std::string get_occurence_name() { return "recurrence_pattern"; }
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
     virtual ~recurrence_pattern() = default;
 
@@ -17559,7 +17600,7 @@ class daily_recurrence final : public recurrence_pattern
 public:
     explicit daily_recurrence(uint32_t interval) : interval_(interval) {}
 
-     std::string get_occurence_name() override { return "daily_recurrence"; }
+    std::string get_occurence_name() override { return "daily_recurrence"; }
 
     uint32_t get_interval() const EWS_NOEXCEPT { return interval_; }
 
@@ -17602,7 +17643,10 @@ static_assert(!std::is_move_assignable<daily_recurrence>::value);
 class recurrence_range
 {
 public:
-    virtual std::string get_reccurence_range_name() { return "recurrence_range"; }
+    virtual std::string get_reccurence_range_name()
+    {
+        return "recurrence_range";
+    }
 #ifdef EWS_HAS_DEFAULT_AND_DELETE
     virtual ~recurrence_range() = default;
 
@@ -17664,7 +17708,10 @@ public:
     {
     }
 
-    std::string get_reccurence_range_name() override { return "no_end_recurrence_range"; }
+    std::string get_reccurence_range_name() override
+    {
+        return "no_end_recurrence_range";
+    }
 
     const date_time& get_start_date() const EWS_NOEXCEPT { return start_date_; }
 
@@ -17712,7 +17759,10 @@ public:
     {
     }
 
-    std::string get_reccurence_range_name() override { return "end_date_recurrence_range"; }
+    std::string get_reccurence_range_name() override
+    {
+        return "end_date_recurrence_range";
+    }
 
     const date_time& get_start_date() const EWS_NOEXCEPT { return start_date_; }
 
@@ -17766,7 +17816,10 @@ public:
     {
     }
 
-    std::string get_reccurence_range_name() override { return "numbered_recurrence_range"; }
+    std::string get_reccurence_range_name() override
+    {
+        return "numbered_recurrence_range";
+    }
 
     const date_time& get_start_date() const EWS_NOEXCEPT { return start_date_; }
 
@@ -22782,9 +22835,10 @@ private:
         {
             throw exchange_error(response_messages.first_error_or_warning());
         }
-        if(disposition == message_disposition::save_only)
+        if (disposition == message_disposition::save_only)
         {
-            check(!response_messages.items().empty(), "Expected at least one item");
+            check(!response_messages.items().empty(),
+                  "Expected at least one item");
         }
 
         const std::vector<message> items = response_messages.items();
