@@ -8401,6 +8401,12 @@ namespace internal
             curl_easy_setopt(handle_.get(), CURLOPT_TIMEOUT, timeout.count());
         }
 
+        void set_expect(const std::string& value)
+        {
+            const std::string str = "Expect: " + value;
+            headers_.append(str.c_str());
+        }
+
 #ifdef EWS_HAS_VARIADIC_TEMPLATES
         // Small wrapper around curl_easy_setopt(3).
         //
@@ -8613,7 +8619,7 @@ namespace internal
         request_stream << "</soap:Envelope>";
 
 #ifdef EWS_ENABLE_VERBOSE
-        std::cerr << request_stream.str() << std::endl;
+        std::cerr << "make_raw_soap_request: " << std::endl << request_stream.str() << std::endl;
 #endif
         return handler.send(request_stream.str());
     }
@@ -8643,6 +8649,7 @@ namespace internal
         RequestHandler handler(url);
         handler.set_method(RequestHandler::method::POST);
         handler.set_content_type("text/xml; charset=utf-8");
+        handler.set_expect("");
         ntlm_credentials creds(username, password, domain);
         handler.set_credentials(creds);
         return make_raw_soap_request(handler, soap_body, soap_headers);
@@ -9001,6 +9008,7 @@ namespace internal
         handler.set_credentials(credentials);
         handler.set_content_type("text/xml; charset=utf-8");
         handler.set_content_length(request_string.size());
+        handler.set_expect("");
 
 #ifdef EWS_ENABLE_VERBOSE
         std::cerr << request_string << std::endl;
@@ -20942,6 +20950,11 @@ public:
             request_handler_.set_option(CURLOPT_DEBUGFUNCTION, nullptr);
             request_handler_.set_option(CURLOPT_DEBUGDATA, nullptr);
         }
+    }
+
+    void set_expect(const std::string& value)
+    {
+        request_handler_.set_expect(value);
     }
 
 private:
