@@ -20957,6 +20957,16 @@ public:
         request_handler_.set_expect(value);
     }
 
+    void set_credentials(const internal::credentials& creds)
+    {
+        request_handler_.set_credentials(creds);
+    }
+
+    void set_server_uri(const std::string& value)
+    {
+        request_handler_.set_option(CURLOPT_URL, value.c_str());
+    }
+
 private:
     //! \brief CURL callback for forwarding debug output
     static int curl_debug_callback(EWS_MAYBE_UNUSED CURL* handle,
