@@ -20792,7 +20792,7 @@ public:
         request_handler_.set_method(RequestHandler::method::POST);
         request_handler_.set_content_type("text/xml; charset=utf-8");
         ntlm_credentials creds(username, password, domain);
-        request_handler_.set_credentials(creds);
+        set_credentials(creds);
     }
 
     //! \brief Constructs a new service with given credentials to a server
@@ -20804,7 +20804,7 @@ public:
     {
         request_handler_.set_method(RequestHandler::method::POST);
         request_handler_.set_content_type("text/xml; charset=utf-8");
-        request_handler_.set_credentials(creds);
+        set_credentials(creds);
     }
 
     //! \brief Constructs a new service with given credentials to a server
@@ -20856,7 +20856,7 @@ public:
 
         request_handler_.set_method(RequestHandler::method::POST);
         request_handler_.set_content_type("text/xml; charset=utf-8");
-        request_handler_.set_credentials(creds);
+        set_credentials(creds);
     }
 
     //! \brief Sets the schema version that will be used in requests made
@@ -20960,6 +20960,13 @@ public:
     void set_credentials(const internal::credentials& creds)
     {
         request_handler_.set_credentials(creds);
+        // If BASIC auth is used, the expect header has not
+        // be sent. Otherwise the Exchange will respond with
+        // 417 Expectation failed.
+        if (dynamic_cast<const basic_credentials*>(&creds))
+        {
+            set_expect("");
+        }
     }
 
     void set_server_uri(const std::string& value)
