@@ -20808,6 +20808,21 @@ public:
     }
 
     //! \brief Constructs a new service with given credentials to a server
+    //! specified by \p server_uri using the path to folder with CA
+    //! certificates
+    basic_service(const std::string& server_uri,
+                  const internal::credentials& creds,
+                  const std::string& caPath)
+        : request_handler_(server_uri), server_version_("Exchange2013_SP1"),
+          impersonation_(), time_zone_(time_zone::none)
+    {
+        request_handler_.set_method(RequestHandler::method::POST);
+        request_handler_.set_content_type("text/xml; charset=utf-8");
+        set_capath(caPath);
+        set_credentials(creds);
+    }
+
+    //! \brief Constructs a new service with given credentials to a server
     //! specified by \p server_uri
     basic_service(const std::string& server_uri,
                   const internal::credentials& creds, const std::string& cainfo,
