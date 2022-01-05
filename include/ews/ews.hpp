@@ -23302,7 +23302,12 @@ internal::oauth2_basic::certify(internal::http_request* request) const
         authenticate(request);
     }
 
+#if LIBCURL_VERSION_NUM >= 0x073300
+    request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_BEARER);
+    request->set_option(CURLOPT_XOAUTH2_BEARER, access_token.c_str());
+#else
     request->set_authorization("Bearer " + access_token);
+#endif
 }
 
 inline void
@@ -23340,7 +23345,10 @@ internal::oauth2_basic::authenticate(internal::http_request* request) const
 
     // perform a request to get the authentication token
     req.set_option(CURLOPT_URL, url.c_str());
-    req.set_option(CURLOPT_HTTPGET, 1L);
+    // HTTPAUTH back to the default option, in case the original
+    // handle was set to another HTTPAUTH option that inteferes
+    // with options needed for this request
+    req.set_option(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
     internal::http_response res = req.send(data);
 
     std::vector<char> content_vector = res.content();
