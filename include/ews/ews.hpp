@@ -23302,7 +23302,7 @@ internal::oauth2_basic::certify(internal::http_request* request) const
         authenticate(request);
     }
 
-#if LIBCURL_VERSION_NUM >= 0x073300
+#if LIBCURL_VERSION_NUM >= 0x076100
     request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_BEARER);
     request->set_option(CURLOPT_XOAUTH2_BEARER, access_token.c_str());
 #else
