@@ -23306,6 +23306,9 @@ internal::oauth2_basic::certify(internal::http_request* request) const
     request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_BEARER);
     request->set_option(CURLOPT_XOAUTH2_BEARER, access_token.c_str());
 #else
+    // Set back to default, in case it was changed to a different
+    // HTTPAUTH type before.
+    request->set_option(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
     request->set_authorization("Bearer " + access_token);
 #endif
 }
