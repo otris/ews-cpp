@@ -1,7 +1,34 @@
 ## Changelog
 You'll find a complete list of changes at the project site on [GitHub](https://github.com/otris/ews-cpp).
 
-### 0.8 (YYYY-MM-DD)
+### 0.10 (2022-01-26)
+New features:
+- Add class name functions to recurrence_pattern ([#185](https://github.com/otris/ews-cpp/pull/185), [#186](https://github.com/otris/ews-cpp/pull/186))
+- Credentials clone ([#192](https://github.com/otris/ews-cpp/pull/192)
+- Allow to set the Expect header ([#194](https://github.com/otris/ews-cpp/pull/194))
+- Methods for setting server URI and credentials ([#195](https://github.com/otris/ews-cpp/pull/195))
+- Set Expect header for BASIC auth ([#196](https://github.com/otris/ews-cpp/pull/196))
+- Constructor with `caPath` arg ([#197](https://github.com/otris/ews-cpp/pull/197))
+
+Several fixes.
+
+### 0.9 (2021-03-15)
+New features:
+- OAuth2 support ([#148](https://github.com/otris/ews-cpp/issues/148)
+- Extended settings for connecting to EWS via a proxy ([#172](https://github.com/otris/ews-cpp/issues/172))
+- Debug callback for EWS requests ([#175](https://github.com/otris/ews-cpp/issues/175))
+- Support Contact information in Resolve Names resolutions ([#165](https://github.com/otris/ews-cpp/issues/165))
+
+Several fixes.
+
+### 0.8 (2020-01-02)
+New features:
+- Support updating extended properties ([#149](https://github.com/otris/ews-cpp/issues/142))
+- Updating physical address of contact  ([#141](https://github.com/otris/ews-cpp/issues/141))
+- Inline attachments with content ID  ([#144](https://github.com/otris/ews-cpp/issues/144))
+- Implementation of UpdateFolder operation ([#128](https://github.com/otris/ews-cpp/issues/128))
+
+Several fixes.
 
 ### 0.7 (2018-04-25)
 New features:
