@@ -9264,8 +9264,15 @@ public:
     //! Serializes this item_id to an XML string
     std::string to_xml() const
     {
-        return "<t:ItemId Id=\"" + id() + "\" ChangeKey=\"" + change_key() +
-               "\"/>";
+        // return "<t:ItemId Id=\"" + id() + "\" ChangeKey=\"" + change_key() +
+        //        "\"/>";
+        std::stringstream sstr;
+        sstr << "<t:ItemId Id=\"" << id_;
+        if (!change_key_.empty()) {
+            sstr << "\" ChangeKey=\"" << change_key_;
+        }
+        sstr << "\"/>";
+        return sstr.str();
     }
 
     //! Makes an item_id instance from an <tt>\<ItemId></tt> XML element
