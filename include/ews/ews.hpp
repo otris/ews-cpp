@@ -9264,8 +9264,6 @@ public:
     //! Serializes this item_id to an XML string
     std::string to_xml() const
     {
-        // return "<t:ItemId Id=\"" + id() + "\" ChangeKey=\"" + change_key() +
-        //        "\"/>";
         std::stringstream sstr;
         sstr << "<t:ItemId Id=\"" << id_;
         if (!change_key_.empty()) {
