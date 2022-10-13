@@ -23715,6 +23715,10 @@ namespace internal
 
         check(elem, "Expected <FindItemResponseMessage>");
         auto result = parse_response_class_and_code(*elem);
+        if (result.cls == response_class::error)
+        {
+            throw exchange_error(result);
+        }
 
         auto root_folder =
             elem->first_node_ns(uri<>::microsoft::messages(), "RootFolder");
