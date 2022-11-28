@@ -1,6 +1,11 @@
 ## Changelog
 You'll find a complete list of changes at the project site on [GitHub](https://github.com/otris/ews-cpp).
 
+### 0.11 (2022-11-28)
+
+Fix
+- Fixed crash due to missing error check in parsing find_item_response  ([#202](https://github.com/otris/ews-cpp/pull/202).
+
 ### 0.10 (2022-01-26)
 New features:
 - Add class name functions to recurrence_pattern ([#185](https://github.com/otris/ews-cpp/pull/185), [#186](https://github.com/otris/ews-cpp/pull/186))
