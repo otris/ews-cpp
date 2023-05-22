@@ -3,5 +3,5 @@ certifi==2022.12.7
 chardet==3.0.4
 html2text==2016.9.19
 idna==2.5
-requests==2.20.0
+requests==2.31.0
 urllib3==1.26.5
