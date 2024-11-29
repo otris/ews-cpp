@@ -143,6 +143,8 @@ struct http_request_mock final
 
     void set_credentials(const ews::internal::credentials&) {}
 
+    void set_expect(const std::string&) {}
+
 #ifdef EWS_HAS_VARIADIC_TEMPLATES
     template <typename... Args> void set_option(CURLoption, Args...) {}
 #else
