@@ -23722,6 +23722,7 @@ namespace internal
 
         auto root_folder =
             elem->first_node_ns(uri<>::microsoft::messages(), "RootFolder");
+        check(root_folder, "Expected <RootFolder> element");
 
         auto items_elem =
             root_folder->first_node_ns(uri<>::microsoft::types(), "Items");
