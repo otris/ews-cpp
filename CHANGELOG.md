@@ -1,6 +1,11 @@
 ## Changelog
 You'll find a complete list of changes at the project site on [GitHub](https://github.com/otris/ews-cpp).
 
+### 0.12 (2026-02-27)
+
+Fix:
+- Fixed another crash due to missing error check in parsing find_item_repsonse ([#219](https://github.com/otris/ews-cpp/pull/219).
+
 ### 0.11 (2022-11-28)
 
 Fix
