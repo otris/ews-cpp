@@ -1,4 +1,9 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.10.2)
+
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.27)
+  cmake_policy(SET CMP0148 NEW)
+endif()
+
 project(ews CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -417,8 +422,8 @@ if(GENERATE_EXAMPLES)
 endif() # End of GENERATE_EXAMPLES check.
 
 # Python is optional as it is only used by TimeoutTest
-find_package(PythonInterp QUIET)
-if(PYTHONINTERP_FOUND)
+find_package(Python3 QUIET)
+if(Python3_FOUND)
     add_definitions(-DEWS_HAS_PYTHON_EXECUTABLE)
 endif()
 
