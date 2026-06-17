@@ -9264,8 +9264,13 @@ public:
     //! Serializes this item_id to an XML string
     std::string to_xml() const
     {
-        return "<t:ItemId Id=\"" + id() + "\" ChangeKey=\"" + change_key() +
-               "\"/>";
+        std::stringstream sstr;
+        sstr << "<t:ItemId Id=\"" << id_;
+        if (!change_key_.empty()) {
+            sstr << "\" ChangeKey=\"" << change_key_;
+        }
+        sstr << "\"/>";
+        return sstr.str();
     }
 
     //! Makes an item_id instance from an <tt>\<ItemId></tt> XML element
@@ -13868,7 +13873,7 @@ public:
     //! Default: false.
     bool is_submitted() const
     {
-        return xml().get_value_as_string("isSubmitted") == "true";
+        return xml().get_value_as_string("IsSubmitted") == "true";
     }
 
     //! \brief True if this item is a draft.
@@ -13876,7 +13881,7 @@ public:
     //! Default: false
     bool is_draft() const
     {
-        return xml().get_value_as_string("isDraft") == "true";
+        return xml().get_value_as_string("IsDraft") == "true";
     }
 
     //! \brief True if this item is from you.
@@ -13884,7 +13889,7 @@ public:
     //! Default: false.
     bool is_from_me() const
     {
-        return xml().get_value_as_string("isFromMe") == "true";
+        return xml().get_value_as_string("IsFromMe") == "true";
     }
 
     //! \brief True if this item a re-send.
@@ -13892,7 +13897,7 @@ public:
     //! Default: false
     bool is_resend() const
     {
-        return xml().get_value_as_string("isResend") == "true";
+        return xml().get_value_as_string("IsResend") == "true";
     }
 
     //! \brief True if this item is unmodified.
@@ -13900,7 +13905,7 @@ public:
     //! Default: false.
     bool is_unmodified() const
     {
-        return xml().get_value_as_string("isUnmodified") == "true";
+        return xml().get_value_as_string("IsUnmodified") == "true";
     }
 
     //! \brief Returns a collection of Internet message headers associated
