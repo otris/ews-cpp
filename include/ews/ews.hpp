@@ -20948,6 +20948,14 @@ public:
         request_handler_.set_option(CURLOPT_SSL_OPTIONS, value);
     }
 
+    //! Disables server certificate verification for explicitly configured test
+    //! environments.
+    void set_ignore_certificate_errors()
+    {
+        request_handler_.set_option(CURLOPT_SSL_VERIFYPEER, 0L);
+        request_handler_.set_option(CURLOPT_SSL_VERIFYHOST, 0L);
+    }
+
     //! \brief Sets the callback for debug messages.
     void set_debug_callback(const debug_callback& callback)
     {
