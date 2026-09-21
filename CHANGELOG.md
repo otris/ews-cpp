@@ -1,6 +1,12 @@
 ## Changelog
 You'll find a complete list of changes at the project site on [GitHub](https://github.com/otris/ews-cpp).
 
+### 0.13 (2026-09-21)
+
+New features:
+- Add explicit control over server certificate verification ([#226](https://github.com/otris/ews-cpp/pull/226), [#227](https://github.com/otris/ews-cpp/pull/227)).
+- Apply TLS options before setting credentials so OAuth2 token requests use the configured TLS settings.
+
 ### 0.12 (2026-02-27)
 
 Fix:

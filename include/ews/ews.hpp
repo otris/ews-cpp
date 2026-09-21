@@ -20829,7 +20829,8 @@ public:
                   const std::string& capath, const std::string& proxy_uri,
                   const bool is_http_proxy_tunneling,
                   const debug_callback& callback,
-                  const ssl_options ssl_opts = ssl_options::none)
+                  const ssl_options ssl_opts = ssl_options::none,
+                  const bool ignore_certificate_errors = false)
         : request_handler_(server_uri), server_version_("Exchange2013_SP1"),
           impersonation_(), time_zone_(time_zone::none)
     {
@@ -20867,6 +20868,11 @@ public:
         )
         {
             set_ssl_options(ssl_opts);
+        }
+
+        if (ignore_certificate_errors)
+        {
+            set_ignore_certificate_errors();
         }
 
         request_handler_.set_method(RequestHandler::method::POST);
